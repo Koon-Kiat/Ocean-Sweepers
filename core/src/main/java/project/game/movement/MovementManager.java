@@ -1,132 +1,189 @@
 package project.game.movement;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.Main;
+
 /**
- * @class MovementManager
- * @brief Abstract base class for managing entity movement.
+ * @abstractclass MovementManager
+ * @brief Manages the movement logic for game entities.
  *
- * The MovementManager class provides foundational properties and methods for
- * managing the position, speed, and direction of an entity within the game
- * world. Subclasses must implement the
- * {@code updatePosition()}, {@code stop()}, and {@code resume()} methods to
- * define specific movement behaviors.
+ * MovementManager serves as the base class for different types of movement managers,
+ * handling common properties such as position, speed, direction, and the associated
+ * movement behavior. It provides methods to update positions, clamp positions within
+ * game boundaries, and control movement states.
  */
 public abstract class MovementManager {
 
-    protected Vector2 position;
-    protected float speed;
-    protected Direction direction;
-
+    private Vector2 position;
+    private float speed;
+    private Direction direction;
+    private IMovementBehavior movementBehavior;
+    private float deltaTime;
+    
     /**
-     * @brief Constructs a MovementManager with the specified parameters.
+     * Constructs a MovementManager with the specified parameters.
      *
      * @param x Initial x-coordinate.
      * @param y Initial y-coordinate.
      * @param speed Movement speed.
      * @param direction Initial movement direction.
+     * @param behavior Movement behavior strategy.
      */
-    public MovementManager(float x, float y, float speed, Direction direction) {
+    public MovementManager(float x, float y, float speed, Direction direction, IMovementBehavior behavior) {
         this.position = new Vector2(x, y);
         this.speed = speed;
         this.direction = direction;
+        this.movementBehavior = behavior;
     }
 
     // Getters and Setters
+   
     /**
-     * @brief Retrieves the current x-coordinate of the entity.
+     * Gets the current x-coordinate.
      *
-     * @return The x-coordinate.
+     * @return Current x-coordinate.
      */
     public float getX() {
         return position.x;
     }
 
     /**
-     * @brief Sets the x-coordinate of the entity.
+     * Sets the x-coordinate.
      *
-     * @param x The new x-coordinate.
+     * @param x New x-coordinate.
      */
     public void setX(float x) {
         this.position.x = x;
     }
 
     /**
-     * @brief Retrieves the current y-coordinate of the entity.
+     * Gets the current y-coordinate.
      *
-     * @return The y-coordinate.
+     * @return Current y-coordinate.
      */
     public float getY() {
         return position.y;
     }
 
     /**
-     * @brief Sets the y-coordinate of the entity.
+     * Sets the y-coordinate.
      *
-     * @param y The new y-coordinate.
+     * @param y New y-coordinate.
      */
     public void setY(float y) {
         this.position.y = y;
     }
 
     /**
-     * @brief Retrieves the movement speed of the entity.
+     * Gets the movement speed.
      *
-     * @return The speed in units per second.
+     * @return Movement speed.
      */
     public float getSpeed() {
         return speed;
     }
 
     /**
-     * @brief Sets the movement speed of the entity.
+     * Sets the movement speed.
      *
-     * @param speed The new speed in units per second.
+     * @param speed New movement speed.
+     * @throws IllegalArgumentException if speed is negative.
      */
     public void setSpeed(float speed) {
+        if (speed < 0) {
+            throw new IllegalArgumentException("Speed cannot be negative.");
+        }
         this.speed = speed;
     }
 
     /**
-     * @brief Retrieves the current movement direction of the entity.
+     * Gets the current movement direction.
      *
-     * @return The movement direction.
+     * @return Current direction.
      */
     public Direction getDirection() {
         return direction;
     }
 
     /**
-     * @brief Sets the movement direction of the entity.
+     * Sets the movement direction.
      *
-     * @param direction The new movement direction.
+     * @param direction New movement direction.
      */
     public void setDirection(Direction direction) {
         this.direction = direction;
     }
 
     /**
-     * @brief Updates the entity's position based on speed and direction.
+     * Sets the movement behavior strategy.
      *
-     * This method should be called each frame to ensure the entity moves
-     * smoothly and consistently across devices with varying frame rates.
+     * @param movementBehavior New movement behavior.
      */
-    public abstract void updatePosition();
+    public void setMovementBehavior(IMovementBehavior movementBehavior) {
+        this.movementBehavior = movementBehavior;
+    }
 
     /**
-     * @brief Stops the entity's movement.
+     * Gets the elapsed delta time.
      *
-     * Implementing classes should define how the movement is halted, typically
-     * by setting the direction to {@code Direction.NONE}.
+     * @return Delta time since the last frame.
      */
-    public abstract void stop();
+    public float getDeltaTime() {
+        return deltaTime;
+    }
 
     /**
-     * @brief Resumes the entity's movement.
+     * Sets the delta time.
      *
-     * Implementing classes should define how the movement is resumed,
-     * potentially restoring the previous direction or state before stopping.
+     * @param deltaTime Elapsed delta time since the last frame.
      */
-    public abstract void resume();
+    public void setDeltaTime(float deltaTime) {
+        this.deltaTime = deltaTime;
+    }
 
+    /**
+     * Gets the current position vector.
+     *
+     * @return Current position.
+     */
+    public Vector2 getPosition() {
+        return position;
+    }
+
+    /**
+     * Updates the position by delegating to the movement behavior.
+     */
+    public void updatePosition() {
+        if (movementBehavior != null) {
+            movementBehavior.updatePosition(this);
+        }
+    }
+
+    /**
+     * Stops movement by setting direction to NONE and resetting speed if using accelerated movement.
+     */
+    public void stop() {
+        setDirection(Direction.NONE);
+        if (movementBehavior instanceof AcceleratedMovementBehavior) {
+            ((AcceleratedMovementBehavior) movementBehavior).stopMovement(this);
+        }
+    }
+
+    /**
+     * Resumes movement by restoring the last direction if using accelerated movement.
+     */
+    public void resume() {
+        if (movementBehavior instanceof AcceleratedMovementBehavior) {
+            ((AcceleratedMovementBehavior) movementBehavior).resumeMovement(this);
+        }
+    }
+
+    /**
+     * Clamps the position within the game boundaries.
+     */
+    public void clampPosition() {
+        MovementUtils.clampPosition(this.position);
+    }
 }

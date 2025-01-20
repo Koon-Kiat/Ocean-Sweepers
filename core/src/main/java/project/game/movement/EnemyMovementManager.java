@@ -1,14 +1,14 @@
 package project.game.movement;
 
 /**
- * @class PlayerMovementManager
- * @brief Manages the movement logic specific to the player entity.
+ * @class EnemyMovementManager
+ * @brief Manages the movement logic specific to enemy entities.
  *
- * Extends the abstract MovementManager to provide player-specific movement
- * behaviors. Utilizes a Builder pattern to allow flexible configuration of
- * movement properties.
+ * Extends the abstract MovementManager to provide enemy-specific movement
+ * behaviors, such as zig-zag movement. Utilizes a Builder pattern for flexible
+ * configuration.
  */
-public class PlayerMovementManager extends MovementManager implements IMovementManager {
+public class EnemyMovementManager extends MovementManager implements IMovementManager {
 
 
     /**
@@ -16,7 +16,7 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
      *
      * @param builder The Builder instance containing configuration parameters.
      */
-    private PlayerMovementManager(Builder builder) {
+    private EnemyMovementManager(Builder builder) {
         super(builder.x, builder.y, builder.speed, builder.direction, builder.movementBehavior);
     }
 
@@ -37,12 +37,11 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
 
     /**
      * @class Builder
-     * @brief Builder for PlayerMovementManager, allowing step-by-step
+     * @brief Builder for EnemyMovementManager, allowing step-by-step
      * configuration.
      *
-     * This Builder pattern facilitates the creation of PlayerMovementManager
-     * instances with customizable movement behaviors such as accelerated or
-     * constant movement.
+     * This Builder pattern facilitates the creation of EnemyMovementManager
+     * instances with customizable movement behaviors such as zig-zag movement.
      */
     public static class Builder {
 
@@ -78,20 +77,15 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
             return this;
         }
 
-        public Builder withAcceleratedMovement(float acceleration, float deceleration) {
-            if (acceleration < 0 || deceleration < 0) {
-                throw new IllegalArgumentException("Acceleration and deceleration cannot be negative.");
+        public Builder withZigZagMovement(float amplitude, float frequency) {
+            if (amplitude < 0 || frequency < 0) {
+                throw new IllegalArgumentException("Amplitude and frequency cannot be negative.");
             }
-            this.movementBehavior = new AcceleratedMovementBehavior(acceleration, deceleration, this.speed);
+            this.movementBehavior = new ZigZagMovementBehavior(this.speed, amplitude, frequency);
             return this;
         }
 
-        public Builder withConstantMovement() {
-            this.movementBehavior = new ConstantMovementBehavior(this.speed);
-            return this;
-        }
-
-        public PlayerMovementManager build() {
+        public EnemyMovementManager build() {
             if (this.movementBehavior == null) {
                 // Default to constant movement if no behavior is specified
                 this.movementBehavior = new ConstantMovementBehavior(this.speed);
@@ -99,8 +93,7 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
             if (this.direction == null) {
                 this.direction = Direction.NONE;
             }
-            return new PlayerMovementManager(this);
+            return new EnemyMovementManager(this);
         }
-        
     }
 }
