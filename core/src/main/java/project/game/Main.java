@@ -60,16 +60,16 @@ public class Main extends ApplicationAdapter {
                 .setX(drop.x)
                 .setY(drop.y)
                 .setSpeed(1600f)
-                .withAcceleratedMovement(300f, 1200f)
+                .withConstantMovement()
                 .setDirection(Direction.NONE)
                 .build();
 
         enemyMovementManager = new EnemyMovementManager.Builder()
                 .setX(bucket.x)
                 .setY(bucket.y)
-                .setSpeed(100f)
+                .setSpeed(400f)
                 .setDirection(Direction.RIGHT)
-                .withZigZagMovement(50f, 2f)
+                .withRandomisedMovement(playerMovementManager, 50f, 2f, 1f, 2f)
                 .build();
 
         inputManager = new InputManager(playerMovementManager);
