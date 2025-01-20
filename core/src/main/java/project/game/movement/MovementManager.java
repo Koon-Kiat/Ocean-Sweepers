@@ -1,9 +1,6 @@
 package project.game.movement;
 
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-
-import project.game.Main;
 
 /**
  * @abstractclass MovementManager

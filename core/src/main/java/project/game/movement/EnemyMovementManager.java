@@ -1,5 +1,7 @@
 package project.game.movement;
 
+import java.util.Arrays;
+
 /**
  * @class EnemyMovementManager
  * @brief Manages the movement logic specific to enemy entities.
@@ -82,6 +84,24 @@ public class EnemyMovementManager extends MovementManager implements IMovementMa
                 throw new IllegalArgumentException("Amplitude and frequency cannot be negative.");
             }
             this.movementBehavior = new ZigZagMovementBehavior(this.speed, amplitude, frequency);
+            return this;
+        }
+
+        public Builder withFollowMovement(IMovementManager targetManager) {
+            this.movementBehavior = new FollowMovementBehavior(targetManager, this.speed);
+            return this;
+        }
+
+        public Builder withRandomisedMovement(IMovementManager followTarget, float amplitude, float frequency, float minDuration, float maxDuration) {
+            this.movementBehavior = new RandomisedMovementBehavior(
+                Arrays.asList(
+                    new ConstantMovementBehavior(this.speed),
+                    new ZigZagMovementBehavior(this.speed, amplitude, frequency),
+                    new FollowMovementBehavior(followTarget, this.speed)
+                ),
+                minDuration,
+                maxDuration
+            );
             return this;
         }
 
