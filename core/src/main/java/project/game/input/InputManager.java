@@ -8,7 +8,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 
 import project.game.movement.Direction;
-import project.game.movement.PlayerMovementManager;
+import project.game.movement.IMovementManager;
 
 /**
  * @class InputManager
@@ -17,21 +17,23 @@ import project.game.movement.PlayerMovementManager;
  * The InputManager class extends LibGDX's InputAdapter to capture and process
  * keyboard inputs. It manages the set of currently pressed movement keys and
  * updates the player's movement direction accordingly by interacting with the
- * PlayerMovementManager.
+ * IMovementManager.
  */
 public class InputManager extends InputAdapter {
 
-    private final PlayerMovementManager movementManager;
+    private final IMovementManager movementManager;
     private final Set<Integer> pressedKeys = Collections.synchronizedSet(new HashSet<>());
 
     /**
-     * @brief Constructs an InputManager with the specified
-     *PlayerMovementManager.
+     * @brief Constructs an InputManager with the specified IMovementManager.
      *
-     * @param movementManager Reference to the PlayerMovementManager to update
+     * @param movementManager Reference to the IMovementManager to update
      * directions.
      */
-    public InputManager(PlayerMovementManager movementManager) {
+    public InputManager(IMovementManager movementManager) {
+        if (movementManager == null) {
+            throw new IllegalArgumentException("MovementManager cannot be null.");
+        }
         this.movementManager = movementManager;
     }
 
