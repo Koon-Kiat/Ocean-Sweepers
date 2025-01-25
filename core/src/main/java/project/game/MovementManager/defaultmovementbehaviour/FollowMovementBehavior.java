@@ -1,6 +1,9 @@
-package project.game.movement;
+package project.game.MovementManager.defaultmovementbehaviour;
 
 import com.badlogic.gdx.math.Vector2;
+import project.game.MovementManager.interfaces.IMovementBehavior;
+import project.game.MovementManager.interfaces.IMovementManager;
+import project.game.MovementManager.MovementManager;
 
 public class FollowMovementBehavior implements IMovementBehavior {
 

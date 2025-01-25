@@ -1,4 +1,6 @@
-package project.game.movement;
+package project.game.MovementManager.interfaces;
+
+import project.game.MovementManager.MovementManager;
 
 /**
  * @interface IMovementBehavior
@@ -17,5 +19,5 @@ public interface IMovementBehavior {
      *
      * @param manager The MovementManager whose position needs to be updated.
      */
-    void updatePosition(MovementManager manager);    
+    void updatePosition(MovementManager manager);
 }

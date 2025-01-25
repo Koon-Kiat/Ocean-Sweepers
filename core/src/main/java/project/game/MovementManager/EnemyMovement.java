@@ -1,16 +1,23 @@
-package project.game.movement;
+package project.game.MovementManager;
+
+import project.game.MovementManager.defaultmovementbehaviour.ConstantMovementBehavior;
+import project.game.MovementManager.defaultmovementbehaviour.FollowMovementBehavior;
+import project.game.MovementManager.defaultmovementbehaviour.RandomisedMovementBehavior;
+import project.game.MovementManager.defaultmovementbehaviour.ZigZagMovementBehavior;
+import project.game.MovementManager.interfaces.IMovementBehavior;
+import project.game.MovementManager.interfaces.IMovementManager;
 
 import java.util.Arrays;
 
 /**
- * @class EnemyMovementManager
+ * @class EnemyMovement
  * @brief Manages the movement logic specific to enemy entities.
  *
  * Extends the abstract MovementManager to provide enemy-specific movement
  * behaviors, such as zig-zag movement. Utilizes a Builder pattern for flexible
  * configuration.
  */
-public class EnemyMovementManager extends MovementManager implements IMovementManager {
+public class EnemyMovement extends MovementManager implements IMovementManager {
 
 
     /**
@@ -18,7 +25,7 @@ public class EnemyMovementManager extends MovementManager implements IMovementMa
      *
      * @param builder The Builder instance containing configuration parameters.
      */
-    private EnemyMovementManager(Builder builder) {
+    private EnemyMovement(Builder builder) {
         super(builder.x, builder.y, builder.speed, builder.direction, builder.movementBehavior);
     }
 
@@ -39,10 +46,10 @@ public class EnemyMovementManager extends MovementManager implements IMovementMa
 
     /**
      * @class Builder
-     * @brief Builder for EnemyMovementManager, allowing step-by-step
+     * @brief Builder for EnemyMovement, allowing step-by-step
      * configuration.
      *
-     * This Builder pattern facilitates the creation of EnemyMovementManager
+     * This Builder pattern facilitates the creation of EnemyMovement
      * instances with customizable movement behaviors such as zig-zag movement.
      */
     public static class Builder {
@@ -105,7 +112,7 @@ public class EnemyMovementManager extends MovementManager implements IMovementMa
             return this;
         }
 
-        public EnemyMovementManager build() {
+        public EnemyMovement build() {
             if (this.movementBehavior == null) {
                 // Default to constant movement if no behavior is specified
                 this.movementBehavior = new ConstantMovementBehavior(this.speed);
@@ -113,7 +120,7 @@ public class EnemyMovementManager extends MovementManager implements IMovementMa
             if (this.direction == null) {
                 this.direction = Direction.NONE;
             }
-            return new EnemyMovementManager(this);
+            return new EnemyMovement(this);
         }
     }
 }

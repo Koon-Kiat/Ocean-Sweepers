@@ -2,15 +2,17 @@ package project.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.input.InputManager;
-import project.game.movement.Direction;
-import project.game.movement.EnemyMovementManager;
-import project.game.movement.PlayerMovementManager;
+import project.game.IOManager.SceneIOManager;
+import project.game.MovementManager.Direction;
+import project.game.MovementManager.EnemyMovement;
+import project.game.MovementManager.interfaces.IMovementManager;
+import project.game.MovementManager.PlayerMovement;
 
 public class Main extends ApplicationAdapter {
 
@@ -19,16 +21,25 @@ public class Main extends ApplicationAdapter {
     private Texture bucketImage;
     private Rectangle drop;
     private Rectangle bucket;
-    private PlayerMovementManager playerMovementManager;
-    private EnemyMovementManager enemyMovementManager;
-    private InputManager inputManager;
-
+    private PlayerMovement playerMovement;
+    private EnemyMovement enemyMovement;
+    private SceneIOManager inputManager;
 
     public static final float GAME_WIDTH = 640f;
     public static final float GAME_HEIGHT = 480f;
 
     @Override
     public void create() {
+        IMovementManager bucketMovementManager = new PlayerMovement.Builder()
+                .setX(50)
+                .setY(400)
+                .setSpeed(200f)
+                .setDirection(Direction.NONE)
+                .build();
+
+        inputManager = new SceneIOManager(bucketMovementManager);
+        Gdx.input.setInputProcessor(inputManager);
+
         batch = new SpriteBatch();
         try {
             dropImage = new Texture(Gdx.files.internal("droplet.png"));
@@ -51,12 +62,12 @@ public class Main extends ApplicationAdapter {
         drop.height = dropImage.getHeight();
 
         bucket = new Rectangle();
-        bucket.x = 50;
-        bucket.y = 400;
+        bucket.x = bucketMovementManager.getX();
+        bucket.y = bucketMovementManager.getY();
         bucket.width = bucketImage.getWidth();
         bucket.height = bucketImage.getHeight();
 
-        playerMovementManager = new PlayerMovementManager.Builder()
+        playerMovement = new PlayerMovement.Builder()
                 .setX(drop.x)
                 .setY(drop.y)
                 .setSpeed(1600f)
@@ -64,16 +75,13 @@ public class Main extends ApplicationAdapter {
                 .setDirection(Direction.NONE)
                 .build();
 
-        enemyMovementManager = new EnemyMovementManager.Builder()
+        enemyMovement = new EnemyMovement.Builder()
                 .setX(bucket.x)
                 .setY(bucket.y)
                 .setSpeed(400f)
                 .setDirection(Direction.RIGHT)
-                .withRandomisedMovement(playerMovementManager, 50f, 2f, 1f, 2f)
+                .withRandomisedMovement(playerMovement, 50f, 2f, 1f, 2f)
                 .build();
-
-        inputManager = new InputManager(playerMovementManager);
-        Gdx.input.setInputProcessor(inputManager);
     }
 
     @Override
@@ -83,24 +91,40 @@ public class Main extends ApplicationAdapter {
         float deltaTime = Gdx.graphics.getDeltaTime();
 
         // Set deltaTime for movement managers
-        playerMovementManager.setDeltaTime(deltaTime);
-        enemyMovementManager.setDeltaTime(deltaTime);
+        playerMovement.setDeltaTime(deltaTime);
+        enemyMovement.setDeltaTime(deltaTime);
 
         // Update positions
-        playerMovementManager.updatePosition();
-        enemyMovementManager.updatePosition();
+        playerMovement.updatePosition();
+        enemyMovement.updatePosition();
+
+        // Update bucket position based on input
+        inputManager.getMovementManager().setDeltaTime(deltaTime);
+        inputManager.getMovementManager().updateMovement();
 
         // Update rectangle positions
-        drop.x = playerMovementManager.getX();
-        drop.y = playerMovementManager.getY();
+        drop.x = enemyMovement.getX();
+        drop.y = enemyMovement.getY();
 
-        bucket.x = enemyMovementManager.getX();
-        bucket.y = enemyMovementManager.getY();
+        bucket.x = inputManager.getMovementManager().getX();
+        bucket.y = inputManager.getMovementManager().getY();
 
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
         batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
         batch.end();
+
+        // Print pressed keys
+        for (Integer key : inputManager.getPressedKeys()) {
+            System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
+        }
+
+        // Print mouse click status
+        if (inputManager.isMouseClicked()) {
+            System.out.println("[DEBUG] Mouse is clicked at position: " + inputManager.getMousePosition());
+        } else {
+            System.out.println("[DEBUG] Mouse is not clicked.");
+        }
     }
 
     @Override

@@ -1,14 +1,19 @@
-package project.game.movement;
+package project.game.MovementManager;
+
+import project.game.MovementManager.defaultmovementbehaviour.AcceleratedMovementBehavior;
+import project.game.MovementManager.defaultmovementbehaviour.ConstantMovementBehavior;
+import project.game.MovementManager.interfaces.IMovementBehavior;
+import project.game.MovementManager.interfaces.IMovementManager;
 
 /**
- * @class PlayerMovementManager
+ * @class PlayerMovement
  * @brief Manages the movement logic specific to the player entity.
  *
  * Extends the abstract MovementManager to provide player-specific movement
  * behaviors. Utilizes a Builder pattern to allow flexible configuration of
  * movement properties.
  */
-public class PlayerMovementManager extends MovementManager implements IMovementManager {
+public class PlayerMovement extends MovementManager implements IMovementManager {
 
 
     /**
@@ -16,7 +21,7 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
      *
      * @param builder The Builder instance containing configuration parameters.
      */
-    private PlayerMovementManager(Builder builder) {
+    private PlayerMovement(Builder builder) {
         super(builder.x, builder.y, builder.speed, builder.direction, builder.movementBehavior);
     }
 
@@ -37,10 +42,10 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
 
     /**
      * @class Builder
-     * @brief Builder for PlayerMovementManager, allowing step-by-step
+     * @brief Builder for PlayerMovement, allowing step-by-step
      * configuration.
      *
-     * This Builder pattern facilitates the creation of PlayerMovementManager
+     * This Builder pattern facilitates the creation of PlayerMovement
      * instances with customizable movement behaviors such as accelerated or
      * constant movement.
      */
@@ -91,7 +96,7 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
             return this;
         }
 
-        public PlayerMovementManager build() {
+        public PlayerMovement build() {
             if (this.movementBehavior == null) {
                 // Default to constant movement if no behavior is specified
                 this.movementBehavior = new ConstantMovementBehavior(this.speed);
@@ -99,8 +104,8 @@ public class PlayerMovementManager extends MovementManager implements IMovementM
             if (this.direction == null) {
                 this.direction = Direction.NONE;
             }
-            return new PlayerMovementManager(this);
+            return new PlayerMovement(this);
         }
-        
+
     }
 }
