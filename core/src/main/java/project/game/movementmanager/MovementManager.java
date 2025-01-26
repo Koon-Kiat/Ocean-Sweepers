@@ -1,9 +1,9 @@
-package project.game.MovementManager;
+package project.game.movementmanager;
 
 import com.badlogic.gdx.math.Vector2;
-import project.game.MovementManager.defaultmovementbehaviour.AcceleratedMovementBehavior;
-import project.game.MovementManager.interfaces.IMovementBehavior;
-import project.game.MovementManager.interfaces.IMovementManager;
+import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
+import project.game.movementmanager.interfaces.IMovementBehavior;
+import project.game.movementmanager.interfaces.IMovementManager;
 
 /**
  * @abstractclass MovementManager

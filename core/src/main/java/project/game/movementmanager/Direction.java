@@ -1,4 +1,4 @@
-package project.game.MovementManager;
+package project.game.movementmanager;
 
 public enum Direction {
     UP,

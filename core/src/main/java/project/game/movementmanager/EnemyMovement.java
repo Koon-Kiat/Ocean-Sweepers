@@ -1,11 +1,11 @@
-package project.game.MovementManager;
+package project.game.movementmanager;
 
-import project.game.MovementManager.defaultmovementbehaviour.ConstantMovementBehavior;
-import project.game.MovementManager.defaultmovementbehaviour.FollowMovementBehavior;
-import project.game.MovementManager.defaultmovementbehaviour.RandomisedMovementBehavior;
-import project.game.MovementManager.defaultmovementbehaviour.ZigZagMovementBehavior;
-import project.game.MovementManager.interfaces.IMovementBehavior;
-import project.game.MovementManager.interfaces.IMovementManager;
+import project.game.movementmanager.defaultmovementbehaviour.ConstantMovementBehavior;
+import project.game.movementmanager.defaultmovementbehaviour.FollowMovementBehavior;
+import project.game.movementmanager.defaultmovementbehaviour.RandomisedMovementBehavior;
+import project.game.movementmanager.defaultmovementbehaviour.ZigZagMovementBehavior;
+import project.game.movementmanager.interfaces.IMovementBehavior;
+import project.game.movementmanager.interfaces.IMovementManager;
 
 import java.util.Arrays;
 

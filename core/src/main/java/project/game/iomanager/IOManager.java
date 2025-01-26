@@ -1,4 +1,4 @@
-package project.game.IOManager;
+package project.game.iomanager;
 
 import java.util.HashSet;
 import java.util.Set;

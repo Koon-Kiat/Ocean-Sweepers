@@ -1,4 +1,4 @@
-package project.game.MovementManager;
+package project.game.movementmanager;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;

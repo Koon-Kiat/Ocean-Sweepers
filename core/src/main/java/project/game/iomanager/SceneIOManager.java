@@ -1,9 +1,9 @@
-package project.game.IOManager;
+package project.game.iomanager;
 
 import com.badlogic.gdx.Input;
 
-import project.game.MovementManager.Direction;
-import project.game.MovementManager.interfaces.IMovementManager;
+import project.game.movementmanager.Direction;
+import project.game.movementmanager.interfaces.IMovementManager;
 
 import java.util.HashMap;
 import java.util.Map;

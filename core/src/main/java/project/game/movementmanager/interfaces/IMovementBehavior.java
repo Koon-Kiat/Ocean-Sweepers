@@ -1,6 +1,6 @@
-package project.game.MovementManager.interfaces;
+package project.game.movementmanager.interfaces;
 
-import project.game.MovementManager.MovementManager;
+import project.game.movementmanager.MovementManager;
 
 /**
  * @interface IMovementBehavior

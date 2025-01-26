@@ -1,6 +1,6 @@
-package project.game.MovementManager.interfaces;
+package project.game.movementmanager.interfaces;
 
-import project.game.MovementManager.Direction;
+import project.game.movementmanager.Direction;
 
 public interface IMovementManager {
     void setDeltaTime(float deltaTime);
