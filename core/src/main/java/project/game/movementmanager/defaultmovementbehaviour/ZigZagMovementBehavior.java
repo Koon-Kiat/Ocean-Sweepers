@@ -1,7 +1,10 @@
-package project.game.movement;
+package project.game.movementmanager.defaultmovementbehaviour;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import project.game.movementmanager.Direction;
+import project.game.movementmanager.interfaces.IMovementBehavior;
+import project.game.movementmanager.MovementManager;
 
 
 /**

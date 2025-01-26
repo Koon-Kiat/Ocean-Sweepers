@@ -1,6 +1,9 @@
-package project.game.movement;
+package project.game.movementmanager;
 
 import com.badlogic.gdx.math.Vector2;
+import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
+import project.game.movementmanager.interfaces.IMovementBehavior;
+import project.game.movementmanager.interfaces.IMovementManager;
 
 /**
  * @abstractclass MovementManager
@@ -11,14 +14,14 @@ import com.badlogic.gdx.math.Vector2;
  * movement behavior. It provides methods to update positions, clamp positions within
  * game boundaries, and control movement states.
  */
-public abstract class MovementManager {
+public abstract class MovementManager implements IMovementManager {
 
     private Vector2 position;
     private float speed;
     private Direction direction;
     private IMovementBehavior movementBehavior;
     private float deltaTime;
-    
+
     /**
      * Constructs a MovementManager with the specified parameters.
      *
@@ -36,7 +39,7 @@ public abstract class MovementManager {
     }
 
     // Getters and Setters
-   
+
     /**
      * Gets the current x-coordinate.
      *

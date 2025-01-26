@@ -1,8 +1,10 @@
-package project.game.movement;
+package project.game.movementmanager.defaultmovementbehaviour;
 
 import java.util.List;
 
 import com.badlogic.gdx.math.MathUtils;
+import project.game.movementmanager.interfaces.IMovementBehavior;
+import project.game.movementmanager.MovementManager;
 
 /**
  * @class RandomisedMovementBehavior
