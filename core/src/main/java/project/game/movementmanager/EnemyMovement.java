@@ -1,13 +1,13 @@
 package project.game.movementmanager;
 
+import java.util.Arrays;
+
 import project.game.movementmanager.defaultmovementbehaviour.ConstantMovementBehavior;
 import project.game.movementmanager.defaultmovementbehaviour.FollowMovementBehavior;
 import project.game.movementmanager.defaultmovementbehaviour.RandomisedMovementBehavior;
 import project.game.movementmanager.defaultmovementbehaviour.ZigZagMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementManager;
-
-import java.util.Arrays;
 
 /**
  * @class EnemyMovement
@@ -17,8 +17,7 @@ import java.util.Arrays;
  * behaviors, such as zig-zag movement. Utilizes a Builder pattern for flexible
  * configuration.
  */
-public class EnemyMovement extends MovementManager implements IMovementManager {
-
+public class EnemyMovement extends MovementManager {
 
     /**
      * Private constructor to enforce the use of the Builder.
@@ -46,11 +45,10 @@ public class EnemyMovement extends MovementManager implements IMovementManager {
 
     /**
      * @class Builder
-     * @brief Builder for EnemyMovement, allowing step-by-step
-     * configuration.
+     * @brief Builder for EnemyMovement, allowing step-by-step configuration.
      *
-     * This Builder pattern facilitates the creation of EnemyMovement
-     * instances with customizable movement behaviors such as zig-zag movement.
+     * This Builder pattern facilitates the creation of EnemyMovement instances
+     * with customizable movement behaviors such as zig-zag movement.
      */
     public static class Builder {
 
@@ -101,13 +99,13 @@ public class EnemyMovement extends MovementManager implements IMovementManager {
 
         public Builder withRandomisedMovement(IMovementManager followTarget, float amplitude, float frequency, float minDuration, float maxDuration) {
             this.movementBehavior = new RandomisedMovementBehavior(
-                Arrays.asList(
-                    new ConstantMovementBehavior(this.speed),
-                    new ZigZagMovementBehavior(this.speed, amplitude, frequency),
-                    new FollowMovementBehavior(followTarget, this.speed)
-                ),
-                minDuration,
-                maxDuration
+                    Arrays.asList(
+                            new ConstantMovementBehavior(this.speed),
+                            new ZigZagMovementBehavior(this.speed, amplitude, frequency),
+                            new FollowMovementBehavior(followTarget, this.speed)
+                    ),
+                    minDuration,
+                    maxDuration
             );
             return this;
         }
