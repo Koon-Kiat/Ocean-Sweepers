@@ -8,11 +8,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.IOManager.SceneIOManager;
-import project.game.MovementManager.Direction;
-import project.game.MovementManager.EnemyMovement;
-import project.game.MovementManager.interfaces.IMovementManager;
-import project.game.MovementManager.PlayerMovement;
+import project.game.iomanager.SceneIOManager;
+import project.game.movementmanager.Direction;
+import project.game.movementmanager.EnemyMovement;
+import project.game.movementmanager.PlayerMovement;
+import project.game.movementmanager.interfaces.IMovementManager;
 
 public class Main extends ApplicationAdapter {
 
