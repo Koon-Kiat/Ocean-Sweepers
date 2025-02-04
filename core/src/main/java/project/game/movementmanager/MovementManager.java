@@ -1,5 +1,8 @@
 package project.game.movementmanager;
 
+import java.util.Set;
+
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementBehavior;
@@ -185,5 +188,47 @@ public abstract class MovementManager implements IMovementManager {
      */
     public void clampPosition() {
         MovementUtils.clampPosition(this.position);
+    }
+
+    public void updateDirection(Set<Integer> pressedKeys) {
+        boolean up = pressedKeys.contains(Input.Keys.W);
+        boolean down = pressedKeys.contains(Input.Keys.S);
+        boolean left = pressedKeys.contains(Input.Keys.A);
+        boolean right = pressedKeys.contains(Input.Keys.D);
+
+        // Handle vertical direction
+        if (up && down) {
+            up = false;
+            down = false;
+        }
+
+        // Handle horizontal direction
+        if (left && right) {
+            left = false;
+            right = false;
+        }
+
+        Direction newDirection = Direction.NONE;
+
+        if (up && right) {
+            newDirection = Direction.UP_RIGHT;
+        } else if (up && left) {
+            newDirection = Direction.UP_LEFT;
+        } else if (down && right) {
+            newDirection = Direction.DOWN_RIGHT;
+        } else if (down && left) {
+            newDirection = Direction.DOWN_LEFT;
+        } else if (up) {
+            newDirection = Direction.UP;
+        } else if (down) {
+            newDirection = Direction.DOWN;
+        } else if (left) {
+            newDirection = Direction.LEFT;
+        } else if (right) {
+            newDirection = Direction.RIGHT;
+        }
+
+        // Apply the new direction as needed for your game logic
+        setDirection(newDirection);
     }
 }

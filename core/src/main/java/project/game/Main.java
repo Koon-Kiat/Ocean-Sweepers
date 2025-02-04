@@ -8,11 +8,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.IOManager.SceneIOManager;
-import project.game.MovementManager.Direction;
-import project.game.MovementManager.EnemyMovement;
-import project.game.MovementManager.interfaces.IMovementManager;
-import project.game.MovementManager.PlayerMovement;
+import project.game.iomanager.SceneIOManager;
+import project.game.movementmanager.Direction;
+import project.game.movementmanager.EnemyMovement;
+import project.game.movementmanager.interfaces.IMovementManager;
+import project.game.movementmanager.PlayerMovement;
 
 public class Main extends ApplicationAdapter {
 
@@ -89,25 +89,21 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         float deltaTime = Gdx.graphics.getDeltaTime();
-
         // Set deltaTime for movement managers
         playerMovement.setDeltaTime(deltaTime);
         enemyMovement.setDeltaTime(deltaTime);
 
-        // Update positions
+        // Update player's movement based on pressed keys
+        playerMovement.updateDirection(inputManager.getPressedKeys());
+        // Update positions based on new directions
         playerMovement.updatePosition();
         enemyMovement.updatePosition();
 
-        // Update bucket position based on input
-        inputManager.getMovementManager().setDeltaTime(deltaTime);
-        inputManager.getMovementManager().updateMovement();
-
-        // Update rectangle positions
+        // Update rectangle positions so the bucket follows the playerMovement position
+        bucket.x = playerMovement.getX();
+        bucket.y = playerMovement.getY();
         drop.x = enemyMovement.getX();
         drop.y = enemyMovement.getY();
-
-        bucket.x = inputManager.getMovementManager().getX();
-        bucket.y = inputManager.getMovementManager().getY();
 
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);

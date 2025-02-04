@@ -33,65 +33,18 @@ public class SceneIOManager extends IOManager {
 
     @Override
     public boolean keyDown(int keycode) {
-        if (super.keyDown(keycode)) {
-            updateDirection();
-            return true;
-        }
-        return false;
+        pressedKeys.add(keycode);
+        // Update movement based on the new pressed keys
+        movementManager.updateDirection(pressedKeys);
+        return true;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        if (super.keyUp(keycode)) {
-            updateDirection();
-            return true;
-        }
-        return false;
+        pressedKeys.remove(keycode);
+        // Update movement based on the updated pressed keys
+        movementManager.updateDirection(pressedKeys);
+        return true;
     }
 
-    private void updateDirection() {
-        boolean up = pressedKeys.contains(Input.Keys.W);
-        boolean down = pressedKeys.contains(Input.Keys.S);
-        boolean left = pressedKeys.contains(Input.Keys.A);
-        boolean right = pressedKeys.contains(Input.Keys.D);
-
-        // Handle vertical direction
-        if (up && down) {
-            up = false;
-            down = false;
-        }
-
-        // Handle horizontal direction
-        if (left && right) {
-            left = false;
-            right = false;
-        }
-
-        Direction newDirection = Direction.NONE;
-
-        if (up && right) {
-            newDirection = Direction.UP_RIGHT;
-        } else if (up && left) {
-            newDirection = Direction.UP_LEFT;
-        } else if (down && right) {
-            newDirection = Direction.DOWN_RIGHT;
-        } else if (down && left) {
-            newDirection = Direction.DOWN_LEFT;
-        } else if (up) {
-            newDirection = Direction.UP;
-        } else if (down) {
-            newDirection = Direction.DOWN;
-        } else if (left) {
-            newDirection = Direction.LEFT;
-        } else if (right) {
-            newDirection = Direction.RIGHT;
-        }
-
-        movementManager.setDirection(newDirection);
-        System.out.println("[DEBUG] Direction set to " + newDirection);
-    }
-
-    public IMovementManager getMovementManager() {
-        return movementManager;
-    }
 }
