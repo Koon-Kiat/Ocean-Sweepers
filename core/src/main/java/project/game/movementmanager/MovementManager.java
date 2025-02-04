@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
+
 import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementManager;
@@ -48,6 +49,7 @@ public abstract class MovementManager implements IMovementManager {
      *
      * @return Current x-coordinate.
      */
+    @Override
     public float getX() {
         return position.x;
     }
@@ -66,6 +68,7 @@ public abstract class MovementManager implements IMovementManager {
      *
      * @return Current y-coordinate.
      */
+    @Override
     public float getY() {
         return position.y;
     }
@@ -142,6 +145,7 @@ public abstract class MovementManager implements IMovementManager {
      *
      * @param deltaTime Elapsed delta time since the last frame.
      */
+    @Override
     public void setDeltaTime(float deltaTime) {
         this.deltaTime = deltaTime;
     }
@@ -190,6 +194,10 @@ public abstract class MovementManager implements IMovementManager {
         MovementUtils.clampPosition(this.position);
     }
 
+    /**
+     * Updates the movement direction based on the pressed keys.
+     */
+    @Override
     public void updateDirection(Set<Integer> pressedKeys) {
         boolean up = pressedKeys.contains(Input.Keys.W);
         boolean down = pressedKeys.contains(Input.Keys.S);
@@ -228,7 +236,6 @@ public abstract class MovementManager implements IMovementManager {
             newDirection = Direction.RIGHT;
         }
 
-        // Apply the new direction as needed for your game logic
         setDirection(newDirection);
     }
 }
