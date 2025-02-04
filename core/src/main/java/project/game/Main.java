@@ -4,8 +4,11 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.iomanager.SceneIOManager;
@@ -19,8 +22,11 @@ public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
+    private BitmapFont font;
     private Rectangle drop;
     private Rectangle bucket;
+    private Rectangle rebindRectangle;
+    private ShapeRenderer shapeRenderer;
     private PlayerMovement playerMovement;
     private EnemyMovement enemyMovement;
     private SceneIOManager inputManager;
@@ -30,6 +36,10 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
+
+        shapeRenderer = new ShapeRenderer();
+        font = new BitmapFont();
+
         IMovementManager bucketMovementManager = new PlayerMovement.Builder()
                 .setX(50)
                 .setY(400)
@@ -39,6 +49,7 @@ public class Main extends ApplicationAdapter {
 
         inputManager = new SceneIOManager(bucketMovementManager);
         Gdx.input.setInputProcessor(inputManager);
+        // inputManager.promptForKeyBindings();
 
         batch = new SpriteBatch();
         try {
@@ -82,6 +93,13 @@ public class Main extends ApplicationAdapter {
                 .setDirection(Direction.RIGHT)
                 .withRandomisedMovement(playerMovement, 50f, 2f, 1f, 2f)
                 .build();
+        
+        // Create a rectangle in the middle of the screen for key rebind prompt
+        rebindRectangle = new Rectangle();
+        rebindRectangle.width = 200;
+        rebindRectangle.height = 50;
+        rebindRectangle.x = (Gdx.graphics.getWidth() - rebindRectangle.width) / 2;
+        rebindRectangle.y = (Gdx.graphics.getHeight() - rebindRectangle.height) / 2;
     }
 
     @Override
@@ -94,7 +112,7 @@ public class Main extends ApplicationAdapter {
         enemyMovement.setDeltaTime(deltaTime);
 
         // Update player's movement based on pressed keys
-        playerMovement.updateDirection(inputManager.getPressedKeys());
+        playerMovement.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
         // Update positions based on new directions
         playerMovement.updatePosition();
         enemyMovement.updatePosition();
@@ -110,11 +128,30 @@ public class Main extends ApplicationAdapter {
         batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
         batch.end();
 
+        // Draw the rebind rectangle
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 1, 0, 1); // Green color
+        shapeRenderer.rect(rebindRectangle.x, rebindRectangle.y, rebindRectangle.width, rebindRectangle.height);
+        shapeRenderer.end();
+
+        // Draw the text on the rebind rectangle
+        batch.begin();
+        font.draw(batch, "Rebind Keys", rebindRectangle.x + 20, rebindRectangle.y + 30);
+        batch.end();
+
+        
+        // Check for mouse click within the rebind rectangle
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            Vector2 clickPosition = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+            if (rebindRectangle.contains(clickPosition.x, Gdx.graphics.getHeight() - clickPosition.y)) {
+                inputManager.promptForKeyBindings();
+            }
+        }
+        
         // Print pressed keys
         for (Integer key : inputManager.getPressedKeys()) {
             System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
         }
-
         // Print mouse click status
         if (inputManager.isMouseClicked()) {
             System.out.println("[DEBUG] Mouse is clicked at position: " + inputManager.getMousePosition());

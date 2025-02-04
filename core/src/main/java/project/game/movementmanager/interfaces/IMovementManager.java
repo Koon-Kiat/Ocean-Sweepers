@@ -1,6 +1,9 @@
 package project.game.movementmanager.interfaces;
 
+import java.util.Map;
 import java.util.Set;
+
+import project.game.movementmanager.Direction;
 
 public interface IMovementManager {
 
@@ -12,5 +15,5 @@ public interface IMovementManager {
 
     float getY();
     
-    void updateDirection(Set<Integer> pressedKeys);
+    void updateDirection(Set<Integer> pressedKeys, Map<Integer, Direction> keyBindings);
 }

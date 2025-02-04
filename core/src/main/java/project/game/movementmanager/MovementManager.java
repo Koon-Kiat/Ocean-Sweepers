@@ -1,5 +1,6 @@
 package project.game.movementmanager;
 
+import java.util.Map;
 import java.util.Set;
 
 import com.badlogic.gdx.Input;
@@ -198,11 +199,34 @@ public abstract class MovementManager implements IMovementManager {
      * Updates the movement direction based on the pressed keys.
      */
     @Override
-    public void updateDirection(Set<Integer> pressedKeys) {
-        boolean up = pressedKeys.contains(Input.Keys.W);
-        boolean down = pressedKeys.contains(Input.Keys.S);
-        boolean left = pressedKeys.contains(Input.Keys.A);
-        boolean right = pressedKeys.contains(Input.Keys.D);
+    public void updateDirection(Set<Integer> pressedKeys, Map<Integer, Direction> keyBindings) {
+        boolean up = false;
+        boolean down = false;
+        boolean left = false;
+        boolean right = false;
+
+        // Iterate over pressed keys and set flags based on the provided bindings
+        for (Integer key : pressedKeys) {
+            Direction mapped = keyBindings.get(key);
+            if (mapped != null) {
+                switch (mapped) {
+                    case UP:
+                        up = true;
+                        break;
+                    case DOWN:
+                        down = true;
+                        break;
+                    case LEFT:
+                        left = true;
+                        break;
+                    case RIGHT:
+                        right = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
 
         // Handle vertical direction
         if (up && down) {
@@ -235,7 +259,6 @@ public abstract class MovementManager implements IMovementManager {
         } else if (right) {
             newDirection = Direction.RIGHT;
         }
-
         setDirection(newDirection);
     }
 }
