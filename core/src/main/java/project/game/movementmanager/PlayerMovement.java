@@ -3,7 +3,6 @@ package project.game.movementmanager;
 import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
 import project.game.movementmanager.defaultmovementbehaviour.ConstantMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementBehavior;
-import project.game.movementmanager.interfaces.IMovementManager;
 
 /**
  * @class PlayerMovement
@@ -13,7 +12,7 @@ import project.game.movementmanager.interfaces.IMovementManager;
  * behaviors. Utilizes a Builder pattern to allow flexible configuration of
  * movement properties.
  */
-public class PlayerMovement extends MovementManager implements IMovementManager {
+public class PlayerMovement extends MovementManager {
 
 
     /**
