@@ -1,4 +1,4 @@
-package project.game.movementmanager;
+package project.game.movement;
 
 import java.util.Set;
 
