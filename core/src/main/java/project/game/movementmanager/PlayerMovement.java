@@ -14,6 +14,7 @@ import project.game.movementmanager.interfaces.IMovementBehavior;
  */
 public class PlayerMovement extends MovementManager {
 
+
     /**
      * Private constructor to enforce the use of the Builder.
      *
@@ -40,11 +41,12 @@ public class PlayerMovement extends MovementManager {
 
     /**
      * @class Builder
-     * @brief Builder for PlayerMovement, allowing step-by-step configuration.
+     * @brief Builder for PlayerMovement, allowing step-by-step
+     * configuration.
      *
-     * This Builder pattern facilitates the creation of PlayerMovement instances
-     * with customizable movement behaviors such as accelerated or constant
-     * movement.
+     * This Builder pattern facilitates the creation of PlayerMovement
+     * instances with customizable movement behaviors such as accelerated or
+     * constant movement.
      */
     public static class Builder {
 
