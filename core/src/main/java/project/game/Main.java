@@ -8,11 +8,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.iomanager.SceneIOManager;
-import project.game.movementmanager.Direction;
-import project.game.movementmanager.EnemyMovement;
-import project.game.movementmanager.interfaces.IMovementManager;
-import project.game.movementmanager.PlayerMovement;
+import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
+import project.game.builder.NPCMovementBuilder;
+import project.game.builder.PlayerMovementBuilder;
 
 public class Main extends ApplicationAdapter {
 
@@ -21,8 +20,8 @@ public class Main extends ApplicationAdapter {
     private Texture bucketImage;
     private Rectangle drop;
     private Rectangle bucket;
-    private PlayerMovement playerMovement;
-    private EnemyMovement enemyMovement;
+    private IMovementManager playerMovementManager;
+    private IMovementManager npcMovementManager;
     private SceneIOManager inputManager;
 
     public static final float GAME_WIDTH = 640f;
@@ -30,15 +29,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-        IMovementManager bucketMovementManager = new PlayerMovement.Builder()
-                .setX(50)
-                .setY(400)
-                .setSpeed(200f)
-                .setDirection(Direction.NONE)
-                .build();
 
-        inputManager = new SceneIOManager(bucketMovementManager);
-        Gdx.input.setInputProcessor(inputManager);
 
         batch = new SpriteBatch();
         try {
@@ -62,26 +53,29 @@ public class Main extends ApplicationAdapter {
         drop.height = dropImage.getHeight();
 
         bucket = new Rectangle();
-        bucket.x = bucketMovementManager.getX();
-        bucket.y = bucketMovementManager.getY();
+        bucket.x = 5;
+        bucket.y = 40;
         bucket.width = bucketImage.getWidth();
         bucket.height = bucketImage.getHeight();
 
-        playerMovement = new PlayerMovement.Builder()
-                .setX(drop.x)
-                .setY(drop.y)
-                .setSpeed(1600f)
-                .withConstantMovement()
-                .setDirection(Direction.NONE)
-                .build();
-
-        enemyMovement = new EnemyMovement.Builder()
+        playerMovementManager = new PlayerMovementBuilder()
                 .setX(bucket.x)
                 .setY(bucket.y)
-                .setSpeed(400f)
-                .setDirection(Direction.RIGHT)
-                .withRandomisedMovement(playerMovement, 50f, 2f, 1f, 2f)
+                .setSpeed(1600f)
+                .setDirection(Direction.NONE)
+                .withConstantMovement()
                 .build();
+
+        npcMovementManager = new NPCMovementBuilder()
+                .setX(drop.x)
+                .setY(drop.y)
+                .setSpeed(200f)
+                .withZigZagMovement(50f, 1f)
+                .setDirection(Direction.RIGHT)
+                .build();
+
+        inputManager = new SceneIOManager(playerMovementManager);
+        Gdx.input.setInputProcessor(inputManager);
     }
 
     @Override
@@ -90,20 +84,21 @@ public class Main extends ApplicationAdapter {
 
         float deltaTime = Gdx.graphics.getDeltaTime();
         // Set deltaTime for movement managers
-        playerMovement.setDeltaTime(deltaTime);
-        enemyMovement.setDeltaTime(deltaTime);
+        playerMovementManager.setDeltaTime(deltaTime);
+        npcMovementManager.setDeltaTime(deltaTime);
 
         // Update player's movement based on pressed keys
-        playerMovement.updateDirection(inputManager.getPressedKeys());
+        playerMovementManager.updateDirection(inputManager.getPressedKeys());
+
         // Update positions based on new directions
-        playerMovement.updatePosition();
-        enemyMovement.updatePosition();
+        playerMovementManager.updateMovement();
+        npcMovementManager.updateMovement();
 
         // Update rectangle positions so the bucket follows the playerMovement position
-        bucket.x = playerMovement.getX();
-        bucket.y = playerMovement.getY();
-        drop.x = enemyMovement.getX();
-        drop.y = enemyMovement.getY();
+        bucket.x = playerMovementManager.getX();
+        bucket.y = playerMovementManager.getY();
+        drop.x = npcMovementManager.getX();
+        drop.y = npcMovementManager.getY();
 
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
