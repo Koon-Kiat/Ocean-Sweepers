@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.badlogic.gdx.Input;
 
-import project.game.abstractengine.movementmanager.Direction;
+import project.game.Direction;
 import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
 
 

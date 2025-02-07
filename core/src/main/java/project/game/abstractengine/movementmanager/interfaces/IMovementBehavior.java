@@ -14,10 +14,9 @@ import project.game.abstractengine.movementmanager.MovementData;
 public interface IMovementBehavior {
 
     /**
-     * Updates the position of the given MovementManager based on the specific
-     * behavior.
+     * Updates the position using MovementData.
      *
-     * @param manager The MovementManager whose position needs to be updated.
+     * @param movementData Data needed to update the position.
      */
     void updatePosition(MovementData movementData);
 }
