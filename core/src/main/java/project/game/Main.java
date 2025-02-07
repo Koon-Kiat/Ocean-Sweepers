@@ -4,27 +4,35 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 // import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.iomanager.SceneIOManager;
-// import project.game.movementmanager.Direction;
+import project.game.movementmanager.Direction;
 import project.game.movementmanager.EnemyMovement;
 import project.game.movementmanager.PlayerMovement;
-// import project.game.movementmanager.interfaces.IMovementManager;
 import project.game.scenemanager.GameScene;
 import project.game.scenemanager.MainMenuScene;
 import project.game.scenemanager.SceneManager;
+
+// import project.game.movementmanager.interfaces.IMovementManager;
+
 
 public class Main extends ApplicationAdapter {
 
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
+    private BitmapFont font;
     private Rectangle drop;
     private Rectangle bucket;
+    private Rectangle rebindRectangle;
+    private ShapeRenderer shapeRenderer;
     private PlayerMovement playerMovement;
     private Stage stage;
     private EnemyMovement enemyMovement;
@@ -38,7 +46,6 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-
         // Scene Manager setup
         sceneManager = new SceneManager();
         mainMenuScene = new MainMenuScene(sceneManager);
@@ -107,7 +114,6 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         float deltaTime = Gdx.graphics.getDeltaTime();
-
         // Render current scene (Scene Manager)
         sceneManager.render(deltaTime);
 

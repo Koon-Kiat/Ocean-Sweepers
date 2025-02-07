@@ -1,6 +1,11 @@
 package project.game.movementmanager;
 
+import java.util.Map;
+import java.util.Set;
+
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
+
 import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementBehavior;
 import project.game.movementmanager.interfaces.IMovementManager;
@@ -45,6 +50,7 @@ public abstract class MovementManager implements IMovementManager {
      *
      * @return Current x-coordinate.
      */
+    @Override
     public float getX() {
         return position.x;
     }
@@ -63,6 +69,7 @@ public abstract class MovementManager implements IMovementManager {
      *
      * @return Current y-coordinate.
      */
+    @Override
     public float getY() {
         return position.y;
     }
@@ -139,6 +146,7 @@ public abstract class MovementManager implements IMovementManager {
      *
      * @param deltaTime Elapsed delta time since the last frame.
      */
+    @Override
     public void setDeltaTime(float deltaTime) {
         this.deltaTime = deltaTime;
     }
@@ -185,5 +193,72 @@ public abstract class MovementManager implements IMovementManager {
      */
     public void clampPosition() {
         MovementUtils.clampPosition(this.position);
+    }
+
+    /**
+     * Updates the movement direction based on the pressed keys.
+     */
+    @Override
+    public void updateDirection(Set<Integer> pressedKeys, Map<Integer, Direction> keyBindings) {
+        boolean up = false;
+        boolean down = false;
+        boolean left = false;
+        boolean right = false;
+
+        // Iterate over pressed keys and set flags based on the provided bindings
+        for (Integer key : pressedKeys) {
+            Direction mapped = keyBindings.get(key);
+            if (mapped != null) {
+                switch (mapped) {
+                    case UP:
+                        up = true;
+                        break;
+                    case DOWN:
+                        down = true;
+                        break;
+                    case LEFT:
+                        left = true;
+                        break;
+                    case RIGHT:
+                        right = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // Handle vertical direction
+        if (up && down) {
+            up = false;
+            down = false;
+        }
+
+        // Handle horizontal direction
+        if (left && right) {
+            left = false;
+            right = false;
+        }
+
+        Direction newDirection = Direction.NONE;
+
+        if (up && right) {
+            newDirection = Direction.UP_RIGHT;
+        } else if (up && left) {
+            newDirection = Direction.UP_LEFT;
+        } else if (down && right) {
+            newDirection = Direction.DOWN_RIGHT;
+        } else if (down && left) {
+            newDirection = Direction.DOWN_LEFT;
+        } else if (up) {
+            newDirection = Direction.UP;
+        } else if (down) {
+            newDirection = Direction.DOWN;
+        } else if (left) {
+            newDirection = Direction.LEFT;
+        } else if (right) {
+            newDirection = Direction.RIGHT;
+        }
+        setDirection(newDirection);
     }
 }
