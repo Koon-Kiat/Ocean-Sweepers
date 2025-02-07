@@ -1,4 +1,4 @@
-package project.game.movementmanager.interfaces;
+package project.game.abstractengine.movementmanager.interfaces;
 
 import java.util.Set;
 
