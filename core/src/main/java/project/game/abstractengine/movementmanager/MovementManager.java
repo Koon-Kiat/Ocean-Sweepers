@@ -1,26 +1,27 @@
-package project.game.movementmanager;
+package project.game.abstractengine.movementmanager;
 
 import java.util.Set;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
-import project.game.movementmanager.interfaces.IMovementBehavior;
-import project.game.movementmanager.interfaces.IMovementManager;
+import project.game.Direction;
+import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
+import project.game.defaultmovements.AcceleratedMovementBehavior;
 
 /**
  * @abstractclass MovementManager
  * @brief Manages the movement logic for game entities.
  *
- * MovementManager serves as the base class for different types of movement managers,
- * handling common properties such as position, speed, direction, and the associated
- * movement behavior. It provides methods to update positions, clamp positions within
- * game boundaries, and control movement states.
+ * MovementManager serves as the base class for different types of movement
+ * managers, handling common properties such as position, speed, direction, and
+ * the associated movement behavior. It provides methods to update positions,
+ * and control movement states.
  */
 public abstract class MovementManager implements IMovementManager {
 
-    private Vector2 position;
+    private final Vector2 position;
     private float speed;
     private Direction direction;
     private IMovementBehavior movementBehavior;
@@ -43,7 +44,6 @@ public abstract class MovementManager implements IMovementManager {
     }
 
     // Getters and Setters
-
     /**
      * Gets the current x-coordinate.
      *
@@ -160,16 +160,36 @@ public abstract class MovementManager implements IMovementManager {
     }
 
     /**
-     * Updates the position by delegating to the movement behavior.
+     * Updates the position by delegating to the movement behavior, passing only
+     * necessary data via MovementData.
      */
     public void updatePosition() {
-        if (movementBehavior != null) {
-            movementBehavior.updatePosition(this);
+        if (movementBehavior == null) {
+            return;
         }
+
+        // Build a MovementData object from current fields
+        MovementData data = new MovementData(
+                getX(),
+                getY(),
+                getSpeed(),
+                getDeltaTime(),
+                getDirection()
+        );
+
+        // Pass MovementData to the behavior
+        movementBehavior.updatePosition(data);
+
+        // Update fields with any changes from MovementData
+        setX(data.getX());
+        setY(data.getY());
+        setSpeed(data.getSpeed());
+        setDirection(data.getDirection());
     }
 
     /**
-     * Stops movement by setting direction to NONE and resetting speed if using accelerated movement.
+     * Stops movement by setting direction to NONE and resetting speed if using
+     * accelerated movement.
      */
     public void stop() {
         setDirection(Direction.NONE);
@@ -179,19 +199,13 @@ public abstract class MovementManager implements IMovementManager {
     }
 
     /**
-     * Resumes movement by restoring the last direction if using accelerated movement.
+     * Resumes movement by restoring the last direction if using accelerated
+     * movement.
      */
     public void resume() {
         if (movementBehavior instanceof AcceleratedMovementBehavior) {
             ((AcceleratedMovementBehavior) movementBehavior).resumeMovement(this);
         }
-    }
-
-    /**
-     * Clamps the position within the game boundaries.
-     */
-    public void clampPosition() {
-        MovementUtils.clampPosition(this.position);
     }
 
     /**

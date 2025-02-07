@@ -1,10 +1,11 @@
-package project.game.movementmanager.defaultmovementbehaviour;
+package project.game.defaultmovements;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import project.game.movementmanager.Direction;
-import project.game.movementmanager.interfaces.IMovementBehavior;
-import project.game.movementmanager.MovementManager;
+
+import project.game.Direction;
+import project.game.abstractengine.movementmanager.MovementData;
+import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
 
 /**
@@ -37,37 +38,31 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     }
 
     /**
-     * Updates the position of the MovementManager to follow a zig-zag pattern.
+     * Updates the position using MovementData to move in a zig-zag pattern.
      *
-     * The zig-zag oscillation is applied perpendicular to the primary
-     * direction.
-     *
-     * @param manager The MovementManager whose position is to be updated.
+     * @param data The MovementData containing the position, direction, and delta
+     * time.
      */
     @Override
-    public void updatePosition(MovementManager manager) {
-        float delta = manager.getDeltaTime();
+    public void updatePosition(MovementData data) {
+        float delta = data.getDeltaTime();
         elapsedTime += delta;
 
         Vector2 deltaMovement = new Vector2();
 
-        // Determine the primary and perpendicular directions based on the current direction
-        Direction primaryDirection = manager.getDirection();
+        Direction primaryDirection = data.getDirection();
         Vector2 primaryVector = getPrimaryVector(primaryDirection);
-        Vector2 perpendicularVector = getPerpendicularVector(primaryDirection);
+        Vector2 perpVector = getPerpendicularVector(primaryDirection);
 
-        // Apply primary movement
+        // Move forward
         deltaMovement.add(primaryVector.scl(speed * delta));
 
-        // Apply zig-zag oscillation perpendicular to the primary direction
+        // Zig-zag
         float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime) * delta;
-        deltaMovement.add(perpendicularVector.scl(oscillation));
+        deltaMovement.add(perpVector.scl(oscillation));
 
-        // Update the position vector with the calculated delta movement
-        manager.getPosition().add(deltaMovement);
-
-        // Ensure the entity remains within game boundaries
-        manager.clampPosition();
+        data.setX(data.getX() + deltaMovement.x);
+        data.setY(data.getY() + deltaMovement.y);
     }
 
     /**

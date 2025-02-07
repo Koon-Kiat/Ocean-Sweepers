@@ -1,9 +1,10 @@
-package project.game.movementmanager.defaultmovementbehaviour;
+package project.game.defaultmovements;
 
 import com.badlogic.gdx.math.Vector2;
-import project.game.movementmanager.interfaces.IMovementBehavior;
-import project.game.movementmanager.MovementManager;
-import project.game.movementmanager.MovementUtils;
+
+import project.game.abstractengine.movementmanager.MovementData;
+import project.game.abstractengine.movementmanager.MovementUtils;
+import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
 
 /**
@@ -22,18 +23,18 @@ public class ConstantMovementBehavior implements IMovementBehavior {
         this.speed = speed;
     }
 
+
     /**
-     * Updates the position of the MovementManager based on the current
-     * direction and speed.
-     *
-     * @param manager The MovementManager whose position is to be updated.
+     * Updates the position using MovementData to move at a constant speed.
+     * 
+     * @param data The MovementData containing the position, direction, and delta time.
      */
     @Override
-    public void updatePosition(MovementManager manager) {
-        float delta = manager.getDeltaTime();
+    public void updatePosition(MovementData data) {
+        float delta = data.getDeltaTime();
         Vector2 deltaMovement = new Vector2();
 
-        switch (manager.getDirection()) {
+        switch (data.getDirection()) {
             case UP:
                 deltaMovement.y += speed * delta;
                 break;
@@ -67,10 +68,8 @@ public class ConstantMovementBehavior implements IMovementBehavior {
                 break;
         }
 
-        // Update the position vector with the calculated delta movement
-        manager.getPosition().add(deltaMovement);
-
-        // Ensure the entity remains within game boundaries
-        manager.clampPosition();
+        // Update position
+        data.setX(data.getX() + deltaMovement.x);
+        data.setY(data.getY() + deltaMovement.y);
     }
 }
