@@ -1,8 +1,9 @@
-package project.game.abstractengine.movementmanager.defaultmovementbehaviour;
+package project.game.defaultmovements;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.abstractengine.movementmanager.Direction;
+import project.game.Direction;
+import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.MovementManager;
 import project.game.abstractengine.movementmanager.MovementUtils;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
@@ -40,17 +41,16 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
 
 
     /**
-     * Updates the position of the MovementManager based on
-     * acceleration/deceleration logic.
-     *
-     * @param manager The MovementManager whose position is to be updated.
+     * Updates the position using MovementData to move with acceleration and deceleration.
+     * 
+     * @param data The MovementData containing the position, direction, and delta time.
      */
     @Override
-    public void updatePosition(MovementManager manager) {
-        float delta = manager.getDeltaTime();
+    public void updatePosition(MovementData data) {
+        float delta = data.getDeltaTime();
         delta = Math.min(delta, 1 / 30f);
-
-        if (manager.getDirection() != Direction.NONE) {
+    
+        if (data.getDirection() != Direction.NONE) {
             currentSpeed += acceleration * delta;
             if (currentSpeed > maxSpeed) {
                 currentSpeed = maxSpeed;
@@ -61,10 +61,10 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
                 currentSpeed = 0;
             }
         }
-
+    
         Vector2 deltaMovement = new Vector2();
-
-        switch (manager.getDirection()) {
+    
+        switch (data.getDirection()) {
             case UP:
                 deltaMovement.y += currentSpeed * delta;
                 break;
@@ -100,15 +100,16 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
             case NONE:
                 break;
         }
-
-        // Update the position vector with the calculated delta movement
-        manager.getPosition().add(deltaMovement);
-
-        // Ensure the entity remains within game boundaries
-        manager.clampPosition();
+    
+        // Use data.getX()/getY() and data.setX()/setY()
+        float newX = data.getX() + deltaMovement.x;
+        float newY = data.getY() + deltaMovement.y;
+    
+        data.setX(newX);
+        data.setY(newY);
     }
-
-
+    
+    
     /**
      * Stops movement by resetting speed and direction.
      *

@@ -1,17 +1,16 @@
-package project.game.abstractengine.movementmanager.defaultmovementbehaviour;
+package project.game.defaultmovements;
 
 import java.util.List;
 
 import com.badlogic.gdx.math.MathUtils;
 
-import project.game.abstractengine.movementmanager.MovementManager;
+import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
 /**
  * @class RandomisedMovementBehavior
- * @brief Selects a random movement behavior from a specified pool and applies
- * it for a random duration. After the duration expires, it chooses another
- * random behavior from the pool.
+ * @brief Chooses a random sub-behavior from a pool and applies it via
+ * MovementData.
  */
 public class RandomisedMovementBehavior implements IMovementBehavior {
 
@@ -52,9 +51,16 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
         pickRandomBehavior();
     }
 
+
+    /**
+     * Updates the position of the MovementManager based on the current behavior.
+     *
+     * @param data The MovementData containing the position, direction, and delta
+     * time.
+     */
     @Override
-    public void updatePosition(MovementManager manager) {
-        float deltaTime = manager.getDeltaTime();
+    public void updatePosition(MovementData data) {
+        float deltaTime = data.getDeltaTime();
         remainingTime -= deltaTime;
 
         // If the current behavior expired, pick a new one
@@ -64,7 +70,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
 
         // Delegate to the currently active behavior
         if (currentBehavior != null) {
-            currentBehavior.updatePosition(manager);
+            currentBehavior.updatePosition(data);
         }
     }
 
