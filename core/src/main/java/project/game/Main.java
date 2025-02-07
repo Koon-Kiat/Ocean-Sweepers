@@ -40,14 +40,7 @@ public class Main extends ApplicationAdapter {
         shapeRenderer = new ShapeRenderer();
         font = new BitmapFont();
 
-        IMovementManager bucketMovementManager = new PlayerMovement.Builder()
-                .setX(50)
-                .setY(400)
-                .setSpeed(200f)
-                .setDirection(Direction.NONE)
-                .build();
-
-        inputManager = new SceneIOManager(bucketMovementManager);
+        inputManager = new SceneIOManager();
         Gdx.input.setInputProcessor(inputManager);
         // inputManager.promptForKeyBindings();
 
@@ -73,8 +66,8 @@ public class Main extends ApplicationAdapter {
         drop.height = dropImage.getHeight();
 
         bucket = new Rectangle();
-        bucket.x = bucketMovementManager.getX();
-        bucket.y = bucketMovementManager.getY();
+        // bucket.x = bucketMovementManager.getX();
+        // bucket.y = bucketMovementManager.getY();
         bucket.width = bucketImage.getWidth();
         bucket.height = bucketImage.getHeight();
 

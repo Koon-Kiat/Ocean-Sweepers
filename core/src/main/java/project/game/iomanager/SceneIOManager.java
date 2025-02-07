@@ -12,15 +12,10 @@ import java.util.Scanner;
 
 public class SceneIOManager extends IOManager {
 
-    private IMovementManager movementManager;
     private Map<Integer, Direction> keyBindings;
 
-    public SceneIOManager(IMovementManager movementManager) {
+    public SceneIOManager() {
         super();
-        if (movementManager == null) {
-            throw new IllegalArgumentException("MovementManager cannot be null.");
-        }
-        this.movementManager = movementManager;
         this.keyBindings = new HashMap<>();
         initializedefaultKeyBindings();
     }
@@ -54,7 +49,7 @@ public class SceneIOManager extends IOManager {
     public boolean keyDown(int keycode) {
         pressedKeys.add(keycode);
         // Update movement based on the new pressed keys
-        movementManager.updateDirection(pressedKeys, keyBindings);
+        // movementManager.updateDirection(pressedKeys, keyBindings);
         return true;
     }
 
@@ -62,7 +57,7 @@ public class SceneIOManager extends IOManager {
     public boolean keyUp(int keycode) {
         pressedKeys.remove(keycode);
         // Update movement based on the updated pressed keys
-        movementManager.updateDirection(pressedKeys, keyBindings);
+        // movementManager.updateDirection(pressedKeys, keyBindings);
         return true;
     }
 
