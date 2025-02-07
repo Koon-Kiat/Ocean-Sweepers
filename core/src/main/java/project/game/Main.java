@@ -106,6 +106,7 @@ public class Main extends ApplicationAdapter {
 
         // Update player's movement based on pressed keys
         playerMovement.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+
         // Update positions based on new directions
         playerMovement.updatePosition();
         enemyMovement.updatePosition();
