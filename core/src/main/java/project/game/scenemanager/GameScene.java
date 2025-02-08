@@ -3,8 +3,12 @@ package project.game.scenemanager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.iomanager.SceneIOManager;
 import project.game.movementmanager.Direction;
@@ -18,6 +22,9 @@ public class GameScene extends Scene {
     private PlayerMovement playerMovement;
     private EnemyMovement enemyMovement;
     private SceneIOManager inputManager;
+    private Rectangle rebindRectangle;
+    private BitmapFont font;
+    private ShapeRenderer shapeRenderer;
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -37,17 +44,17 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
+
+        shapeRenderer = new ShapeRenderer();
+        font = new BitmapFont();
+
+        inputManager = new SceneIOManager();
+
         
-        IMovementManager bucketMovementManager = new PlayerMovement.Builder()
-                .setX(50)
-                .setY(400)
-                .setSpeed(200f)
-                .setDirection(Direction.NONE)
-                .build();
 
-        inputManager = new SceneIOManager(bucketMovementManager);
-        Gdx.input.setInputProcessor(inputManager);
 
+        
+        rebindRectangle = new Rectangle(50, 50, 150, 50);
         
         try {
             dropImage = new Texture(Gdx.files.internal("droplet.png"));
@@ -70,8 +77,6 @@ public class GameScene extends Scene {
         drop.height = dropImage.getHeight();
 
         bucket = new Rectangle();
-        bucket.x = bucketMovementManager.getX();
-        bucket.y = bucketMovementManager.getY();
         bucket.width = bucketImage.getWidth();
         bucket.height = bucketImage.getHeight();
 
@@ -90,40 +95,59 @@ public class GameScene extends Scene {
                 .setDirection(Direction.RIGHT)
                 .withRandomisedMovement(playerMovement, 50f, 2f, 1f, 2f)
                 .build();
+
     }
 
     public void render(float deltaTime) {
-        //float deltaTime = Gdx.graphics.getDeltaTime();
-
+        ScreenUtils.clear(0, 0, 0f, 0);
         // Set deltaTime for movement managers
         playerMovement.setDeltaTime(deltaTime);
         enemyMovement.setDeltaTime(deltaTime);
 
-        // Update positions
+        Gdx.input.setInputProcessor(inputManager);
+
+        // Update player's movement based on pressed keys
+        playerMovement.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+
+        // Update positions based on new directions
         playerMovement.updatePosition();
         enemyMovement.updatePosition();
 
-        // Update bucket position based on input
-        inputManager.getMovementManager().setDeltaTime(deltaTime);
-        inputManager.getMovementManager().updateMovement();
-
-        // Update rectangle positions
+        // Update rectangle positions so the bucket follows the playerMovement position
+        bucket.x = playerMovement.getX();
+        bucket.y = playerMovement.getY();
         drop.x = enemyMovement.getX();
         drop.y = enemyMovement.getY();
-
-        bucket.x = inputManager.getMovementManager().getX();
-        bucket.y = inputManager.getMovementManager().getY();
 
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
         batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
         batch.end();
 
+        // Draw the rebind rectangle
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 1, 0, 1); // Green color
+        shapeRenderer.rect(rebindRectangle.x, rebindRectangle.y, rebindRectangle.width, rebindRectangle.height);
+        shapeRenderer.end();
+
+        // Draw the text on the rebind rectangle
+        batch.begin();
+        font.draw(batch, "Rebind Keys", rebindRectangle.x + 20, rebindRectangle.y + 30);
+        batch.end();
+
+        
+        // Check for mouse click within the rebind rectangle
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            Vector2 clickPosition = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+            if (rebindRectangle.contains(clickPosition.x, Gdx.graphics.getHeight() - clickPosition.y)) {
+                inputManager.promptForKeyBindings();
+            }
+        }
+        
         // Print pressed keys
         for (Integer key : inputManager.getPressedKeys()) {
             System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
         }
-
         // Print mouse click status
         if (inputManager.isMouseClicked()) {
             System.out.println("[DEBUG] Mouse is clicked at position: " + inputManager.getMousePosition());
