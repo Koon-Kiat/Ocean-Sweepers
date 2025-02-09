@@ -1,5 +1,7 @@
-// filepath: /c:/OOPProject/OOPProject/core/src/main/java/project/game/movementmanager/PlayerMovementPlayerMovementBuilder.java
 package project.game.builder;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import project.game.Direction;
 import project.game.abstractengine.movementmanager.PlayerMovementManager;
@@ -15,6 +17,8 @@ import project.game.defaultmovements.ConstantMovementBehavior;
  * customizable movement behaviors.
  */
 public class PlayerMovementBuilder {
+
+    private static final Logger LOGGER = Logger.getLogger(PlayerMovementBuilder.class.getName());
 
     public float x;
     public float y;
@@ -34,7 +38,8 @@ public class PlayerMovementBuilder {
 
     public PlayerMovementBuilder setSpeed(float speed) {
         if (speed < 0) {
-            throw new IllegalArgumentException("Speed cannot be negative.");
+            LOGGER.log(Level.SEVERE, "Negative speed provided: {0}.", speed);
+            throw new IllegalArgumentException("Speed must be non-negative.");
         }
         this.speed = speed;
         return this;
@@ -42,15 +47,17 @@ public class PlayerMovementBuilder {
 
     public PlayerMovementBuilder setDirection(Direction direction) {
         if (direction == null) {
-            throw new IllegalArgumentException("Direction cannot be null.");
+            LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to Direction.NONE.");
+            this.direction = Direction.NONE;
+        } else {
+            this.direction = direction;
         }
-        this.direction = direction;
         return this;
     }
 
     public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
         if (acceleration < 0 || deceleration < 0) {
-            throw new IllegalArgumentException("Acceleration and deceleration cannot be negative.");
+            LOGGER.log(Level.WARNING, "Negative acceleration and/or deceleration provided: acceleration={0}, deceleration={1}", new Object[]{acceleration, deceleration});
         }
         this.movementBehavior = new AcceleratedMovementBehavior(acceleration, deceleration, this.speed);
         return this;
@@ -71,5 +78,4 @@ public class PlayerMovementBuilder {
         }
         return new PlayerMovementManager(this);
     }
-
 }
