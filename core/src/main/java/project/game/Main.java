@@ -1,19 +1,28 @@
 package project.game;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.movementmanager.MovementManager;
+import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
+import project.game.logmanager.LogManager;
 
 public class Main extends ApplicationAdapter {
+
+    static {
+        LogManager.initialize();
+    }
 
     private SpriteBatch batch;
     private Texture dropImage;
@@ -29,7 +38,6 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-
 
         batch = new SpriteBatch();
         try {
@@ -58,13 +66,17 @@ public class Main extends ApplicationAdapter {
         bucket.width = bucketImage.getWidth();
         bucket.height = bucketImage.getHeight();
 
-        playerMovementManager = new PlayerMovementBuilder()
-                .setX(bucket.x)
-                .setY(bucket.y)
-                .setSpeed(1600f)
-                .setDirection(Direction.NONE)
-                .withConstantMovement()
-                .build();
+        try {
+            playerMovementManager = new PlayerMovementBuilder()
+                    .setX(bucket.x)
+                    .setY(bucket.y)
+                    .setSpeed(1600f)
+                    .setDirection(Direction.NONE)
+                    .withConstantMovement()
+                    .build();
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Caught exception during build", e);
+        }
 
         npcMovementManager = new NPCMovementBuilder()
                 .setX(drop.x)
@@ -76,6 +88,26 @@ public class Main extends ApplicationAdapter {
 
         inputManager = new SceneIOManager(playerMovementManager);
         Gdx.input.setInputProcessor(inputManager);
+
+        IMovementBehavior faultyBehavior = (data) -> {
+            // This deliberately throws an exception to simulate an error.
+            throw new RuntimeException("Intentional error in updatePosition");
+        };
+
+        MovementManager testMovementManager = new MovementManager(0, 0, 0, Direction.NONE, faultyBehavior) {
+            // If there are abstract methods, implement them minimally.
+        };
+
+        try {
+            // This call will invoke updateMovement(), triggering updatePosition() and its error handling.
+            testMovementManager.updateMovement();
+        } catch (Exception e) {
+            // Not strictly necessary if MovementManager already logs the exception,
+            // but catches any exceptions to prevent the test from aborting.
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Test error caught", e);
+        }
+
+        System.out.println("[DEBUG] MovementManager error test triggered.");
     }
 
     @Override
@@ -106,7 +138,7 @@ public class Main extends ApplicationAdapter {
         batch.end();
 
         // Print pressed keys
-        for (Integer key : inputManager.getPressedKeys()) {
+        /*for (Integer key : inputManager.getPressedKeys()) {
             System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
         }
 
@@ -115,7 +147,7 @@ public class Main extends ApplicationAdapter {
             System.out.println("[DEBUG] Mouse is clicked at position: " + inputManager.getMousePosition());
         } else {
             System.out.println("[DEBUG] Mouse is not clicked.");
-        }
+        }*/
     }
 
     @Override
