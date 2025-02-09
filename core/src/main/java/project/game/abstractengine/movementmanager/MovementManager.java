@@ -1,6 +1,8 @@
 package project.game.abstractengine.movementmanager;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
@@ -21,6 +23,8 @@ import project.game.defaultmovements.AcceleratedMovementBehavior;
  */
 public abstract class MovementManager implements IMovementManager {
 
+    private static final Logger LOGGER = Logger.getLogger(MovementManager.class.getName());
+
     private final Vector2 position;
     private float speed;
     private Direction direction;
@@ -37,9 +41,19 @@ public abstract class MovementManager implements IMovementManager {
      * @param behavior Movement behavior strategy.
      */
     public MovementManager(float x, float y, float speed, Direction direction, IMovementBehavior behavior) {
+        if (behavior == null) {
+            IllegalArgumentException ex = new IllegalArgumentException("Movement behavior cannot be null.");
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            throw ex;
+        }
         this.position = new Vector2(x, y);
+        if (speed < 0) {
+            IllegalArgumentException ex = new IllegalArgumentException("Speed cannot be negative.");
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            throw ex;
+        }
         this.speed = speed;
-        this.direction = direction;
+        this.direction = (direction != null) ? direction : Direction.NONE;
         this.movementBehavior = behavior;
     }
 
@@ -60,7 +74,11 @@ public abstract class MovementManager implements IMovementManager {
      * @param x New x-coordinate.
      */
     public void setX(float x) {
-        this.position.x = x;
+        try {
+            this.position.x = x;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error setting x-coordinate: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -79,7 +97,11 @@ public abstract class MovementManager implements IMovementManager {
      * @param y New y-coordinate.
      */
     public void setY(float y) {
-        this.position.y = y;
+        try {
+            this.position.y = y;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error setting y-coordinate: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -99,7 +121,9 @@ public abstract class MovementManager implements IMovementManager {
      */
     public void setSpeed(float speed) {
         if (speed < 0) {
-            throw new IllegalArgumentException("Speed cannot be negative.");
+            IllegalArgumentException ex = new IllegalArgumentException("Speed cannot be negative.");
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            throw ex;
         }
         this.speed = speed;
     }
@@ -119,7 +143,12 @@ public abstract class MovementManager implements IMovementManager {
      * @param direction New movement direction.
      */
     public void setDirection(Direction direction) {
-        this.direction = direction;
+        if (direction == null) {
+            LOGGER.log(Level.WARNING, "Attempted to set a null direction. Defaulting to Direction.NONE.");
+            this.direction = Direction.NONE;
+        } else {
+            this.direction = direction;
+        }
     }
 
     /**
@@ -128,6 +157,11 @@ public abstract class MovementManager implements IMovementManager {
      * @param movementBehavior New movement behavior.
      */
     public void setMovementBehavior(IMovementBehavior movementBehavior) {
+        if (movementBehavior == null) {
+            IllegalArgumentException ex = new IllegalArgumentException("Movement behavior cannot be null.");
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            throw ex;
+        }
         this.movementBehavior = movementBehavior;
     }
 
@@ -147,7 +181,12 @@ public abstract class MovementManager implements IMovementManager {
      */
     @Override
     public void setDeltaTime(float deltaTime) {
-        this.deltaTime = deltaTime;
+        if (deltaTime < 0) {
+            LOGGER.log(Level.WARNING, "Negative deltaTime provided. Using 0 instead.");
+            this.deltaTime = 0;
+        } else {
+            this.deltaTime = deltaTime;
+        }
     }
 
     /**
@@ -165,26 +204,36 @@ public abstract class MovementManager implements IMovementManager {
      */
     public void updatePosition() {
         if (movementBehavior == null) {
+            LOGGER.log(Level.SEVERE, "Cannot update position: movement behavior is not set.");
             return;
         }
 
         // Build a MovementData object from current fields
-        MovementData data = new MovementData(
-                getX(),
-                getY(),
-                getSpeed(),
-                getDeltaTime(),
-                getDirection()
-        );
+        MovementData data;
+        try {
+            data = new MovementData(getX(), getY(), getSpeed(), getDeltaTime(), getDirection());
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to create MovementData instance: " + e.getMessage(), e);
+            return;
+        }
 
-        // Pass MovementData to the behavior
-        movementBehavior.updatePosition(data);
+        try {
+            movementBehavior.updatePosition(data);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error during movement behavior update: " + e.getMessage(), e);
+            setDirection(Direction.NONE);
+            return;
+        }
 
-        // Update fields with any changes from MovementData
-        setX(data.getX());
-        setY(data.getY());
-        setSpeed(data.getSpeed());
-        setDirection(data.getDirection());
+        // Update our MovementManager with the possibly updated data
+        try {
+            setX(data.getX());
+            setY(data.getY());
+            setSpeed(data.getSpeed());
+            setDirection(data.getDirection());
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error updating MovementManager fields from MovementData: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -192,9 +241,13 @@ public abstract class MovementManager implements IMovementManager {
      * accelerated movement.
      */
     public void stop() {
-        setDirection(Direction.NONE);
-        if (movementBehavior instanceof AcceleratedMovementBehavior) {
-            ((AcceleratedMovementBehavior) movementBehavior).stopMovement(this);
+        try {
+            setDirection(Direction.NONE);
+            if (movementBehavior instanceof AcceleratedMovementBehavior) {
+                ((AcceleratedMovementBehavior) movementBehavior).stopMovement(this);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error during stop(): " + e.getMessage(), e);
         }
     }
 
@@ -203,8 +256,12 @@ public abstract class MovementManager implements IMovementManager {
      * movement.
      */
     public void resume() {
-        if (movementBehavior instanceof AcceleratedMovementBehavior) {
-            ((AcceleratedMovementBehavior) movementBehavior).resumeMovement(this);
+        try {
+            if (movementBehavior instanceof AcceleratedMovementBehavior) {
+                ((AcceleratedMovementBehavior) movementBehavior).resumeMovement(this);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error during resume(): " + e.getMessage(), e);
         }
     }
 
@@ -213,43 +270,60 @@ public abstract class MovementManager implements IMovementManager {
      */
     @Override
     public void updateDirection(Set<Integer> pressedKeys) {
-        boolean up = pressedKeys.contains(Input.Keys.W);
-        boolean down = pressedKeys.contains(Input.Keys.S);
-        boolean left = pressedKeys.contains(Input.Keys.A);
-        boolean right = pressedKeys.contains(Input.Keys.D);
-
-        // Handle vertical direction
-        if (up && down) {
-            up = false;
-            down = false;
+        if (pressedKeys == null) {
+            LOGGER.log(Level.WARNING, "Pressed keys set is null. No direction update performed.");
+            return;
         }
 
-        // Handle horizontal direction
-        if (left && right) {
-            left = false;
-            right = false;
+        try {
+            boolean up = pressedKeys.contains(Input.Keys.W);
+            boolean down = pressedKeys.contains(Input.Keys.S);
+            boolean left = pressedKeys.contains(Input.Keys.A);
+            boolean right = pressedKeys.contains(Input.Keys.D);
+
+            // Resolve conflicts in key presses: if both up and down (or left and right) are pressed, ignore.
+            if (up && down) {
+                up = down = false;
+            }
+            if (left && right) {
+                left = right = false;
+            }
+
+            Direction newDirection = Direction.NONE;
+            if (up && right) {
+                newDirection = Direction.UP_RIGHT;
+            } else if (up && left) {
+                newDirection = Direction.UP_LEFT;
+            } else if (down && right) {
+                newDirection = Direction.DOWN_RIGHT;
+            } else if (down && left) {
+                newDirection = Direction.DOWN_LEFT;
+            } else if (up) {
+                newDirection = Direction.UP;
+            } else if (down) {
+                newDirection = Direction.DOWN;
+            } else if (left) {
+                newDirection = Direction.LEFT;
+            } else if (right) {
+                newDirection = Direction.RIGHT;
+            }
+
+            setDirection(newDirection);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error processing input keys for direction update: " + e.getMessage(), e);
         }
-
-        Direction newDirection = Direction.NONE;
-
-        if (up && right) {
-            newDirection = Direction.UP_RIGHT;
-        } else if (up && left) {
-            newDirection = Direction.UP_LEFT;
-        } else if (down && right) {
-            newDirection = Direction.DOWN_RIGHT;
-        } else if (down && left) {
-            newDirection = Direction.DOWN_LEFT;
-        } else if (up) {
-            newDirection = Direction.UP;
-        } else if (down) {
-            newDirection = Direction.DOWN;
-        } else if (left) {
-            newDirection = Direction.LEFT;
-        } else if (right) {
-            newDirection = Direction.RIGHT;
-        }
-
-        setDirection(newDirection);
     }
+
+    /**
+     * Delegates to updatePosition() as a part of the movement update cycle.
+     */
+    @Override
+    public void updateMovement() {
+        try {
+            updatePosition();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error updating movement: " + e.getMessage(), e);
+        }
+    }
+
 }

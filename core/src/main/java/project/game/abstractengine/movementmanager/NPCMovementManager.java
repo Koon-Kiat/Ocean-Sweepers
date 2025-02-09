@@ -1,5 +1,8 @@
 package project.game.abstractengine.movementmanager;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import project.game.Direction;
 import project.game.builder.NPCMovementBuilder;
 
@@ -13,27 +16,50 @@ import project.game.builder.NPCMovementBuilder;
  */
 public class NPCMovementManager extends MovementManager {
 
+    private static final Logger LOGGER = Logger.getLogger(NPCMovementManager.class.getName());
+
     /**
      * Private constructor to enforce the use of the Builder.
      *
      * @param builder The Builder instance containing configuration parameters.
      */
     public NPCMovementManager(NPCMovementBuilder builder) {
-        super(builder.x, builder.y, builder.speed, builder.direction, builder.movementBehavior);
+        super(checkBuilder(builder).x, builder.y, builder.speed, builder.direction, builder.movementBehavior);
+    }
+
+    private static NPCMovementBuilder checkBuilder(NPCMovementBuilder builder) {
+        if (builder == null) {
+            IllegalArgumentException ex = new IllegalArgumentException("NPCMovementBuilder cannot be null.");
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            throw ex;
+        }
+        return builder;
     }
 
     @Override
     public void setDirection(Direction direction) {
-        super.setDirection(direction);
+        try {
+            super.setDirection(direction);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error setting direction in NPCMovementManager: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void setDeltaTime(float deltaTime) {
-        super.setDeltaTime(deltaTime);
+        try {
+            super.setDeltaTime(deltaTime);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error setting delta time in NPCMovementManager: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void updateMovement() {
-        updatePosition();
+        try {
+            updatePosition();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error updating movement in NPCMovementManager: " + e.getMessage(), e);
+        }
     }
 }
