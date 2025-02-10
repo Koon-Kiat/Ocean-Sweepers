@@ -27,12 +27,12 @@ public class FollowMovementBehavior implements IMovementBehavior {
         if (targetManager == null) {
             String errorMessage = "Target manager cannot be null in FollowMovementBehavior.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            System.exit(1);
+            throw new IllegalArgumentException(errorMessage);
         }
         if (speed < 0) {
             String errorMessage = "Negative speed provided in FollowMovementBehavior: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            System.exit(1);
+            throw new IllegalArgumentException(errorMessage);
         }
         this.targetManager = targetManager;
         this.speed = speed;
@@ -45,7 +45,7 @@ public class FollowMovementBehavior implements IMovementBehavior {
             if (deltaTime < 0) {
                 String errorMessage = "Negative deltaTime provided in FollowMovementBehavior.updatePosition: " + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
-                System.exit(1);
+                throw new IllegalArgumentException(errorMessage);
             }
 
             Vector2 targetPos = new Vector2(targetManager.getX(), targetManager.getY());
@@ -55,9 +55,12 @@ public class FollowMovementBehavior implements IMovementBehavior {
             float newY = data.getY() + direction.y * speed * deltaTime;
             data.setX(newX);
             data.setY(newY);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
-            System.exit(1);
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.SEVERE, "Illegal argument in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw e;
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Runtime exception in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw new RuntimeException("Error updating position in FollowMovementBehavior", e);
         }
     }
 }

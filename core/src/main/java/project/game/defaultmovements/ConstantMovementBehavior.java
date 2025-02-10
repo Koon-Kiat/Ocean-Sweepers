@@ -26,7 +26,7 @@ public class ConstantMovementBehavior implements IMovementBehavior {
         if (speed < 0) {
             String errorMessage = "Negative speed provided in ConstantMovementBehavior: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            System.exit(1);
+            throw new IllegalArgumentException(errorMessage);
         }
         this.speed = speed;
     }
@@ -38,7 +38,7 @@ public class ConstantMovementBehavior implements IMovementBehavior {
             if (delta < 0) {
                 String errorMessage = "Negative deltaTime provided in ConstantMovementBehavior.updatePosition: " + delta;
                 LOGGER.log(Level.SEVERE, errorMessage);
-                System.exit(1);
+                throw new IllegalArgumentException(errorMessage);
             }
             Vector2 deltaMovement = new Vector2();
             switch (data.getDirection()) {
@@ -71,17 +71,20 @@ public class ConstantMovementBehavior implements IMovementBehavior {
                     deltaMovement.y -= MovementUtils.calculateDiagonalSpeed(speed) * delta;
                     break;
                 case NONE:
-                    // No movement for NONE.
                     break;
                 default:
-                    LOGGER.log(Level.SEVERE, "Unknown direction in ConstantMovementBehavior.updatePosition: {0}", data.getDirection());
-                    System.exit(1);
+                    String errorMessage = "Unknown direction in ConstantMovementBehavior.updatePosition: " + data.getDirection();
+                    LOGGER.log(Level.SEVERE, errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
             }
             data.setX(data.getX() + deltaMovement.x);
             data.setY(data.getY() + deltaMovement.y);
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.SEVERE, "Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
-            System.exit(1);
+            LOGGER.log(Level.SEVERE, "Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw new RuntimeException("Error updating position in ConstantMovementBehavior", e);
         }
     }
 }

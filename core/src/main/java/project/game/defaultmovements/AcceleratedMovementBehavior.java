@@ -33,7 +33,7 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
             String errorMessage = "Illegal negative values provided: acceleration="
                     + acceleration + ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            System.exit(1);
+            throw new IllegalArgumentException(errorMessage);
         }
         this.acceleration = acceleration;
         this.deceleration = deceleration;
@@ -56,8 +56,9 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
             if (delta < 0) {
                 String errorMessage = "Negative deltaTime provided in updatePosition: " + delta;
                 LOGGER.log(Level.SEVERE, errorMessage);
-                System.exit(1);
+                throw new IllegalArgumentException(errorMessage);
             }
+
             // Clamp delta to prevent excessively large updates.
             delta = Math.min(delta, 1 / 30f);
 
@@ -110,12 +111,11 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
                     deltaMovement.y -= diagonalSpeed * delta;
                     break;
                 case NONE:
-                    // No movement; nothing to do.
                     break;
                 default:
-                    // In case an unexpected Direction value is encountered.
-                    LOGGER.log(Level.SEVERE, "Unknown movement direction: {0}", data.getDirection());
-                    System.exit(1);
+                    String errorMessage = "Unknown movement direction: " + data.getDirection();
+                    LOGGER.log(Level.SEVERE, errorMessage);
+                    throw new IllegalArgumentException(errorMessage);
             }
 
             // Update the position in MovementData.
@@ -124,9 +124,12 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
 
             data.setX(newX);
             data.setY(newY);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             LOGGER.log(Level.SEVERE, "Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            System.exit(1);
+            throw new RuntimeException("Error updating position in AcceleratedMovementBehavior", e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw new RuntimeException("Error updating position in AcceleratedMovementBehavior", e);
         }
     }
 
@@ -146,6 +149,5 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
      * @param manager The MovementManager instance.
      */
     public void resumeMovement(MovementManager manager) {
-        // Implementation for resuming movement if needed.
     }
 }

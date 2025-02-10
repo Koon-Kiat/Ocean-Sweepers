@@ -51,7 +51,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
             if (deltaTime < 0) {
                 String errorMessage = "Negative deltaTime provided in RandomisedMovementBehavior.updatePosition: " + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
-                System.exit(1);
+                throw new IllegalArgumentException(errorMessage);
             }
             remainingTime -= deltaTime;
             if (remainingTime <= 0) {
@@ -60,9 +60,12 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
             if (currentBehavior != null) {
                 currentBehavior.updatePosition(data);
             }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            System.exit(1);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            LOGGER.log(Level.SEVERE, "Invalid input error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw new RuntimeException("Error updating position in RandomisedMovementBehavior", e);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Runtime error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw e;
         }
     }
 

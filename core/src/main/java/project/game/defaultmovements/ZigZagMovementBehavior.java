@@ -10,15 +10,10 @@ import project.game.Direction;
 import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
-
 /**
- * @class ZigZagMovementBehavior
- * @brief Moves the entity in a zig-zag pattern using MovementData.
- * 
- * This class implements a movement behavior that moves the entity in a zig-zag
- * pattern. The entity moves forward in the primary direction and oscillates
- * perpendicular to the primary direction. The amplitude and frequency of the
- * oscillation can be set in the constructor.
+ * Moves the entity in a zig-zag pattern. The entity moves forward in the
+ * primary direction while oscillating sideways. A negative amplitude inverts
+ * the oscillation.
  */
 public class ZigZagMovementBehavior implements IMovementBehavior {
 
@@ -29,10 +24,11 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     private float elapsedTime;
 
     public ZigZagMovementBehavior(float speed, float amplitude, float frequency) {
-        if (speed < 0 || amplitude < 0 || frequency < 0) {
-            String errorMessage = "Illegal negative parameter in ZigZagMovementBehavior constructor: speed=" + speed + ", amplitude=" + amplitude + ", frequency=" + frequency;
+        if (speed < 0 || frequency < 0) {
+            String errorMessage = "Illegal negative parameter in ZigZagMovementBehavior constructor: "
+                    + "speed=" + speed + ", frequency=" + frequency;
             LOGGER.log(Level.SEVERE, errorMessage);
-            System.exit(1);
+            throw new IllegalArgumentException(errorMessage);
         }
         this.speed = speed;
         this.amplitude = amplitude;
@@ -47,7 +43,7 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             if (delta < 0) {
                 String errorMessage = "Negative deltaTime provided in ZigZagMovementBehavior.updatePosition: " + delta;
                 LOGGER.log(Level.SEVERE, errorMessage);
-                System.exit(1);
+                throw new IllegalArgumentException(errorMessage);
             }
             elapsedTime += delta;
 
@@ -57,19 +53,24 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             Vector2 primaryVector = getPrimaryVector(primaryDirection);
             Vector2 perpVector = getPerpendicularVector(primaryDirection);
 
-            // Move forward
+            // Move forward in the primary direction.
             deltaMovement.add(primaryVector.scl(speed * delta));
 
-            // Apply zig-zag oscillation
+            // Apply zig-zag oscillation; amplitude may be negative for a phase inversion.
             float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime) * delta;
             deltaMovement.add(perpVector.scl(oscillation));
 
             data.setX(data.getX() + deltaMovement.x);
             data.setY(data.getY() + deltaMovement.y);
-        } catch (Exception e) {
+
+        } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.log(Level.SEVERE, "Exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(), e);
-            System.exit(1);
+            throw new RuntimeException("Error updating position in ZigZagMovementBehavior", e);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Unexpected exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(), e);
+            throw new RuntimeException("Error updating position in ZigZagMovementBehavior", e);
         }
+
     }
 
     private Vector2 getPrimaryVector(Direction direction) {
