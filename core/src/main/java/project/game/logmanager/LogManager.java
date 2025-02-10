@@ -59,7 +59,7 @@ public class LogManager {
             // Set the root logger level
             ROOT_LOGGER.setLevel(Level.ALL);
 
-            // Centralize logging for your package
+            // Centralize logging
             Logger.getLogger("project.game").setLevel(Level.ALL);
         } catch (SecurityException | java.io.IOException | java.net.URISyntaxException e) {
             System.err.println("[ERROR] Failed to configure log file or permissions: " + e.getMessage());
