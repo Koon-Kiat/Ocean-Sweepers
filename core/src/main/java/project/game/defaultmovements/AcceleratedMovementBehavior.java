@@ -1,5 +1,8 @@
 package project.game.defaultmovements;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
@@ -8,17 +11,9 @@ import project.game.abstractengine.movementmanager.MovementManager;
 import project.game.abstractengine.movementmanager.MovementUtils;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
-
-/**
- * @class AcceleratedMovementBehavior
- * @brief Implements a movement behavior with acceleration and deceleration.
- *
- * Entities using this behavior will accelerate when moving and decelerate when
- * stopping. This creates a more natural and responsive movement pattern
- * compared to constant speed. Diagonal movements are handled by scaling the
- * movement on each axis to maintain consistent overall speed.
- */
 public class AcceleratedMovementBehavior implements IMovementBehavior {
+
+    private static final Logger LOGGER = Logger.getLogger(AcceleratedMovementBehavior.class.getName());
 
     private final float acceleration;
     private final float deceleration;
@@ -27,89 +22,114 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
 
     /**
      * Constructs an AcceleratedMovementBehavior with specified parameters.
+     * Terminates the program if any provided parameter is negative.
      *
      * @param acceleration Rate of acceleration.
      * @param deceleration Rate of deceleration.
      * @param maxSpeed Maximum achievable speed.
      */
     public AcceleratedMovementBehavior(float acceleration, float deceleration, float maxSpeed) {
+        if (acceleration < 0 || deceleration < 0 || maxSpeed < 0) {
+            String errorMessage = "Illegal negative values provided: acceleration="
+                    + acceleration + ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            System.exit(1);
+        }
         this.acceleration = acceleration;
         this.deceleration = deceleration;
         this.maxSpeed = maxSpeed;
         this.currentSpeed = 0f;
     }
 
-
     /**
-     * Updates the position using MovementData to move with acceleration and deceleration.
-     * 
-     * @param data The MovementData containing the position, direction, and delta time.
+     * Updates the position using MovementData to move with acceleration and
+     * deceleration. If any error occurs (e.g. negative delta time), the error
+     * is logged and the program terminates.
+     *
+     * @param data The MovementData containing the position, direction, and
+     * delta time.
      */
     @Override
     public void updatePosition(MovementData data) {
-        float delta = data.getDeltaTime();
-        delta = Math.min(delta, 1 / 30f);
-    
-        if (data.getDirection() != Direction.NONE) {
-            currentSpeed += acceleration * delta;
-            if (currentSpeed > maxSpeed) {
-                currentSpeed = maxSpeed;
+        try {
+            float delta = data.getDeltaTime();
+            if (delta < 0) {
+                String errorMessage = "Negative deltaTime provided in updatePosition: " + delta;
+                LOGGER.log(Level.SEVERE, errorMessage);
+                System.exit(1);
             }
-        } else {
-            currentSpeed -= deceleration * delta;
-            if (currentSpeed < 0) {
-                currentSpeed = 0;
+            // Clamp delta to prevent excessively large updates.
+            delta = Math.min(delta, 1 / 30f);
+
+            if (data.getDirection() != Direction.NONE) {
+                currentSpeed += acceleration * delta;
+                if (currentSpeed > maxSpeed) {
+                    currentSpeed = maxSpeed;
+                }
+            } else {
+                currentSpeed -= deceleration * delta;
+                if (currentSpeed < 0) {
+                    currentSpeed = 0;
+                }
             }
+
+            Vector2 deltaMovement = new Vector2();
+            float diagonalSpeed;
+
+            switch (data.getDirection()) {
+                case UP:
+                    deltaMovement.y += currentSpeed * delta;
+                    break;
+                case DOWN:
+                    deltaMovement.y -= currentSpeed * delta;
+                    break;
+                case LEFT:
+                    deltaMovement.x -= currentSpeed * delta;
+                    break;
+                case RIGHT:
+                    deltaMovement.x += currentSpeed * delta;
+                    break;
+                case UP_LEFT:
+                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
+                    deltaMovement.x -= diagonalSpeed * delta;
+                    deltaMovement.y += diagonalSpeed * delta;
+                    break;
+                case UP_RIGHT:
+                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
+                    deltaMovement.x += diagonalSpeed * delta;
+                    deltaMovement.y += diagonalSpeed * delta;
+                    break;
+                case DOWN_LEFT:
+                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
+                    deltaMovement.x -= diagonalSpeed * delta;
+                    deltaMovement.y -= diagonalSpeed * delta;
+                    break;
+                case DOWN_RIGHT:
+                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
+                    deltaMovement.x += diagonalSpeed * delta;
+                    deltaMovement.y -= diagonalSpeed * delta;
+                    break;
+                case NONE:
+                    // No movement; nothing to do.
+                    break;
+                default:
+                    // In case an unexpected Direction value is encountered.
+                    LOGGER.log(Level.SEVERE, "Unknown movement direction: {0}", data.getDirection());
+                    System.exit(1);
+            }
+
+            // Update the position in MovementData.
+            float newX = data.getX() + deltaMovement.x;
+            float newY = data.getY() + deltaMovement.y;
+
+            data.setX(newX);
+            data.setY(newY);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            System.exit(1);
         }
-    
-        Vector2 deltaMovement = new Vector2();
-    
-        switch (data.getDirection()) {
-            case UP:
-                deltaMovement.y += currentSpeed * delta;
-                break;
-            case DOWN:
-                deltaMovement.y -= currentSpeed * delta;
-                break;
-            case LEFT:
-                deltaMovement.x -= currentSpeed * delta;
-                break;
-            case RIGHT:
-                deltaMovement.x += currentSpeed * delta;
-                break;
-            case UP_LEFT:
-                float diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                deltaMovement.x -= diagonalSpeed * delta;
-                deltaMovement.y += diagonalSpeed * delta;
-                break;
-            case UP_RIGHT:
-                diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                deltaMovement.x += diagonalSpeed * delta;
-                deltaMovement.y += diagonalSpeed * delta;
-                break;
-            case DOWN_LEFT:
-                diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                deltaMovement.x -= diagonalSpeed * delta;
-                deltaMovement.y -= diagonalSpeed * delta;
-                break;
-            case DOWN_RIGHT:
-                diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                deltaMovement.x += diagonalSpeed * delta;
-                deltaMovement.y -= diagonalSpeed * delta;
-                break;
-            case NONE:
-                break;
-        }
-    
-        // Use data.getX()/getY() and data.setX()/setY()
-        float newX = data.getX() + deltaMovement.x;
-        float newY = data.getY() + deltaMovement.y;
-    
-        data.setX(newX);
-        data.setY(newY);
     }
-    
-    
+
     /**
      * Stops movement by resetting speed and direction.
      *
@@ -126,5 +146,6 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
      * @param manager The MovementManager instance.
      */
     public void resumeMovement(MovementManager manager) {
+        // Implementation for resuming movement if needed.
     }
 }

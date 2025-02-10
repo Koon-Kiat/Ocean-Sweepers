@@ -1,6 +1,8 @@
 package project.game.defaultmovements;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.MathUtils;
 
@@ -9,74 +11,61 @@ import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
 /**
  * @class RandomisedMovementBehavior
- * @brief Chooses a random sub-behavior from a pool and applies it via
- * MovementData.
+ * @brief Randomly selects a behavior from a pool and uses it for a random duration.
+ * 
+ * This class implements a movement behavior that randomly selects a behavior from
+ * a pool of behaviors and uses it for a random duration. The duration is set in
+ * the constructor and the behavior is randomly selected from the pool.
  */
 public class RandomisedMovementBehavior implements IMovementBehavior {
 
+    private static final Logger LOGGER = Logger.getLogger(RandomisedMovementBehavior.class.getName());
     private final List<IMovementBehavior> behaviorPool;
-
-    // Minimum and maximum duration (in seconds) this behavior will remain active
     private final float minDuration;
     private final float maxDuration;
 
     private IMovementBehavior currentBehavior;
     private float remainingTime;
 
-    /**
-     * @param behaviorPool A list of movement behaviors to randomly choose from.
-     * @param minDuration The minimum time (in seconds) to use a chosen
-     * behavior.
-     * @param maxDuration The maximum time (in seconds) to use a chosen
-     * behavior.
-     *
-     * Example usage: RandomisedMovementBehavior randomBehavior = new
-     * RandomisedMovementBehavior( Arrays.asList(new
-     * ConstantMovementBehavior(200f), new AcceleratedMovementBehavior(50f, 20f,
-     * 300f), new FollowMovementBehavior(playerManager, 100f)), 2f, 5f );
-     */
     public RandomisedMovementBehavior(List<IMovementBehavior> behaviorPool, float minDuration, float maxDuration) {
         if (behaviorPool == null || behaviorPool.isEmpty()) {
-            throw new IllegalArgumentException("Behavior pool cannot be null or empty.");
+            String errorMessage = "Behavior pool cannot be null or empty.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
         if (minDuration <= 0 || maxDuration <= 0 || minDuration > maxDuration) {
-            throw new IllegalArgumentException("Invalid duration range.");
+            String errorMessage = "Invalid duration range: minDuration=" + minDuration + ", maxDuration=" + maxDuration;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
-
         this.behaviorPool = behaviorPool;
         this.minDuration = minDuration;
         this.maxDuration = maxDuration;
-
-        // Pick an initial behavior
         pickRandomBehavior();
     }
 
-
-    /**
-     * Updates the position of the MovementManager based on the current behavior.
-     *
-     * @param data The MovementData containing the position, direction, and delta
-     * time.
-     */
     @Override
     public void updatePosition(MovementData data) {
-        float deltaTime = data.getDeltaTime();
-        remainingTime -= deltaTime;
-
-        // If the current behavior expired, pick a new one
-        if (remainingTime <= 0) {
-            pickRandomBehavior();
-        }
-
-        // Delegate to the currently active behavior
-        if (currentBehavior != null) {
-            currentBehavior.updatePosition(data);
+        try {
+            float deltaTime = data.getDeltaTime();
+            if (deltaTime < 0) {
+                String errorMessage = "Negative deltaTime provided in RandomisedMovementBehavior.updatePosition: " + deltaTime;
+                LOGGER.log(Level.SEVERE, errorMessage);
+                System.exit(1);
+            }
+            remainingTime -= deltaTime;
+            if (remainingTime <= 0) {
+                pickRandomBehavior();
+            }
+            if (currentBehavior != null) {
+                currentBehavior.updatePosition(data);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Exception in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            System.exit(1);
         }
     }
 
-    /**
-     * Randomly selects a new behavior from the pool and sets a random duration.
-     */
     private void pickRandomBehavior() {
         currentBehavior = behaviorPool.get(MathUtils.random(behaviorPool.size() - 1));
         remainingTime = MathUtils.random(minDuration, maxDuration);
