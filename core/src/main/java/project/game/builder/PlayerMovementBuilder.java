@@ -19,7 +19,6 @@ import project.game.defaultmovements.ConstantMovementBehavior;
 public class PlayerMovementBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(PlayerMovementBuilder.class.getName());
-
     public float x;
     public float y;
     public float speed;
@@ -38,7 +37,8 @@ public class PlayerMovementBuilder {
 
     public PlayerMovementBuilder setSpeed(float speed) {
         if (speed < 0) {
-            LOGGER.log(Level.SEVERE, "Negative speed provided: {0}.", speed);
+            String errorMessage = "Negative speed provided: " + speed;
+            LOGGER.log(Level.SEVERE, errorMessage);
             throw new IllegalArgumentException("Speed must be non-negative.");
         }
         this.speed = speed;
@@ -57,25 +57,45 @@ public class PlayerMovementBuilder {
 
     public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
         if (acceleration < 0 || deceleration < 0) {
-            LOGGER.log(Level.WARNING, "Negative acceleration and/or deceleration provided: acceleration={0}, deceleration={1}", new Object[]{acceleration, deceleration});
+            String errorMessage = "Negative acceleration and/or deceleration provided: acceleration="
+                    + acceleration + ", deceleration=" + deceleration;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
-        this.movementBehavior = new AcceleratedMovementBehavior(acceleration, deceleration, this.speed);
+        try {
+            this.movementBehavior = new AcceleratedMovementBehavior(acceleration, deceleration, this.speed);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Exception in withAcceleratedMovement: " + e.getMessage(), e);
+            throw e;
+        }
         return this;
     }
 
     public PlayerMovementBuilder withConstantMovement() {
-        this.movementBehavior = new ConstantMovementBehavior(this.speed);
+        try {
+            this.movementBehavior = new ConstantMovementBehavior(this.speed);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Exception in withConstantMovement: " + e.getMessage(), e);
+            throw e;
+        }
         return this;
     }
 
     public PlayerMovementManager build() {
-        if (this.movementBehavior == null) {
-            // Default to constant movement if no behavior is specified
-            this.movementBehavior = new ConstantMovementBehavior(this.speed);
+        try {
+            if (this.movementBehavior == null) {
+                // Default to constant movement if no behavior is specified
+                this.movementBehavior = new ConstantMovementBehavior(this.speed);
+                LOGGER.log(Level.WARNING, "No movement behavior specified. Defaulting to ConstantMovementBehavior.");
+            }
+            if (this.direction == null) {
+                this.direction = Direction.NONE;
+                LOGGER.log(Level.WARNING, "No direction specified. Defaulting to Direction.NONE.");
+            }
+            return new PlayerMovementManager(this);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Exception while building PlayerMovementManager: " + e.getMessage(), e);
+            throw e;
         }
-        if (this.direction == null) {
-            this.direction = Direction.NONE;
-        }
-        return new PlayerMovementManager(this);
     }
 }
