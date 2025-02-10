@@ -16,10 +16,13 @@ import project.game.defaultmovements.AcceleratedMovementBehavior;
  * @abstractclass MovementManager
  * @brief Manages the movement logic for game entities.
  *
- * MovementManager serves as the base class for different types of movement
- * managers, handling common properties such as position, speed, direction, and
- * the associated movement behavior. It provides methods to update positions,
- * and control movement states.
+ *        MovementManager serves as the base class for different types of
+ *        movement
+ *        managers, handling common properties such as position, speed,
+ *        direction, and
+ *        the associated movement behavior. It provides methods to update
+ *        positions,
+ *        and control movement states.
  */
 public abstract class MovementManager implements IMovementManager {
 
@@ -34,24 +37,24 @@ public abstract class MovementManager implements IMovementManager {
     /**
      * Constructs a MovementManager with the specified parameters.
      *
-     * @param x Initial x-coordinate.
-     * @param y Initial y-coordinate.
-     * @param speed Movement speed.
+     * @param x         Initial x-coordinate.
+     * @param y         Initial y-coordinate.
+     * @param speed     Movement speed.
      * @param direction Initial movement direction.
-     * @param behavior Movement behavior strategy.
+     * @param behavior  Movement behavior strategy.
      */
     public MovementManager(float x, float y, float speed, Direction direction, IMovementBehavior behavior) {
         if (behavior == null) {
-            IllegalArgumentException ex = new IllegalArgumentException("Movement behavior cannot be null.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String msg = "Movement behavior cannot be null.";
+            LOGGER.log(Level.SEVERE, msg);
+            throw new IllegalArgumentException(msg);
+        }
+        if (speed < 0) {
+            String msg = "Speed cannot be negative.";
+            LOGGER.log(Level.SEVERE, msg);
+            throw new IllegalArgumentException(msg);
         }
         this.position = new Vector2(x, y);
-        if (speed < 0) {
-            IllegalArgumentException ex = new IllegalArgumentException("Speed cannot be negative.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
-        }
         this.speed = speed;
         this.direction = (direction != null) ? direction : Direction.NONE;
         this.movementBehavior = behavior;
@@ -74,11 +77,7 @@ public abstract class MovementManager implements IMovementManager {
      * @param x New x-coordinate.
      */
     public void setX(float x) {
-        try {
-            this.position.x = x;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error setting x-coordinate: " + e.getMessage(), e);
-        }
+        this.position.x = x;
     }
 
     /**
@@ -97,11 +96,7 @@ public abstract class MovementManager implements IMovementManager {
      * @param y New y-coordinate.
      */
     public void setY(float y) {
-        try {
-            this.position.y = y;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error setting y-coordinate: " + e.getMessage(), e);
-        }
+        this.position.y = y;
     }
 
     /**
@@ -117,13 +112,12 @@ public abstract class MovementManager implements IMovementManager {
      * Sets the movement speed.
      *
      * @param speed New movement speed.
-     * @throws IllegalArgumentException if speed is negative.
      */
     public void setSpeed(float speed) {
         if (speed < 0) {
-            IllegalArgumentException ex = new IllegalArgumentException("Speed cannot be negative.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String errorMessage = "Negative speed provided: " + speed;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException("Speed must be non-negative.");
         }
         this.speed = speed;
     }
@@ -144,7 +138,7 @@ public abstract class MovementManager implements IMovementManager {
      */
     public void setDirection(Direction direction) {
         if (direction == null) {
-            LOGGER.log(Level.WARNING, "Attempted to set a null direction. Defaulting to Direction.NONE.");
+            LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to Direction.NONE.");
             this.direction = Direction.NONE;
         } else {
             this.direction = direction;
@@ -158,9 +152,9 @@ public abstract class MovementManager implements IMovementManager {
      */
     public void setMovementBehavior(IMovementBehavior movementBehavior) {
         if (movementBehavior == null) {
-            IllegalArgumentException ex = new IllegalArgumentException("Movement behavior cannot be null.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String msg = "Movement behavior cannot be null.";
+            LOGGER.log(Level.SEVERE, msg);
+            throw new IllegalArgumentException(msg);
         }
         this.movementBehavior = movementBehavior;
     }
@@ -182,11 +176,11 @@ public abstract class MovementManager implements IMovementManager {
     @Override
     public void setDeltaTime(float deltaTime) {
         if (deltaTime < 0) {
-            LOGGER.log(Level.WARNING, "Negative deltaTime provided. Using 0 instead.");
-            this.deltaTime = 0;
-        } else {
-            this.deltaTime = deltaTime;
+            String errorMessage = "Negative deltaTime provided in updatePosition: " + deltaTime;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
+        this.deltaTime = deltaTime;
     }
 
     /**
@@ -220,7 +214,8 @@ public abstract class MovementManager implements IMovementManager {
         try {
             movementBehavior.updatePosition(data);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error during movement behavior update: " + e.getMessage(), e);
+            String errorMessage = "Error during movement behavior update: " + e.getMessage();
+            LOGGER.log(Level.SEVERE, errorMessage, e);
             setDirection(Direction.NONE);
             return;
         }
@@ -233,6 +228,7 @@ public abstract class MovementManager implements IMovementManager {
             setDirection(data.getDirection());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error updating MovementManager fields from MovementData: " + e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -248,6 +244,7 @@ public abstract class MovementManager implements IMovementManager {
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error during stop(): " + e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -262,6 +259,7 @@ public abstract class MovementManager implements IMovementManager {
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error during resume(): " + e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -281,7 +279,7 @@ public abstract class MovementManager implements IMovementManager {
             boolean left = pressedKeys.contains(Input.Keys.A);
             boolean right = pressedKeys.contains(Input.Keys.D);
 
-            // Resolve conflicts in key presses: if both up and down (or left and right) are pressed, ignore.
+            // Resolve conflicts if opposite directions are pressed.
             if (up && down) {
                 up = down = false;
             }
@@ -311,6 +309,7 @@ public abstract class MovementManager implements IMovementManager {
             setDirection(newDirection);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error processing input keys for direction update: " + e.getMessage(), e);
+            throw e;
         }
     }
 

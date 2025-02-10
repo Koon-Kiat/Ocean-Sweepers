@@ -17,14 +17,14 @@ public class MovementUtils {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative in calculateDiagonalSpeed.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            System.exit(1);
+            throw new IllegalArgumentException(errorMessage);
         }
         try {
             return speed / (float) Math.sqrt(2);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error calculating diagonal speed: " + e.getMessage(), e);
-            System.exit(1);
+            String errorMessage = "Error calculating diagonal speed: " + e.getMessage();
+            LOGGER.log(Level.SEVERE, errorMessage, e);
+            throw new RuntimeException("Error calculating diagonal speed", e);
         }
-        return 0f;
     }
 }

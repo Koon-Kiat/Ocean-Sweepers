@@ -9,8 +9,9 @@ import project.game.Direction;
  * @class MovementData
  * @brief Holds minimal data needed for movement updates.
  *
- * This class decouples movement behavior from MovementManager, preventing
- * direct dependency on that concrete class.
+ *        This class decouples movement behavior from MovementManager,
+ *        preventing
+ *        direct dependency on that concrete class.
  */
 public class MovementData {
 
@@ -23,28 +24,26 @@ public class MovementData {
     private Direction direction;
 
     public MovementData(float x, float y, float speed, float deltaTime, Direction direction) {
-        try {
-            if (speed < 0) {
-                throw new IllegalArgumentException("Speed cannot be negative.");
-            }
-            if (deltaTime < 0) {
-                throw new IllegalArgumentException("DeltaTime cannot be negative.");
-            }
-            if (direction == null) {
-                throw new IllegalArgumentException("Direction cannot be null.");
-            }
-            this.x = x;
-            this.y = y;
-            this.speed = speed;
-            this.deltaTime = deltaTime;
-            this.direction = direction;
-        } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.SEVERE, "Illegal argument in MovementData constructor: " + e.getMessage(), e);
-            throw e;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error constructing MovementData: " + e.getMessage(), e);
-            throw e;
+        if (speed < 0) {
+            String errorMessage = "Speed cannot be negative.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
+        if (deltaTime < 0) {
+            String errorMessage = "DeltaTime cannot be negative.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+        if (direction == null) {
+            String errorMessage = "Direction cannot be null.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.deltaTime = deltaTime;
+        this.direction = direction;
     }
 
     public float getX() {
@@ -52,11 +51,7 @@ public class MovementData {
     }
 
     public void setX(float x) {
-        try {
-            this.x = x;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error setting x coordinate in MovementData: " + e.getMessage(), e);
-        }
+        this.x = x;
     }
 
     public float getY() {
@@ -64,11 +59,7 @@ public class MovementData {
     }
 
     public void setY(float y) {
-        try {
-            this.y = y;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error setting y coordinate in MovementData: " + e.getMessage(), e);
-        }
+        this.y = y;
     }
 
     public float getSpeed() {
@@ -77,24 +68,11 @@ public class MovementData {
 
     public void setSpeed(float speed) {
         if (speed < 0) {
-            IllegalArgumentException ex = new IllegalArgumentException("Speed cannot be negative.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String errorMessage = "Negative speed provided: " + speed;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException("Speed must be non-negative.");
         }
         this.speed = speed;
-    }
-
-    public float getDeltaTime() {
-        return deltaTime;
-    }
-
-    public void setDeltaTime(float deltaTime) {
-        if (deltaTime < 0) {
-            IllegalArgumentException ex = new IllegalArgumentException("DeltaTime cannot be negative.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
-        }
-        this.deltaTime = deltaTime;
     }
 
     public Direction getDirection() {
@@ -103,10 +81,25 @@ public class MovementData {
 
     public void setDirection(Direction direction) {
         if (direction == null) {
-            IllegalArgumentException ex = new IllegalArgumentException("Direction cannot be null.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String errorMessage = "Direction cannot be null.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
         this.direction = direction;
     }
+
+    public float getDeltaTime() {
+        return deltaTime;
+    }
+
+    public void setDeltaTime(float deltaTime) {
+        if (deltaTime < 0) {
+            String errorMessage = "Negative deltaTime provided in updatePosition: " + deltaTime;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+        this.deltaTime = deltaTime;
+    }
+
+
 }

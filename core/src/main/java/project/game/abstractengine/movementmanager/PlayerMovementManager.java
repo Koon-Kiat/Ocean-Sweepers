@@ -10,14 +10,15 @@ import project.game.builder.PlayerMovementBuilder;
  * @class PlayerMovement
  * @brief Manages the movement logic specific to the player entity.
  *
- * Extends the abstract MovementManager to provide player-specific movement
- * behaviors. Utilizes a Builder pattern to allow flexible configuration of
- * movement properties.
+ *        Extends the abstract MovementManager to provide player-specific
+ *        movement
+ *        behaviors. Utilizes a Builder pattern to allow flexible configuration
+ *        of
+ *        movement properties.
  */
 public class PlayerMovementManager extends MovementManager {
 
     private static final Logger LOGGER = Logger.getLogger(PlayerMovementManager.class.getName());
-
 
     /**
      * Private constructor to enforce the use of the Builder.
@@ -30,9 +31,9 @@ public class PlayerMovementManager extends MovementManager {
 
     private static PlayerMovementBuilder checkBuilder(PlayerMovementBuilder builder) {
         if (builder == null) {
-            IllegalArgumentException ex = new IllegalArgumentException("PlayerMovementBuilder cannot be null.");
-            Logger.getLogger(PlayerMovementManager.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String errorMessage = "PlayerMovementBuilder cannot be null.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
         return builder;
     }
@@ -43,6 +44,7 @@ public class PlayerMovementManager extends MovementManager {
             super.setDirection(direction);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error setting direction in PlayerMovementManager: " + e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -52,18 +54,13 @@ public class PlayerMovementManager extends MovementManager {
             super.setDeltaTime(deltaTime);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error setting delta time in PlayerMovementManager: " + e.getMessage(), e);
+            throw e;
+
         }
     }
 
     @Override
     public void updateMovement() {
-        try {
             updatePosition();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating movement in PlayerMovementManager: " + e.getMessage(), e);
-        }
     }
 }
-
-
-

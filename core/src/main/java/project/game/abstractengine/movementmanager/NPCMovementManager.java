@@ -29,9 +29,9 @@ public class NPCMovementManager extends MovementManager {
 
     private static NPCMovementBuilder checkBuilder(NPCMovementBuilder builder) {
         if (builder == null) {
-            IllegalArgumentException ex = new IllegalArgumentException("NPCMovementBuilder cannot be null.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String errorMessage = "NPCMovementBuilder cannot be null.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
         return builder;
     }
@@ -51,15 +51,12 @@ public class NPCMovementManager extends MovementManager {
             super.setDeltaTime(deltaTime);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error setting delta time in NPCMovementManager: " + e.getMessage(), e);
+            throw e;
         }
     }
 
     @Override
     public void updateMovement() {
-        try {
             updatePosition();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating movement in NPCMovementManager: " + e.getMessage(), e);
-        }
     }
 }
