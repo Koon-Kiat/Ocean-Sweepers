@@ -34,41 +34,41 @@ public class ConstantMovementBehavior implements IMovementBehavior {
     @Override
     public void updatePosition(MovementData data) {
         try {
-            float delta = data.getDeltaTime();
-            if (delta < 0) {
-                String errorMessage = "Negative deltaTime provided in ConstantMovementBehavior.updatePosition: " + delta;
+            float deltaTime = data.getDeltaTime();
+            if (deltaTime < 0) {
+                String errorMessage = "Negative deltaTime provided in ConstantMovementBehavior.updatePosition: " + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
             Vector2 deltaMovement = new Vector2();
             switch (data.getDirection()) {
                 case UP:
-                    deltaMovement.y += speed * delta;
+                    deltaMovement.y += speed * deltaTime;
                     break;
                 case DOWN:
-                    deltaMovement.y -= speed * delta;
+                    deltaMovement.y -= speed * deltaTime;
                     break;
                 case LEFT:
-                    deltaMovement.x -= speed * delta;
+                    deltaMovement.x -= speed * deltaTime;
                     break;
                 case RIGHT:
-                    deltaMovement.x += speed * delta;
+                    deltaMovement.x += speed * deltaTime;
                     break;
                 case UP_LEFT:
-                    deltaMovement.x -= MovementUtils.calculateDiagonalSpeed(speed) * delta;
-                    deltaMovement.y += MovementUtils.calculateDiagonalSpeed(speed) * delta;
+                    deltaMovement.x -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
+                    deltaMovement.y += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
                     break;
                 case UP_RIGHT:
-                    deltaMovement.x += MovementUtils.calculateDiagonalSpeed(speed) * delta;
-                    deltaMovement.y += MovementUtils.calculateDiagonalSpeed(speed) * delta;
+                    deltaMovement.x += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
+                    deltaMovement.y += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
                     break;
                 case DOWN_LEFT:
-                    deltaMovement.x -= MovementUtils.calculateDiagonalSpeed(speed) * delta;
-                    deltaMovement.y -= MovementUtils.calculateDiagonalSpeed(speed) * delta;
+                    deltaMovement.x -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
+                    deltaMovement.y -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
                     break;
                 case DOWN_RIGHT:
-                    deltaMovement.x += MovementUtils.calculateDiagonalSpeed(speed) * delta;
-                    deltaMovement.y -= MovementUtils.calculateDiagonalSpeed(speed) * delta;
+                    deltaMovement.x += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
+                    deltaMovement.y -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
                     break;
                 case NONE:
                     break;

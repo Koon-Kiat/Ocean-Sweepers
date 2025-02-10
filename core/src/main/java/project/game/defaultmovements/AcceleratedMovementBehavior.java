@@ -51,23 +51,23 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
     @Override
     public void updatePosition(MovementData data) {
         try {
-            float delta = data.getDeltaTime();
-            if (delta < 0) {
-                String errorMessage = "Negative deltaTime provided in updatePosition: " + delta;
+            float deltaTime = data.getDeltaTime();
+            if (deltaTime < 0) {
+                String errorMessage = "Negative deltaTime provided in updatePosition: " + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
 
             // Clamp delta to prevent excessively large updates.
-            delta = Math.min(delta, 1 / 30f);
+            deltaTime = Math.min(deltaTime, 1 / 30f);
 
             if (data.getDirection() != Direction.NONE) {
-                currentSpeed += acceleration * delta;
+                currentSpeed += acceleration * deltaTime;
                 if (currentSpeed > maxSpeed) {
                     currentSpeed = maxSpeed;
                 }
             } else {
-                currentSpeed -= deceleration * delta;
+                currentSpeed -= deceleration * deltaTime;
                 if (currentSpeed < 0) {
                     currentSpeed = 0;
                 }
@@ -78,36 +78,36 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
 
             switch (data.getDirection()) {
                 case UP:
-                    deltaMovement.y += currentSpeed * delta;
+                    deltaMovement.y += currentSpeed * deltaTime;
                     break;
                 case DOWN:
-                    deltaMovement.y -= currentSpeed * delta;
+                    deltaMovement.y -= currentSpeed * deltaTime;
                     break;
                 case LEFT:
-                    deltaMovement.x -= currentSpeed * delta;
+                    deltaMovement.x -= currentSpeed * deltaTime;
                     break;
                 case RIGHT:
-                    deltaMovement.x += currentSpeed * delta;
+                    deltaMovement.x += currentSpeed * deltaTime;
                     break;
                 case UP_LEFT:
                     diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x -= diagonalSpeed * delta;
-                    deltaMovement.y += diagonalSpeed * delta;
+                    deltaMovement.x -= diagonalSpeed * deltaTime;
+                    deltaMovement.y += diagonalSpeed * deltaTime;
                     break;
                 case UP_RIGHT:
                     diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x += diagonalSpeed * delta;
-                    deltaMovement.y += diagonalSpeed * delta;
+                    deltaMovement.x += diagonalSpeed * deltaTime;
+                    deltaMovement.y += diagonalSpeed * deltaTime;
                     break;
                 case DOWN_LEFT:
                     diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x -= diagonalSpeed * delta;
-                    deltaMovement.y -= diagonalSpeed * delta;
+                    deltaMovement.x -= diagonalSpeed * deltaTime;
+                    deltaMovement.y -= diagonalSpeed * deltaTime;
                     break;
                 case DOWN_RIGHT:
                     diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x += diagonalSpeed * delta;
-                    deltaMovement.y -= diagonalSpeed * delta;
+                    deltaMovement.x += diagonalSpeed * deltaTime;
+                    deltaMovement.y -= diagonalSpeed * deltaTime;
                     break;
                 case NONE:
                     break;

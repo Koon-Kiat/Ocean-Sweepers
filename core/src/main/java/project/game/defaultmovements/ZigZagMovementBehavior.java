@@ -39,13 +39,13 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     @Override
     public void updatePosition(MovementData data) {
         try {
-            float delta = data.getDeltaTime();
-            if (delta < 0) {
-                String errorMessage = "Negative deltaTime provided in ZigZagMovementBehavior.updatePosition: " + delta;
+            float deltaTime = data.getDeltaTime();
+            if (deltaTime < 0) {
+                String errorMessage = "Negative deltaTime provided in ZigZagMovementBehavior.updatePosition: " + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
-            elapsedTime += delta;
+            elapsedTime += deltaTime;
 
             Vector2 deltaMovement = new Vector2();
 
@@ -54,10 +54,10 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             Vector2 perpVector = getPerpendicularVector(primaryDirection);
 
             // Move forward in the primary direction.
-            deltaMovement.add(primaryVector.scl(speed * delta));
+            deltaMovement.add(primaryVector.scl(speed * deltaTime));
 
             // Apply zig-zag oscillation; amplitude may be negative for a phase inversion.
-            float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime) * delta;
+            float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime) * deltaTime;
             deltaMovement.add(perpVector.scl(oscillation));
 
             data.setX(data.getX() + deltaMovement.x);
