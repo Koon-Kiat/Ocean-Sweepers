@@ -15,15 +15,16 @@ public class MovementUtils {
      */
     public static float calculateDiagonalSpeed(float speed) {
         if (speed < 0) {
-            IllegalArgumentException ex = new IllegalArgumentException("Speed cannot be negative in calculateDiagonalSpeed.");
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
+            String errorMessage = "Speed cannot be negative in calculateDiagonalSpeed.";
+            LOGGER.log(Level.SEVERE, errorMessage);
+            System.exit(1);
         }
         try {
             return speed / (float) Math.sqrt(2);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error calculating diagonal speed: " + e.getMessage(), e);
-            throw e;
+            System.exit(1);
         }
+        return 0f;
     }
 }
