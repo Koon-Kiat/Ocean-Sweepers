@@ -14,7 +14,6 @@ import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 public class AcceleratedMovementBehavior implements IMovementBehavior {
 
     private static final Logger LOGGER = Logger.getLogger(AcceleratedMovementBehavior.class.getName());
-
     private final float acceleration;
     private final float deceleration;
     private final float maxSpeed;
