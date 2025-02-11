@@ -11,6 +11,22 @@ import project.game.abstractengine.movementmanager.MovementManager;
 import project.game.abstractengine.movementmanager.MovementUtils;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
+/**
+ * @class AcceleratedMovementBehavior
+ * 
+ * @brief Moves the entity with acceleration and deceleration using
+ *        MovementData.
+ * 
+ *        Moves the entity with acceleration and deceleration using
+ *        MovementData.
+ * 
+ *        This class implements a movement behavior that moves the entity with
+ *        acceleration and deceleration. The acceleration, deceleration, and
+ *        maximum
+ *        speed can be set in the constructor. The entity accelerates when
+ *        moving in a
+ *        direction and decelerates when stopping or changing direction.
+ */
 public class AcceleratedMovementBehavior implements IMovementBehavior {
 
     private static final Logger LOGGER = Logger.getLogger(AcceleratedMovementBehavior.class.getName());
@@ -40,16 +56,8 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
         this.currentSpeed = 0f;
     }
 
-    /**
-     * Updates the position using MovementData to move with acceleration and
-     * deceleration. If any error occurs (e.g. negative delta time), the error
-     * is logged and the program terminates.
-     *
-     * @param data The MovementData containing the position, direction, and
-     *             delta time.
-     */
     @Override
-    public void updatePosition(MovementData data) {
+    public void applyMovementBehavior(MovementData data) {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {
@@ -133,21 +141,11 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
         }
     }
 
-    /**
-     * Stops movement by resetting speed and direction.
-     *
-     * @param manager The MovementManager instance.
-     */
     public void stopMovement(MovementManager manager) {
         currentSpeed = 0;
         manager.setDirection(Direction.NONE);
     }
 
-    /**
-     * Resumes movement by restoring the last direction before stopping.
-     *
-     * @param manager The MovementManager instance.
-     */
     public void resumeMovement(MovementManager manager) {
     }
 }

@@ -37,7 +37,7 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void updatePosition(MovementData data) {
+    public void applyMovementBehavior(MovementData data) {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {

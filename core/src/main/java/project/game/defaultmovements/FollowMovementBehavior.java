@@ -26,6 +26,13 @@ public class FollowMovementBehavior implements IMovementBehavior {
     private final IMovementManager targetManager;
     private final float speed;
 
+    /**
+     * Constructs a FollowMovementBehavior with the specified parameters.
+     * Terminates the program if any provided parameter is negative or null.
+     * 
+     * @param targetManager IMovementManager providing the target's position.
+     * @param speed         Speed of the movement.
+     */
     public FollowMovementBehavior(IMovementManager targetManager, float speed) {
         if (targetManager == null) {
             String errorMessage = "Target manager cannot be null in FollowMovementBehavior.";
@@ -42,7 +49,7 @@ public class FollowMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void updatePosition(MovementData data) {
+    public void applyMovementBehavior(MovementData data) {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {

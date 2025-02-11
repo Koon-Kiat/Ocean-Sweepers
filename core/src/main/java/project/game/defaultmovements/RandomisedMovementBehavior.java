@@ -26,10 +26,16 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
     private final List<IMovementBehavior> behaviorPool;
     private final float minDuration;
     private final float maxDuration;
-
     private IMovementBehavior currentBehavior;
     private float remainingTime;
 
+    /**
+     * Constructs a RandomisedMovementBehavior with the specified parameters.
+     * 
+     * @param behaviorPool List of movement behaviors to choose from.
+     * @param minDuration  Minimum duration for each behavior.
+     * @param maxDuration  Maximum duration for each behavior.
+     */
     public RandomisedMovementBehavior(List<IMovementBehavior> behaviorPool, float minDuration, float maxDuration) {
         if (behaviorPool == null || behaviorPool.isEmpty()) {
             String errorMessage = "Behavior pool cannot be null or empty.";
@@ -48,7 +54,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void updatePosition(MovementData data) {
+    public void applyMovementBehavior(MovementData data) {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {
@@ -62,7 +68,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
                 pickRandomBehavior();
             }
             if (currentBehavior != null) {
-                currentBehavior.updatePosition(data);
+                currentBehavior.applyMovementBehavior(data);
             }
         } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.log(Level.SEVERE,

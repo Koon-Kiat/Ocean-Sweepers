@@ -22,6 +22,12 @@ public class ConstantMovementBehavior implements IMovementBehavior {
     private static final Logger LOGGER = Logger.getLogger(ConstantMovementBehavior.class.getName());
     private final float speed;
 
+    /**
+     * Constructs a ConstantMovementBehavior with the specified speed. Terminates
+     * the program if a negative speed is provided.
+     * 
+     * @param speed Speed of the movement.
+     */
     public ConstantMovementBehavior(float speed) {
         if (speed < 0) {
             String errorMessage = "Negative speed provided in ConstantMovementBehavior: " + speed;
@@ -32,7 +38,7 @@ public class ConstantMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void updatePosition(MovementData data) {
+    public void applyMovementBehavior(MovementData data) {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {
