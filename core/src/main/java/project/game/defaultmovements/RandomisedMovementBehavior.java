@@ -11,11 +11,14 @@ import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
 /**
  * @class RandomisedMovementBehavior
- * @brief Randomly selects a behavior from a pool and uses it for a random duration.
+ * @brief Randomly selects a behavior from a pool and uses it for a random
+ *        duration.
  * 
- * This class implements a movement behavior that randomly selects a behavior from
- * a pool of behaviors and uses it for a random duration. The duration is set in
- * the constructor and the behavior is randomly selected from the pool.
+ *        This class implements a movement behavior that randomly selects a
+ *        behavior from
+ *        a pool of behaviors and uses it for a random duration. The duration is
+ *        set in
+ *        the constructor and the behavior is randomly selected from the pool.
  */
 public class RandomisedMovementBehavior implements IMovementBehavior {
 
@@ -49,7 +52,8 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in RandomisedMovementBehavior.updatePosition: " + deltaTime;
+                String errorMessage = "Negative deltaTime provided in RandomisedMovementBehavior.updatePosition: "
+                        + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
@@ -61,10 +65,12 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
                 currentBehavior.updatePosition(data);
             }
         } catch (IllegalArgumentException | NullPointerException e) {
-            LOGGER.log(Level.SEVERE, "Invalid input error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE,
+                    "Invalid input error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw new RuntimeException("Error updating position in RandomisedMovementBehavior", e);
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Runtime error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Runtime error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(),
+                    e);
             throw e;
         }
     }

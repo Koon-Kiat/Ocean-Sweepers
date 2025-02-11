@@ -10,9 +10,11 @@ import project.game.builder.NPCMovementBuilder;
  * @class EnemyMovement
  * @brief Manages the movement logic specific to enemy entities.
  *
- * Extends the abstract MovementManager to provide enemy-specific movement
- * behaviors, such as zig-zag movement. Utilizes a Builder pattern for flexible
- * configuration.
+ *        Extends the abstract MovementManager to provide enemy-specific
+ *        movement
+ *        behaviors, such as zig-zag movement. Utilizes a Builder pattern for
+ *        flexible
+ *        configuration.
  */
 public class NPCMovementManager extends MovementManager {
 
@@ -57,6 +59,6 @@ public class NPCMovementManager extends MovementManager {
 
     @Override
     public void updateMovement() {
-            updatePosition();
+        updatePosition();
     }
 }

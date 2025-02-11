@@ -41,7 +41,8 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in ZigZagMovementBehavior.updatePosition: " + deltaTime;
+                String errorMessage = "Negative deltaTime provided in ZigZagMovementBehavior.updatePosition: "
+                        + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
@@ -67,7 +68,8 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             LOGGER.log(Level.SEVERE, "Exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw new RuntimeException("Error updating position in ZigZagMovementBehavior", e);
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Unexpected exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Unexpected exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(),
+                    e);
             throw new RuntimeException("Error updating position in ZigZagMovementBehavior", e);
         }
 

@@ -61,6 +61,6 @@ public class PlayerMovementManager extends MovementManager {
 
     @Override
     public void updateMovement() {
-            updatePosition();
+        updatePosition();
     }
 }

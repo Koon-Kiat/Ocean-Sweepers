@@ -25,7 +25,7 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
      *
      * @param acceleration Rate of acceleration.
      * @param deceleration Rate of deceleration.
-     * @param maxSpeed Maximum achievable speed.
+     * @param maxSpeed     Maximum achievable speed.
      */
     public AcceleratedMovementBehavior(float acceleration, float deceleration, float maxSpeed) {
         if (acceleration < 0 || deceleration < 0 || maxSpeed < 0) {
@@ -46,7 +46,7 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
      * is logged and the program terminates.
      *
      * @param data The MovementData containing the position, direction, and
-     * delta time.
+     *             delta time.
      */
     @Override
     public void updatePosition(MovementData data) {
@@ -127,7 +127,8 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
             LOGGER.log(Level.SEVERE, "Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw new RuntimeException("Error updating position in AcceleratedMovementBehavior", e);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE,
+                    "Unexpected exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw new RuntimeException("Error updating position in AcceleratedMovementBehavior", e);
         }
     }

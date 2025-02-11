@@ -13,9 +13,12 @@ import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
  * @class FollowMovementBehavior
  * @brief Moves the entity towards a target using MovementData.
  * 
- * This class implements a movement behavior that moves the entity towards a
- * target. The target is specified by an IMovementManager, which provides the
- * target's position. The speed of the movement can be set in the constructor.
+ *        This class implements a movement behavior that moves the entity
+ *        towards a
+ *        target. The target is specified by an IMovementManager, which provides
+ *        the
+ *        target's position. The speed of the movement can be set in the
+ *        constructor.
  */
 public class FollowMovementBehavior implements IMovementBehavior {
 
@@ -43,7 +46,8 @@ public class FollowMovementBehavior implements IMovementBehavior {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in FollowMovementBehavior.updatePosition: " + deltaTime;
+                String errorMessage = "Negative deltaTime provided in FollowMovementBehavior.updatePosition: "
+                        + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
@@ -59,7 +63,8 @@ public class FollowMovementBehavior implements IMovementBehavior {
             LOGGER.log(Level.SEVERE, "Illegal argument in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw e;
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Runtime exception in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Runtime exception in FollowMovementBehavior.updatePosition: " + e.getMessage(),
+                    e);
             throw new RuntimeException("Error updating position in FollowMovementBehavior", e);
         }
     }

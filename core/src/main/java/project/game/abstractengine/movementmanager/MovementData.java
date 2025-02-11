@@ -101,5 +101,4 @@ public class MovementData {
         this.deltaTime = deltaTime;
     }
 
-
 }

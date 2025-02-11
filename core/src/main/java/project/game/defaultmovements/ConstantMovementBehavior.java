@@ -9,13 +9,13 @@ import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.MovementUtils;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 
-
 /**
  * @class ConstantMovementBehavior
  * @brief Moves the entity in a constant direction using MovementData.
  * 
- * This class implements a movement behavior that moves the entity in a constant
- * direction. The speed of the movement can be set in the constructor.
+ *        This class implements a movement behavior that moves the entity in a
+ *        constant
+ *        direction. The speed of the movement can be set in the constructor.
  */
 public class ConstantMovementBehavior implements IMovementBehavior {
 
@@ -36,7 +36,8 @@ public class ConstantMovementBehavior implements IMovementBehavior {
         try {
             float deltaTime = data.getDeltaTime();
             if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in ConstantMovementBehavior.updatePosition: " + deltaTime;
+                String errorMessage = "Negative deltaTime provided in ConstantMovementBehavior.updatePosition: "
+                        + deltaTime;
                 LOGGER.log(Level.SEVERE, errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
@@ -73,17 +74,20 @@ public class ConstantMovementBehavior implements IMovementBehavior {
                 case NONE:
                     break;
                 default:
-                    String errorMessage = "Unknown direction in ConstantMovementBehavior.updatePosition: " + data.getDirection();
+                    String errorMessage = "Unknown direction in ConstantMovementBehavior.updatePosition: "
+                            + data.getDirection();
                     LOGGER.log(Level.SEVERE, errorMessage);
                     throw new IllegalArgumentException(errorMessage);
             }
             data.setX(data.getX() + deltaMovement.x);
             data.setY(data.getY() + deltaMovement.y);
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.SEVERE, "Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(),
+                    e);
             throw e;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE,
+                    "Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw new RuntimeException("Error updating position in ConstantMovementBehavior", e);
         }
     }

@@ -1,8 +1,5 @@
 package project.game;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -64,23 +61,17 @@ public class Main extends ApplicationAdapter {
         bucket.width = bucketImage.getWidth();
         bucket.height = bucketImage.getHeight();
 
-        try {
-            playerMovementManager = new PlayerMovementBuilder()
-                    .setX(bucket.x)
-                    .setY(bucket.y)
-                    .setSpeed(1600f)
-                    .setDirection(Direction.NONE)
-                    .withAcceleratedMovement(1200, 1550)
-                    .build();
-        } catch (IllegalArgumentException e) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, "Caught exception during build", e);
-        }
+        playerMovementManager = new PlayerMovementBuilder()
+                .setX(bucket.x)
+                .setY(bucket.y)
+                .setSpeed(1600f)
+                .build();
 
         npcMovementManager = new NPCMovementBuilder()
                 .setX(drop.x)
                 .setY(drop.y)
                 .setSpeed(200f)
-                .withZigZagMovement(50f, 1f)
+                .withZigZagMovement(50f, 100f)
                 .setDirection(Direction.RIGHT)
                 .build();
 
@@ -116,16 +107,19 @@ public class Main extends ApplicationAdapter {
         batch.end();
 
         // Print pressed keys
-        /*for (Integer key : inputManager.getPressedKeys()) {
-            System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
-        }
-
-        // Print mouse click status
-        if (inputManager.isMouseClicked()) {
-            System.out.println("[DEBUG] Mouse is clicked at position: " + inputManager.getMousePosition());
-        } else {
-            System.out.println("[DEBUG] Mouse is not clicked.");
-        }*/
+        /*
+         * for (Integer key : inputManager.getPressedKeys()) {
+         * System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
+         * }
+         * 
+         * // Print mouse click status
+         * if (inputManager.isMouseClicked()) {
+         * System.out.println("[DEBUG] Mouse is clicked at position: " +
+         * inputManager.getMousePosition());
+         * } else {
+         * System.out.println("[DEBUG] Mouse is not clicked.");
+         * }
+         */
     }
 
     @Override
