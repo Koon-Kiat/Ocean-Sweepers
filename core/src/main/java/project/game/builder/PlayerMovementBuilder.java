@@ -8,6 +8,7 @@ import project.game.abstractengine.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 import project.game.defaultmovements.AcceleratedMovementBehavior;
 import project.game.defaultmovements.ConstantMovementBehavior;
+import project.game.exceptions.MovementException;
 
 /**
  * @class PlayerMovementBuilder
@@ -73,7 +74,7 @@ public class PlayerMovementBuilder {
         if (speed < 0) {
             String errorMessage = "Negative speed provided: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException("Speed must be non-negative.");
+            throw new MovementException("Speed must be non-negative.");
         }
         this.speed = speed;
         return this;
@@ -103,7 +104,7 @@ public class PlayerMovementBuilder {
             this.movementBehavior = new AcceleratedMovementBehavior(acceleration, deceleration, this.speed);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to create AcceleratedMovementBehavior", e);
-            throw new IllegalStateException("Failed to create AcceleratedMovementBehavior", e);
+            throw new MovementException("Failed to create AcceleratedMovementBehavior", e);
         }
         return this;
     }
@@ -113,7 +114,7 @@ public class PlayerMovementBuilder {
             this.movementBehavior = new ConstantMovementBehavior(this.speed);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to create ConstantMovementBehavior", e);
-            throw new IllegalStateException("Failed to create ConstantMovementBehavior", e);
+            throw new MovementException("Failed to create ConstantMovementBehavior", e);
         }
         return this;
     }
@@ -128,7 +129,7 @@ public class PlayerMovementBuilder {
             return new PlayerMovementManager(this);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to build PlayerMovementManager", e);
-            throw new IllegalStateException("Failed to build PlayerMovementManager", e);
+            throw new MovementException("Failed to build PlayerMovementManager", e);
         }
     }
 
@@ -137,7 +138,7 @@ public class PlayerMovementBuilder {
         if (Float.isNaN(coordinate) || Float.isInfinite(coordinate)) {
             String errorMessage = "Invalid " + coordinateName + " coordinate: " + coordinate;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
     }
 
@@ -147,7 +148,7 @@ public class PlayerMovementBuilder {
                     "Invalid acceleration parameters: acceleration=%f, deceleration=%f. Both must be non-negative.",
                     acceleration, deceleration);
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
     }
 
@@ -155,7 +156,7 @@ public class PlayerMovementBuilder {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative. Current speed: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalStateException(errorMessage);
+            throw new MovementException(errorMessage);
         }
     }
 

@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.Direction;
 import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
+import project.game.exceptions.MovementException;
 
 /**
  * Moves the entity in a zig-zag pattern. The entity moves forward in the
@@ -28,7 +29,7 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             String errorMessage = "Illegal negative parameter in ZigZagMovementBehavior constructor: "
                     + "speed=" + speed + ", frequency=" + frequency;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         this.speed = speed;
         this.amplitude = amplitude;
@@ -59,11 +60,11 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
 
         } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.log(Level.SEVERE, "Exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new RuntimeException("Error updating position in ZigZagMovementBehavior", e);
-        } catch (RuntimeException e) {
+            throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Unexpected exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(),
                     e);
-            throw new RuntimeException("Error updating position in ZigZagMovementBehavior", e);
+            throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
         }
 
     }

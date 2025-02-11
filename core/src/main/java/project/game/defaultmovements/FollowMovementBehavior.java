@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
 import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
+import project.game.exceptions.MovementException;
 
 /**
  * @class FollowMovementBehavior
@@ -37,12 +38,12 @@ public class FollowMovementBehavior implements IMovementBehavior {
         if (targetManager == null) {
             String errorMessage = "Target manager cannot be null in FollowMovementBehavior.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         if (speed < 0) {
             String errorMessage = "Negative speed provided in FollowMovementBehavior: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         this.targetManager = targetManager;
         this.speed = speed;
@@ -61,10 +62,10 @@ public class FollowMovementBehavior implements IMovementBehavior {
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.SEVERE, "Illegal argument in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw e;
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Runtime exception in FollowMovementBehavior.updatePosition: " + e.getMessage(),
                     e);
-            throw new RuntimeException("Error updating position in FollowMovementBehavior", e);
+            throw new MovementException("Error updating position in FollowMovementBehavior", e);
         }
     }
 }

@@ -12,6 +12,7 @@ import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.RandomisedMovementBehavior;
 import project.game.defaultmovements.ZigZagMovementBehavior;
+import project.game.exceptions.MovementException;
 
 /**
  * @class NPCMovementBuilder
@@ -23,11 +24,11 @@ import project.game.defaultmovements.ZigZagMovementBehavior;
 public class NPCMovementBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(NPCMovementBuilder.class.getName());
-    public float x;
-    public float y;
-    public float speed;
-    public Direction direction;
-    public IMovementBehavior movementBehavior;
+    private float x;
+    private float y;
+    private float speed;
+    private Direction direction;
+    private IMovementBehavior movementBehavior;
 
     public float getX() {
         return x;
@@ -57,7 +58,7 @@ public class NPCMovementBuilder {
         if (speed < 0) {
             String errorMessage = "Negative speed provided: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException("Speed must be non-negative.");
+            throw new MovementException("Speed must be non-negative.");
         }
         this.speed = speed;
         return this;
@@ -82,7 +83,15 @@ public class NPCMovementBuilder {
     }
 
     public NPCMovementBuilder withConstantMovement() {
-        this.movementBehavior = new ConstantMovementBehavior(this.speed);
+        try {
+            this.movementBehavior = new ConstantMovementBehavior(this.speed);
+        } catch (MovementException e) {
+            LOGGER.log(Level.SEVERE, "Failed to create ConstantMovementBehavior: " + e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected error creating ConstantMovementBehavior", e);
+            throw new MovementException("Failed to create ConstantMovementBehavior", e);
+        }
         return this;
     }
 
@@ -92,7 +101,7 @@ public class NPCMovementBuilder {
             this.movementBehavior = new ZigZagMovementBehavior(this.speed, amplitude, frequency);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Exception creating ZigZagMovementBehavior", e);
-            throw new IllegalStateException("Failed to create ZigZagMovementBehavior", e);
+            throw new MovementException("Failed to create ZigZagMovementBehavior", e);
         }
         return this;
     }
@@ -101,18 +110,18 @@ public class NPCMovementBuilder {
         if (targetManager == null) {
             String errorMsg = "Target manager is null in withFollowMovement.";
             LOGGER.log(Level.SEVERE, errorMsg);
-            throw new IllegalArgumentException(errorMsg);
+            throw new MovementException(errorMsg);
         }
         if (this.speed <= 0) {
             String errorMessage = "Invalid speed for FollowMovementBehavior: " + this.speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException("Speed must be positive for FollowMovementBehavior.");
+            throw new MovementException("Speed must be positive for FollowMovementBehavior.");
         }
         try {
             this.movementBehavior = new FollowMovementBehavior(targetManager, this.speed);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Exception creating FollowMovementBehavior", e);
-            throw new IllegalStateException("Failed to create FollowMovementBehavior", e);
+            throw new MovementException("Failed to create FollowMovementBehavior", e);
         }
         return this;
     }
@@ -122,49 +131,56 @@ public class NPCMovementBuilder {
         if (behaviorPool == null || behaviorPool.isEmpty()) {
             String errorMessage = "Invalid behavior pool provided for RandomisedMovementBehavior.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         if (minDuration <= 0 || maxDuration <= 0 || minDuration > maxDuration) {
             String errorMessage = String.format(
                     "Invalid duration range for RandomisedMovementBehavior: minDuration=%.2f, maxDuration=%.2f",
                     minDuration, maxDuration);
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         try {
             this.movementBehavior = new RandomisedMovementBehavior(behaviorPool, minDuration, maxDuration);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Exception creating RandomisedMovementBehavior", e);
-            throw new IllegalStateException("Failed to create RandomisedMovementBehavior", e);
+            throw new MovementException("Failed to create RandomisedMovementBehavior", e);
         }
         return this;
     }
 
     public NPCMovementManager build() {
-        validateBuildRequirements();
+        try {
+            validateBuildRequirements();
 
-        if (this.movementBehavior == null) {
-            // Default to constant movement if no behavior is specified.
-            String warnMessage = "No movement behavior specified. Defaulting to ConstantMovementBehavior.";
-            LOGGER.log(Level.WARNING, warnMessage);
-            this.movementBehavior = new ConstantMovementBehavior(this.speed);
-        }
-        if (this.direction == null) {
-            this.direction = Direction.NONE;
-            LOGGER.log(Level.WARNING, "No direction specified. Defaulting to Direction.NONE.");
-        }
+            if (this.movementBehavior == null) {
+                String warnMessage = "No movement behavior specified. Defaulting to ConstantMovementBehavior.";
+                LOGGER.log(Level.WARNING, warnMessage);
+                withConstantMovement(); // Use existing method instead of direct instantiation
+            }
 
-        // For movement behaviors that rely on a specified direction (i.e. not
-        // FollowMovementBehavior),
-        // ensure that direction is not NONE.
-        if (!(this.movementBehavior instanceof FollowMovementBehavior) && this.direction == Direction.NONE) {
-            String errorMessage = "Invalid configuration: Movement behavior "
-                    + this.movementBehavior.getClass().getSimpleName() + " cannot be used with Direction.NONE.";
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException("Movement behavior cannot be used with Direction.NONE.");
-        }
+            if (this.direction == null) {
+                this.direction = Direction.NONE;
+                LOGGER.log(Level.WARNING, "No direction specified. Defaulting to Direction.NONE.");
+            }
 
-        return new NPCMovementManager(this);
+            if (!(this.movementBehavior instanceof FollowMovementBehavior) && this.direction == Direction.NONE) {
+                String errorMessage = String.format(
+                        "Invalid configuration: %s cannot be used with Direction.NONE",
+                        this.movementBehavior.getClass().getSimpleName());
+                LOGGER.log(Level.SEVERE, errorMessage);
+                throw new MovementException(errorMessage);
+            }
+
+            return new NPCMovementManager(this);
+        } catch (MovementException e) {
+            LOGGER.log(Level.SEVERE, "Failed to build NPCMovementManager: " + e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            String msg = "Unexpected error building NPCMovementManager";
+            LOGGER.log(Level.SEVERE, msg, e);
+            throw new MovementException(msg, e);
+        }
     }
 
     // Private validations
@@ -172,7 +188,7 @@ public class NPCMovementBuilder {
         if (Float.isNaN(coordinate) || Float.isInfinite(coordinate)) {
             String errorMessage = "Invalid " + coordinateName + " coordinate: " + coordinate;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
     }
 
@@ -182,7 +198,7 @@ public class NPCMovementBuilder {
                     "Negative amplitude or frequency for ZigZagMovement: amplitude=%.2f, frequency=%.2f",
                     amplitude, frequency);
             LOGGER.log(Level.SEVERE, errorMsg);
-            throw new IllegalArgumentException(errorMsg);
+            throw new MovementException(errorMsg);
         }
     }
 
@@ -190,7 +206,7 @@ public class NPCMovementBuilder {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative. Current speed: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalStateException(errorMessage);
+            throw new MovementException(errorMessage);
         }
     }
 }

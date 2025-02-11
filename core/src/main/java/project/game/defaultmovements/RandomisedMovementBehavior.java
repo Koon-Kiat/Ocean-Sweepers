@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.MathUtils;
 
 import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
+import project.game.exceptions.MovementException;
 
 /**
  * @class RandomisedMovementBehavior
@@ -40,12 +41,12 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
         if (behaviorPool == null || behaviorPool.isEmpty()) {
             String errorMessage = "Behavior pool cannot be null or empty.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         if (minDuration <= 0 || maxDuration <= 0 || minDuration > maxDuration) {
             String errorMessage = "Invalid duration range: minDuration=" + minDuration + ", maxDuration=" + maxDuration;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         this.behaviorPool = behaviorPool;
         this.minDuration = minDuration;
@@ -63,14 +64,14 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
             if (currentBehavior != null) {
                 currentBehavior.applyMovementBehavior(data, deltaTime);
             }
-        } catch (IllegalArgumentException | NullPointerException e) {
-            LOGGER.log(Level.SEVERE,
-                    "Invalid input error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new RuntimeException("Error updating position in RandomisedMovementBehavior", e);
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Runtime error in RandomisedMovementBehavior.updatePosition: " + e.getMessage(),
-                    e);
+        } catch (IllegalArgumentException e) {
+            throw new MovementException("Invalid argument in RandomisedMovementBehavior", e);
+        } catch (NullPointerException e) {
+            throw new MovementException("Null reference in RandomisedMovementBehavior", e);
+        } catch (MovementException e) {
             throw e;
+        } catch (Exception e) {
+            throw new MovementException("Unexpected error in RandomisedMovementBehavior", e);
         }
     }
 

@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.MovementUtils;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
+import project.game.exceptions.MovementException;
 
 /**
  * @class ConstantMovementBehavior
@@ -32,7 +33,7 @@ public class ConstantMovementBehavior implements IMovementBehavior {
         if (speed < 0) {
             String errorMessage = "Negative speed provided in ConstantMovementBehavior: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         this.speed = speed;
     }
@@ -76,18 +77,18 @@ public class ConstantMovementBehavior implements IMovementBehavior {
                     String errorMessage = "Unknown direction in ConstantMovementBehavior.updatePosition: "
                             + data.getDirection();
                     LOGGER.log(Level.SEVERE, errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new MovementException(errorMessage);
             }
             data.setX(data.getX() + deltaMovement.x);
             data.setY(data.getY() + deltaMovement.y);
-        } catch (IllegalArgumentException e) {
+        } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(),
                     e);
             throw e;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE,
                     "Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new RuntimeException("Error updating position in ConstantMovementBehavior", e);
+            throw new MovementException("Error updating position in ConstantMovementBehavior", e);
         }
     }
 }

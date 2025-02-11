@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import project.game.Direction;
 import project.game.builder.PlayerMovementBuilder;
+import project.game.exceptions.MovementException;
 
 /**
  * @class PlayerMovement
@@ -38,7 +39,7 @@ public class PlayerMovementManager extends MovementManager {
         if (builder == null) {
             String errorMessage = "PlayerMovementBuilder cannot be null.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         return builder;
     }

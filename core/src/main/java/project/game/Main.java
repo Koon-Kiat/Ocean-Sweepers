@@ -19,6 +19,15 @@ public class Main extends ApplicationAdapter {
         LogManager.initialize();
     }
 
+    public static final float GAME_WIDTH = 1920;
+    public static final float GAME_HEIGHT = 1080;
+    private static final float PLAYER_SPEED = 1600f;
+    private static final float NPC_SPEED = 200f;
+    private static final float DROP_START_X = 0f;
+    private static final float DROP_START_Y = 400f;
+    private static final float BUCKET_START_X = 5f;
+    private static final float BUCKET_START_Y = 40f;
+
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -28,8 +37,6 @@ public class Main extends ApplicationAdapter {
     private IMovementManager npcMovementManager;
     private SceneIOManager inputManager;
 
-    public static final float GAME_WIDTH = 1920;
-    public static final float GAME_HEIGHT = 1080;
 
     @Override
     public void create() {
@@ -49,28 +56,19 @@ public class Main extends ApplicationAdapter {
             System.err.println("[ERROR] Failed to load bucket.png: " + e.getMessage());
         }
 
-        drop = new Rectangle();
-        drop.x = 0;
-        drop.y = 400;
-        drop.width = dropImage.getWidth();
-        drop.height = dropImage.getHeight();
-
-        bucket = new Rectangle();
-        bucket.x = 5;
-        bucket.y = 40;
-        bucket.width = bucketImage.getWidth();
-        bucket.height = bucketImage.getHeight();
+        drop = new Rectangle(DROP_START_X, DROP_START_Y, dropImage.getWidth(), dropImage.getHeight());
+        bucket = new Rectangle(BUCKET_START_X, BUCKET_START_Y, bucketImage.getWidth(), bucketImage.getHeight());
 
         playerMovementManager = new PlayerMovementBuilder()
                 .setX(bucket.x)
                 .setY(bucket.y)
-                .setSpeed(1600f)
+                .setSpeed(PLAYER_SPEED)
                 .build();
 
         npcMovementManager = new NPCMovementBuilder()
                 .setX(drop.x)
                 .setY(drop.y)
-                .setSpeed(200f)
+                .setSpeed(NPC_SPEED)
                 .withZigZagMovement(500f, 20f)
                 .setDirection(Direction.RIGHT)
                 .build();
@@ -82,24 +80,12 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render() {
         ScreenUtils.clear(0, 0, 0f, 0);
-
-        float deltaTime = Gdx.graphics.getDeltaTime();
-        // Set deltaTime for movement managers
-        playerMovementManager.setDeltaTime(deltaTime);
-        npcMovementManager.setDeltaTime(deltaTime);
-
-        // Update player's movement based on pressed keys
-        playerMovementManager.updateDirection(inputManager.getPressedKeys());
-
-        // Update positions based on new directions
-        playerMovementManager.updateMovement();
-        npcMovementManager.updateMovement();
-
-        // Update rectangle positions so the bucket follows the playerMovement position
-        bucket.x = playerMovementManager.getX();
-        bucket.y = playerMovementManager.getY();
-        drop.x = npcMovementManager.getX();
-        drop.y = npcMovementManager.getY();
+        try {
+            updateGame();
+        } catch (Exception e) {
+            System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+            Gdx.app.error("Main", "Exception during game update", e);
+        }
 
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
@@ -127,5 +113,20 @@ public class Main extends ApplicationAdapter {
         batch.dispose();
         dropImage.dispose();
         bucketImage.dispose();
+    }
+
+    private void updateGame() {
+        // Update player's movement based on pressed keys
+        playerMovementManager.updateDirection(inputManager.getPressedKeys());
+
+        // Update movement; exceptions here will be logged and thrown upward
+        playerMovementManager.updateMovement();
+        npcMovementManager.updateMovement();
+
+        // Synchronize rectangle positions with movement manager positions
+        bucket.x = playerMovementManager.getX();
+        bucket.y = playerMovementManager.getY();
+        drop.x = npcMovementManager.getX();
+        drop.y = npcMovementManager.getY();
     }
 }

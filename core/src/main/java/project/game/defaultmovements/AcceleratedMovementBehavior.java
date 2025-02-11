@@ -10,6 +10,7 @@ import project.game.abstractengine.movementmanager.MovementData;
 import project.game.abstractengine.movementmanager.MovementManager;
 import project.game.abstractengine.movementmanager.MovementUtils;
 import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
+import project.game.exceptions.MovementException;
 
 /**
  * @class AcceleratedMovementBehavior
@@ -48,7 +49,7 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
             String errorMessage = "Illegal negative values provided: acceleration="
                     + acceleration + ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         this.acceleration = acceleration;
         this.deceleration = deceleration;
@@ -115,7 +116,7 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
                 default:
                     String errorMessage = "Unknown movement direction: " + data.getDirection();
                     LOGGER.log(Level.SEVERE, errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
+                    throw new MovementException(errorMessage);
             }
 
             // Update the position in MovementData.
@@ -124,13 +125,13 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
 
             data.setX(newX);
             data.setY(newY);
-        } catch (IllegalArgumentException e) {
+        } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new RuntimeException("Error updating position in AcceleratedMovementBehavior", e);
+            throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE,
                     "Unexpected exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new RuntimeException("Error updating position in AcceleratedMovementBehavior", e);
+            throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
         }
     }
 

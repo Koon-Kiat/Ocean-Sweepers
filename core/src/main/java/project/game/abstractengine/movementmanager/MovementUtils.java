@@ -3,6 +3,8 @@ package project.game.abstractengine.movementmanager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import project.game.exceptions.MovementException;
+
 /**
  * @class MovementUtils
  * @brief Provides utility methods for movement calculations.
@@ -25,14 +27,14 @@ public class MovementUtils {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative in calculateDiagonalSpeed.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         try {
             return speed / (float) Math.sqrt(2);
         } catch (Exception e) {
             String errorMessage = "Error calculating diagonal speed: " + e.getMessage();
             LOGGER.log(Level.SEVERE, errorMessage, e);
-            throw new RuntimeException("Error calculating diagonal speed", e);
+            throw new MovementException("Error calculating diagonal speed", e);
         }
     }
 }

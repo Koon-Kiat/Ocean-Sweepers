@@ -1,9 +1,9 @@
 package project.game.abstractengine.movementmanager;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.Direction;
+import project.game.exceptions.MovementException;
 
 /**
  * @class MovementData
@@ -31,14 +31,10 @@ public class MovementData {
      */
     public MovementData(float x, float y, float speed, Direction direction) {
         if (speed < 0) {
-            String errorMessage = "Speed cannot be negative.";
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException("Speed cannot be negative: " + speed);
         }
         if (direction == null) {
-            String errorMessage = "Direction cannot be null.";
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException("Direction cannot be null");
         }
         this.x = x;
         this.y = y;
@@ -68,11 +64,6 @@ public class MovementData {
     }
 
     public void setSpeed(float speed) {
-        if (speed < 0) {
-            String errorMessage = "Negative speed provided: " + speed;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException("Speed must be non-negative.");
-        }
         this.speed = speed;
     }
 
@@ -81,11 +72,6 @@ public class MovementData {
     }
 
     public void setDirection(Direction direction) {
-        if (direction == null) {
-            String errorMessage = "Direction cannot be null.";
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
         this.direction = direction;
     }
 }

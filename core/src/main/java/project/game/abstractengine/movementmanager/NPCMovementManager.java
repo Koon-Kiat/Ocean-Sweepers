@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import project.game.Direction;
 import project.game.builder.NPCMovementBuilder;
+import project.game.exceptions.MovementException;
 
 /**
  * @class EnemyMovement
@@ -38,7 +39,7 @@ public class NPCMovementManager extends MovementManager {
         if (builder == null) {
             String errorMessage = "NPCMovementBuilder cannot be null.";
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new MovementException(errorMessage);
         }
         return builder;
     }
