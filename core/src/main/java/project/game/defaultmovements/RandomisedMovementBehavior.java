@@ -54,21 +54,14 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data) {
+    public void applyMovementBehavior(MovementData data, float deltaTime) {
         try {
-            float deltaTime = data.getDeltaTime();
-            if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in RandomisedMovementBehavior.updatePosition: "
-                        + deltaTime;
-                LOGGER.log(Level.SEVERE, errorMessage);
-                throw new IllegalArgumentException(errorMessage);
-            }
             remainingTime -= deltaTime;
             if (remainingTime <= 0) {
                 pickRandomBehavior();
             }
             if (currentBehavior != null) {
-                currentBehavior.applyMovementBehavior(data);
+                currentBehavior.applyMovementBehavior(data, deltaTime);
             }
         } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.log(Level.SEVERE,

@@ -49,16 +49,8 @@ public class FollowMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data) {
+    public void applyMovementBehavior(MovementData data, float deltaTime) {
         try {
-            float deltaTime = data.getDeltaTime();
-            if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in FollowMovementBehavior.updatePosition: "
-                        + deltaTime;
-                LOGGER.log(Level.SEVERE, errorMessage);
-                throw new IllegalArgumentException(errorMessage);
-            }
-
             Vector2 targetPos = new Vector2(targetManager.getX(), targetManager.getY());
             Vector2 currentPos = new Vector2(data.getX(), data.getY());
             Vector2 direction = targetPos.sub(currentPos).nor();

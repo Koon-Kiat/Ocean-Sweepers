@@ -57,15 +57,8 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data) {
+    public void applyMovementBehavior(MovementData data, float deltaTime) {
         try {
-            float deltaTime = data.getDeltaTime();
-            if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in updatePosition: " + deltaTime;
-                LOGGER.log(Level.SEVERE, errorMessage);
-                throw new IllegalArgumentException(errorMessage);
-            }
-
             // Clamp delta to prevent excessively large updates.
             deltaTime = Math.min(deltaTime, 1 / 30f);
 

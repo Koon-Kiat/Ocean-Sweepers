@@ -38,15 +38,8 @@ public class ConstantMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data) {
+    public void applyMovementBehavior(MovementData data, float deltaTime) {
         try {
-            float deltaTime = data.getDeltaTime();
-            if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in ConstantMovementBehavior.updatePosition: "
-                        + deltaTime;
-                LOGGER.log(Level.SEVERE, errorMessage);
-                throw new IllegalArgumentException(errorMessage);
-            }
             Vector2 deltaMovement = new Vector2();
             switch (data.getDirection()) {
                 case UP:

@@ -37,15 +37,8 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data) {
+    public void applyMovementBehavior(MovementData data, float deltaTime) {
         try {
-            float deltaTime = data.getDeltaTime();
-            if (deltaTime < 0) {
-                String errorMessage = "Negative deltaTime provided in ZigZagMovementBehavior.updatePosition: "
-                        + deltaTime;
-                LOGGER.log(Level.SEVERE, errorMessage);
-                throw new IllegalArgumentException(errorMessage);
-            }
             elapsedTime += deltaTime;
 
             Vector2 deltaMovement = new Vector2();
