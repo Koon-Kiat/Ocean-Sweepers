@@ -28,8 +28,8 @@ public class Main extends ApplicationAdapter {
     private IMovementManager npcMovementManager;
     private SceneIOManager inputManager;
 
-    public static final float GAME_WIDTH = 640f;
-    public static final float GAME_HEIGHT = 480f;
+    public static final float GAME_WIDTH = 1920;
+    public static final float GAME_HEIGHT = 1080;
 
     @Override
     public void create() {
@@ -71,7 +71,7 @@ public class Main extends ApplicationAdapter {
                 .setX(drop.x)
                 .setY(drop.y)
                 .setSpeed(200f)
-                .withZigZagMovement(50f, 100f)
+                .withZigZagMovement(500f, 20f)
                 .setDirection(Direction.RIGHT)
                 .build();
 
