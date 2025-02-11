@@ -29,14 +29,28 @@ public class NPCMovementBuilder {
     public Direction direction;
     public IMovementBehavior movementBehavior;
 
+    public float getX() {
+        return x;
+    }
+
     public NPCMovementBuilder setX(float x) {
+        validateCoordinate(x, "X");
         this.x = x;
         return this;
     }
 
+    public float getY() {
+        return y;
+    }
+
     public NPCMovementBuilder setY(float y) {
+        validateCoordinate(y, "Y");
         this.y = y;
         return this;
+    }
+
+    public float getSpeed() {
+        return speed;
     }
 
     public NPCMovementBuilder setSpeed(float speed) {
@@ -49,6 +63,10 @@ public class NPCMovementBuilder {
         return this;
     }
 
+    public Direction getDirection() {
+        return direction;
+    }
+
     public NPCMovementBuilder setDirection(Direction direction) {
         if (direction == null) {
             LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to Direction.NONE.");
@@ -59,25 +77,31 @@ public class NPCMovementBuilder {
         return this;
     }
 
+    public IMovementBehavior getMovementBehavior() {
+        return movementBehavior;
+    }
+
+    public NPCMovementBuilder withConstantMovement() {
+        this.movementBehavior = new ConstantMovementBehavior(this.speed);
+        return this;
+    }
+
     public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
-        if (amplitude < 0 || frequency < 0) {
-            LOGGER.log(Level.WARNING, "Negative amplitude and/or frequency provided: amplitude={0}, frequency={1}",
-                    new Object[] { amplitude, frequency });
-        }
+        validateZigZagParams(amplitude, frequency);
         try {
             this.movementBehavior = new ZigZagMovementBehavior(this.speed, amplitude, frequency);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception creating ZigZagMovementBehavior: " + e.getMessage(), e);
-            throw e;
+            LOGGER.log(Level.SEVERE, "Exception creating ZigZagMovementBehavior", e);
+            throw new IllegalStateException("Failed to create ZigZagMovementBehavior", e);
         }
         return this;
     }
 
     public NPCMovementBuilder withFollowMovement(IMovementManager targetManager) {
         if (targetManager == null) {
-            String errorMessage = "Target manager is null in withFollowMovement.";
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            String errorMsg = "Target manager is null in withFollowMovement.";
+            LOGGER.log(Level.SEVERE, errorMsg);
+            throw new IllegalArgumentException(errorMsg);
         }
         if (this.speed <= 0) {
             String errorMessage = "Invalid speed for FollowMovementBehavior: " + this.speed;
@@ -87,8 +111,8 @@ public class NPCMovementBuilder {
         try {
             this.movementBehavior = new FollowMovementBehavior(targetManager, this.speed);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception creating FollowMovementBehavior: " + e.getMessage(), e);
-            throw new RuntimeException("Error creating FollowMovementBehavior", e);
+            LOGGER.log(Level.SEVERE, "Exception creating FollowMovementBehavior", e);
+            throw new IllegalStateException("Failed to create FollowMovementBehavior", e);
         }
         return this;
     }
@@ -101,21 +125,24 @@ public class NPCMovementBuilder {
             throw new IllegalArgumentException(errorMessage);
         }
         if (minDuration <= 0 || maxDuration <= 0 || minDuration > maxDuration) {
-            String errorMessage = "Invalid duration range for RandomisedMovementBehavior: minDuration=" + minDuration
-                    + ", maxDuration=" + maxDuration;
+            String errorMessage = String.format(
+                    "Invalid duration range for RandomisedMovementBehavior: minDuration=%.2f, maxDuration=%.2f",
+                    minDuration, maxDuration);
             LOGGER.log(Level.SEVERE, errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
         try {
             this.movementBehavior = new RandomisedMovementBehavior(behaviorPool, minDuration, maxDuration);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception creating RandomisedMovementBehavior: " + e.getMessage(), e);
-            throw new RuntimeException("Error creating RandomisedMovementBehavior", e);
+            LOGGER.log(Level.SEVERE, "Exception creating RandomisedMovementBehavior", e);
+            throw new IllegalStateException("Failed to create RandomisedMovementBehavior", e);
         }
         return this;
     }
 
     public NPCMovementManager build() {
+        validateBuildRequirements();
+
         if (this.movementBehavior == null) {
             // Default to constant movement if no behavior is specified.
             String warnMessage = "No movement behavior specified. Defaulting to ConstantMovementBehavior.";
@@ -126,6 +153,7 @@ public class NPCMovementBuilder {
             this.direction = Direction.NONE;
             LOGGER.log(Level.WARNING, "No direction specified. Defaulting to Direction.NONE.");
         }
+
         // For movement behaviors that rely on a specified direction (i.e. not
         // FollowMovementBehavior),
         // ensure that direction is not NONE.
@@ -135,6 +163,34 @@ public class NPCMovementBuilder {
             LOGGER.log(Level.SEVERE, errorMessage);
             throw new IllegalArgumentException("Movement behavior cannot be used with Direction.NONE.");
         }
+
         return new NPCMovementManager(this);
+    }
+
+    // Private validations
+    private void validateCoordinate(float coordinate, String coordinateName) {
+        if (Float.isNaN(coordinate) || Float.isInfinite(coordinate)) {
+            String errorMessage = "Invalid " + coordinateName + " coordinate: " + coordinate;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    private void validateZigZagParams(float amplitude, float frequency) {
+        if (amplitude < 0 || frequency < 0) {
+            String errorMsg = String.format(
+                    "Negative amplitude or frequency for ZigZagMovement: amplitude=%.2f, frequency=%.2f",
+                    amplitude, frequency);
+            LOGGER.log(Level.SEVERE, errorMsg);
+            throw new IllegalArgumentException(errorMsg);
+        }
+    }
+
+    private void validateBuildRequirements() {
+        if (speed < 0) {
+            String errorMessage = "Speed cannot be negative. Current speed: " + speed;
+            LOGGER.log(Level.SEVERE, errorMessage);
+            throw new IllegalStateException(errorMessage);
+        }
     }
 }
