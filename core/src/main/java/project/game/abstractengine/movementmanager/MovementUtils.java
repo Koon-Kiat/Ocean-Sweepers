@@ -3,6 +3,14 @@ package project.game.abstractengine.movementmanager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * @class MovementUtils
+ * @brief Provides utility methods for movement calculations.
+ *
+ *        This class provides a static method to calculate the diagonal speed
+ *        based on the current speed. This is useful for maintaining consistent
+ *        overall speed when moving diagonally.
+ */
 public class MovementUtils {
 
     private static final Logger LOGGER = Logger.getLogger(MovementUtils.class.getName());

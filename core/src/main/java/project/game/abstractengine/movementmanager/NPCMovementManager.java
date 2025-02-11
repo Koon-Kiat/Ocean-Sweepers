@@ -59,6 +59,6 @@ public class NPCMovementManager extends MovementManager {
 
     @Override
     public void updateMovement() {
-        updatePosition();
+        applyMovementUpdate();
     }
 }

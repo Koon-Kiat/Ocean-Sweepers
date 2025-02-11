@@ -27,7 +27,6 @@ import project.game.defaultmovements.AcceleratedMovementBehavior;
 public abstract class MovementManager implements IMovementManager {
 
     private static final Logger LOGGER = Logger.getLogger(MovementManager.class.getName());
-
     private final Vector2 position;
     private float speed;
     private Direction direction;
@@ -44,75 +43,45 @@ public abstract class MovementManager implements IMovementManager {
      * @param behavior  Movement behavior strategy.
      */
     public MovementManager(float x, float y, float speed, Direction direction, IMovementBehavior behavior) {
-        if (behavior == null) {
-            String msg = "Movement behavior cannot be null.";
-            LOGGER.log(Level.SEVERE, msg);
-            throw new IllegalArgumentException(msg);
-        }
         if (speed < 0) {
             String msg = "Speed cannot be negative.";
             LOGGER.log(Level.SEVERE, msg);
             throw new IllegalArgumentException(msg);
         }
+        if (behavior == null) {
+            String msg = "Movement behavior cannot be null.";
+            LOGGER.log(Level.SEVERE, msg);
+            throw new IllegalArgumentException(msg);
+        }
+
         this.position = new Vector2(x, y);
         this.speed = speed;
         this.direction = (direction != null) ? direction : Direction.NONE;
         this.movementBehavior = behavior;
     }
 
-    // Getters and Setters
-    /**
-     * Gets the current x-coordinate.
-     *
-     * @return Current x-coordinate.
-     */
     @Override
     public float getX() {
         return position.x;
     }
 
-    /**
-     * Sets the x-coordinate.
-     *
-     * @param x New x-coordinate.
-     */
     public void setX(float x) {
         this.position.x = x;
     }
 
-    /**
-     * Gets the current y-coordinate.
-     *
-     * @return Current y-coordinate.
-     */
     @Override
     public float getY() {
         return position.y;
     }
 
-    /**
-     * Sets the y-coordinate.
-     *
-     * @param y New y-coordinate.
-     */
     public void setY(float y) {
         this.position.y = y;
     }
 
-    /**
-     * Gets the movement speed.
-     *
-     * @return Movement speed.
-     */
     public float getSpeed() {
         return speed;
     }
 
-    /**
-     * Sets the movement speed.
-     *
-     * @param speed New movement speed.
-     */
     public void setSpeed(float speed) {
         if (speed < 0) {
             String errorMessage = "Negative speed provided: " + speed;
@@ -122,34 +91,19 @@ public abstract class MovementManager implements IMovementManager {
         this.speed = speed;
     }
 
-    /**
-     * Gets the current movement direction.
-     *
-     * @return Current direction.
-     */
     public Direction getDirection() {
         return direction;
     }
 
-    /**
-     * Sets the movement direction.
-     *
-     * @param direction New movement direction.
-     */
     public void setDirection(Direction direction) {
         if (direction == null) {
             LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to Direction.NONE.");
             this.direction = Direction.NONE;
-        } else {
-            this.direction = direction;
         }
+        this.direction = direction;
+
     }
 
-    /**
-     * Sets the movement behavior strategy.
-     *
-     * @param movementBehavior New movement behavior.
-     */
     public void setMovementBehavior(IMovementBehavior movementBehavior) {
         if (movementBehavior == null) {
             String msg = "Movement behavior cannot be null.";
@@ -159,20 +113,10 @@ public abstract class MovementManager implements IMovementManager {
         this.movementBehavior = movementBehavior;
     }
 
-    /**
-     * Gets the elapsed delta time.
-     *
-     * @return Delta time since the last frame.
-     */
     public float getDeltaTime() {
         return deltaTime;
     }
 
-    /**
-     * Sets the delta time.
-     *
-     * @param deltaTime Elapsed delta time since the last frame.
-     */
     @Override
     public void setDeltaTime(float deltaTime) {
         if (deltaTime < 0) {
@@ -183,20 +127,11 @@ public abstract class MovementManager implements IMovementManager {
         this.deltaTime = deltaTime;
     }
 
-    /**
-     * Gets the current position vector.
-     *
-     * @return Current position.
-     */
     public Vector2 getPosition() {
         return position;
     }
 
-    /**
-     * Updates the position by delegating to the movement behavior, passing only
-     * necessary data via MovementData.
-     */
-    public void updatePosition() {
+    public void applyMovementUpdate() {
         if (movementBehavior == null) {
             LOGGER.log(Level.SEVERE, "Cannot update position: movement behavior is not set.");
             return;
@@ -212,7 +147,7 @@ public abstract class MovementManager implements IMovementManager {
         }
 
         try {
-            movementBehavior.updatePosition(data);
+            movementBehavior.applyMovementBehavior(data);
         } catch (Exception e) {
             String errorMessage = "Error during movement behavior update: " + e.getMessage();
             LOGGER.log(Level.SEVERE, errorMessage, e);
@@ -232,10 +167,15 @@ public abstract class MovementManager implements IMovementManager {
         }
     }
 
-    /**
-     * Stops movement by setting direction to NONE and resetting speed if using
-     * accelerated movement.
-     */
+    @Override
+    public void updateMovement() {
+        try {
+            applyMovementUpdate();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error updating movement: " + e.getMessage(), e);
+        }
+    }
+
     public void stop() {
         try {
             setDirection(Direction.NONE);
@@ -248,10 +188,6 @@ public abstract class MovementManager implements IMovementManager {
         }
     }
 
-    /**
-     * Resumes movement by restoring the last direction if using accelerated
-     * movement.
-     */
     public void resume() {
         try {
             if (movementBehavior instanceof AcceleratedMovementBehavior) {
@@ -263,9 +199,6 @@ public abstract class MovementManager implements IMovementManager {
         }
     }
 
-    /**
-     * Updates the movement direction based on the pressed keys.
-     */
     @Override
     public void updateDirection(Set<Integer> pressedKeys) {
         if (pressedKeys == null) {
@@ -313,16 +246,6 @@ public abstract class MovementManager implements IMovementManager {
         }
     }
 
-    /**
-     * Delegates to updatePosition() as a part of the movement update cycle.
-     */
-    @Override
-    public void updateMovement() {
-        try {
-            updatePosition();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating movement: " + e.getMessage(), e);
-        }
-    }
+
 
 }

@@ -16,13 +16,21 @@ import project.game.Direction;
 public class MovementData {
 
     private static final Logger LOGGER = Logger.getLogger(MovementData.class.getName());
-
     private float x;
     private float y;
     private float speed;
     private float deltaTime;
     private Direction direction;
 
+    /**
+     * Constructs a MovementData object with the specified parameters.
+     *
+     * @param x         Initial x-coordinate.
+     * @param y         Initial y-coordinate.
+     * @param speed     Movement speed.
+     * @param deltaTime Time elapsed since last update.
+     * @param direction Movement direction.
+     */
     public MovementData(float x, float y, float speed, float deltaTime, Direction direction) {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative.";
@@ -44,6 +52,7 @@ public class MovementData {
         this.speed = speed;
         this.deltaTime = deltaTime;
         this.direction = direction;
+
     }
 
     public float getX() {
