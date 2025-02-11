@@ -13,6 +13,13 @@ import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.RandomisedMovementBehavior;
 import project.game.defaultmovements.ZigZagMovementBehavior;
 
+/**
+ * @class NPCMovementBuilder
+ * @brief Builder for NPCMovement
+ *
+ *        This builder facilitates the creation of NPCMovement instances with
+ *        customizable movement behaviors.
+ */
 public class NPCMovementBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(NPCMovementBuilder.class.getName());

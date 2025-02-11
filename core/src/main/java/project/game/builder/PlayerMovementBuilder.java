@@ -11,7 +11,7 @@ import project.game.defaultmovements.ConstantMovementBehavior;
 
 /**
  * @class PlayerMovementBuilder
- * @brief Builder for PlayerMovement, now moved to its own file.
+ * @brief Builder for PlayerMovement
  *
  *        This builder facilitates the creation of PlayerMovement instances with
  *        customizable movement behaviors.
