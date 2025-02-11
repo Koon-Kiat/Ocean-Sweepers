@@ -31,7 +31,6 @@ public abstract class MovementManager implements IMovementManager {
     private float speed;
     private Direction direction;
     private IMovementBehavior movementBehavior;
-    private float deltaTime;
 
     /**
      * Constructs a MovementManager with the specified parameters.
@@ -113,25 +112,11 @@ public abstract class MovementManager implements IMovementManager {
         this.movementBehavior = movementBehavior;
     }
 
-    public float getDeltaTime() {
-        return deltaTime;
-    }
-
-    @Override
-    public void setDeltaTime(float deltaTime) {
-        if (deltaTime < 0) {
-            String errorMessage = "Negative deltaTime provided in updatePosition: " + deltaTime;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
-        this.deltaTime = deltaTime;
-    }
-
     public Vector2 getPosition() {
         return position;
     }
 
-    public void applyMovementUpdate() {
+    public void applyMovementUpdate(float dt) {
         if (movementBehavior == null) {
             LOGGER.log(Level.SEVERE, "Cannot update position: movement behavior is not set.");
             return;
@@ -140,14 +125,14 @@ public abstract class MovementManager implements IMovementManager {
         // Build a MovementData object from current fields
         MovementData data;
         try {
-            data = new MovementData(getX(), getY(), getSpeed(), getDeltaTime(), getDirection());
+            data = new MovementData(getX(), getY(), getSpeed(), getDirection());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to create MovementData instance: " + e.getMessage(), e);
             return;
         }
 
         try {
-            movementBehavior.applyMovementBehavior(data);
+            movementBehavior.applyMovementBehavior(data, dt);
         } catch (Exception e) {
             String errorMessage = "Error during movement behavior update: " + e.getMessage();
             LOGGER.log(Level.SEVERE, errorMessage, e);
@@ -169,8 +154,9 @@ public abstract class MovementManager implements IMovementManager {
 
     @Override
     public void updateMovement() {
+        float dt = com.badlogic.gdx.Gdx.graphics.getDeltaTime();
         try {
-            applyMovementUpdate();
+            applyMovementUpdate(dt);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error updating movement: " + e.getMessage(), e);
         }
@@ -245,7 +231,5 @@ public abstract class MovementManager implements IMovementManager {
             throw e;
         }
     }
-
-
 
 }

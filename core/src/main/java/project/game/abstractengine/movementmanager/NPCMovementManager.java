@@ -26,7 +26,12 @@ public class NPCMovementManager extends MovementManager {
      * @param builder The Builder instance containing configuration parameters.
      */
     public NPCMovementManager(NPCMovementBuilder builder) {
-        super(checkBuilder(builder).x, builder.y, builder.speed, builder.direction, builder.movementBehavior);
+        super(
+                checkBuilder(builder).getX(),
+                builder.getY(),
+                builder.getSpeed(),
+                builder.getDirection(),
+                builder.getMovementBehavior());
     }
 
     private static NPCMovementBuilder checkBuilder(NPCMovementBuilder builder) {
@@ -48,17 +53,7 @@ public class NPCMovementManager extends MovementManager {
     }
 
     @Override
-    public void setDeltaTime(float deltaTime) {
-        try {
-            super.setDeltaTime(deltaTime);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error setting delta time in NPCMovementManager: " + e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    @Override
     public void updateMovement() {
-        applyMovementUpdate();
+        super.updateMovement();
     }
 }

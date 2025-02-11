@@ -19,7 +19,6 @@ public class MovementData {
     private float x;
     private float y;
     private float speed;
-    private float deltaTime;
     private Direction direction;
 
     /**
@@ -28,17 +27,11 @@ public class MovementData {
      * @param x         Initial x-coordinate.
      * @param y         Initial y-coordinate.
      * @param speed     Movement speed.
-     * @param deltaTime Time elapsed since last update.
      * @param direction Movement direction.
      */
-    public MovementData(float x, float y, float speed, float deltaTime, Direction direction) {
+    public MovementData(float x, float y, float speed, Direction direction) {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative.";
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
-        if (deltaTime < 0) {
-            String errorMessage = "DeltaTime cannot be negative.";
             LOGGER.log(Level.SEVERE, errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
@@ -50,7 +43,6 @@ public class MovementData {
         this.x = x;
         this.y = y;
         this.speed = speed;
-        this.deltaTime = deltaTime;
         this.direction = direction;
 
     }
@@ -96,18 +88,4 @@ public class MovementData {
         }
         this.direction = direction;
     }
-
-    public float getDeltaTime() {
-        return deltaTime;
-    }
-
-    public void setDeltaTime(float deltaTime) {
-        if (deltaTime < 0) {
-            String errorMessage = "Negative deltaTime provided in updatePosition: " + deltaTime;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
-        this.deltaTime = deltaTime;
-    }
-
 }

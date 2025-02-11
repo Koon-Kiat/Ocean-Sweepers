@@ -26,7 +26,12 @@ public class PlayerMovementManager extends MovementManager {
      * @param builder The Builder instance containing configuration parameters.
      */
     public PlayerMovementManager(PlayerMovementBuilder builder) {
-        super(checkBuilder(builder).x, builder.y, builder.speed, builder.direction, builder.movementBehavior);
+        super(
+                checkBuilder(builder).getX(),
+                builder.getY(),
+                builder.getSpeed(),
+                builder.getDirection(),
+                builder.getMovementBehavior());
     }
 
     private static PlayerMovementBuilder checkBuilder(PlayerMovementBuilder builder) {
@@ -49,18 +54,7 @@ public class PlayerMovementManager extends MovementManager {
     }
 
     @Override
-    public void setDeltaTime(float deltaTime) {
-        try {
-            super.setDeltaTime(deltaTime);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error setting delta time in PlayerMovementManager: " + e.getMessage(), e);
-            throw e;
-
-        }
-    }
-
-    @Override
     public void updateMovement() {
-        applyMovementUpdate();
+        super.updateMovement();
     }
 }
