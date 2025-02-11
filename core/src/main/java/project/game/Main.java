@@ -154,11 +154,16 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void dispose() {
-        batch.dispose();
-        dropImage.dispose();
-        bucketImage.dispose();
+        if (batch != null) {
+            batch.dispose();
+        }
+        if (dropImage != null) {
+            dropImage.dispose();
+        }
+        if (bucketImage != null) {
+            bucketImage.dispose();
+        }
     }
-
     @Override
     public void resize(int width, int height) {
         //sceneManager.resize(width, height);

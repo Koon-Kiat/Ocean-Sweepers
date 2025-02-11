@@ -50,10 +50,6 @@ public class GameScene extends Scene {
 
         inputManager = new SceneIOManager();
 
-        
-
-
-        
         rebindRectangle = new Rectangle(50, 50, 150, 50);
         
         try {
@@ -103,7 +99,9 @@ public class GameScene extends Scene {
         // Set deltaTime for movement managers
         playerMovement.setDeltaTime(deltaTime);
         enemyMovement.setDeltaTime(deltaTime);
-
+        
+        // Set the input processor to the SceneIOManager instance so that all input events are forwarded
+        // to the SceneIOManager instance
         Gdx.input.setInputProcessor(inputManager);
 
         // Update player's movement based on pressed keys
@@ -147,7 +145,11 @@ public class GameScene extends Scene {
         // Print pressed keys
         for (Integer key : inputManager.getPressedKeys()) {
             System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
+            if (key == Input.Keys.ESCAPE) {
+                inputManager.openMenu();
+            }
         }
+        
         // Print mouse click status
         if (inputManager.isMouseClicked()) {
             System.out.println("[DEBUG] Mouse is clicked at position: " + inputManager.getMousePosition());

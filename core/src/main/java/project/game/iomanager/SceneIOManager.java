@@ -20,7 +20,6 @@ public class SceneIOManager extends IOManager {
         initializedefaultKeyBindings();
     }
 
-
     private void initializedefaultKeyBindings() {
         keyBindings.put(Input.Keys.W, Direction.UP);
         keyBindings.put(Input.Keys.S, Direction.DOWN);
@@ -46,22 +45,11 @@ public class SceneIOManager extends IOManager {
         }
     }
 
-    @Override
-    public boolean keyDown(int keycode) {
-        pressedKeys.add(keycode);
-        // Update movement based on the new pressed keys
-        return true;
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        pressedKeys.remove(keycode);
-        // Update movement based on the updated pressed keys
-        return true;
-    }
-
     public Map<Integer, Direction> getKeyBindings() {
         return keyBindings;
     }
 
+    public void openMenu() {
+        System.out.println("Opening menu...");
+    }
 }

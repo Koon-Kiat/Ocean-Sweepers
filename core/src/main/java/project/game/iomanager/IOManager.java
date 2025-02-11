@@ -10,7 +10,7 @@ public class IOManager extends InputAdapter {
 
     private Vector2 mousePosition;
     private boolean isMouseClicked;
-    protected Set<Integer> pressedKeys;
+    private Set<Integer> pressedKeys;
 
     public IOManager() {
         this.mousePosition = new Vector2();
@@ -49,8 +49,11 @@ public class IOManager extends InputAdapter {
         return isMouseClicked;
     }
 
+    public void setPressedKeys(Set<Integer> pressedKeys) {
+        this.pressedKeys = pressedKeys;
+    }
+
     public Set<Integer> getPressedKeys() {
         return pressedKeys;
     }
 }
-
