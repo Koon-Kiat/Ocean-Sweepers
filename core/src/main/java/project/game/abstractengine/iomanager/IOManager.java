@@ -53,4 +53,3 @@ public class IOManager extends InputAdapter {
         return pressedKeys;
     }
 }
-

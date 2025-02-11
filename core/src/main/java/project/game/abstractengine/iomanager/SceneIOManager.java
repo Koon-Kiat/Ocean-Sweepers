@@ -8,7 +8,6 @@ import com.badlogic.gdx.Input;
 import project.game.Direction;
 import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
 
-
 public class SceneIOManager extends IOManager {
 
     private IMovementManager movementManager;
