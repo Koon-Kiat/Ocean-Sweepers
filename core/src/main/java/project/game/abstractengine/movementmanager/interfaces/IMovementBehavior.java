@@ -13,5 +13,5 @@ import project.game.abstractengine.movementmanager.MovementData;
  */
 public interface IMovementBehavior {
 
-    void applyMovementBehavior(MovementData movementData);
+    void applyMovementBehavior(MovementData movementData, float deltaTime);
 }
