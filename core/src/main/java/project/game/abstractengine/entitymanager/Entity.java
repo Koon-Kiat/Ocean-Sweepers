@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 //import java.util.UUID;
 
 
-public abstract class Entity {
+public class Entity {
 	private static AtomicInteger idCounter = new AtomicInteger(0);
 	private String id;
 	private final Vector2 position;
@@ -85,6 +85,4 @@ public abstract class Entity {
 	public void setActive(boolean active) {
 		this.active = active;
 	}
-	
-	public abstract void update();
 }

@@ -13,11 +13,10 @@ public class PlayableMovableEntity extends MovableEntity {
 	
 	public void updateMovement() {
 		if (super.getEntity().isActive()) {
-			playerMovementManager.updateMovement();
+			this.playerMovementManager.updateMovement();
 		}
 	}
 	
-	@Override
 	public void update() {
 		updateMovement();
 	}
@@ -29,4 +28,5 @@ public class PlayableMovableEntity extends MovableEntity {
 	public void updateDirection(Direction direction) {
 		this.playerMovementManager.setDirection(direction);
 	}
+
 }

@@ -40,17 +40,17 @@ public class EntityManager {
 		return entityList;
 	}
 	
-	public void update() {
-		for (Entity entity: entityList) {
-			if (entity.isActive())
-			{
-				entity.update();
-			}
-		}
-		
-		checkCollision();
-		
-	}
+//	public void update() {
+//		for (Entity entity: entityList) {
+//			if (entity.isActive())
+//			{
+//				entity.update();
+//			}
+//		}
+//		
+//		checkCollision();
+//		
+//	}
 	
 	public void draw(SpriteBatch batch) {
 		for (Entity entity: entityList) {

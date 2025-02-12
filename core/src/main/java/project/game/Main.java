@@ -8,8 +8,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import project.game.abstractengine.entitymanager.Entity;
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.movementmanager.NPCMovementManager;
+import project.game.abstractengine.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
+import project.game.abstractengine.testentity.BucketEntity;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
 
@@ -19,9 +23,9 @@ public class Main extends ApplicationAdapter {
     private Texture dropImage;
     private Texture bucketImage;
     private Rectangle drop;
-    private Rectangle bucket;
-    private IMovementManager playerMovementManager;
-    private IMovementManager npcMovementManager;
+    private BucketEntity bucket;
+    private PlayerMovementManager playerMovementManager;
+    private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
 
     public static final float GAME_WIDTH = 640f;
@@ -52,20 +56,24 @@ public class Main extends ApplicationAdapter {
         drop.width = dropImage.getWidth();
         drop.height = dropImage.getHeight();
 
-        bucket = new Rectangle();
-        bucket.x = 5;
-        bucket.y = 40;
-        bucket.width = bucketImage.getWidth();
-        bucket.height = bucketImage.getHeight();
+//        bucket = new Rectangle();
+//        bucket.x = 5;
+//        bucket.y = 40;
+//        bucket.width = bucketImage.getWidth();
+//        bucket.height = bucketImage.getHeight();
+        
+        Entity genericBucketEntity = new Entity(5,40,bucketImage.getWidth(), bucketImage.getHeight(), true);
 
         playerMovementManager = new PlayerMovementBuilder()
-                .setX(bucket.x)
-                .setY(bucket.y)
+                .setX(genericBucketEntity.getX())
+                .setY(genericBucketEntity.getY())
                 .setSpeed(1600f)
                 .setDirection(Direction.NONE)
                 .withConstantMovement()
                 .build();
-
+        
+        bucket = new BucketEntity(genericBucketEntity, 1600f, playerMovementManager, "bucket.png");
+        
         npcMovementManager = new NPCMovementBuilder()
                 .setX(drop.x)
                 .setY(drop.y)
@@ -95,14 +103,16 @@ public class Main extends ApplicationAdapter {
         npcMovementManager.updateMovement();
 
         // Update rectangle positions so the bucket follows the playerMovement position
-        bucket.x = playerMovementManager.getX();
-        bucket.y = playerMovementManager.getY();
+        bucket.setX(playerMovementManager.getX());
+        bucket.setY(playerMovementManager.getY());
         drop.x = npcMovementManager.getX();
         drop.y = npcMovementManager.getY();
 
         batch.begin();
+        
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
-        batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
+        // batch.draw(bucketImage, bucket.getX(), bucket.getY(), bucket.getWidth(), bucket.getHeight());
+        bucket.render(batch);
         batch.end();
 
         // Print pressed keys
@@ -125,3 +135,4 @@ public class Main extends ApplicationAdapter {
         bucketImage.dispose();
     }
 }
+
