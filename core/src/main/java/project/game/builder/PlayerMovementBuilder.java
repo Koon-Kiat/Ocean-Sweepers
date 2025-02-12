@@ -4,8 +4,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.Direction;
-import project.game.abstractengine.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
 import project.game.defaultmovements.AcceleratedMovementBehavior;
 import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.exceptions.MovementException;
