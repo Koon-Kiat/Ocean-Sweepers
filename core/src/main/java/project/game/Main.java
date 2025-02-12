@@ -1,16 +1,24 @@
 package project.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
+import project.game.defaultmovements.ConstantMovementBehavior;
+import project.game.defaultmovements.FollowMovementBehavior;
+import project.game.defaultmovements.ZigZagMovementBehavior;
 import project.game.logmanager.LogManager;
 
 public class Main extends ApplicationAdapter {
@@ -22,12 +30,13 @@ public class Main extends ApplicationAdapter {
     public static final float GAME_WIDTH = 1920;
     public static final float GAME_HEIGHT = 1080;
     private static final float PLAYER_SPEED = 1600f;
-    private static final float NPC_SPEED = 200f;
+    private static final float NPC_SPEED = 500f;
     private static final float DROP_START_X = 0f;
     private static final float DROP_START_Y = 400f;
     private static final float BUCKET_START_X = 5f;
     private static final float BUCKET_START_Y = 40f;
 
+    List<IMovementBehavior> behaviorPool = new ArrayList<>();
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -36,7 +45,6 @@ public class Main extends ApplicationAdapter {
     private IMovementManager playerMovementManager;
     private IMovementManager npcMovementManager;
     private SceneIOManager inputManager;
-
 
     @Override
     public void create() {
@@ -63,13 +71,18 @@ public class Main extends ApplicationAdapter {
                 .setX(bucket.x)
                 .setY(bucket.y)
                 .setSpeed(PLAYER_SPEED)
+                .withAcceleratedMovement(1000f, 1500f)
                 .build();
+
+        behaviorPool.add(new ConstantMovementBehavior(NPC_SPEED));
+        behaviorPool.add(new ZigZagMovementBehavior(NPC_SPEED, 100f, 5f));
+        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, NPC_SPEED));
 
         npcMovementManager = new NPCMovementBuilder()
                 .setX(drop.x)
                 .setY(drop.y)
                 .setSpeed(NPC_SPEED)
-                .withZigZagMovement(500f, 20f)
+                .withRandomisedMovement(behaviorPool, 1f, 2f)
                 .setDirection(Direction.RIGHT)
                 .build();
 
@@ -93,19 +106,19 @@ public class Main extends ApplicationAdapter {
         batch.end();
 
         // Print pressed keys
-        /*
-         * for (Integer key : inputManager.getPressedKeys()) {
-         * System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
-         * }
-         * 
-         * // Print mouse click status
-         * if (inputManager.isMouseClicked()) {
-         * System.out.println("[DEBUG] Mouse is clicked at position: " +
-         * inputManager.getMousePosition());
-         * } else {
-         * System.out.println("[DEBUG] Mouse is not clicked.");
-         * }
-         */
+
+        for (Integer key : inputManager.getPressedKeys()) {
+            System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
+        }
+
+        // Print mouse click status
+        if (inputManager.isMouseClicked()) {
+            System.out.println("[DEBUG] Mouse is clicked at position: " +
+                    inputManager.getMousePosition());
+        } else {
+            System.out.println("[DEBUG] Mouse is not clicked.");
+        }
+
     }
 
     @Override
