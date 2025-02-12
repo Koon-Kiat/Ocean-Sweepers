@@ -27,8 +27,8 @@ public class Main extends ApplicationAdapter {
         LogManager.initialize();
     }
 
-    public static final float GAME_WIDTH = 1920;
-    public static final float GAME_HEIGHT = 1080;
+    public static final float GAME_WIDTH = 640;
+    public static final float GAME_HEIGHT = 480;
     private static final float PLAYER_SPEED = 1600f;
     private static final float NPC_SPEED = 500f;
     private static final float DROP_START_X = 0f;
