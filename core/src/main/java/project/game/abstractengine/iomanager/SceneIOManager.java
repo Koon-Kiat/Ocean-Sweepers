@@ -6,8 +6,7 @@ import java.util.Map;
 import com.badlogic.gdx.Input;
 
 import project.game.Direction;
-import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
-
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
 
 public class SceneIOManager extends IOManager {
 

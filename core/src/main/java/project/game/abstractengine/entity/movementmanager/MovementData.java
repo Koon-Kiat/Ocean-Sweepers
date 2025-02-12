@@ -1,28 +1,43 @@
-package project.game.abstractengine.movementmanager;
+package project.game.abstractengine.entity.movementmanager;
 
 import project.game.Direction;
+import project.game.exceptions.MovementException;
 
 /**
  * @class MovementData
  * @brief Holds minimal data needed for movement updates.
  *
- * This class decouples movement behavior from MovementManager, preventing
- * direct dependency on that concrete class.
+ *        This class decouples movement behavior from MovementManager,
+ *        preventing
+ *        direct dependency on that concrete class.
  */
 public class MovementData {
 
     private float x;
     private float y;
     private float speed;
-    private float deltaTime;
     private Direction direction;
 
-    public MovementData(float x, float y, float speed, float deltaTime, Direction direction) {
+    /**
+     * Constructs a MovementData object with the specified parameters.
+     *
+     * @param x         Initial x-coordinate.
+     * @param y         Initial y-coordinate.
+     * @param speed     Movement speed.
+     * @param direction Movement direction.
+     */
+    public MovementData(float x, float y, float speed, Direction direction) {
+        if (speed < 0) {
+            throw new MovementException("Speed cannot be negative: " + speed);
+        }
+        if (direction == null) {
+            throw new MovementException("Direction cannot be null");
+        }
         this.x = x;
         this.y = y;
         this.speed = speed;
-        this.deltaTime = deltaTime;
         this.direction = direction;
+
     }
 
     public float getX() {
@@ -47,14 +62,6 @@ public class MovementData {
 
     public void setSpeed(float speed) {
         this.speed = speed;
-    }
-
-    public float getDeltaTime() {
-        return deltaTime;
-    }
-
-    public void setDeltaTime(float deltaTime) {
-        this.deltaTime = deltaTime;
     }
 
     public Direction getDirection() {

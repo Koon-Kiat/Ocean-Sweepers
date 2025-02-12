@@ -11,7 +11,6 @@ public enum Direction {
     DOWN_RIGHT,
     NONE;
 
-
     public boolean is(Direction direction) {
         return this == direction;
     }
