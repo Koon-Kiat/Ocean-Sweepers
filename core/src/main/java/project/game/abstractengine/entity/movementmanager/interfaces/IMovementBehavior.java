@@ -1,6 +1,6 @@
-package project.game.abstractengine.movementmanager.interfaces;
+package project.game.abstractengine.entity.movementmanager.interfaces;
 
-import project.game.abstractengine.movementmanager.MovementData;
+import project.game.abstractengine.entity.movementmanager.MovementData;
 
 /**
  * @interface IMovementBehavior

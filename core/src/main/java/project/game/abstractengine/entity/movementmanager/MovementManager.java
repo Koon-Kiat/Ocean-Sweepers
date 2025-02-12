@@ -1,4 +1,4 @@
-package project.game.abstractengine.movementmanager;
+package project.game.abstractengine.entity.movementmanager;
 
 import java.util.Set;
 import java.util.logging.Level;
@@ -8,8 +8,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
-import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
-import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
 import project.game.defaultmovements.AcceleratedMovementBehavior;
 import project.game.exceptions.MovementException;
 
@@ -229,7 +229,7 @@ public abstract class MovementManager implements IMovementManager {
             setDirection(newDirection);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error processing input keys", e);
-            throw new MovementException("Error processing input keys", e); // Wrap and rethrow
+            throw new MovementException("Error processing input keys", e);
         }
     }
 

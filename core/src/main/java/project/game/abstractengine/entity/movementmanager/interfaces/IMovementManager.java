@@ -1,4 +1,4 @@
-package project.game.abstractengine.movementmanager.interfaces;
+package project.game.abstractengine.entity.movementmanager.interfaces;
 
 import java.util.Set;
 
@@ -15,7 +15,8 @@ public interface IMovementManager {
 
     float getY();
 
+    void updateMovement();
+
     void updateDirection(Set<Integer> pressedKeys);
 
-    void updateMovement();
 }
