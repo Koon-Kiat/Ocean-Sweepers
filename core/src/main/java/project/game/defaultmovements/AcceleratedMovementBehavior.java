@@ -6,10 +6,9 @@ import java.util.logging.Logger;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
-import project.game.abstractengine.movementmanager.MovementData;
-import project.game.abstractengine.movementmanager.MovementManager;
-import project.game.abstractengine.movementmanager.MovementUtils;
-import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entity.movementmanager.MovementData;
+import project.game.abstractengine.entity.movementmanager.MovementUtils;
+import project.game.abstractengine.entity.movementmanager.interfaces.IStoppableMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
@@ -28,7 +27,7 @@ import project.game.exceptions.MovementException;
  *        moving in a
  *        direction and decelerates when stopping or changing direction.
  */
-public class AcceleratedMovementBehavior implements IMovementBehavior {
+public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
 
     private static final Logger LOGGER = Logger.getLogger(AcceleratedMovementBehavior.class.getName());
     private final float acceleration;
@@ -135,11 +134,13 @@ public class AcceleratedMovementBehavior implements IMovementBehavior {
         }
     }
 
-    public void stopMovement(MovementManager manager) {
+    @Override
+    public void stopMovement(MovementData data, float deltaTime) {
         currentSpeed = 0;
-        manager.setDirection(Direction.NONE);
+        data.setDirection(Direction.NONE);
     }
 
-    public void resumeMovement(MovementManager manager) {
+    @Override
+    public void resumeMovement(MovementData data, float deltaTime) {
     }
 }

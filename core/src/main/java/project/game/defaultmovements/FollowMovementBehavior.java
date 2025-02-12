@@ -5,9 +5,9 @@ import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.abstractengine.movementmanager.MovementData;
-import project.game.abstractengine.movementmanager.interfaces.IMovementBehavior;
-import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
+import project.game.abstractengine.entity.movementmanager.MovementData;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
 import project.game.exceptions.MovementException;
 
 /**
