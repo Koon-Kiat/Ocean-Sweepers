@@ -6,8 +6,8 @@ import project.game.abstractengine.movementmanager.NPCMovementManager;
 public class NPCMovableEntity extends MovableEntity {
 	private NPCMovementManager npcMovementManager;
 	
-	public NPCMovableEntity(float speed, NPCMovementManager npcMovementManager) {
-		super(speed);
+	public NPCMovableEntity(Entity entity, float speed, NPCMovementManager npcMovementManager) {
+		super(entity, speed);
 		this.npcMovementManager = npcMovementManager;
 	}
 	

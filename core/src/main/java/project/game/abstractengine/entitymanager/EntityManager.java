@@ -2,9 +2,12 @@ package project.game.abstractengine.entitymanager;
 
 import java.util.ArrayList;
 import java.util.List;
-//import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.util.HashSet;
 import java.util.Set;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+import project.game.abstractengine.entitymanager.interfaces.Collidable;
+import project.game.abstractengine.entitymanager.interfaces.Renderable;
 
 
 public class EntityManager {
@@ -39,8 +42,42 @@ public class EntityManager {
 	
 	public void update() {
 		for (Entity entity: entityList) {
-			entity.update();
+			if (entity.isActive())
+			{
+				entity.update();
+			}
 		}
 		
+		checkCollision();
+		
 	}
+	
+	public void draw(SpriteBatch batch) {
+		for (Entity entity: entityList) {
+			if (entity.isActive() && entity instanceof Renderable) {
+				Renderable renderableEntity = (Renderable) entity;
+				renderableEntity.render(batch);
+			}
+		}
+	}
+	
+	public void checkCollision() {
+		for (int i = 0; i < entityList.size(); i++) {
+			Entity entityA = entityList.get(i);
+			if (entityA instanceof Collidable) {
+				Collidable collidableA = (Collidable) entityA;
+				for (int j = i + 1; j < entityList.size(); j++) {
+					Entity entityB = entityList.get(j);
+					if (entityB instanceof Collidable) {
+						Collidable collidableB = (Collidable) entityB;
+						if (collidableA.checkCollision(entityB)) {
+							collidableA.onCollision(entityB);
+							collidableB.onCollision(entityA);
+						}
+					}
+				}
+			}
+		}
+	}
+	
 }

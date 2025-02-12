@@ -1,11 +1,13 @@
 package project.game.abstractengine.entitymanager;
+
+import java.util.concurrent.atomic.AtomicInteger;
 import com.badlogic.gdx.math.Vector2;
 
 //import java.util.UUID;
 
 
 public abstract class Entity {
-	private static int idCounter = 0;
+	private static AtomicInteger idCounter = new AtomicInteger(0);
 	private String id;
 	private final Vector2 position;
 	private float width;
@@ -26,15 +28,10 @@ public abstract class Entity {
 		this.width = width;
 		this.height = height;
 		this.active = active;
-		
 	}
 	
-	public Entity(float x, float y) {
-		this.position = new Vector2(x,y);
-	}
-	
-	private synchronized String generateUniqueID() {
-		return "E" + (idCounter++);
+	private String generateUniqueID() {
+		return "E" + idCounter.getAndIncrement();
 	}
 	
 	public void setID(String id) {

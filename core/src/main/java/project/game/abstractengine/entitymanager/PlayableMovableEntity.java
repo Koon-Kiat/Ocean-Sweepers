@@ -6,17 +6,18 @@ import project.game.abstractengine.movementmanager.PlayerMovementManager;
 public class PlayableMovableEntity extends MovableEntity {
 	private PlayerMovementManager playerMovementManager;
 	
-	public PlayableMovableEntity(float speed, PlayerMovementManager playerMovementManager) {
-		super(speed);
+	public PlayableMovableEntity(Entity entity, float speed, PlayerMovementManager playerMovementManager) {
+		super(entity, speed);
 		this.playerMovementManager = playerMovementManager;
 	}
 	
 	public void updateMovement() {
-		if (super.isActive()) {
+		if (super.getEntity().isActive()) {
 			playerMovementManager.updateMovement();
 		}
 	}
 	
+	@Override
 	public void update() {
 		updateMovement();
 	}
