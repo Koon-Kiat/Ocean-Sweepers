@@ -1,7 +1,5 @@
 package project.game.abstractengine.entity.movementmanager;
 
-import java.util.logging.Logger;
-
 import project.game.Direction;
 import project.game.exceptions.MovementException;
 
@@ -15,7 +13,6 @@ import project.game.exceptions.MovementException;
  */
 public class MovementData {
 
-    private static final Logger LOGGER = Logger.getLogger(MovementData.class.getName());
     private float x;
     private float y;
     private float speed;

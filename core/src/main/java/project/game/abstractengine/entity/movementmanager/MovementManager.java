@@ -10,7 +10,6 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.Direction;
 import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
 import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
-import project.game.defaultmovements.AcceleratedMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
@@ -160,29 +159,6 @@ public abstract class MovementManager implements IMovementManager {
             applyMovementUpdate(dt);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error updating movement: " + e.getMessage(), e);
-        }
-    }
-
-    public void stop() {
-        try {
-            setDirection(Direction.NONE);
-            if (movementBehavior instanceof AcceleratedMovementBehavior) {
-                ((AcceleratedMovementBehavior) movementBehavior).stopMovement(this);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error during stop(): " + e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    public void resume() {
-        try {
-            if (movementBehavior instanceof AcceleratedMovementBehavior) {
-                ((AcceleratedMovementBehavior) movementBehavior).resumeMovement(this);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error during resume(): " + e.getMessage(), e);
-            throw e;
         }
     }
 
