@@ -3,6 +3,7 @@ package project.game.movementmanager;
 import java.util.Map;
 import java.util.Set;
 
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.movementmanager.defaultmovementbehaviour.AcceleratedMovementBehavior;
