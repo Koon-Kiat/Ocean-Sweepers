@@ -9,24 +9,28 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.abstractengine.entitymanager.Entity;
+import project.game.abstractengine.entitymanager.EntityManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.movementmanager.NPCMovementManager;
 import project.game.abstractengine.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
 import project.game.abstractengine.testentity.BucketEntity;
+import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
+import project.game.abstractengine.assetmanager.GameAsset;
 
 public class Main extends ApplicationAdapter {
 
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
-    private Rectangle drop;
+    private DropEntity drop;
     private BucketEntity bucket;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
+    private EntityManager entityManager;
 
     public static final float GAME_WIDTH = 640f;
     public static final float GAME_HEIGHT = 480f;
@@ -34,28 +38,45 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create() {
 
-
+    	
         batch = new SpriteBatch();
+        //gameAsset = gameAsset.getInstance();
+        entityManager = new EntityManager();
         try {
-            dropImage = new Texture(Gdx.files.internal("droplet.png"));
+        	GameAsset.getInstance().loadTextureAssets("droplet.png");
+        	GameAsset.getInstance().loadTextureAssets("bucket.png");
+        	GameAsset.getInstance().update();
+        	GameAsset.getInstance().getAssetManager().finishLoading();
+        	if (GameAsset.getInstance().isLoaded()) {
+        		dropImage = GameAsset.getInstance().getAsset("droplet.png", Texture.class);
+        		bucketImage = GameAsset.getInstance().getAsset("bucket.png", Texture.class);
+        	} else {
+        		System.err.println("[ERROR] Asset 'droplet.png'/'bucket.png' not loaded yet");
+        	}
+        	
+            //dropImage = new Texture("droplet.png");
             System.out.println("[DEBUG] Loaded droplet.png successfully.");
+            System.out.println("[DEBUG] Loaded bucket.png successfully.");
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to load droplet.png: " + e.getMessage());
         }
 
-        try {
-            bucketImage = new Texture(Gdx.files.internal("bucket.png"));
-            System.out.println("[DEBUG] Loaded bucket.png successfully.");
-        } catch (Exception e) {
-            System.err.println("[ERROR] Failed to load bucket.png: " + e.getMessage());
-        }
+//        try {
+//        	GameAsset.getInstance().loadTextureAssets("bucket.png");
+//        	GameAsset.getInstance().update();
+//            //bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+//            System.out.println("[DEBUG] Loaded bucket.png successfully.");
+//        } catch (Exception e) {
+//            System.err.println("[ERROR] Failed to load bucket.png: " + e.getMessage());
+//        }
 
-        drop = new Rectangle();
-        drop.x = 0;
-        drop.y = 400;
-        drop.width = dropImage.getWidth();
-        drop.height = dropImage.getHeight();
-
+//        drop = new Rectangle();
+//        drop.x = 0;
+//        drop.y = 400;
+//        drop.width = dropImage.getWidth();
+//        drop.height = dropImage.getHeight();
+        
+        Entity genericDropEntity = new Entity(0,400, dropImage.getWidth(), dropImage.getHeight(), true);
 //        bucket = new Rectangle();
 //        bucket.x = 5;
 //        bucket.y = 40;
@@ -72,17 +93,21 @@ public class Main extends ApplicationAdapter {
                 .withConstantMovement()
                 .build();
         
-        bucket = new BucketEntity(genericBucketEntity, 1600f, playerMovementManager, "bucket.png");
+        
         
         npcMovementManager = new NPCMovementBuilder()
-                .setX(drop.x)
-                .setY(drop.y)
+                .setX(genericDropEntity.getX())
+                .setY(genericDropEntity.getY())
                 .setSpeed(200f)
                 .withZigZagMovement(50f, 1f)
                 .setDirection(Direction.RIGHT)
                 .build();
 
         inputManager = new SceneIOManager(playerMovementManager);
+        bucket = new BucketEntity(genericBucketEntity, 1600f, playerMovementManager, "bucket.png");
+        drop = new DropEntity(genericDropEntity, 200f, npcMovementManager, "droplet.png");
+        entityManager.addEntity(bucket);
+        entityManager.addEntity(drop);
         Gdx.input.setInputProcessor(inputManager);
     }
 
@@ -105,14 +130,19 @@ public class Main extends ApplicationAdapter {
         // Update rectangle positions so the bucket follows the playerMovement position
         bucket.setX(playerMovementManager.getX());
         bucket.setY(playerMovementManager.getY());
-        drop.x = npcMovementManager.getX();
-        drop.y = npcMovementManager.getY();
+        drop.setX(npcMovementManager.getX());
+        drop.setY(npcMovementManager.getY());
 
+        
+        entityManager.checkCollision();
+        
         batch.begin();
         
-        batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
+//        batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
         // batch.draw(bucketImage, bucket.getX(), bucket.getY(), bucket.getWidth(), bucket.getHeight());
-        bucket.render(batch);
+//        drop.render(batch);
+//        bucket.render(batch);
+        entityManager.draw(batch);
         batch.end();
 
         // Print pressed keys

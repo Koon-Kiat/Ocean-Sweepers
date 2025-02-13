@@ -1,25 +1,25 @@
 package project.game.abstractengine.testentity;
 
-import project.game.abstractengine.entitymanager.Entity;
-import project.game.abstractengine.entitymanager.PlayableMovableEntity;
-import project.game.abstractengine.entitymanager.interfaces.*;
-import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.movementmanager.PlayerMovementManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class BucketEntity extends PlayableMovableEntity implements Movable, Collidable, Renderable {
+import project.game.abstractengine.entitymanager.Entity;
+import project.game.abstractengine.entitymanager.NPCMovableEntity;
+import project.game.abstractengine.entitymanager.interfaces.*;
+import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.movementmanager.NPCMovementManager;
+
+
+public class DropEntity extends NPCMovableEntity implements Collidable, Movable, Renderable{
 	
-	private PlayerMovementManager movementManager;
+	private NPCMovementManager movementManager;
 	private String texturePath;
 	
-	public BucketEntity(Entity entity, float speed, PlayerMovementManager movementManager, String texturePath) {
+	public DropEntity(Entity entity, float speed, NPCMovementManager movementManager, String texturePath) {
 		super(entity, speed, movementManager);
 		this.texturePath = texturePath;
 		GameAsset.getInstance().loadTextureAssets(texturePath);
-		
 	}
-	
 	
 	@Override
 	public boolean checkCollision(Entity other) {
@@ -42,8 +42,7 @@ public class BucketEntity extends PlayableMovableEntity implements Movable, Coll
         }
     }
 	
-	public PlayerMovementManager getMovementManager() {
+	public NPCMovementManager getMovementManager() {
 		return this.movementManager;
 	}
-	
 }

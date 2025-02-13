@@ -47,11 +47,18 @@ public class GameAsset implements Disposable {
 		return assetManager.get(filePath, type);
 	}
 	
+	public AssetManager getAssetManager() {
+		return this.assetManager;
+	}
+	
 	@Override
 	public void dispose() {
 		assetManager.dispose();
 	}
 	
+	public void update() {
+		assetManager.update();
+	}
 	
 	
 }
