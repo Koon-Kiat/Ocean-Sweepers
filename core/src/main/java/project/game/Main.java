@@ -1,5 +1,8 @@
 package project.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -10,18 +13,32 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.iomanager.SceneIOManager;
-import project.game.movementmanager.EnemyMovement;
-import project.game.movementmanager.PlayerMovement;
-import project.game.scenemanager.GameScene;
-import project.game.scenemanager.MainMenuScene;
-import project.game.scenemanager.SceneManager;
-
-// import project.game.movementmanager.interfaces.IMovementManager;
-
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
+import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.builder.NPCMovementBuilder;
+import project.game.builder.PlayerMovementBuilder;
+import project.game.defaultmovements.ConstantMovementBehavior;
+import project.game.defaultmovements.FollowMovementBehavior;
+import project.game.defaultmovements.ZigZagMovementBehavior;
+import project.game.logmanager.LogManager;
 
 public class Main extends ApplicationAdapter {
 
+    static {
+        LogManager.initialize();
+    }
+
+    public static final float GAME_WIDTH = 640;
+    public static final float GAME_HEIGHT = 480;
+    private static final float PLAYER_SPEED = 1600f;
+    private static final float NPC_SPEED = 500f;
+    private static final float DROP_START_X = 0f;
+    private static final float DROP_START_Y = 400f;
+    private static final float BUCKET_START_X = 5f;
+    private static final float BUCKET_START_Y = 40f;
+
+    List<IMovementBehavior> behaviorPool = new ArrayList<>();
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -30,16 +47,13 @@ public class Main extends ApplicationAdapter {
     private Rectangle bucket;
     private Rectangle rebindRectangle;
     private ShapeRenderer shapeRenderer;
-    private PlayerMovement playerMovement;
+    private IMovementManager playerMovementManager;
     private Stage stage;
-    private EnemyMovement enemyMovement;
+    private IMovementManager npcMovementManager;
     private SceneIOManager inputManager;
     private SceneManager sceneManager;
     private MainMenuScene mainMenuScene;
     private GameScene gameScene;
-
-    public static final float GAME_WIDTH = 640f;
-    public static final float GAME_HEIGHT = 480f;
 
     @Override
     public void create() {
@@ -109,6 +123,12 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render() {
         ScreenUtils.clear(0, 0, 0f, 0);
+        try {
+            updateGame();
+        } catch (Exception e) {
+            System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+            Gdx.app.error("Main", "Exception during game update", e);
+        }
 
         float deltaTime = Gdx.graphics.getDeltaTime();
         // Render current scene (Scene Manager)
@@ -139,6 +159,11 @@ public class Main extends ApplicationAdapter {
         // batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
         // batch.end();
 
+        // Print pressed keys
+
+        for (Integer key : inputManager.getPressedKeys()) {
+            System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
+        }
         // // Print pressed keys
         // for (Integer key : inputManager.getPressedKeys()) {
         //     System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
@@ -157,6 +182,21 @@ public class Main extends ApplicationAdapter {
         batch.dispose();
         dropImage.dispose();
         bucketImage.dispose();
+    }
+
+    private void updateGame() {
+        // Update player's movement based on pressed keys
+        playerMovementManager.updateDirection(inputManager.getPressedKeys());
+
+        // Update movement; exceptions here will be logged and thrown upward
+        playerMovementManager.updateMovement();
+        npcMovementManager.updateMovement();
+
+        // Synchronize rectangle positions with movement manager positions
+        bucket.x = playerMovementManager.getX();
+        bucket.y = playerMovementManager.getY();
+        drop.x = npcMovementManager.getX();
+        drop.y = npcMovementManager.getY();
     }
 
     @Override

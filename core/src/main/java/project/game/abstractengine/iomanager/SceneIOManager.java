@@ -1,14 +1,13 @@
-package project.game.iomanager;
-
-import com.badlogic.gdx.Input;
-
-import project.game.movementmanager.Direction;
-import project.game.movementmanager.interfaces.IMovementManager;
+package project.game.abstractengine.iomanager;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.badlogic.gdx.Input;
+
+import project.game.Direction;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
 
 public class SceneIOManager extends IOManager {
 

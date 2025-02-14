@@ -1,4 +1,4 @@
-package project.game.iomanager;
+package project.game.abstractengine.iomanager;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -53,4 +53,3 @@ public class IOManager extends InputAdapter {
         return pressedKeys;
     }
 }
-

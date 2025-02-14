@@ -1,4 +1,4 @@
-package project.game.movementmanager;
+package project.game;
 
 public enum Direction {
     UP,
@@ -10,7 +10,6 @@ public enum Direction {
     DOWN_LEFT,
     DOWN_RIGHT,
     NONE;
-
 
     public boolean is(Direction direction) {
         return this == direction;
