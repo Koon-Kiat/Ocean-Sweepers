@@ -12,22 +12,29 @@ import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 
 public class EntityManager {
 
-	private List<Entity> entityList;
-	private Set<String> entityIDs;
+	private final List<IRenderable> renderables;
+	private final List<Entity> entityList;
+	private final Set<String> entityIDs;
 
 	public EntityManager() {
+		this.renderables = new ArrayList<>();
 		this.entityList = new ArrayList<>();
 		this.entityIDs = new HashSet<>();
 
 	}
 
-	public boolean addEntity(Entity entity) {
-		if (entityIDs.contains(entity.getID())) {
-			System.out.println("Duplicate ID: " + entity.getID());
-			return false;
+	public boolean addEntity(IRenderable renderable) {
+		renderables.add(renderable);
+
+		if (renderable instanceof Entity) {
+			Entity entity = (Entity) renderable;
+			if (entityIDs.contains(entity.getID())) {
+				System.out.println("Duplicate ID: " + entity.getID());
+				return false;
+			}
+			entityIDs.add(entity.getID());
+			entityList.add(entity);
 		}
-		entityList.add(entity);
-		entityIDs.add(entity.getID());
 		return true;
 	}
 
@@ -41,11 +48,9 @@ public class EntityManager {
 	}
 
 	public void draw(SpriteBatch batch) {
-		for (Entity entity : entityList) {
-			if (entity.isActive() && entity instanceof IRenderable) {
-				IRenderable renderableEntity = (IRenderable) entity;
-				renderableEntity.render(batch);
-			}
+		// Iterate over renderables instead of entityList
+		for (IRenderable renderable : renderables) {
+			renderable.render(batch);
 		}
 	}
 
