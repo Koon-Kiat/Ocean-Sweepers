@@ -7,25 +7,22 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-
-import project.game.abstractengine.entitymanager.Entity;
-import project.game.abstractengine.entitymanager.EntityManager;
+import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.entitysystem.entitymanager.Entity;
+import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
+import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.GameScene;
+import project.game.abstractengine.scenemanager.MainMenuScene;
+import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.abstractengine.testentity.BucketEntity;
 import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
-import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
-import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.scenemanager.GameScene;
-import project.game.abstractengine.scenemanager.MainMenuScene;
-import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.logmanager.LogManager;
 
-
 public class Main extends ApplicationAdapter {
-
 
     private SpriteBatch batch;
     private Texture dropImage;
@@ -51,34 +48,31 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create() {
 
-    	
         batch = new SpriteBatch();
-        //gameAsset = gameAsset.getInstance();
+        // gameAsset = gameAsset.getInstance();
         entityManager = new EntityManager();
         try {
-        	GameAsset.getInstance().loadTextureAssets("droplet.png");
-        	GameAsset.getInstance().loadTextureAssets("bucket.png");
-        	GameAsset.getInstance().update();
-        	GameAsset.getInstance().getAssetManager().finishLoading();
-        	if (GameAsset.getInstance().isLoaded()) {
-        		dropImage = GameAsset.getInstance().getAsset("droplet.png", Texture.class);
-        		bucketImage = GameAsset.getInstance().getAsset("bucket.png", Texture.class);
-        	} else {
-        		System.err.println("[ERROR] Asset 'droplet.png'/'bucket.png' not loaded yet");
-        	}
-        	
-            //dropImage = new Texture("droplet.png");
+            GameAsset.getInstance().loadTextureAssets("droplet.png");
+            GameAsset.getInstance().loadTextureAssets("bucket.png");
+            GameAsset.getInstance().update();
+            GameAsset.getInstance().getAssetManager().finishLoading();
+            if (GameAsset.getInstance().isLoaded()) {
+                dropImage = GameAsset.getInstance().getAsset("droplet.png", Texture.class);
+                bucketImage = GameAsset.getInstance().getAsset("bucket.png", Texture.class);
+            } else {
+                System.err.println("[ERROR] Asset 'droplet.png'/'bucket.png' not loaded yet");
+            }
+
+            // dropImage = new Texture("droplet.png");
             System.out.println("[DEBUG] Loaded droplet.png successfully.");
             System.out.println("[DEBUG] Loaded bucket.png successfully.");
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to load droplet.png: " + e.getMessage());
         }
 
-        
-        Entity genericDropEntity = new Entity(0,400, dropImage.getWidth(), dropImage.getHeight(), true);
+        Entity genericDropEntity = new Entity(0, 400, dropImage.getWidth(), dropImage.getHeight(), true);
 
-        
-        Entity genericBucketEntity = new Entity(5,40,bucketImage.getWidth(), bucketImage.getHeight(), true);
+        Entity genericBucketEntity = new Entity(5, 40, bucketImage.getWidth(), bucketImage.getHeight(), true);
 
         playerMovementManager = new PlayerMovementBuilder()
                 .setX(genericBucketEntity.getX())
@@ -87,9 +81,7 @@ public class Main extends ApplicationAdapter {
                 .setDirection(Direction.NONE)
                 .withConstantMovement()
                 .build();
-        
-        
-        
+
         npcMovementManager = new NPCMovementBuilder()
                 .setX(genericDropEntity.getX())
                 .setY(genericDropEntity.getY())
@@ -99,10 +91,10 @@ public class Main extends ApplicationAdapter {
                 .build();
 
         inputManager = new SceneIOManager();
-        
+
         bucket = new BucketEntity(genericBucketEntity, 1600f, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, 200f, npcMovementManager, "droplet.png");
-        
+
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
         Gdx.input.setInputProcessor(inputManager);
@@ -125,11 +117,11 @@ public class Main extends ApplicationAdapter {
         float deltaTime = Gdx.graphics.getDeltaTime();
 
         // Set deltaTime for movement managers
-//        playerMovementManager.setDeltaTime(deltaTime);
-//        npcMovementManager.setDeltaTime(deltaTime);
+        // playerMovementManager.setDeltaTime(deltaTime);
+        // npcMovementManager.setDeltaTime(deltaTime);
 
         // Update player's movement based on pressed keys
-//        playerMovementManager.updateDirection(inputManager.getPressedKeys());
+        // playerMovementManager.updateDirection(inputManager.getPressedKeys());
 
         // Update positions based on new directions
         playerMovementManager.updateMovement();
@@ -141,11 +133,10 @@ public class Main extends ApplicationAdapter {
         drop.setX(npcMovementManager.getX());
         drop.setY(npcMovementManager.getY());
 
-        
         entityManager.checkCollision();
-        
+
         batch.begin();
-        
+
         entityManager.draw(batch);
         batch.end();
 
@@ -170,4 +161,3 @@ public class Main extends ApplicationAdapter {
         // sceneManager.resize(width, height);
     }
 }
-

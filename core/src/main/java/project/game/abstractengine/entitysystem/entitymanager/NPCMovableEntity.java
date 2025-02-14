@@ -1,7 +1,7 @@
-package project.game.abstractengine.entitymanager;
+package project.game.abstractengine.entitysystem.entitymanager;
 
 import project.game.Direction;
-import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 
 public class NPCMovableEntity extends MovableEntity {
 	private NPCMovementManager npcMovementManager;

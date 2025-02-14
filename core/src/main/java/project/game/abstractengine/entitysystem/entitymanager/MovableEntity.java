@@ -1,9 +1,9 @@
-package project.game.abstractengine.entitymanager;
+package project.game.abstractengine.entitysystem.entitymanager;
 
-import project.game.abstractengine.entitymanager.interfaces.Movable;
+import project.game.abstractengine.entitysystem.interfaces.IMovable;
 
 
-public abstract class MovableEntity extends Entity implements Movable {
+public abstract class MovableEntity extends Entity implements IMovable {
 	
 	private final Entity entity;
 	private float speed;

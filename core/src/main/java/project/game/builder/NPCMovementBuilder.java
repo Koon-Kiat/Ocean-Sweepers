@@ -5,9 +5,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.Direction;
-import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
+import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.RandomisedMovementBehavior;

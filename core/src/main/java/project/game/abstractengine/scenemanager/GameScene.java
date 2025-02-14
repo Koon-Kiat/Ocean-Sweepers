@@ -19,9 +19,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
-import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
-import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;

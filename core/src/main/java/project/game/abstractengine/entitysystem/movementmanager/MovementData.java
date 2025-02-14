@@ -1,4 +1,4 @@
-package project.game.abstractengine.entity.movementmanager;
+package project.game.abstractengine.entitysystem.movementmanager;
 
 import project.game.Direction;
 import project.game.exceptions.MovementException;

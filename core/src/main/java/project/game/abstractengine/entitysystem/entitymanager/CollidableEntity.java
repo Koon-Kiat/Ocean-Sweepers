@@ -1,8 +1,8 @@
-package project.game.abstractengine.entitymanager;
+package project.game.abstractengine.entitysystem.entitymanager;
 
-import project.game.abstractengine.entitymanager.interfaces.Collidable;
+import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 
-public abstract class CollidableEntity extends Entity implements Collidable {
+public abstract class CollidableEntity extends Entity implements ICollidable {
 	
 	private final Entity entity;
 	

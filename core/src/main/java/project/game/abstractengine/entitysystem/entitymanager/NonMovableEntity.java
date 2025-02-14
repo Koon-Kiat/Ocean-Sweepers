@@ -1,4 +1,4 @@
-package project.game.abstractengine.entitymanager;
+package project.game.abstractengine.entitysystem.entitymanager;
 
 public abstract class NonMovableEntity extends Entity{
 	
