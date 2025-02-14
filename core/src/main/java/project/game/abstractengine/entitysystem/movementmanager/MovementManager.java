@@ -5,9 +5,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.badlogic.gdx.math.Vector2;
-
 import project.game.Direction;
+import project.game.abstractengine.entitysystem.entitymanager.Entity;
+import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
 import project.game.exceptions.MovementException;
@@ -24,30 +24,25 @@ import project.game.exceptions.MovementException;
  *        positions,
  *        and control movement states.
  */
-public abstract class MovementManager implements IMovementManager {
+public abstract class MovementManager extends MovableEntity implements IMovementManager {
 
     private static final Logger LOGGER = Logger.getLogger(MovementManager.class.getName());
-    private final Vector2 position;
-    private float speed;
-    private Direction direction;
     private IMovementBehavior movementBehavior;
 
     /**
      * Constructs a MovementManager with the specified parameters.
      *
-     * @param x         Initial x-coordinate.
+     * @param x         Initial x-coordinate.y
      * @param y         Initial y-coordinate.
      * @param speed     Movement speed.
      * @param direction Initial movement direction.
      * @param behavior  Movement behavior strategy.
      */
     public MovementManager(float x, float y, float speed, Direction direction, IMovementBehavior behavior) {
+        super(new Entity(x, y, 0, 0, true), speed);
         validateConstructorParameters(speed, behavior);
-        this.position = new Vector2(x, y);
-        this.speed = speed;
-        this.direction = (direction != null) ? direction : Direction.NONE;
+        setDirection((direction != null) ? direction : Direction.NONE);
         this.movementBehavior = behavior;
-
     }
 
     private void validateConstructorParameters(float speed, IMovementBehavior behavior) {
@@ -59,50 +54,6 @@ public abstract class MovementManager implements IMovementManager {
         }
     }
 
-    @Override
-    public float getX() {
-        return position.x;
-    }
-
-    public void setX(float x) {
-        this.position.x = x;
-    }
-
-    @Override
-    public float getY() {
-        return position.y;
-    }
-
-    public void setY(float y) {
-        this.position.y = y;
-    }
-
-    public float getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(float speed) {
-        if (speed < 0) {
-            String errorMessage = "Negative speed provided: " + speed;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException("Speed must be non-negative.");
-        }
-        this.speed = speed;
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public void setDirection(Direction direction) {
-        if (direction == null) {
-            LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to Direction.NONE.");
-            this.direction = Direction.NONE;
-        }
-        this.direction = direction;
-
-    }
-
     public void setMovementBehavior(IMovementBehavior movementBehavior) {
         if (movementBehavior == null) {
             String msg = "Movement behavior cannot be null.";
@@ -112,43 +63,18 @@ public abstract class MovementManager implements IMovementManager {
         this.movementBehavior = movementBehavior;
     }
 
-    public Vector2 getPosition() {
-        return position;
-    }
-
     public void applyMovementUpdate(float dt) {
         if (movementBehavior == null) {
             LOGGER.log(Level.SEVERE, "Cannot update position: movement behavior is not set.");
             return;
         }
 
-        // Build a MovementData object from current fields
-        MovementData data;
         try {
-            data = new MovementData(getX(), getY(), getSpeed(), getDirection());
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to create MovementData instance: " + e.getMessage(), e);
-            return;
-        }
-
-        try {
-            movementBehavior.applyMovementBehavior(data, dt);
+            movementBehavior.applyMovementBehavior(this, dt);
         } catch (Exception e) {
             String errorMessage = "Error during movement behavior update: " + e.getMessage();
             LOGGER.log(Level.SEVERE, errorMessage, e);
             setDirection(Direction.NONE);
-            return;
-        }
-
-        // Update our MovementManager with the possibly updated data
-        try {
-            setX(data.getX());
-            setY(data.getY());
-            setSpeed(data.getSpeed());
-            setDirection(data.getDirection());
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating MovementManager fields from MovementData: " + e.getMessage(), e);
-            throw e;
         }
     }
 
