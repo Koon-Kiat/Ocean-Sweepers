@@ -104,8 +104,10 @@ public class Main extends ApplicationAdapter {
                 .build();
 
         inputManager = new SceneIOManager(playerMovementManager);
+        
         bucket = new BucketEntity(genericBucketEntity, 1600f, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, 200f, npcMovementManager, "droplet.png");
+        
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
         Gdx.input.setInputProcessor(inputManager);
