@@ -7,7 +7,7 @@ import project.game.abstractengine.entitymanager.Entity;
 import project.game.abstractengine.entitymanager.NPCMovableEntity;
 import project.game.abstractengine.entitymanager.interfaces.*;
 import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
 
 
 public class DropEntity extends NPCMovableEntity implements Collidable, Movable, Renderable{

@@ -5,22 +5,27 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
+
 
 import project.game.abstractengine.entitymanager.Entity;
 import project.game.abstractengine.entitymanager.EntityManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.movementmanager.NPCMovementManager;
-import project.game.abstractengine.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.movementmanager.interfaces.IMovementManager;
 import project.game.abstractengine.testentity.BucketEntity;
 import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
 import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.scenemanager.GameScene;
+import project.game.abstractengine.scenemanager.MainMenuScene;
+import project.game.abstractengine.scenemanager.SceneManager;
+import project.game.logmanager.LogManager;
+
 
 public class Main extends ApplicationAdapter {
+
 
     private SpriteBatch batch;
     private Texture dropImage;
@@ -32,8 +37,16 @@ public class Main extends ApplicationAdapter {
     private SceneIOManager inputManager;
     private EntityManager entityManager;
 
-    public static final float GAME_WIDTH = 640f;
-    public static final float GAME_HEIGHT = 480f;
+    static {
+        LogManager.initialize();
+    }
+
+    public static final float GAME_WIDTH = 640;
+    public static final float GAME_HEIGHT = 480;
+
+    private SceneManager sceneManager;
+    private MainMenuScene mainMenuScene;
+    private GameScene gameScene;
 
     @Override
     public void create() {
@@ -61,27 +74,9 @@ public class Main extends ApplicationAdapter {
             System.err.println("[ERROR] Failed to load droplet.png: " + e.getMessage());
         }
 
-//        try {
-//        	GameAsset.getInstance().loadTextureAssets("bucket.png");
-//        	GameAsset.getInstance().update();
-//            //bucketImage = new Texture(Gdx.files.internal("bucket.png"));
-//            System.out.println("[DEBUG] Loaded bucket.png successfully.");
-//        } catch (Exception e) {
-//            System.err.println("[ERROR] Failed to load bucket.png: " + e.getMessage());
-//        }
-
-//        drop = new Rectangle();
-//        drop.x = 0;
-//        drop.y = 400;
-//        drop.width = dropImage.getWidth();
-//        drop.height = dropImage.getHeight();
         
         Entity genericDropEntity = new Entity(0,400, dropImage.getWidth(), dropImage.getHeight(), true);
-//        bucket = new Rectangle();
-//        bucket.x = 5;
-//        bucket.y = 40;
-//        bucket.width = bucketImage.getWidth();
-//        bucket.height = bucketImage.getHeight();
+
         
         Entity genericBucketEntity = new Entity(5,40,bucketImage.getWidth(), bucketImage.getHeight(), true);
 
@@ -103,7 +98,7 @@ public class Main extends ApplicationAdapter {
                 .setDirection(Direction.RIGHT)
                 .build();
 
-        inputManager = new SceneIOManager(playerMovementManager);
+        inputManager = new SceneIOManager();
         
         bucket = new BucketEntity(genericBucketEntity, 1600f, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, 200f, npcMovementManager, "droplet.png");
@@ -111,6 +106,16 @@ public class Main extends ApplicationAdapter {
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
         Gdx.input.setInputProcessor(inputManager);
+
+        // Scene Manager setup
+        sceneManager = new SceneManager();
+        mainMenuScene = new MainMenuScene(sceneManager);
+        gameScene = new GameScene(sceneManager);
+        sceneManager.addScene("menu", mainMenuScene);
+        sceneManager.addScene("game", gameScene);
+        System.out.println("Available scenes: " + sceneManager.getSceneList());
+        sceneManager.setScene("menu");
+
     }
 
     @Override
@@ -118,12 +123,13 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         float deltaTime = Gdx.graphics.getDeltaTime();
+
         // Set deltaTime for movement managers
-        playerMovementManager.setDeltaTime(deltaTime);
-        npcMovementManager.setDeltaTime(deltaTime);
+//        playerMovementManager.setDeltaTime(deltaTime);
+//        npcMovementManager.setDeltaTime(deltaTime);
 
         // Update player's movement based on pressed keys
-        playerMovementManager.updateDirection(inputManager.getPressedKeys());
+//        playerMovementManager.updateDirection(inputManager.getPressedKeys());
 
         // Update positions based on new directions
         playerMovementManager.updateMovement();
@@ -140,10 +146,6 @@ public class Main extends ApplicationAdapter {
         
         batch.begin();
         
-//        batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
-        // batch.draw(bucketImage, bucket.getX(), bucket.getY(), bucket.getWidth(), bucket.getHeight());
-//        drop.render(batch);
-//        bucket.render(batch);
         entityManager.draw(batch);
         batch.end();
 
@@ -158,13 +160,14 @@ public class Main extends ApplicationAdapter {
         } else {
             System.out.println("[DEBUG] Mouse is not clicked.");
         }
+
+        // Render current scene (Scene Manager)
+        sceneManager.render(deltaTime);
     }
 
     @Override
-    public void dispose() {
-        batch.dispose();
-        dropImage.dispose();
-        bucketImage.dispose();
+    public void resize(int width, int height) {
+        // sceneManager.resize(width, height);
     }
 }
 

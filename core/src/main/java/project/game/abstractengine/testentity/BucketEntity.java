@@ -4,7 +4,7 @@ import project.game.abstractengine.entitymanager.Entity;
 import project.game.abstractengine.entitymanager.PlayableMovableEntity;
 import project.game.abstractengine.entitymanager.interfaces.*;
 import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 

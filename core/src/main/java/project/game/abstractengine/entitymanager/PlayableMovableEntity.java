@@ -1,7 +1,7 @@
 package project.game.abstractengine.entitymanager;
 
 import project.game.Direction;
-import project.game.abstractengine.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
 
 public class PlayableMovableEntity extends MovableEntity {
 	private PlayerMovementManager playerMovementManager;
@@ -21,9 +21,9 @@ public class PlayableMovableEntity extends MovableEntity {
 		updateMovement();
 	}
 	
-	public void setDeltaTime(float deltaTime) {
-		this.playerMovementManager.setDeltaTime(deltaTime);
-	}
+//	public void setDeltaTime(float deltaTime) {
+//		this.playerMovementManager.setDeltaTime(deltaTime);
+//	}
 	
 	public void updateDirection(Direction direction) {
 		this.playerMovementManager.setDirection(direction);
