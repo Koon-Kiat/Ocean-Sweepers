@@ -163,8 +163,6 @@ public class GameScene extends Scene {
                 bucketImage.getHeight(), true);
 
         playerMovementManager = new PlayerMovementBuilder()
-                .setX(genericBucketEntity.getX())
-                .setY(genericBucketEntity.getY())
                 .setSpeed(PLAYER_SPEED)
                 .setDirection(Direction.NONE)
                 .withConstantMovement()
@@ -176,8 +174,6 @@ public class GameScene extends Scene {
         behaviorPool.add(new FollowMovementBehavior(playerMovementManager, NPC_SPEED));
 
         npcMovementManager = new NPCMovementBuilder()
-                .setX(genericDropEntity.getX())
-                .setY(genericDropEntity.getY())
                 .setSpeed(NPC_SPEED)
                 .withZigZagMovement(50f, 1f)
                 .setDirection(Direction.RIGHT)
