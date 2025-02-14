@@ -13,9 +13,7 @@ import project.game.Direction;
  *        direction and movement of an entity.
  */
 public interface IMovementManager {
-
-    void setDeltaTime(float deltaTime);
-
+    
     float getX();
 
     float getY();
