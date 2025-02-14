@@ -1,6 +1,9 @@
 package project.game.abstractengine.entity.movementmanager.interfaces;
 
+import java.util.Map;
 import java.util.Set;
+
+import project.game.Direction;
 
 /**
  * @interface IMovementManager
@@ -10,13 +13,13 @@ import java.util.Set;
  *        direction and movement of an entity.
  */
 public interface IMovementManager {
-
+    
     float getX();
 
     float getY();
 
     void updateMovement();
 
-    void updateDirection(Set<Integer> pressedKeys);
+    void updateDirection(Set<Integer> pressedKey, Map<Integer, Direction> keyBindings);
 
 }
