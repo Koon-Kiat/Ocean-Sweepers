@@ -16,12 +16,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
 import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.builder.NPCMovementBuilder;
-import project.game.builder.PlayerMovementBuilder;
-import project.game.defaultmovements.ConstantMovementBehavior;
-import project.game.defaultmovements.FollowMovementBehavior;
-import project.game.defaultmovements.ZigZagMovementBehavior;
 import project.game.logmanager.LogManager;
+import project.game.scenemanager.GameScene;
+import project.game.scenemanager.MainMenuScene;
+import project.game.scenemanager.SceneManager;
+
 
 public class Main extends ApplicationAdapter {
 
@@ -123,12 +122,12 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render() {
         ScreenUtils.clear(0, 0, 0f, 0);
-        try {
-            updateGame();
-        } catch (Exception e) {
-            System.err.println("[ERROR] Exception during game update: " + e.getMessage());
-            Gdx.app.error("Main", "Exception during game update", e);
-        }
+        // try {
+        //     updateGame();
+        // } catch (Exception e) {
+        //     System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+        //     Gdx.app.error("Main", "Exception during game update", e);
+        // }
 
         float deltaTime = Gdx.graphics.getDeltaTime();
         // Render current scene (Scene Manager)
@@ -161,9 +160,9 @@ public class Main extends ApplicationAdapter {
 
         // Print pressed keys
 
-        for (Integer key : inputManager.getPressedKeys()) {
-            System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
-        }
+        // for (Integer key : inputManager.getPressedKeys()) {
+        //     System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
+        // }
         // // Print pressed keys
         // for (Integer key : inputManager.getPressedKeys()) {
         //     System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
@@ -177,27 +176,27 @@ public class Main extends ApplicationAdapter {
         // }
     }
 
-    @Override
-    public void dispose() {
-        batch.dispose();
-        dropImage.dispose();
-        bucketImage.dispose();
-    }
+    // @Override
+    // public void dispose() {
+    //     batch.dispose();
+    //     dropImage.dispose();
+    //     bucketImage.dispose();
+    // }
 
-    private void updateGame() {
-        // Update player's movement based on pressed keys
-        playerMovementManager.updateDirection(inputManager.getPressedKeys());
+    // private void updateGame() {
+    //     // Update player's movement based on pressed keys
+    //     playerMovementManager.updateDirection(inputManager.getPressedKeys());
 
-        // Update movement; exceptions here will be logged and thrown upward
-        playerMovementManager.updateMovement();
-        npcMovementManager.updateMovement();
+    //     // Update movement; exceptions here will be logged and thrown upward
+    //     playerMovementManager.updateMovement();
+    //     npcMovementManager.updateMovement();
 
-        // Synchronize rectangle positions with movement manager positions
-        bucket.x = playerMovementManager.getX();
-        bucket.y = playerMovementManager.getY();
-        drop.x = npcMovementManager.getX();
-        drop.y = npcMovementManager.getY();
-    }
+    //     // Synchronize rectangle positions with movement manager positions
+    //     bucket.x = playerMovementManager.getX();
+    //     bucket.y = playerMovementManager.getY();
+    //     drop.x = npcMovementManager.getX();
+    //     drop.y = npcMovementManager.getY();
+    // }
 
     @Override
     public void resize(int width, int height) {

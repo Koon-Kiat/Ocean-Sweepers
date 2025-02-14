@@ -1,5 +1,8 @@
 package project.game.scenemanager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,16 +18,39 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.iomanager.SceneIOManager;
-import project.game.movementmanager.Direction;
-import project.game.movementmanager.EnemyMovement;
-import project.game.movementmanager.PlayerMovement;
-
+import project.game.Direction;
+import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.builder.NPCMovementBuilder;
+import project.game.builder.PlayerMovementBuilder;
+import project.game.defaultmovements.ConstantMovementBehavior;
+import project.game.defaultmovements.FollowMovementBehavior;
+import project.game.defaultmovements.ZigZagMovementBehavior;
+import project.game.logmanager.LogManager;
 
 public class GameScene extends Scene {
+
+    static {
+        LogManager.initialize();
+    }
+
+    public static final float GAME_WIDTH = 640;
+    public static final float GAME_HEIGHT = 480;
+    private static final float PLAYER_SPEED = 1600f;
+    private static final float NPC_SPEED = 500f;
+    private static final float DROP_START_X = 0f;
+    private static final float DROP_START_Y = 400f;
+    private static final float BUCKET_START_X = 5f;
+    private static final float BUCKET_START_Y = 40f;
+
+    List<IMovementBehavior> behaviorPool = new ArrayList<>();
+
+
     private SceneManager sceneManager;
-    private PlayerMovement playerMovement;
-    private EnemyMovement enemyMovement;
+    private PlayerMovementManager playerMovementManager;
+    private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
     private Rectangle rebindRectangle;
     private BitmapFont font;
@@ -52,15 +78,10 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
-
         shapeRenderer = new ShapeRenderer();
         font = new BitmapFont();
-
         inputManager = new SceneIOManager();
-
-        
         rebindRectangle = new Rectangle(50, 50, 150, 50);
-
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
         table = new Table();
@@ -100,6 +121,8 @@ public class GameScene extends Scene {
         popupMenu.add(table);
         stage.addActor(popupMenu);
         
+        
+        batch = new SpriteBatch();
         try {
             dropImage = new Texture(Gdx.files.internal("droplet.png"));
             System.out.println("[DEBUG] Loaded droplet.png successfully.");
@@ -114,53 +137,45 @@ public class GameScene extends Scene {
             System.err.println("[ERROR] Failed to load bucket.png: " + e.getMessage());
         }
 
-        drop = new Rectangle();
-        drop.x = 0;
-        drop.y = 400;
-        drop.width = dropImage.getWidth();
-        drop.height = dropImage.getHeight();
+        drop = new Rectangle(DROP_START_X, DROP_START_Y, dropImage.getWidth(), dropImage.getHeight());
+        bucket = new Rectangle(BUCKET_START_X, BUCKET_START_Y, bucketImage.getWidth(), bucketImage.getHeight());
 
-        bucket = new Rectangle();
-        bucket.width = bucketImage.getWidth();
-        bucket.height = bucketImage.getHeight();
-
-        playerMovement = new PlayerMovement.Builder()
-                .setX(drop.x)
-                .setY(drop.y)
-                .setSpeed(1600f)
-                .withConstantMovement()
-                .setDirection(Direction.NONE)
-                .build();
-
-        enemyMovement = new EnemyMovement.Builder()
+        playerMovementManager = new PlayerMovementBuilder()
                 .setX(bucket.x)
                 .setY(bucket.y)
-                .setSpeed(400f)
-                .setDirection(Direction.RIGHT)
-                .withRandomisedMovement(playerMovement, 50f, 2f, 1f, 2f)
+                .setSpeed(PLAYER_SPEED)
+                .withAcceleratedMovement(1000f, 1500f)
                 .build();
+
+        behaviorPool = new ArrayList<>();
+        behaviorPool.add(new ConstantMovementBehavior(NPC_SPEED));
+        behaviorPool.add(new ZigZagMovementBehavior(NPC_SPEED, 100f, 5f));
+        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, NPC_SPEED));
+
+        npcMovementManager = new NPCMovementBuilder()
+                .setX(drop.x)
+                .setY(drop.y)
+                .setSpeed(NPC_SPEED)
+                .withRandomisedMovement(behaviorPool, 1f, 2f)
+                .setDirection(Direction.RIGHT)
+                .build();
+
+        inputManager = new SceneIOManager();
+        Gdx.input.setInputProcessor(inputManager);
     }
 
     public void render(float deltaTime) {
         ScreenUtils.clear(0, 0, 0f, 0);
-        // Set deltaTime for movement managers
-        playerMovement.setDeltaTime(deltaTime);
-        enemyMovement.setDeltaTime(deltaTime);
 
         Gdx.input.setInputProcessor(inputManager);
 
-        // Update player's movement based on pressed keys
-        playerMovement.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
 
-        // Update positions based on new directions
-        playerMovement.updatePosition();
-        enemyMovement.updatePosition();
-
-        // Update rectangle positions so the bucket follows the playerMovement position
-        bucket.x = playerMovement.getX();
-        bucket.y = playerMovement.getY();
-        drop.x = enemyMovement.getX();
-        drop.y = enemyMovement.getY();
+        try {
+            updateGame();
+        } catch (Exception e) {
+            System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+            Gdx.app.error("Main", "Exception during game update", e);
+        }
             
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
@@ -188,12 +203,15 @@ public class GameScene extends Scene {
         }
         
         // Print pressed keys
+
         for (Integer key : inputManager.getPressedKeys()) {
             System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
         }
+
         // Print mouse click status
         if (inputManager.isMouseClicked()) {
-            System.out.println("[DEBUG] Mouse is clicked at position: " + inputManager.getMousePosition());
+            System.out.println("[DEBUG] Mouse is clicked at position: " +
+                    inputManager.getMousePosition());
         } else {
             System.out.println("[DEBUG] Mouse is not clicked.");
         }
@@ -203,6 +221,30 @@ public class GameScene extends Scene {
         }
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
+    }
+
+    private void updateGame() {
+        // Update player's movement based on pressed keys
+        //playerMovementManager.updateDirection(inputManager.getPressedKeys());
+
+        playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+
+        // Update movement; exceptions here will be logged and thrown upward
+        playerMovementManager.updateMovement();
+        npcMovementManager.updateMovement();
+
+        // Synchronize rectangle positions with movement manager positions
+        bucket.x = playerMovementManager.getX();
+        bucket.y = playerMovementManager.getY();
+        drop.x = npcMovementManager.getX();
+        drop.y = npcMovementManager.getY();
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+        dropImage.dispose();
+        bucketImage.dispose();
     }
 
 }

@@ -1,10 +1,10 @@
 package project.game.abstractengine.entity.movementmanager;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
@@ -163,50 +163,67 @@ public abstract class MovementManager implements IMovementManager {
     }
 
     @Override
-    public void updateDirection(Set<Integer> pressedKeys) {
-        if (pressedKeys == null) {
-            LOGGER.log(Level.SEVERE, "Pressed keys set is null. No direction update performed.");
-            return;
+    public void updateDirection(Set<Integer> pressedKeys, Map<Integer, Direction> keyBindings) {
+        boolean up = false;
+        boolean down = false;
+        boolean left = false;
+        boolean right = false;
+
+        // Iterate over pressed keys and set flags based on the provided bindings
+        for (Integer key : pressedKeys) {
+            Direction mapped = keyBindings.get(key);
+            if (mapped != null) {
+                switch (mapped) {
+                    case UP:
+                        up = true;
+                        break;
+                    case DOWN:
+                        down = true;
+                        break;
+                    case LEFT:
+                        left = true;
+                        break;
+                    case RIGHT:
+                        right = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
-        try {
-            boolean up = pressedKeys.contains(Input.Keys.W);
-            boolean down = pressedKeys.contains(Input.Keys.S);
-            boolean left = pressedKeys.contains(Input.Keys.A);
-            boolean right = pressedKeys.contains(Input.Keys.D);
-
-            // Resolve conflicts if opposite directions are pressed.
-            if (up && down) {
-                up = down = false;
-            }
-            if (left && right) {
-                left = right = false;
-            }
-
-            Direction newDirection = Direction.NONE;
-            if (up && right) {
-                newDirection = Direction.UP_RIGHT;
-            } else if (up && left) {
-                newDirection = Direction.UP_LEFT;
-            } else if (down && right) {
-                newDirection = Direction.DOWN_RIGHT;
-            } else if (down && left) {
-                newDirection = Direction.DOWN_LEFT;
-            } else if (up) {
-                newDirection = Direction.UP;
-            } else if (down) {
-                newDirection = Direction.DOWN;
-            } else if (left) {
-                newDirection = Direction.LEFT;
-            } else if (right) {
-                newDirection = Direction.RIGHT;
-            }
-
-            setDirection(newDirection);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error processing input keys", e);
-            throw new MovementException("Error processing input keys", e);
+        // Handle vertical direction
+        if (up && down) {
+            up = false;
+            down = false;
         }
+
+        // Handle horizontal direction
+        if (left && right) {
+            left = false;
+            right = false;
+        }
+
+        Direction newDirection = Direction.NONE;
+
+        if (up && right) {
+            newDirection = Direction.UP_RIGHT;
+        } else if (up && left) {
+            newDirection = Direction.UP_LEFT;
+        } else if (down && right) {
+            newDirection = Direction.DOWN_RIGHT;
+        } else if (down && left) {
+            newDirection = Direction.DOWN_LEFT;
+        } else if (up) {
+            newDirection = Direction.UP;
+        } else if (down) {
+            newDirection = Direction.DOWN;
+        } else if (left) {
+            newDirection = Direction.LEFT;
+        } else if (right) {
+            newDirection = Direction.RIGHT;
+        }
+        setDirection(newDirection);
     }
 
 }
