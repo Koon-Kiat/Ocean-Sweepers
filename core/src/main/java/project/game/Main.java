@@ -5,6 +5,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 
@@ -100,8 +102,10 @@ public class Main extends ApplicationAdapter {
 
         inputManager = new SceneIOManager();
         
-        bucket = new BucketEntity(genericBucketEntity, 1600f, playerMovementManager, "bucket.png");
-        drop = new DropEntity(genericDropEntity, 200f, npcMovementManager, "droplet.png");
+        World world = new World(new Vector2(0, -9.8f), true);
+        
+        bucket = new BucketEntity(genericBucketEntity, world, 1600f, playerMovementManager, "bucket.png");
+        drop = new DropEntity(genericDropEntity,world, 200f, npcMovementManager, "droplet.png");
         
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
