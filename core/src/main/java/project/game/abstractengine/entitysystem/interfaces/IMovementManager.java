@@ -13,10 +13,6 @@ import project.game.Direction;
  *        direction and movement of an entity.
  */
 public interface IMovementManager {
-    
-    float getX();
-
-    float getY();
 
     void updateMovement();
 

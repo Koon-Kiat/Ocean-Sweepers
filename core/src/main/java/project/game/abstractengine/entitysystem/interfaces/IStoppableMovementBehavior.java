@@ -1,6 +1,6 @@
 package project.game.abstractengine.entitysystem.interfaces;
 
-import project.game.abstractengine.entitysystem.movementmanager.MovementData;
+import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 
 /**
  * @interface IStoppableMovementBehavior
@@ -13,7 +13,7 @@ import project.game.abstractengine.entitysystem.movementmanager.MovementData;
  */
 public interface IStoppableMovementBehavior extends IMovementBehavior {
 
-    void stopMovement(MovementData movementData, float deltaTime);
+    void stopMovement(MovableEntity entity, float deltaTime);
 
-    void resumeMovement(MovementData movementData, float deltaTime);
+    void resumeMovement(MovableEntity entity, float deltaTime);
 }
