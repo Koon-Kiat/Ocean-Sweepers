@@ -16,10 +16,10 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
 import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.GameScene;
+import project.game.abstractengine.scenemanager.MainMenuScene;
+import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.logmanager.LogManager;
-import project.game.scenemanager.GameScene;
-import project.game.scenemanager.MainMenuScene;
-import project.game.scenemanager.SceneManager;
 
 
 public class Main extends ApplicationAdapter {
