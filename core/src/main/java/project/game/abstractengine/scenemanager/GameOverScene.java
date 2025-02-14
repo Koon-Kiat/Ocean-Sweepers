@@ -10,12 +10,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
-public class GameOverScene extends  Scene {
+public class GameOverScene extends Scene {
     private Stage stage;
     private SpriteBatch batch;
     private Skin skin;
     private BitmapFont font;
 
+    @Override
     public void create() {
         stage = new Stage();
         batch = new SpriteBatch();
@@ -52,15 +53,19 @@ public class GameOverScene extends  Scene {
     public void render() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center, false);
+        font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
+                false);
         batch.end();
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
     }
+
+    @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    @Override
     public void dispose() {
         stage.dispose();
         batch.dispose();

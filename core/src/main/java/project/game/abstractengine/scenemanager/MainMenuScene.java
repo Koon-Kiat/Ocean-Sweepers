@@ -9,7 +9,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-
 public class MainMenuScene extends Scene {
     private Texture backgroundTexture;
     private SpriteBatch batch;
@@ -17,7 +16,7 @@ public class MainMenuScene extends Scene {
     private TextButton playButton, exitButton;
     private SceneManager sceneManager;
     private GameScene gameScene;
-    
+
     public MainMenuScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
     }
@@ -27,7 +26,7 @@ public class MainMenuScene extends Scene {
     public void create() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         playButton = new TextButton("PLAY", skin);
-        //optionsButton = new TextButton("OPTIONS", skin); to add input
+        // optionsButton = new TextButton("OPTIONS", skin); to add input
         exitButton = new TextButton("EXIT", skin);
 
         // Add button functionality
@@ -35,7 +34,7 @@ public class MainMenuScene extends Scene {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("Start Game Clicked!"); // Debug log
-                //sceneManager.addScene("game", new GameScene());
+                // sceneManager.addScene("game", new GameScene());
                 sceneManager.setScene("game"); // Switch to GameScene
             }
         });
@@ -57,12 +56,12 @@ public class MainMenuScene extends Scene {
         stage.addActor(table);
 
     }
-    
+
     //
     @Override
     public void show() {
-        //backgroundTexture = new Texture("main_menu_background.png");
-        //batch = new SpriteBatch();
+        // backgroundTexture = new Texture("main_menu_background.png");
+        // batch = new SpriteBatch();
         Gdx.input.setInputProcessor(stage);
     }
 

@@ -47,7 +47,6 @@ public class GameScene extends Scene {
 
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
-
     private SceneManager sceneManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
@@ -66,9 +65,9 @@ public class GameScene extends Scene {
     private Table table;
 
     // public GameScene() {
-    //     sceneManager = new SceneManager();
-    //     sceneManager.addScene("menu", new MainMenuScene());
-    //     sceneManager.setScene("menu");
+    // sceneManager = new SceneManager();
+    // sceneManager.addScene("menu", new MainMenuScene());
+    // sceneManager.setScene("menu");
     // }
 
     public GameScene(SceneManager sceneManager) {
@@ -120,8 +119,7 @@ public class GameScene extends Scene {
 
         popupMenu.add(table);
         stage.addActor(popupMenu);
-        
-        
+
         batch = new SpriteBatch();
         try {
             dropImage = new Texture(Gdx.files.internal("droplet.png"));
@@ -164,11 +162,11 @@ public class GameScene extends Scene {
         Gdx.input.setInputProcessor(inputManager);
     }
 
+    @Override
     public void render(float deltaTime) {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         Gdx.input.setInputProcessor(inputManager);
-
 
         try {
             updateGame();
@@ -176,7 +174,7 @@ public class GameScene extends Scene {
             System.err.println("[ERROR] Exception during game update: " + e.getMessage());
             Gdx.app.error("Main", "Exception during game update", e);
         }
-            
+
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
         batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
@@ -193,7 +191,6 @@ public class GameScene extends Scene {
         font.draw(batch, "Rebind Keys", rebindRectangle.x + 20, rebindRectangle.y + 30);
         batch.end();
 
-        
         // Check for mouse click within the rebind rectangle
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             Vector2 clickPosition = new Vector2(Gdx.input.getX(), Gdx.input.getY());
@@ -201,7 +198,7 @@ public class GameScene extends Scene {
                 inputManager.promptForKeyBindings();
             }
         }
-        
+
         // Print pressed keys
 
         for (Integer key : inputManager.getPressedKeys()) {
@@ -215,7 +212,7 @@ public class GameScene extends Scene {
         } else {
             System.out.println("[DEBUG] Mouse is not clicked.");
         }
-        
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             popupMenu.setVisible(!popupMenu.isVisible());
         }
@@ -225,7 +222,7 @@ public class GameScene extends Scene {
 
     private void updateGame() {
         // Update player's movement based on pressed keys
-        //playerMovementManager.updateDirection(inputManager.getPressedKeys());
+        // playerMovementManager.updateDirection(inputManager.getPressedKeys());
 
         playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
 

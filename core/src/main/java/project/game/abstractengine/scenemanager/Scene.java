@@ -16,14 +16,14 @@ public abstract class Scene implements Screen {
 
     protected abstract void create();
 
-    //public abstract void update(float delta);
+    // public abstract void update(float delta);
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear the screen
         stage.act(delta); // Update stage
         stage.draw(); // Draw stage elements
-    } 
+    }
 
     @Override
     public void show() {
@@ -55,5 +55,5 @@ public abstract class Scene implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-    }    
+    }
 }
