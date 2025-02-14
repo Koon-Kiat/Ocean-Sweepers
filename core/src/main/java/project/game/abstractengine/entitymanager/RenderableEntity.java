@@ -33,6 +33,6 @@ public abstract class RenderableEntity extends Entity implements Renderable {
 	public String getTexturePath() {
 		return this.texturePath;
 	}
-	
+
 	public abstract void update();
 }

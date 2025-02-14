@@ -7,4 +7,5 @@ public interface Movable {
 	float getSpeed();
 	
 	void setSpeed(float speed);
+
 }

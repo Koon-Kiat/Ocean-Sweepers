@@ -102,10 +102,12 @@ public class Main extends ApplicationAdapter {
 
         inputManager = new SceneIOManager();
         
+
         World world = new World(new Vector2(0, -9.8f), true);
         
         bucket = new BucketEntity(genericBucketEntity, world, 1600f, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity,world, 200f, npcMovementManager, "droplet.png");
+
         
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);

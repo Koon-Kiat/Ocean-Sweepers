@@ -55,8 +55,7 @@ public class DropEntity extends NPCMovableEntity implements Collidable, Movable,
 
 	@Override
 	public String getTexturePath() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.texturePath;
 	}
 
 	@Override
