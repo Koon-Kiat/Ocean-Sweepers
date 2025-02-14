@@ -1,32 +1,32 @@
-package project.game.abstractengine.entity.movementmanager;
+package project.game.abstractengine.entitysystem.movementmanager;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.Direction;
-import project.game.builder.PlayerMovementBuilder;
+import project.game.builder.NPCMovementBuilder;
 import project.game.exceptions.MovementException;
 
 /**
- * @class PlayerMovement
- * @brief Manages the movement logic specific to the player entity.
+ * @class EnemyMovement
+ * @brief Manages the movement logic specific to enemy entities.
  *
- *        Extends the abstract MovementManager to provide player-specific
+ *        Extends the abstract MovementManager to provide enemy-specific
  *        movement
- *        behaviors. Utilizes a Builder pattern to allow flexible configuration
- *        of
- *        movement properties.
+ *        behaviors, such as zig-zag movement. Utilizes a Builder pattern for
+ *        flexible
+ *        configuration.
  */
-public class PlayerMovementManager extends MovementManager {
+public class NPCMovementManager extends MovementManager {
 
-    private static final Logger LOGGER = Logger.getLogger(PlayerMovementManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NPCMovementManager.class.getName());
 
     /**
      * Private constructor to enforce the use of the Builder.
      *
      * @param builder The Builder instance containing configuration parameters.
      */
-    public PlayerMovementManager(PlayerMovementBuilder builder) {
+    public NPCMovementManager(NPCMovementBuilder builder) {
         super(
                 checkBuilder(builder).getX(),
                 builder.getY(),
@@ -35,9 +35,9 @@ public class PlayerMovementManager extends MovementManager {
                 builder.getMovementBehavior());
     }
 
-    private static PlayerMovementBuilder checkBuilder(PlayerMovementBuilder builder) {
+    private static NPCMovementBuilder checkBuilder(NPCMovementBuilder builder) {
         if (builder == null) {
-            String errorMessage = "PlayerMovementBuilder cannot be null.";
+            String errorMessage = "NPCMovementBuilder cannot be null.";
             LOGGER.log(Level.SEVERE, errorMessage);
             throw new MovementException(errorMessage);
         }
@@ -49,8 +49,7 @@ public class PlayerMovementManager extends MovementManager {
         try {
             super.setDirection(direction);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error setting direction in PlayerMovementManager: " + e.getMessage(), e);
-            throw e;
+            LOGGER.log(Level.WARNING, "Error setting direction in NPCMovementManager: " + e.getMessage(), e);
         }
     }
 

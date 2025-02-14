@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
-import project.game.abstractengine.entity.movementmanager.MovementData;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
+import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
@@ -38,13 +38,13 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data, float deltaTime) {
+    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
             elapsedTime += deltaTime;
 
             Vector2 deltaMovement = new Vector2();
 
-            Direction primaryDirection = data.getDirection();
+            Direction primaryDirection = entity.getDirection();
             Vector2 primaryVector = getPrimaryVector(primaryDirection);
             Vector2 perpVector = getPerpendicularVector(primaryDirection);
 
@@ -55,8 +55,8 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime) * deltaTime;
             deltaMovement.add(perpVector.scl(oscillation));
 
-            data.setX(data.getX() + deltaMovement.x);
-            data.setY(data.getY() + deltaMovement.y);
+            entity.setX(entity.getX() + deltaMovement.x);
+            entity.setY(entity.getY() + deltaMovement.y);
 
         } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.log(Level.SEVERE, "Exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(), e);

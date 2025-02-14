@@ -1,6 +1,6 @@
-package project.game.abstractengine.entity.movementmanager.interfaces;
+package project.game.abstractengine.entitysystem.interfaces;
 
-import project.game.abstractengine.entity.movementmanager.MovementData;
+import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 
 /**
  * @interface IMovementBehavior
@@ -13,5 +13,5 @@ import project.game.abstractengine.entity.movementmanager.MovementData;
  */
 public interface IMovementBehavior {
 
-    void applyMovementBehavior(MovementData movementData, float deltaTime);
+    void applyMovementBehavior(MovableEntity entity, float deltaTime);
 }

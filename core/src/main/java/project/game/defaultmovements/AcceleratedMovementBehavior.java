@@ -6,9 +6,9 @@ import java.util.logging.Logger;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
-import project.game.abstractengine.entity.movementmanager.MovementData;
-import project.game.abstractengine.entity.movementmanager.MovementUtils;
-import project.game.abstractengine.entity.movementmanager.interfaces.IStoppableMovementBehavior;
+import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
+import project.game.abstractengine.entitysystem.interfaces.IStoppableMovementBehavior;
+import project.game.abstractengine.entitysystem.movementmanager.MovementUtils;
 import project.game.exceptions.MovementException;
 
 /**
@@ -57,12 +57,12 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data, float deltaTime) {
+    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
             // Clamp delta to prevent excessively large updates.
             deltaTime = Math.min(deltaTime, 1 / 30f);
 
-            if (data.getDirection() != Direction.NONE) {
+            if (entity.getDirection() != Direction.NONE) {
                 currentSpeed += acceleration * deltaTime;
                 if (currentSpeed > maxSpeed) {
                     currentSpeed = maxSpeed;
@@ -77,7 +77,7 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
             Vector2 deltaMovement = new Vector2();
             float diagonalSpeed;
 
-            switch (data.getDirection()) {
+            switch (entity.getDirection()) {
                 case UP:
                     deltaMovement.y += currentSpeed * deltaTime;
                     break;
@@ -113,17 +113,17 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
                 case NONE:
                     break;
                 default:
-                    String errorMessage = "Unknown movement direction: " + data.getDirection();
+                    String errorMessage = "Unknown movement direction: " + entity.getDirection();
                     LOGGER.log(Level.SEVERE, errorMessage);
                     throw new MovementException(errorMessage);
             }
 
             // Update the position in MovementData.
-            float newX = data.getX() + deltaMovement.x;
-            float newY = data.getY() + deltaMovement.y;
+            float newX = entity.getX() + deltaMovement.x;
+            float newY = entity.getY() + deltaMovement.y;
 
-            data.setX(newX);
-            data.setY(newY);
+            entity.setX(newX);
+            entity.setY(newY);
         } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
@@ -135,12 +135,12 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
     }
 
     @Override
-    public void stopMovement(MovementData data, float deltaTime) {
+    public void stopMovement(MovableEntity entity, float deltaTime) {
         currentSpeed = 0;
-        data.setDirection(Direction.NONE);
+        entity.setDirection(Direction.NONE);
     }
 
     @Override
-    public void resumeMovement(MovementData data, float deltaTime) {
+    public void resumeMovement(MovableEntity entity, float deltaTime) {
     }
 }

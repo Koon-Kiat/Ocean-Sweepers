@@ -1,4 +1,4 @@
-package project.game.abstractengine.entity.movementmanager.interfaces;
+package project.game.abstractengine.entitysystem.interfaces;
 
 public interface IMenuInputHandler {
 

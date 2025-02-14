@@ -19,10 +19,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
-import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
-import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.entitysystem.entitymanager.Entity;
+import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
+import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.testentity.BucketEntity;
+import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
 import project.game.defaultmovements.ConstantMovementBehavior;
@@ -48,6 +53,7 @@ public class GameScene extends Scene {
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
     private SceneManager sceneManager;
+    private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
@@ -57,8 +63,8 @@ public class GameScene extends Scene {
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
-    private Rectangle drop;
-    private Rectangle bucket;
+    private DropEntity drop;
+    private BucketEntity bucket;
     private Window popupMenu;
     private Stage stage;
     private Skin skin;
@@ -120,29 +126,46 @@ public class GameScene extends Scene {
         popupMenu.add(table);
         stage.addActor(popupMenu);
 
-        batch = new SpriteBatch();
+        // gameAsset = gameAsset.getInstance();
+        entityManager = new EntityManager();
         try {
-            dropImage = new Texture(Gdx.files.internal("droplet.png"));
+            GameAsset.getInstance().loadTextureAssets("droplet.png");
+            GameAsset.getInstance().loadTextureAssets("bucket.png");
+            GameAsset.getInstance().update(); // Update the asset manager
+            GameAsset.getInstance().getAssetManager().finishLoading(); // Force loading to complete
+
+            if (GameAsset.getInstance().isLoaded()) {
+                dropImage = GameAsset.getInstance().getAsset("droplet.png", Texture.class);
+                bucketImage = GameAsset.getInstance().getAsset("bucket.png", Texture.class);
+            } else {
+                System.err.println("[ERROR] Some assets not loaded yet!"); // More general message
+            }
+
             System.out.println("[DEBUG] Loaded droplet.png successfully.");
-        } catch (Exception e) {
-            System.err.println("[ERROR] Failed to load droplet.png: " + e.getMessage());
-        }
-
-        try {
-            bucketImage = new Texture(Gdx.files.internal("bucket.png"));
             System.out.println("[DEBUG] Loaded bucket.png successfully.");
+
+            // Check if textures are null after loading
+            if (dropImage == null) {
+                System.err.println("[ERROR] dropImage is null after loading!");
+            }
+            if (bucketImage == null) {
+                System.err.println("[ERROR] bucketImage is null after loading!");
+            }
+
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to load bucket.png: " + e.getMessage());
+            System.err.println("[ERROR] Failed to load assets: " + e.getMessage());
         }
 
-        drop = new Rectangle(DROP_START_X, DROP_START_Y, dropImage.getWidth(), dropImage.getHeight());
-        bucket = new Rectangle(BUCKET_START_X, BUCKET_START_Y, bucketImage.getWidth(), bucketImage.getHeight());
+        // Create entities
+        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, dropImage.getWidth(), dropImage.getHeight(),
+                true);
+        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, bucketImage.getWidth(),
+                bucketImage.getHeight(), true);
 
         playerMovementManager = new PlayerMovementBuilder()
-                .setX(bucket.x)
-                .setY(bucket.y)
                 .setSpeed(PLAYER_SPEED)
-                .withAcceleratedMovement(1000f, 1500f)
+                .setDirection(Direction.NONE)
+                .withConstantMovement()
                 .build();
 
         behaviorPool = new ArrayList<>();
@@ -151,12 +174,15 @@ public class GameScene extends Scene {
         behaviorPool.add(new FollowMovementBehavior(playerMovementManager, NPC_SPEED));
 
         npcMovementManager = new NPCMovementBuilder()
-                .setX(drop.x)
-                .setY(drop.y)
                 .setSpeed(NPC_SPEED)
-                .withRandomisedMovement(behaviorPool, 1f, 2f)
+                .withZigZagMovement(50f, 1f)
                 .setDirection(Direction.RIGHT)
                 .build();
+
+        bucket = new BucketEntity(genericBucketEntity, playerMovementManager, "bucket.png");
+        drop = new DropEntity(genericDropEntity, npcMovementManager, "droplet.png");
+        entityManager.addEntity(bucket);
+        entityManager.addEntity(drop);
 
         inputManager = new SceneIOManager();
         Gdx.input.setInputProcessor(inputManager);
@@ -176,8 +202,7 @@ public class GameScene extends Scene {
         }
 
         batch.begin();
-        batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
-        batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
+        entityManager.draw(batch);
         batch.end();
 
         // Draw the rebind rectangle
@@ -200,18 +225,19 @@ public class GameScene extends Scene {
         }
 
         // Print pressed keys
-
-        for (Integer key : inputManager.getPressedKeys()) {
-            System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
-        }
-
-        // Print mouse click status
-        if (inputManager.isMouseClicked()) {
-            System.out.println("[DEBUG] Mouse is clicked at position: " +
-                    inputManager.getMousePosition());
-        } else {
-            System.out.println("[DEBUG] Mouse is not clicked.");
-        }
+        /*
+         * for (Integer key : inputManager.getPressedKeys()) {
+         * System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
+         * }
+         * 
+         * // Print mouse click status
+         * if (inputManager.isMouseClicked()) {
+         * System.out.println("[DEBUG] Mouse is clicked at position: " +
+         * inputManager.getMousePosition());
+         * } else {
+         * System.out.println("[DEBUG] Mouse is not clicked.");
+         * }
+         */
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             popupMenu.setVisible(!popupMenu.isVisible());
@@ -221,9 +247,6 @@ public class GameScene extends Scene {
     }
 
     private void updateGame() {
-        // Update player's movement based on pressed keys
-        // playerMovementManager.updateDirection(inputManager.getPressedKeys());
-
         playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
 
         // Update movement; exceptions here will be logged and thrown upward
@@ -231,10 +254,10 @@ public class GameScene extends Scene {
         npcMovementManager.updateMovement();
 
         // Synchronize rectangle positions with movement manager positions
-        bucket.x = playerMovementManager.getX();
-        bucket.y = playerMovementManager.getY();
-        drop.x = npcMovementManager.getX();
-        drop.y = npcMovementManager.getY();
+        bucket.setX(playerMovementManager.getX());
+        bucket.setY(playerMovementManager.getY());
+        drop.setX(npcMovementManager.getX());
+        drop.setY(npcMovementManager.getY());
     }
 
     @Override
