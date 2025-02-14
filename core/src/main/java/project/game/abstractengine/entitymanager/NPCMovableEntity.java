@@ -26,4 +26,12 @@ public class NPCMovableEntity extends MovableEntity {
 	public void updateDirection(Direction direction) {
 		this.npcMovementManager.setDirection(direction);
 	}
+	
+	public void setSpeed(float speed) {
+		super.setSpeed(speed);
+	}
+	
+	public float getSpeed() {
+		return super.getSpeed();
+	}
 }
