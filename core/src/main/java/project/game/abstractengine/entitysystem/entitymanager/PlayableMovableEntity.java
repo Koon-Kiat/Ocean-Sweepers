@@ -11,6 +11,7 @@ public class PlayableMovableEntity extends MovableEntity {
 		this.playerMovementManager = playerMovementManager;
 	}
 
+	@Override
 	public void updateMovement() {
 		if (super.getEntity().isActive()) {
 			this.playerMovementManager.updateMovement();
@@ -20,10 +21,6 @@ public class PlayableMovableEntity extends MovableEntity {
 	public void update() {
 		updateMovement();
 	}
-
-	// public void setDeltaTime(float deltaTime) {
-	// this.playerMovementManager.setDeltaTime(deltaTime);
-	// }
 
 	public void updateDirection(Direction direction) {
 		this.playerMovementManager.setDirection(direction);

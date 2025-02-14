@@ -3,13 +3,14 @@ package project.game.abstractengine.testentity;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import project.game.abstractengine.assetmanager.GameAsset;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.NPCMovableEntity;
-import project.game.abstractengine.entitysystem.interfaces.*;
+import project.game.abstractengine.entitysystem.interfaces.ICollidable;
+import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
-import project.game.abstractengine.assetmanager.GameAsset;
 
-public class DropEntity extends NPCMovableEntity implements ICollidable, IMovable, IRenderable {
+public class DropEntity extends NPCMovableEntity implements ICollidable, IRenderable {
 
 	private NPCMovementManager movementManager;
 	private String texturePath;

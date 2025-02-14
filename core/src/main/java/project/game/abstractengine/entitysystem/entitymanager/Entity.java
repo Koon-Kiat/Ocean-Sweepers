@@ -32,48 +32,48 @@ public class Entity {
 		return "E" + idCounter.getAndIncrement();
 	}
 
-	public void setID(String id) {
-		this.id = id;
-	}
-
 	public String getID() {
 		return this.id;
 	}
 
-	public void setX(float x) {
-		this.position.x = x;
+	public void setID(String id) {
+		this.id = id;
 	}
 
 	public float getX() {
 		return this.position.x;
 	}
 
-	public void setY(float y) {
-		this.position.y = y;
+	public void setX(float x) {
+		this.position.x = x;
 	}
 
 	public float getY() {
 		return this.position.y;
 	}
 
-	public Vector2 getVector() {
-		return this.position;
+	public void setY(float y) {
+		this.position.y = y;
 	}
 
-	public void setWidth(float width) {
-		this.width = width;
+	public Vector2 getVector() {
+		return this.position;
 	}
 
 	public float getWidth() {
 		return this.width;
 	}
 
-	public void setHeight(float height) {
-		this.height = height;
+	public void setWidth(float width) {
+		this.width = width;
 	}
 
 	public float getHeight() {
 		return this.height;
+	}
+
+	public void setHeight(float height) {
+		this.height = height;
 	}
 
 	public boolean isActive() {

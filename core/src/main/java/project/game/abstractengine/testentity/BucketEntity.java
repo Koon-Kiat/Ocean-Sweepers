@@ -7,11 +7,10 @@ import project.game.abstractengine.assetmanager.GameAsset;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.PlayableMovableEntity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
-import project.game.abstractengine.entitysystem.interfaces.IMovable;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 
-public class BucketEntity extends PlayableMovableEntity implements IMovable, ICollidable, IRenderable {
+public class BucketEntity extends PlayableMovableEntity implements ICollidable, IRenderable {
 
 	private PlayerMovementManager movementManager;
 	private String texturePath;
