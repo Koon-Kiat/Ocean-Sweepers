@@ -62,12 +62,13 @@ public class MainMenuScene extends Scene {
     public void show() {
         //backgroundTexture = new Texture("main_menu_background.png");
         //batch = new SpriteBatch();
-        Gdx.input.setInputProcessor(stage);
+       
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
