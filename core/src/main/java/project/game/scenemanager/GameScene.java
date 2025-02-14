@@ -8,6 +8,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.iomanager.SceneIOManager;
@@ -29,6 +34,10 @@ public class GameScene extends Scene {
     private Texture bucketImage;
     private Rectangle drop;
     private Rectangle bucket;
+    private Window popupMenu;
+    private Stage stage;
+    private Skin skin;
+    private Table table;
 
     // public GameScene() {
     //     sceneManager = new SceneManager();
@@ -52,6 +61,45 @@ public class GameScene extends Scene {
         
         rebindRectangle = new Rectangle(50, 50, 150, 50);
 
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        stage = new Stage();
+        table = new Table();
+
+        popupMenu = new Window("Pop up", skin);
+        popupMenu.setSize(200, 150);
+        popupMenu.setPosition(300, 300);
+        popupMenu.setVisible(false);
+
+        TextButton button1 = new TextButton("Rebind Keys", skin);
+        TextButton button2 = new TextButton("Return to main menu", skin);
+        TextButton button3 = new TextButton("Close", skin);
+
+        // Button listeners (Debug for now)
+        button1.addListener(event -> {
+            System.out.println("'Rebind keys' selected");
+            return true;
+        });
+
+        button2.addListener(event -> {
+            System.out.println("'Return to main menu' selected");
+            return true;
+        });
+
+        button3.addListener(event -> {
+            popupMenu.setVisible(false);
+            return true;
+        });
+
+        Table table = new Table();
+        table.add(button1).fillX().pad(5);
+        table.row();
+        table.add(button2).fillX().pad(5);
+        table.row();
+        table.add(button3).fillX().pad(5);
+
+        popupMenu.add(table);
+        stage.addActor(popupMenu);
+        
         try {
             dropImage = new Texture(Gdx.files.internal("droplet.png"));
             System.out.println("[DEBUG] Loaded droplet.png successfully.");
@@ -149,6 +197,12 @@ public class GameScene extends Scene {
         } else {
             System.out.println("[DEBUG] Mouse is not clicked.");
         }
+        
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            popupMenu.setVisible(!popupMenu.isVisible());
+        }
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
     }
 
 }

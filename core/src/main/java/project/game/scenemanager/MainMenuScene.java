@@ -27,6 +27,7 @@ public class MainMenuScene extends Scene {
     public void create() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         playButton = new TextButton("PLAY", skin);
+        //optionsButton = new TextButton("OPTIONS", skin); to add input
         exitButton = new TextButton("EXIT", skin);
 
         // Add button functionality
