@@ -5,29 +5,51 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import project.game.abstractengine.assetmanager.GameAsset;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.entitysystem.entitymanager.PlayableMovableEntity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.builder.PlayerMovementBuilder;
 
-public class BucketEntity extends PlayableMovableEntity implements ICollidable, IRenderable {
+public class BucketEntity extends PlayerMovementBuilder implements ICollidable, IRenderable {
 
-	private PlayerMovementManager movementManager;
-	private String texturePath;
+	private final Entity entity;
+	private final PlayerMovementManager movementManager;
+	private final String texturePath;
 
-	public BucketEntity(Entity entity, float speed, PlayerMovementManager movementManager, String texturePath) {
-		super(entity, speed, movementManager);
+	public BucketEntity(Entity entity, PlayerMovementManager movementManager, String texturePath) {
+		super();
+		this.entity = entity;
+		this.movementManager = movementManager;
 		this.texturePath = texturePath;
 		GameAsset.getInstance().loadTextureAssets(texturePath);
+	}
 
+	public Entity getEntity() {
+		return this.entity;
+	}
+
+	public float getWidth() {
+		return entity.getWidth();
+	}
+
+	public float getHeight() {
+		return entity.getHeight();
+	}
+
+	public String getID() {
+		return entity.getID();
+	}
+
+	public boolean isActive() {
+		return entity.isActive();
 	}
 
 	@Override
 	public boolean checkCollision(Entity other) {
-		return super.getEntity().getX() < other.getX() + other.getWidth() &&
-				getEntity().getX() + getEntity().getWidth() > other.getX() &&
-				getEntity().getY() < other.getY() + other.getHeight() &&
-				getEntity().getY() + getEntity().getHeight() > other.getY();
+		return getX() < other.getX() + other.getWidth() &&
+				getX() + getWidth() > other.getX() &&
+				getY() < other.getY() + other.getHeight() &&
+				getY() + getHeight() > other.getY();
 	}
 
 	@Override
@@ -46,5 +68,4 @@ public class BucketEntity extends PlayableMovableEntity implements ICollidable, 
 	public PlayerMovementManager getMovementManager() {
 		return this.movementManager;
 	}
-
 }
