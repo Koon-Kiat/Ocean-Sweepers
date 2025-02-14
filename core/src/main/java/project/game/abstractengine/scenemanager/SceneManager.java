@@ -1,4 +1,4 @@
-package project.game.scenemanager;
+package project.game.abstractengine.scenemanager;
 
 import java.util.HashMap;
 import java.util.Map;
