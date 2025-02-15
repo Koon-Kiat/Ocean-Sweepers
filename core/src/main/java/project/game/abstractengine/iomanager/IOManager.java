@@ -52,6 +52,4 @@ public class IOManager extends InputAdapter {
     public Set<Integer> getPressedKeys() {
         return pressedKeys;
     }
-    
-    // Test Comments
 }
