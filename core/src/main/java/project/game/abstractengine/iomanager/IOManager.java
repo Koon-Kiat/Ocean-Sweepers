@@ -1,6 +1,7 @@
 package project.game.abstractengine.iomanager;
 
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.Set;
 
 import com.badlogic.gdx.InputAdapter;
@@ -11,6 +12,7 @@ public class IOManager extends InputAdapter {
     private Vector2 mousePosition;
     private boolean isMouseClicked;
     protected Set<Integer> pressedKeys;
+    protected static final Scanner SCANNER = new Scanner(System.in);
 
     public IOManager() {
         this.mousePosition = new Vector2();

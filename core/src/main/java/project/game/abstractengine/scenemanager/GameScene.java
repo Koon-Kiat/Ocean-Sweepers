@@ -5,12 +5,9 @@ import java.util.List;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -57,9 +54,8 @@ public class GameScene extends Scene {
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
-    private Rectangle rebindRectangle;
-    private BitmapFont font;
-    private ShapeRenderer shapeRenderer;
+    private TextButton button1, button2, button3;
+
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -83,10 +79,7 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
-        font = new BitmapFont();
         inputManager = new SceneIOManager();
-        rebindRectangle = new Rectangle(50, 50, 150, 50);
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
         table = new Table();
@@ -96,27 +89,11 @@ public class GameScene extends Scene {
         popupMenu.setPosition(300, 300);
         popupMenu.setVisible(false);
 
-        TextButton button1 = new TextButton("Rebind Keys", skin);
-        TextButton button2 = new TextButton("Return to main menu", skin);
-        TextButton button3 = new TextButton("Close", skin);
+        button1 = new TextButton("Rebind Keys", skin);
+        button2 = new TextButton("Return to main menu", skin);
+        button3 = new TextButton("Close", skin);
 
-        // Button listeners (Debug for now)
-        button1.addListener(event -> {
-            System.out.println("'Rebind keys' selected");
-            return true;
-        });
-
-        button2.addListener(event -> {
-            System.out.println("'Return to main menu' selected");
-            return true;
-        });
-
-        button3.addListener(event -> {
-            popupMenu.setVisible(false);
-            return true;
-        });
-
-        Table table = new Table();
+        table = new Table();
         table.add(button1).fillX().pad(5);
         table.row();
         table.add(button2).fillX().pad(5);
@@ -184,15 +161,37 @@ public class GameScene extends Scene {
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
 
-        inputManager = new SceneIOManager();
-        Gdx.input.setInputProcessor(inputManager);
+        // Instead of checking clicks manually in render, add click listeners here:
+        inputManager.addClickListener(button1, () -> {
+            System.out.println("Rebind Keys Clicked!");
+            inputManager.promptForKeyBindings();
+        });
+
+        inputManager.addClickListener(button2, () -> {
+            System.out.println("Return to main menu Clicked!");
+        });
+
+        inputManager.addClickListener(button3, () -> {
+            System.out.println("Game Closed!");
+            Gdx.app.exit();
+        });
+    }
+
+    @Override
+    public void show() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(inputManager); // Added first
+        Gdx.input.setInputProcessor(multiplexer);
+
+        float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
+        float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
+        popupMenu.setPosition(centerX, centerY);
     }
 
     @Override
     public void render(float deltaTime) {
         ScreenUtils.clear(0, 0, 0f, 0);
-
-        Gdx.input.setInputProcessor(inputManager);
 
         try {
             updateGame();
@@ -205,43 +204,10 @@ public class GameScene extends Scene {
         entityManager.draw(batch);
         batch.end();
 
-        // Draw the rebind rectangle
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0, 1, 0, 1); // Green color
-        shapeRenderer.rect(rebindRectangle.x, rebindRectangle.y, rebindRectangle.width, rebindRectangle.height);
-        shapeRenderer.end();
-
-        // Draw the text on the rebind rectangle
-        batch.begin();
-        font.draw(batch, "Rebind Keys", rebindRectangle.x + 20, rebindRectangle.y + 30);
-        batch.end();
-
-        // Check for mouse click within the rebind rectangle
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-            Vector2 clickPosition = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-            if (rebindRectangle.contains(clickPosition.x, Gdx.graphics.getHeight() - clickPosition.y)) {
-                inputManager.promptForKeyBindings();
-            }
-        }
-
-        // Print pressed keys
-        /*
-         * for (Integer key : inputManager.getPressedKeys()) {
-         * System.out.println("[DEBUG] Key pressed: " + Input.Keys.toString(key));
-         * }
-         * 
-         * // Print mouse click status
-         * if (inputManager.isMouseClicked()) {
-         * System.out.println("[DEBUG] Mouse is clicked at position: " +
-         * inputManager.getMousePosition());
-         * } else {
-         * System.out.println("[DEBUG] Mouse is not clicked.");
-         * }
-         */
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             popupMenu.setVisible(!popupMenu.isVisible());
         }
+
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
     }

@@ -2,9 +2,13 @@ package project.game.abstractengine.iomanager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
+
+
 
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import project.game.Direction;
 
@@ -18,7 +22,6 @@ public class SceneIOManager extends IOManager {
         initializedefaultKeyBindings();
     }
 
-
     private void initializedefaultKeyBindings() {
         keyBindings.put(Input.Keys.W, Direction.UP);
         keyBindings.put(Input.Keys.S, Direction.DOWN);
@@ -27,15 +30,16 @@ public class SceneIOManager extends IOManager {
     }
 
     public void promptForKeyBindings() {
-        Scanner scanner = new Scanner(System.in);
+        keyBindings.clear();
+
         System.out.println("Enter key for UP direction:");
-        int upKey = Input.Keys.valueOf(scanner.nextLine().toUpperCase());
+        int upKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
         System.out.println("Enter key for DOWN direction:");
-        int downKey = Input.Keys.valueOf(scanner.nextLine().toUpperCase());
+        int downKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
         System.out.println("Enter key for LEFT direction:");
-        int leftKey = Input.Keys.valueOf(scanner.nextLine().toUpperCase());
+        int leftKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
         System.out.println("Enter key for RIGHT direction:");
-        int rightKey = Input.Keys.valueOf(scanner.nextLine().toUpperCase());
+        int rightKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
 
         keyBindings.put(upKey, Direction.UP);
         keyBindings.put(downKey, Direction.DOWN);
@@ -61,6 +65,15 @@ public class SceneIOManager extends IOManager {
 
     public Map<Integer, Direction> getKeyBindings() {
         return keyBindings;
+    }
+
+    public void addClickListener(TextButton button, Runnable callback) {
+        button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                callback.run();
+            }
+        });
     }
 
 }
