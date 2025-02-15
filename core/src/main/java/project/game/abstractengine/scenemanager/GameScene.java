@@ -8,8 +8,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -85,12 +83,9 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
         World world = new World(new Vector2(0, -9.8f), true);
 
-        font = new BitmapFont();
         inputManager = new SceneIOManager();
-        rebindRectangle = new Rectangle(50, 50, 150, 50);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
