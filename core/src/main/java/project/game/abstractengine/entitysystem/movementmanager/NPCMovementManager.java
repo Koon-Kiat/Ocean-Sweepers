@@ -3,7 +3,6 @@ package project.game.abstractengine.entitysystem.movementmanager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.Direction;
 import project.game.builder.NPCMovementBuilder;
 import project.game.exceptions.MovementException;
 
@@ -20,6 +19,7 @@ import project.game.exceptions.MovementException;
 public class NPCMovementManager extends MovementManager {
 
     private static final Logger LOGGER = Logger.getLogger(NPCMovementManager.class.getName());
+    private final NPCMovementBuilder builder;
 
     /**
      * Private constructor to enforce the use of the Builder.
@@ -27,12 +27,11 @@ public class NPCMovementManager extends MovementManager {
      * @param builder The Builder instance containing configuration parameters.
      */
     public NPCMovementManager(NPCMovementBuilder builder) {
-        super(
-                checkBuilder(builder).getX(),
-                builder.getY(),
-                builder.getSpeed(),
-                builder.getDirection(),
-                builder.getMovementBehavior());
+        super(checkBuilder(builder).getEntity(),
+                checkBuilder(builder).getSpeed(),
+                checkBuilder(builder).getDirection(),
+                checkBuilder(builder).getMovementBehavior());
+        this.builder = builder;
     }
 
     private static NPCMovementBuilder checkBuilder(NPCMovementBuilder builder) {
@@ -44,17 +43,7 @@ public class NPCMovementManager extends MovementManager {
         return builder;
     }
 
-    @Override
-    public void setDirection(Direction direction) {
-        try {
-            super.setDirection(direction);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error setting direction in NPCMovementManager: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void updateMovement() {
-        super.updateMovement();
+    public NPCMovementBuilder getBuilder() {
+        return this.builder;
     }
 }
