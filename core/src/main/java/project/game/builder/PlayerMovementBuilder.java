@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.Direction;
+import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.defaultmovements.AcceleratedMovementBehavior;
@@ -23,46 +24,30 @@ public class PlayerMovementBuilder {
     private static final float DEFAULT_SPEED = 200f;
     private static final float DEFAULT_ACCELERATION = 500f;
     private static final float DEFAULT_DECELERATION = 250f;
-    private float x;
-    private float y;
-    private float speed = DEFAULT_SPEED;
+    private Entity entity;
+    private float speed;
     private Direction direction = Direction.NONE;
     private IMovementBehavior movementBehavior;
 
     // Static factory methods
-    public static PlayerMovementBuilder createDefaultPlayer(float x, float y) {
+    public static PlayerMovementBuilder createDefaultPlayer() {
         return new PlayerMovementBuilder()
-                .setX(x)
-                .setY(y)
                 .setSpeed(DEFAULT_SPEED)
                 .withConstantMovement();
     }
 
-    public static PlayerMovementBuilder createAcceleratingPlayer(float x, float y) {
+    public static PlayerMovementBuilder createAcceleratingPlayer() {
         return new PlayerMovementBuilder()
-                .setX(x)
-                .setY(y)
                 .setSpeed(DEFAULT_SPEED)
                 .withAcceleratedMovement(DEFAULT_ACCELERATION, DEFAULT_DECELERATION);
     }
 
-    public float getX() {
-        return x;
+    public Entity getEntity() {
+        return entity;
     }
 
-    public PlayerMovementBuilder setX(float x) {
-        validateCoordinate(x, "X");
-        this.x = x;
-        return this;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public PlayerMovementBuilder setY(float y) {
-        validateCoordinate(y, "Y");
-        this.y = y;
+    public PlayerMovementBuilder withEntity(Entity entity) {
+        this.entity = entity;
         return this;
     }
 
@@ -134,14 +119,6 @@ public class PlayerMovementBuilder {
     }
 
     // Private validation methods
-    private void validateCoordinate(float coordinate, String coordinateName) {
-        if (Float.isNaN(coordinate) || Float.isInfinite(coordinate)) {
-            String errorMessage = "Invalid " + coordinateName + " coordinate: " + coordinate;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException(errorMessage);
-        }
-    }
-
     private void validateAccelerationParameters(float acceleration, float deceleration) {
         if (acceleration < 0 || deceleration < 0) {
             String errorMessage = String.format(

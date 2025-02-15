@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.Direction;
+import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
@@ -24,29 +25,17 @@ import project.game.exceptions.MovementException;
 public class NPCMovementBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(NPCMovementBuilder.class.getName());
-    private float x;
-    private float y;
+    private Entity entity;
     private float speed;
     private Direction direction;
     private IMovementBehavior movementBehavior;
 
-    public float getX() {
-        return x;
+    public Entity getEntity() {
+        return entity;
     }
 
-    public NPCMovementBuilder setX(float x) {
-        validateCoordinate(x, "X");
-        this.x = x;
-        return this;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public NPCMovementBuilder setY(float y) {
-        validateCoordinate(y, "Y");
-        this.y = y;
+    public NPCMovementBuilder withEntity(Entity entity) {
+        this.entity = entity;
         return this;
     }
 
@@ -184,14 +173,6 @@ public class NPCMovementBuilder {
     }
 
     // Private validations
-    private void validateCoordinate(float coordinate, String coordinateName) {
-        if (Float.isNaN(coordinate) || Float.isInfinite(coordinate)) {
-            String errorMessage = "Invalid " + coordinateName + " coordinate: " + coordinate;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException(errorMessage);
-        }
-    }
-
     private void validateZigZagParams(float amplitude, float frequency) {
         if (amplitude < 0 || frequency < 0) {
             String errorMsg = String.format(

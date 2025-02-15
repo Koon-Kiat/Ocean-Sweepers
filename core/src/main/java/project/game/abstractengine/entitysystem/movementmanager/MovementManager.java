@@ -32,14 +32,12 @@ public abstract class MovementManager extends MovableEntity implements IMovement
     /**
      * Constructs a MovementManager with the specified parameters.
      *
-     * @param x         Initial x-coordinate.y
-     * @param y         Initial y-coordinate.
      * @param speed     Movement speed.
      * @param direction Initial movement direction.
      * @param behavior  Movement behavior strategy.
      */
-    public MovementManager(float x, float y, float speed, Direction direction, IMovementBehavior behavior) {
-        super(new Entity(x, y, 0, 0, true), speed);
+    public MovementManager(Entity entity, float speed, Direction direction, IMovementBehavior behavior) {
+        super(entity, speed);
         validateConstructorParameters(speed, behavior);
         setDirection((direction != null) ? direction : Direction.NONE);
         this.movementBehavior = behavior;
@@ -52,6 +50,10 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         if (behavior == null) {
             throw new MovementException("Movement behavior cannot be null");
         }
+    }
+
+    public IMovementBehavior getMovementBehavior() {
+        return movementBehavior;
     }
 
     public void setMovementBehavior(IMovementBehavior movementBehavior) {

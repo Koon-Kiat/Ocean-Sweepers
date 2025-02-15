@@ -8,6 +8,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -40,8 +42,10 @@ public class GameScene extends Scene {
 
     public static final float GAME_WIDTH = 640;
     public static final float GAME_HEIGHT = 480;
+
     private static final float PLAYER_SPEED = 1600f;
-    private static final float NPC_SPEED = 500f;
+    private static final float NPC_SPEED = 400f;
+
     private static final float DROP_START_X = 0f;
     private static final float DROP_START_Y = 400f;
     private static final float BUCKET_START_X = 5f;
@@ -79,7 +83,10 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
+        World world = new World(new Vector2(0, -9.8f), true);
+
         inputManager = new SceneIOManager();
+
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
         table = new Table();
@@ -134,12 +141,12 @@ public class GameScene extends Scene {
         }
 
         // Create entities
-        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, dropImage.getWidth(), dropImage.getHeight(),
-                true);
-        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, bucketImage.getWidth(),
-                bucketImage.getHeight(), true);
+        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, 50, 50, true);
+
+        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, 50, 50, true);
 
         playerMovementManager = new PlayerMovementBuilder()
+                .withEntity(genericBucketEntity)
                 .setSpeed(PLAYER_SPEED)
                 .setDirection(Direction.NONE)
                 .withConstantMovement()
@@ -151,13 +158,15 @@ public class GameScene extends Scene {
         behaviorPool.add(new FollowMovementBehavior(playerMovementManager, NPC_SPEED));
 
         npcMovementManager = new NPCMovementBuilder()
+                .withEntity(genericDropEntity)
                 .setSpeed(NPC_SPEED)
-                .withZigZagMovement(50f, 1f)
+                .withRandomisedMovement(behaviorPool, 3, 4)
                 .setDirection(Direction.RIGHT)
                 .build();
 
-        bucket = new BucketEntity(genericBucketEntity, playerMovementManager, "bucket.png");
-        drop = new DropEntity(genericDropEntity, npcMovementManager, "droplet.png");
+        bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
+        drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
+
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
 

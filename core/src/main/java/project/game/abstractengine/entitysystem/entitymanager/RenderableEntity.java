@@ -15,6 +15,15 @@ public abstract class RenderableEntity extends Entity implements IRenderable {
 		this.texturePath = texturePath;
 	}
 
+	public Entity getEntity() {
+		return entity;
+	}
+
+	@Override
+	public String getTexturePath() {
+		return this.texturePath;
+	}
+
 	public void loadTexture() {
 		GameAsset.getInstance().loadTextureAssets(texturePath);
 	}
@@ -25,10 +34,6 @@ public abstract class RenderableEntity extends Entity implements IRenderable {
 			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
 			batch.draw(texture, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 		}
-	}
-
-	public Entity getEntity() {
-		return entity;
 	}
 
 	public abstract void update();

@@ -2,46 +2,47 @@ package project.game.abstractengine.testentity;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.abstractengine.assetmanager.GameAsset;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
-import project.game.builder.NPCMovementBuilder;
 
-public class DropEntity extends NPCMovementBuilder implements ICollidable, IRenderable {
+public class DropEntity extends NPCMovementManager implements ICollidable, IRenderable {
 
-	private final Entity entity;
 	private final NPCMovementManager movementManager;
 	private final String texturePath;
+	private final Body body;
 
-	public DropEntity(Entity entity, NPCMovementManager movementManager, String texturePath) {
-		super();
-		this.entity = entity;
+	public DropEntity(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
+		super(movementManager.getBuilder());
 		this.movementManager = movementManager;
 		this.texturePath = texturePath;
+		this.setWidth(entity.getWidth());
+		this.setHeight(entity.getHeight());
+		this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 		GameAsset.getInstance().loadTextureAssets(texturePath);
 	}
 
+	@Override
+	public Body getBody() {
+		return this.body;
+	}
+
+	@Override
+	public String getTexturePath() {
+		return this.texturePath;
+	}
+
+	@Override
 	public Entity getEntity() {
-		return this.entity;
-	}
-
-	public float getWidth() {
-		return entity.getWidth();
-	}
-
-	public float getHeight() {
-		return entity.getHeight();
-	}
-
-	public String getID() {
-		return entity.getID();
-	}
-
-	public boolean isActive() {
-		return entity.isActive();
+		return this;
 	}
 
 	@Override
@@ -63,6 +64,29 @@ public class DropEntity extends NPCMovementBuilder implements ICollidable, IRend
 			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
 			batch.draw(texture, getX(), getY(), getWidth(), getHeight());
 		}
+	}
+
+	@Override
+	public final Body createBody(World world, float x, float y, float width, float height) {
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.type = BodyDef.BodyType.DynamicBody;
+		bodyDef.position.set(x, y);
+
+		Body createdBody = world.createBody(bodyDef);
+
+		PolygonShape shape = new PolygonShape();
+		shape.setAsBox(width / 2, height / 2);
+
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = shape;
+		fixtureDef.density = 1.0f;
+		fixtureDef.friction = 0.3f;
+		fixtureDef.restitution = 0.5f;
+
+		createdBody.createFixture(fixtureDef);
+		shape.dispose();
+
+		return createdBody;
 	}
 
 	public NPCMovementManager getMovementManager() {
