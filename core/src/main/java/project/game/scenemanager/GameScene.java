@@ -5,17 +5,19 @@ import java.util.List;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
@@ -47,7 +49,6 @@ public class GameScene extends Scene {
 
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
-
     private SceneManager sceneManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
@@ -60,16 +61,13 @@ public class GameScene extends Scene {
     private Texture bucketImage;
     private Rectangle drop;
     private Rectangle bucket;
-    private Window popupMenu;
     private Stage stage;
     private Skin skin;
     private Table table;
-
-    // public GameScene() {
-    //     sceneManager = new SceneManager();
-    //     sceneManager.addScene("menu", new MainMenuScene());
-    //     sceneManager.setScene("menu");
-    // }
+    private Options options;
+    private boolean isMenuOpen = false, isRebindMenuOpen = false;
+    private boolean isPaused = false;
+    private InputMultiplexer inputMultiplexer;
 
     public GameScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
@@ -82,45 +80,37 @@ public class GameScene extends Scene {
         font = new BitmapFont();
         inputManager = new SceneIOManager();
         rebindRectangle = new Rectangle(50, 50, 150, 50);
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
+
         stage = new Stage();
-        table = new Table();
 
-        popupMenu = new Window("Pop up", skin);
-        popupMenu.setSize(200, 150);
-        popupMenu.setPosition(300, 300);
-        popupMenu.setVisible(false);
+        options = new Options(sceneManager);
+        options.create();  
+        options.setMainMenuButtonVisibility(true);
+        options.getPopupMenu().setTouchable(Touchable.enabled);
+        inputMultiplexer = new InputMultiplexer();
+        //inputMultiplexer.addProcessor(inputManager);
+        //inputMultiplexer.addProcessor(stage);
 
-        TextButton button1 = new TextButton("Rebind Keys", skin);
-        TextButton button2 = new TextButton("Return to main menu", skin);
-        TextButton button3 = new TextButton("Close", skin);
-
-        // Button listeners (Debug for now)
-        button1.addListener(event -> {
-            System.out.println("'Rebind keys' selected");
-            return true;
-        });
-
-        button2.addListener(event -> {
-            System.out.println("'Return to main menu' selected");
-            return true;
-        });
-
-        button3.addListener(event -> {
-            popupMenu.setVisible(false);
-            return true;
-        });
-
-        Table table = new Table();
-        table.add(button1).fillX().pad(5);
-        table.row();
-        table.add(button2).fillX().pad(5);
-        table.row();
-        table.add(button3).fillX().pad(5);
-
-        popupMenu.add(table);
-        stage.addActor(popupMenu);
+        // Add popup menu to the stage
+        options.getPopupMenu().setVisible(false);
+        options.getPopupMenu().setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f - 100);
+        stage.addActor(options.getPopupMenu());
+        stage.addActor(options.getRebindMenu());
         
+        // Add listener for interaction
+        options.getPopupMenu().addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                System.out.println("[DEBUG] Popup Menu Key Pressed: " + Input.Keys.toString(keycode));
+                return true;
+            }
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                System.out.println("[DEBUG] Popup Menu Touched at: (" + x + ", " + y + ")");
+                return true;
+            }
+        });
         
         batch = new SpriteBatch();
         try {
@@ -161,21 +151,70 @@ public class GameScene extends Scene {
                 .build();
 
         inputManager = new SceneIOManager();
-        Gdx.input.setInputProcessor(inputManager);
+        //Gdx.input.setInputProcessor(inputManager);
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     public void render(float deltaTime) {
         ScreenUtils.clear(0, 0, 0f, 0);
 
-        Gdx.input.setInputProcessor(inputManager);
+        //Gdx.input.setInputProcessor(inputManager);
 
+        // Set the initial input processor to the inputManager
+        // Update: using inputMultiplexer since we need to switch between inputManager and stage
+        inputMultiplexer.addProcessor(inputManager);
+        Gdx.input.setInputProcessor(inputMultiplexer);
 
-        try {
-            updateGame();
-        } catch (Exception e) {
-            System.err.println("[ERROR] Exception during game update: " + e.getMessage());
-            Gdx.app.error("Main", "Exception during game update", e);
+        // Toggle options menu with 'P'
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            isMenuOpen = !isMenuOpen;
+            //isPaused = !isPaused;
+            options.getPopupMenu().setVisible(isMenuOpen);
+            if (isMenuOpen) {
+                isPaused = true;
+                // Set input processor to stage when the menu is open
+                stage.setKeyboardFocus(options.getPopupMenu()); // Force focus on the popup
+                //Gdx.input.setInputProcessor(stage);
+                inputMultiplexer.removeProcessor(inputManager);
+                inputMultiplexer.addProcessor(0, stage);
+                System.out.println("[DEBUG] InputProcessor set to stage");
+                
+            } else if (isRebindMenuOpen) {
+                stage.getRoot().findActor("rebindMenu").setVisible(true);  
+            }
+            else {
+                // Set input processor back to inputManager when the menu is closed
+                //Gdx.input.setInputProcessor(inputManager);
+                isPaused = false;
+                inputMultiplexer.removeProcessor(stage);
+                inputMultiplexer.addProcessor(inputManager);
+                System.out.println("[DEBUG] InputProcessor set to inputManager");
+            }
         }
+
+        // Small issue here where when user hits close button instead of "P" again, the game will not unpause itself
+
+        if (isMenuOpen) {
+            stage.act(Gdx.graphics.getDeltaTime());
+            stage.draw();
+        } 
+        else if (!isPaused) {
+            try {
+                updateGame();
+            } catch (Exception e) {
+                System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+                Gdx.app.error("Main", "Exception during game update", e);
+            }
+        }
+
+        // Original code for updateGame
+
+        // try {
+        //     updateGame();
+        // } catch (Exception e) {
+        //     System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+        //     Gdx.app.error("Main", "Exception during game update", e);
+        // }
             
         batch.begin();
         batch.draw(dropImage, drop.x, drop.y, drop.width, drop.height);
@@ -187,6 +226,14 @@ public class GameScene extends Scene {
         shapeRenderer.setColor(0, 1, 0, 1); // Green color
         shapeRenderer.rect(rebindRectangle.x, rebindRectangle.y, rebindRectangle.width, rebindRectangle.height);
         shapeRenderer.end();
+
+        // Check for mouse click only if not paused
+        if (!isMenuOpen && Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            Vector2 clickPosition = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+            if (rebindRectangle.contains(clickPosition.x, Gdx.graphics.getHeight() - clickPosition.y)) {
+                inputManager.promptForKeyBindings();
+            }
+        }
 
         // Draw the text on the rebind rectangle
         batch.begin();
@@ -216,11 +263,6 @@ public class GameScene extends Scene {
             System.out.println("[DEBUG] Mouse is not clicked.");
         }
         
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            popupMenu.setVisible(!popupMenu.isVisible());
-        }
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
     }
 
     private void updateGame() {
