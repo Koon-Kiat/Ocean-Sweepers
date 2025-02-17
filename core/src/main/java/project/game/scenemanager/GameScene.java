@@ -83,7 +83,7 @@ public class GameScene extends Scene {
 
         stage = new Stage();
 
-        options = new Options(sceneManager);
+        options = new Options(sceneManager, this);
         options.create();  
         options.setMainMenuButtonVisibility(true);
         options.getPopupMenu().setTouchable(Touchable.enabled);
@@ -289,4 +289,12 @@ public class GameScene extends Scene {
         bucketImage.dispose();
     }
 
+    public void closePopupMenu() {
+        isMenuOpen = false;
+        isPaused = false;
+        options.getPopupMenu().setVisible(false);
+        inputMultiplexer.removeProcessor(stage);
+        inputMultiplexer.addProcessor(inputManager);
+        System.out.println("[DEBUG] Popup closed and game unpaused");
+    }
 }

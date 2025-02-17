@@ -29,7 +29,7 @@ public class MainMenuScene extends Scene {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         playButton = new TextButton("PLAY", skin); // Start moves to gamescene
         optionsButton = new TextButton("OPTIONS", skin); // Options moves to options menu scene
-        options = new Options(sceneManager);
+        options = new Options(sceneManager, gameScene);
         options.create();
         options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin); // Exit closes game

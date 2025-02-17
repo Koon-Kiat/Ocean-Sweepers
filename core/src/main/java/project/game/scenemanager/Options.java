@@ -17,9 +17,11 @@ public class Options extends Scene{
     private Window rebindMenu;
     private TextButton mainMenuButton; // Added to make main menu button visible/invisible. Main menu button not needed in the main menu, only in other scenes like game scene or fail state scene.
     private boolean isPaused = true;
+    private GameScene gameScene;
 
-    public Options(SceneManager sceneManager) {
+    public Options(SceneManager sceneManager, GameScene gameScene) {
         this.sceneManager = sceneManager;
+        this.gameScene = gameScene;
     }
 
     public void create() {
@@ -74,8 +76,10 @@ public class Options extends Scene{
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("'Close' selected");
-                setPaused(false);
-                popupMenu.setVisible(false);
+                //setPaused(false);
+                //((GameScene) sceneManager.getCurrentScene()).closePopupMenu();
+                gameScene.closePopupMenu();
+                //popupMenu.setVisible(false);
             }
         });
 
