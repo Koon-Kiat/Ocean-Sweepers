@@ -21,9 +21,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
-import project.game.abstractengine.entity.movementmanager.NPCMovementManager;
-import project.game.abstractengine.entity.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
@@ -127,14 +127,17 @@ public class GameScene extends Scene {
             System.err.println("[ERROR] Failed to load bucket.png: " + e.getMessage());
         }
 
-        drop = new Rectangle(DROP_START_X, DROP_START_Y, dropImage.getWidth(), dropImage.getHeight());
-        bucket = new Rectangle(BUCKET_START_X, BUCKET_START_Y, bucketImage.getWidth(), bucketImage.getHeight());
+        // Create entities
+        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, 50, 50, true);
+
+        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, 50, 50, true);
+
 
         playerMovementManager = new PlayerMovementBuilder()
-                .setX(bucket.x)
-                .setY(bucket.y)
+                .withEntity(genericBucketEntity)
                 .setSpeed(PLAYER_SPEED)
-                .withAcceleratedMovement(1000f, 1500f)
+                .setDirection(Direction.NONE)
+                .withConstantMovement()
                 .build();
 
         behaviorPool = new ArrayList<>();
@@ -143,10 +146,9 @@ public class GameScene extends Scene {
         behaviorPool.add(new FollowMovementBehavior(playerMovementManager, NPC_SPEED));
 
         npcMovementManager = new NPCMovementBuilder()
-                .setX(drop.x)
-                .setY(drop.y)
+                .withEntity(genericDropEntity)
                 .setSpeed(NPC_SPEED)
-                .withRandomisedMovement(behaviorPool, 1f, 2f)
+                .withRandomisedMovement(behaviorPool, 3, 4)
                 .setDirection(Direction.RIGHT)
                 .build();
 
