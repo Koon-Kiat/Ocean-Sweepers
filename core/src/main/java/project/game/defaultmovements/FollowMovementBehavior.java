@@ -5,9 +5,9 @@ import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.abstractengine.entity.movementmanager.MovementData;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementManager;
+import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
+import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
 import project.game.exceptions.MovementException;
 
 /**
@@ -50,15 +50,16 @@ public class FollowMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data, float deltaTime) {
+    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
-            Vector2 targetPos = new Vector2(targetManager.getX(), targetManager.getY());
-            Vector2 currentPos = new Vector2(data.getX(), data.getY());
+            Vector2 targetPos = new Vector2(((MovableEntity) targetManager).getX(),
+                    ((MovableEntity) targetManager).getY());
+            Vector2 currentPos = new Vector2(entity.getX(), entity.getY());
             Vector2 direction = targetPos.sub(currentPos).nor();
-            float newX = data.getX() + direction.x * speed * deltaTime;
-            float newY = data.getY() + direction.y * speed * deltaTime;
-            data.setX(newX);
-            data.setY(newY);
+            float newX = entity.getX() + direction.x * speed * deltaTime;
+            float newY = entity.getY() + direction.y * speed * deltaTime;
+            entity.setX(newX);
+            entity.setY(newY);
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.SEVERE, "Illegal argument in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw e;

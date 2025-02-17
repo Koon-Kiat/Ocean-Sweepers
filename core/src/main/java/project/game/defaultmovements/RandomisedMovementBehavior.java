@@ -6,8 +6,8 @@ import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.MathUtils;
 
-import project.game.abstractengine.entity.movementmanager.MovementData;
-import project.game.abstractengine.entity.movementmanager.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
+import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
@@ -55,14 +55,14 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovementData data, float deltaTime) {
+    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
             remainingTime -= deltaTime;
             if (remainingTime <= 0) {
                 pickRandomBehavior();
             }
             if (currentBehavior != null) {
-                currentBehavior.applyMovementBehavior(data, deltaTime);
+                currentBehavior.applyMovementBehavior(entity, deltaTime);
             }
         } catch (IllegalArgumentException e) {
             throw new MovementException("Invalid argument in RandomisedMovementBehavior", e);
