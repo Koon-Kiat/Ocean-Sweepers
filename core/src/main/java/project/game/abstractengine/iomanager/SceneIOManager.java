@@ -27,22 +27,59 @@ public class SceneIOManager extends IOManager {
         keyBindings.put(Input.Keys.D, Direction.RIGHT);
     }
 
-    public void promptForKeyBindings() {
+    // Corrected promptForKeyBindings method
+    public void promptForKeyBindings(String upKeyString, String downKeyString, String leftKeyString,
+            String rightKeyString) {
         keyBindings.clear();
 
-        System.out.println("Enter key for UP direction:");
-        int upKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
-        System.out.println("Enter key for DOWN direction:");
-        int downKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
-        System.out.println("Enter key for LEFT direction:");
-        int leftKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
-        System.out.println("Enter key for RIGHT direction:");
-        int rightKey = Input.Keys.valueOf(SCANNER.nextLine().toUpperCase());
+        // Convert the key strings to key codes
+        int upKey = getKeycodeFromString(upKeyString);
+        int downKey = getKeycodeFromString(downKeyString);
+        int leftKey = getKeycodeFromString(leftKeyString);
+        int rightKey = getKeycodeFromString(rightKeyString);
+
+        // Print the key strings to check their values
+        System.out.println("[DEBUG] Up Key String: " + upKeyString);
+        System.out.println("[DEBUG] Down Key String: " + downKeyString);
+        System.out.println("[DEBUG] Left Key String: " + leftKeyString);
+        System.out.println("[DEBUG] Right Key String: " + rightKeyString);
+
+        // Gdx.app.log("SceneIOManager", "New keybindings: Up=" + upKey + ", Down=" +
+        // downKey + ", Left=" + leftKey + ", Right=" + rightKey);
 
         keyBindings.put(upKey, Direction.UP);
         keyBindings.put(downKey, Direction.DOWN);
         keyBindings.put(leftKey, Direction.LEFT);
         keyBindings.put(rightKey, Direction.RIGHT);
+    }
+
+    private int getKeycodeFromString(String keyString) {
+        try {
+            return Input.Keys.valueOf(keyString);
+        } catch (IllegalArgumentException e) {
+            // Handle arrow keys
+            switch (keyString) {
+                case "UP":
+                    return Input.Keys.UP;
+                case "DOWN":
+                    return Input.Keys.DOWN;
+                case "LEFT":
+                    return Input.Keys.LEFT;
+                case "RIGHT":
+                    return Input.Keys.RIGHT;
+                default:
+                    System.err.println("[ERROR] Invalid key string: " + keyString);
+                    return Input.Keys.UNKNOWN; // Or a default key
+            }
+        }
+    }
+
+    public void setKeyBindings(Map<Integer, Direction> newKeyBindings) {
+        this.keyBindings = newKeyBindings;
+    }
+
+    public void clearPressedKeys() {
+        pressedKeys.clear();
     }
 
     @Override

@@ -6,11 +6,15 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import project.game.abstractengine.iomanager.SceneIOManager;
+
 public abstract class Scene implements Screen {
     protected Stage stage;
+    protected SceneIOManager inputManager;
 
     public Scene() {
-        stage = new Stage(new ScreenViewport()); // Initialize stage
+        stage = new Stage(new ScreenViewport());// Initialize stage
+        inputManager = new SceneIOManager();  
         create(); // Call abstract method for subclass-specific setup
     }
 
