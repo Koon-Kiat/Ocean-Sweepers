@@ -10,17 +10,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
@@ -30,7 +24,6 @@ import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.testentity.BucketEntity;
 import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
@@ -71,7 +64,6 @@ public class GameScene extends Scene {
     private Window popupMenu;
     private Skin skin;
     private Table table;
-    private Options options;
     private boolean isMenuOpen = false, isRebindMenuOpen = false;
     private boolean isPaused = false;
     private InputMultiplexer inputMultiplexer;
@@ -88,18 +80,8 @@ public class GameScene extends Scene {
 
         stage = new Stage();
         sceneManager = new SceneManager();
-        System.out.println("Available scenes after init: " + sceneManager.getSceneList());
 
-        options = new Options(sceneManager, this);
-
-        options.setMainMenuButtonVisibility(true);
-        options.getPopupMenu().setTouchable(Touchable.enabled);
-
-        popupMenu = options.getPopupMenu();
-
-        inputMultiplexer = new InputMultiplexer();
-        // inputMultiplexer.addProcessor(inputManager);
-        // inputMultiplexer.addProcessor(stage);
+        leaveGameMessage();
 
         // Add popup menu to the stage
         if (popupMenu != null) {
@@ -110,23 +92,6 @@ public class GameScene extends Scene {
             Gdx.app.log("GameScene", "popupMenu is null");
         }
 
-        stage.addActor(options.getPopupMenu());
-        stage.addActor(options.getRebindMenu());
-
-        // Add listener for interaction
-        options.getPopupMenu().addListener(new InputListener() {
-            @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                System.out.println("[DEBUG] Popup Menu Key Pressed: " + Input.Keys.toString(keycode));
-                return true;
-            }
-
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("[DEBUG] Popup Menu Touched at: (" + x + ", " + y + ")");
-                return true;
-            }
-        });
 
         // // Instead of checking clicks manually in render, add click listeners here:
         // inputManager.addClickListener(button1, () -> {
@@ -262,15 +227,25 @@ public class GameScene extends Scene {
     private void input() {
         // Set the initial input processor to the inputManager
         // Update: using inputMultiplexer since we need to switch between inputManager and stage
-        System.out.println("Available scenes: " + sceneManager.getSceneList());
-
-        inputMultiplexer.addProcessor(inputManager);
-        Gdx.input.setInputProcessor(inputMultiplexer);
+        //inputMultiplexer.addProcessor(inputManager);
+        Gdx.input.setInputProcessor(inputManager);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
         }
         
+    }
+
+    private void leaveGameMessage() {
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        final TextField textfieldMainMenu = new TextField("", skin);
+        textfieldMainMenu.setAlignment(1); // Set alignment to center (1)
+        textfieldMainMenu.setMessageText("Press M to return to main menu...");
+        table = new Table();
+        table.setFillParent(true);
+        //table.add(textfieldMainMenu).padBottom(0);
+        table.row();
+        stage.addActor(table);
     }
 
     private void updateGame() {
@@ -295,14 +270,14 @@ public class GameScene extends Scene {
         bucketImage.dispose();
     }
 
-    public void closePopupMenu() {
-        isMenuOpen = false;
-        isPaused = false;
-        options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(stage);
-        inputMultiplexer.addProcessor(inputManager);
-        inputManager.clearPressedKeys(); // Clear the pressedKeys set
-        System.out.println("[DEBUG] Popup closed and game unpaused");
-    }
+    // public void closePopupMenu() {
+    //     isMenuOpen = false;
+    //     isPaused = false;
+    //     options.getPopupMenu().setVisible(false);
+    //     inputMultiplexer.removeProcessor(stage);
+    //     inputMultiplexer.addProcessor(inputManager);
+    //     inputManager.clearPressedKeys(); // Clear the pressedKeys set
+    //     System.out.println("[DEBUG] Popup closed and game unpaused");
+    // }
 
 }
