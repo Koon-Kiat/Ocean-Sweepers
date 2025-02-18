@@ -11,7 +11,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -25,6 +29,7 @@ import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.testentity.BucketEntity;
 import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
@@ -64,7 +69,9 @@ public class GameScene extends Scene {
     private Window popupMenu;
     private Skin skin;
     private Table table;
-    private boolean isPaused = false;
+    private boolean isPaused = false, isMenuOpen = false;
+    private InputMultiplexer inputMultiplexer;
+    private Options options;
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
@@ -76,29 +83,10 @@ public class GameScene extends Scene {
         batch = new SpriteBatch();
         World world = new World(new Vector2(0, -9.8f), true);
         System.out.println("[DEBUG] GameScene inputManager instance: " + System.identityHashCode(inputManager));
-
         stage = new Stage();
 
-        options = new Options(sceneManager, this, inputManager);
-
-        options.setMainMenuButtonVisibility(true);
-        options.getPopupMenu().setTouchable(Touchable.enabled);
-
-        popupMenu = options.getPopupMenu();
-
-        inputMultiplexer = new InputMultiplexer();
-
-        // Add popup menu to the stage
-        if (popupMenu != null) {
-            float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
-            float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
-            popupMenu.setPosition(centerX, centerY);
-        } else {
-            Gdx.app.log("GameScene", "popupMenu is null");
-        }
-
-        stage.addActor(options.getPopupMenu());
-        stage.addActor(options.getRebindMenu());
+        initPopUpMenu();
+        displayMessage();
 
         // Add listener for interaction
         options.getPopupMenu().addListener(new InputListener() {
@@ -175,6 +163,7 @@ public class GameScene extends Scene {
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
 
+        
     }
 
     @Override
@@ -190,6 +179,7 @@ public class GameScene extends Scene {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         input();
+        show();
 
         if (!isPaused) {
             try {
@@ -201,19 +191,36 @@ public class GameScene extends Scene {
             }
         }
 
-        // Original code for update game ONLY
-        // try {
-        // updateGame();
-        // } catch (Exception e) {
-        // System.err.println("[ERROR] Exception during game update: " +
-        // e.getMessage());
-        // Gdx.app.error("Main", "Exception during game update", e);
-        // }
-
         batch.begin();
         entityManager.draw(batch);
         batch.end();
 
+        stage.act(Gdx.graphics.getDeltaTime());
+        stage.draw();
+
+    }
+
+    public void initPopUpMenu() {
+        options = new Options(sceneManager, this, inputManager);
+        
+        options.setMainMenuButtonVisibility(true);
+        options.getPopupMenu().setTouchable(Touchable.enabled);
+
+        popupMenu = options.getPopupMenu();
+        inputMultiplexer = new InputMultiplexer();
+
+
+        // Add popup menu to the stage
+        if (popupMenu != null) {
+            float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
+            float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
+            popupMenu.setPosition(centerX, centerY);
+        } else {
+            Gdx.app.log("GameScene", "popupMenu is null");
+        }
+
+        stage.addActor(options.getPopupMenu());
+        stage.addActor(options.getRebindMenu());
     }
 
     private void input() {
@@ -225,19 +232,48 @@ public class GameScene extends Scene {
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
         }
+
+        // Toggle options menu with 'P'
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            isMenuOpen = !isMenuOpen;
+            hideDisplayMessage();
+            options.getRebindMenu().setVisible(isMenuOpen);
+            if (isMenuOpen) {
+                isPaused = true;
+                inputMultiplexer.setProcessors(stage, inputManager); // Set stage first
+                System.out.println("[DEBUG] InputProcessor set to stage");
+
+            } else {
+                isPaused = false;
+                inputMultiplexer.removeProcessor(stage);
+                inputMultiplexer.addProcessor(inputManager);
+                stage.setKeyboardFocus(null);
+                System.out.println("[DEBUG] InputProcessor set to inputManager");
+            }
+        }
         
     }
 
-    private void leaveGameMessage() {
+    private void displayMessage() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        final TextField textfieldMainMenu = new TextField("", skin);
-        textfieldMainMenu.setAlignment(1); // Set alignment to center (1)
-        textfieldMainMenu.setMessageText("Press M to return to main menu...");
-        table = new Table();
-        table.setFillParent(true);
-        //table.add(textfieldMainMenu).padBottom(0);
-        table.row();
-        stage.addActor(table);
+        final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
+        style.background = null; // Disable the background
+
+        final TextField textField = new TextField("", style);
+        textField.setWidth(300); // Adjust the width as needed
+        textField.setHeight(40); // Adjust the height as needed
+        textField.setPosition(stage.getWidth() / 2f - textField.getWidth() / 2f, stage.getHeight() - textField.getHeight());
+        textField.setMessageText("Press M to return to main menu...\nPress P to pause and rebind keys");
+        textField.setDisabled(true);
+        stage.addActor(textField);
+    }
+
+    private void hideDisplayMessage() {
+        for (Actor actor : stage.getActors()) {
+            if (actor instanceof TextField) {
+                actor.remove();
+            }
+        }
     }
 
     private void updateGame() {
@@ -263,14 +299,14 @@ public class GameScene extends Scene {
         bucketImage.dispose();
     }
 
-    // public void closePopupMenu() {
-    //     isMenuOpen = false;
-    //     isPaused = false;
-    //     options.getPopupMenu().setVisible(false);
-    //     inputMultiplexer.removeProcessor(stage);
-    //     inputMultiplexer.addProcessor(inputManager);
-    //     inputManager.clearPressedKeys(); // Clear the pressedKeys set
-    //     System.out.println("[DEBUG] Popup closed and game unpaused");
-    // }
+    public void closePopupMenu() {
+        isMenuOpen = false;
+        isPaused = false;
+        options.getPopupMenu().setVisible(false);
+        inputMultiplexer.removeProcessor(stage);
+        inputMultiplexer.addProcessor(inputManager);
+        inputManager.clearPressedKeys(); // Clear the pressedKeys set
+        System.out.println("[DEBUG] Popup closed and game unpaused");
+    }
 
 }

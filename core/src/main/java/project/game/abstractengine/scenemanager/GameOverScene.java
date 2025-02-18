@@ -16,13 +16,10 @@ public class GameOverScene extends Scene {
     private SpriteBatch batch;
     private BitmapFont font;
 
-    public GameOverScene(SceneManager sceneManager) {
-        this.sceneManager = new SceneManager();
-    }
-
     // Provide an explicit constructor that calls the super constructor
-    public GameOverScene(SceneIOManager inputManager) {
+    public GameOverScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
+        this.sceneManager = sceneManager;
     }
 
     @Override

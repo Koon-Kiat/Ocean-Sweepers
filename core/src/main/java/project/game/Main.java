@@ -5,8 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.GameScene;
-import project.game.abstractengine.scenemanager.MainMenuScene;
 import project.game.abstractengine.scenemanager.SceneFactory;
 import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.logmanager.LogManager;
@@ -26,15 +24,16 @@ public class Main extends ApplicationAdapter {
     public void create() {
         // Scene Manager setup
         sceneManager = new SceneManager();
-        SceneFactory sceneFactory = new SceneFactory(sceneManager);
+        SceneIOManager sharedInputManager = sceneManager.getInputManager();
+
+        SceneFactory sceneFactory = new SceneFactory(sceneManager,sharedInputManager);
         sceneFactory.createAndRegisterScenes();
-        //SceneIOManager sharedInputManager = sceneManager.getInputManager();
         //mainMenuScene = new MainMenuScene(sceneManager,sharedInputManager);
         //gameScene = new GameScene(sceneManager, sharedInputManager);
-        sceneManager.addScene("menu", mainMenuScene);
-        sceneManager.addScene("game", gameScene);
+        //sceneManager.addScene("menu", mainMenuScene);
+        //sceneManager.addScene("game", gameScene);
         System.out.println("Available scenes: " + sceneManager.getSceneList());
-        //sceneManager.setScene("menu");
+        sceneManager.setScene("menu");
         System.out.println("[DEBUG] sceneManager in main: " + sceneManager);
     }
 
