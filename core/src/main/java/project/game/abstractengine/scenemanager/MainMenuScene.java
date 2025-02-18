@@ -8,12 +8,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
 public class MainMenuScene extends Scene {
-    private Texture backgroundTexture;
-    private SpriteBatch batch;
     private Skin skin;
     private TextButton playButton, exitButton, optionsButton;
-    private SceneManager sceneManager;
-    private GameScene gameScene;
 
     public MainMenuScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;

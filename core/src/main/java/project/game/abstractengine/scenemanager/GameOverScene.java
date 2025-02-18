@@ -11,10 +11,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 public class GameOverScene extends Scene {
-    private Stage stage;
     private SpriteBatch batch;
-    private Skin skin;
     private BitmapFont font;
+
+    public GameOverScene(SceneManager sceneManager) {
+        this.sceneManager = new SceneManager();
+    }
 
     @Override
     public void create() {

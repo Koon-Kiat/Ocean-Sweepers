@@ -16,14 +16,13 @@ public class OptionsScene extends Scene {
     
     private Skin skin;
     private Table tableScene, tableRebind;
-    private TextButton backButton, returnButton;
+    private TextButton returnButton;
     private TextButton rebindUP, rebindDOWN, rebindLEFT, rebindRIGHT;
-    private SceneManager sceneManager;
-    private final SceneIOManager inputManager;
     private Window rebindWindow;
 
     public OptionsScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
+
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         tableScene = new Table();
         tableRebind = new Table();
@@ -138,16 +137,6 @@ public class OptionsScene extends Scene {
             
         });
 
-        
-
-    }
-
-    private void rebindKey() {
-        // Implementation of the rebindKey method
-        // Onclick of UP/DOWN/LEFT/RIGHT: Window shows up
-        // Window has a textfield for input
-        // Input saved
-        // Output logged
     }
 
     @Override

@@ -52,7 +52,6 @@ public class GameScene extends Scene {
 
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
-    private SceneManager sceneManager;
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
@@ -64,10 +63,7 @@ public class GameScene extends Scene {
     private Window popupMenu;
     private Skin skin;
     private Table table;
-    private boolean isMenuOpen = false, isRebindMenuOpen = false;
     private boolean isPaused = false;
-    private InputMultiplexer inputMultiplexer;
-    private MainMenuScene mainMenuScene;
 
     public GameScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;

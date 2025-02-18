@@ -4,19 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class SceneManager {
+public class SceneManager{
     private final Map<String, Scene> scenes;
     private Scene currentScene;
 
     public SceneManager() {
-        this.scenes = new HashMap<>();
+        this.scenes = new HashMap<>();  
     }
 
     public void addScene(String name, Scene scene) {
         scenes.put(name, scene);
-        if (currentScene == null) {
-            setScene(name); // Automatically set the first scene
-        }
     }
 
     public void setScene(String name) {
@@ -65,9 +62,7 @@ public class SceneManager {
     }
 
     public Set<String> getSceneList() {
-
         return scenes.keySet();
-
     }
 
     public Scene getCurrentScene() {
