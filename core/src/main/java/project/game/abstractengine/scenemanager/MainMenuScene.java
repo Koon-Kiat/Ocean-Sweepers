@@ -29,6 +29,8 @@ public class MainMenuScene extends Scene {
         playButton = new TextButton("PLAY", skin); // Start moves to gamescene
         optionsButton = new TextButton("OPTIONS", skin); // Options moves to options menu scene
         options = new Options(sceneManager, gameScene);
+        System.out.println("[DEBUG] sceneManager in menu: " + sceneManager);
+
         options.create();
         options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin); // Exit closes game
@@ -40,6 +42,8 @@ public class MainMenuScene extends Scene {
                 System.out.println("Start Game Clicked!"); // Debug log
                 //sceneManager.addScene("game", new GameScene());
                 sceneManager.setScene("game"); // Switch to GameScene
+                System.out.println("Available scenes: " + sceneManager.getSceneList());
+
             }
         });
         
@@ -47,8 +51,10 @@ public class MainMenuScene extends Scene {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("Options Clicked!"); // Debug log
-                System.out.println("Popup Menu Visible: " + options.getPopupMenu().isVisible());
-                options.getPopupMenu().setVisible(true);
+                //System.out.println("Popup Menu Visible: " + options.getPopupMenu().isVisible());
+                //options.getPopupMenu().setVisible(true);
+                sceneManager.setScene("options"); // Switch to OptionsScene
+
             }
         });
 
@@ -72,12 +78,7 @@ public class MainMenuScene extends Scene {
 
     }
     
-    //
-    @Override
     public void show() {
-        //backgroundTexture = new Texture("main_menu_background.png");
-        //batch = new SpriteBatch();
-        // Gdx.input.setInputProcessor(stage);
     }
 
     @Override

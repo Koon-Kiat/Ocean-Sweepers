@@ -15,6 +15,10 @@ public abstract class Scene implements Screen {
     }
 
     protected abstract void create();
+    
+    public Stage getStage() {
+        return stage;
+    }
 
     // public abstract void update(float delta);
 

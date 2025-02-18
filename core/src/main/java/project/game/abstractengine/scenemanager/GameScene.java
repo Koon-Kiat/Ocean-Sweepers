@@ -69,13 +69,13 @@ public class GameScene extends Scene {
     private DropEntity drop;
     private BucketEntity bucket;
     private Window popupMenu;
-    private Stage stage;
     private Skin skin;
     private Table table;
     private Options options;
     private boolean isMenuOpen = false, isRebindMenuOpen = false;
     private boolean isPaused = false;
     private InputMultiplexer inputMultiplexer;
+    private MainMenuScene mainMenuScene;
 
     public GameScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
@@ -89,8 +89,11 @@ public class GameScene extends Scene {
         inputManager = new SceneIOManager();
 
         stage = new Stage();
+        sceneManager = new SceneManager();
+        System.out.println("Available scenes after init: " + sceneManager.getSceneList());
 
         options = new Options(sceneManager, this);
+
         options.create();  
         options.setMainMenuButtonVisibility(true);
         options.getPopupMenu().setTouchable(Touchable.enabled);
@@ -179,69 +182,41 @@ public class GameScene extends Scene {
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
 
-        // Instead of checking clicks manually in render, add click listeners here:
-        inputManager.addClickListener(button1, () -> {
-            System.out.println("Rebind Keys Clicked!");
-            inputManager.promptForKeyBindings();
-        });
+        
 
-        inputManager.addClickListener(button2, () -> {
-            System.out.println("Return to main menu Clicked!");
-        });
+        // // Instead of checking clicks manually in render, add click listeners here:
+        // inputManager.addClickListener(button1, () -> {
+        //     System.out.println("Rebind Keys Clicked!");
+        //     inputManager.promptForKeyBindings();
+        // });
 
-        inputManager.addClickListener(button3, () -> {
-            System.out.println("Game Closed!");
-            Gdx.app.exit();
-        });
+        // inputManager.addClickListener(button2, () -> {
+        //     System.out.println("Return to main menu Clicked!");
+        // });
+
+        // inputManager.addClickListener(button3, () -> {
+        //     System.out.println("Game Closed!");
+        //     Gdx.app.exit();
+        // });
     }
 
-    @Override
-    public void show() {
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(inputManager); // Added first
-        Gdx.input.setInputProcessor(multiplexer);
+    // @Override
+    // public void show() {
+    //     InputMultiplexer multiplexer = new InputMultiplexer();
+    //     multiplexer.addProcessor(stage);
+    //     multiplexer.addProcessor(inputManager); // Added first
+    //     Gdx.input.setInputProcessor(multiplexer);
 
-        float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
-        float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
-        popupMenu.setPosition(centerX, centerY);
-    }
+    //     float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
+    //     float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
+    //     popupMenu.setPosition(centerX, centerY);
+    // }
 
     @Override
     public void render(float deltaTime) {
         ScreenUtils.clear(0, 0, 0f, 0);
 
-        // Set the initial input processor to the inputManager
-        // Update: using inputMultiplexer since we need to switch between inputManager and stage
-        inputMultiplexer.addProcessor(inputManager);
-        Gdx.input.setInputProcessor(inputMultiplexer);
-
-        // Toggle options menu with 'P'
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            isMenuOpen = !isMenuOpen;
-            //isPaused = !isPaused;
-            options.getPopupMenu().setVisible(isMenuOpen);
-            if (isMenuOpen) {
-                isPaused = true;
-                // Set input processor to stage when the menu is open
-                stage.setKeyboardFocus(options.getPopupMenu()); // Force focus on the popup
-                //Gdx.input.setInputProcessor(stage);
-                inputMultiplexer.removeProcessor(inputManager);
-                inputMultiplexer.addProcessor(0, stage);
-                System.out.println("[DEBUG] InputProcessor set to stage");
-                
-            } else if (isRebindMenuOpen) {
-                stage.getRoot().findActor("rebindMenu").setVisible(true);  
-            }
-            else {
-                // Set input processor back to inputManager when the menu is closed
-                //Gdx.input.setInputProcessor(inputManager);
-                isPaused = false;
-                inputMultiplexer.removeProcessor(stage);
-                inputMultiplexer.addProcessor(inputManager);
-                System.out.println("[DEBUG] InputProcessor set to inputManager");
-            }
-        }
+        input();
 
         // Small issue here where when user hits close button instead of "P" again, the game will not unpause itself
 
@@ -270,12 +245,20 @@ public class GameScene extends Scene {
         entityManager.draw(batch);
         batch.end();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            popupMenu.setVisible(!popupMenu.isVisible());
-        }
+    }
 
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
+    private void input() {
+        // Set the initial input processor to the inputManager
+        // Update: using inputMultiplexer since we need to switch between inputManager and stage
+        System.out.println("Available scenes: " + sceneManager.getSceneList());
+
+        inputMultiplexer.addProcessor(inputManager);
+        Gdx.input.setInputProcessor(inputMultiplexer);
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            sceneManager.setScene("menu");
+        }
+        
     }
 
     private void updateGame() {
