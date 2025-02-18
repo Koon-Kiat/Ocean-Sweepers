@@ -181,8 +181,8 @@ public class GameScene extends Scene {
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
 
-        entityManager.addEntity(bucket);
-        entityManager.addEntity(drop);
+        entityManager.addRenderableEntity(bucket);
+        entityManager.addRenderableEntity(drop);
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addClickListener(button1, () -> {
