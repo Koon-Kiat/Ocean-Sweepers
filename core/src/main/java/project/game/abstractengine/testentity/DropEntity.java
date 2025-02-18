@@ -5,143 +5,137 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.Direction;
+import project.game.abstractengine.constants.GameConstants;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 
-public class DropEntity extends NPCMovementManager implements ICollidable, IRenderable {
+public class DropEntity implements ICollidable, IRenderable {
 
-	private static final float PIXELS_TO_METERS = 32f; // Define the conversion factor
-
+	private final float IMPUSLE_STRENGTH = 5f;
+	private final Entity entity;
 	private final NPCMovementManager movementManager;
 	private final String texturePath;
 	private final Body body;
+	private boolean collisionActive = false;
+	private long collisionEndTime = 0;
 
 	public DropEntity(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
-		super(movementManager.getBuilder());
+		this.entity = entity;
 		this.movementManager = movementManager;
 		this.texturePath = texturePath;
-		this.setWidth(entity.getWidth());
-		this.setHeight(entity.getHeight());
 		this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
-		GameAsset.getInstance().loadTextureAssets(texturePath);
+	}
 
-		// Set initial velocity
-		body.setLinearVelocity(1, 1); // Adjust the values as needed
+	private float entityX() {
+		return entity.getX();
+	}
+
+	private float entityY() {
+		return entity.getY();
+	}
+
+	private float entityWidth() {
+		return entity.getWidth();
+	}
+
+	private float entityHeight() {
+		return entity.getHeight();
+	}
+
+	public boolean isActive() {
+		return movementManager.isActive();
 	}
 
 	@Override
 	public Body getBody() {
-		return this.body;
+		return body;
 	}
 
 	@Override
 	public String getTexturePath() {
-		return this.texturePath;
+		return texturePath;
 	}
 
 	@Override
 	public Entity getEntity() {
-		return this;
+		return entity;
+	}
+
+	@Override
+	public void render(SpriteBatch batch) {
+		if (isActive() && GameAsset.getInstance().isLoaded()) {
+			float renderX = entityX() - entityWidth() / 2;
+			float renderY = entityY() - entityHeight() / 2;
+			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
+			batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
+		}
+	}
+
+	public void setCollisionActive(long durationMillis) {
+		collisionActive = true;
+		collisionEndTime = System.currentTimeMillis() + durationMillis;
+	}
+
+	public boolean isInCollision() {
+		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+			collisionActive = false;
+		}
+		return collisionActive;
 	}
 
 	@Override
 	public boolean checkCollision(Entity other) {
-		System.out.println("checkCollision called. Other: " + other); // Debug print
-		if (other == null) {
-			// Collision with screen boundary
-			return true;
-		} else if (other instanceof ICollidable) {
-			return true;
-		}
-		return false; // Or handle the case where 'other' is not ICollidable appropriately
+		return true;
 	}
 
 	@Override
-public void onCollision(Entity other) {
-    System.out.println(getEntity().getClass().getSimpleName() + " collided with "
-            + (other == null ? "boundary" : other.getClass().getSimpleName()));
-    
-
-    if (other instanceof BucketEntity) {
-		System.out.println("Colliding with BucketEntity"); // Debug print
-        // Calculate a bounce direction (you might need to adjust this)
-        float bounceAngle = (float) Math.toRadians(75); // Adjust the angle as needed
-        float bounceX = (float) Math.cos(bounceAngle);
-        float bounceY = (float) Math.sin(bounceAngle);
-		System.out.println("Bounce Angle: " + bounceAngle + ", X: " + bounceX + ", Y: " + bounceY); // Debug print
-
-        // Apply an impulse to the droplet's body
-        float impulseStrength = 10f; // Adjust the strength as needed
-		System.out.println("Impulse Strength: " + impulseStrength); // Debug print
-        body.applyLinearImpulse(bounceX * impulseStrength, bounceY * impulseStrength, body.getPosition().x,
-                body.getPosition().y, true);
-    } else {
-		System.out.println("Colliding with Boundary"); // Debug print
-        Vector2 currentVelocity = body.getLinearVelocity();
-		System.out.println("Current Velocity: " + currentVelocity); // Debug print
-
-        // Reflect the velocity based on the collision normal (simplified)
-        Vector2 reflectedVelocity = new Vector2(-currentVelocity.x, -currentVelocity.y);
-		System.out.println("Reflected Velocity: " + reflectedVelocity); // Debug print
-
-        // Apply a small impulse to ensure continuous movement
-        float impulseStrength = 5f; // Adjust as needed
-		System.out.println("Impulse Strength: " + impulseStrength); // Debug print
-        body.applyLinearImpulse(reflectedVelocity.x * impulseStrength, reflectedVelocity.y * impulseStrength,
-                body.getPosition().x, body.getPosition().y, true);
-
-        // Update the NPCMovementManager's direction
-        movementManager.setDirection(reflectedVelocity);
-    }
-}
-
-	@Override
-	public void render(SpriteBatch batch) {
-	    if (isActive() && GameAsset.getInstance().isLoaded()) {
-	      // Offset render position so the texture is drawn centered on the physics body
-	      float renderX = getX() - this.getWidth() / 2;
-	      float renderY = getY() - this.getHeight() / 2;
-	      Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
-	      batch.draw(texture, renderX, renderY, this.getWidth(), this.getHeight());
-	    }
-	  }
+	public void onCollision(ICollidable other) {
+		System.out.println(getEntity().getClass().getSimpleName() + " collided with " +
+				(other == null ? "boundary" : other.getClass().getSimpleName()));
+		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
+		if (other != null && (other instanceof BucketEntity)) {
+			float impulseStrength = IMPUSLE_STRENGTH;
+			Vector2 myPos = body.getPosition();
+			Vector2 otherPos = other.getBody().getPosition();
+			Vector2 normal = new Vector2(myPos.x - otherPos.x, myPos.y - otherPos.y).nor();
+			Vector2 impulse = normal.scl(impulseStrength);
+			body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
+		} else {
+			Vector2 impulse = new Vector2(-5f, 5f);
+			body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
+		}
+	}
 
 	@Override
 	public final Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		bodyDef.position.set(x / PIXELS_TO_METERS, y / PIXELS_TO_METERS); // Scale position
+		float centerX = (x + width / 2) / GameConstants.PIXELS_TO_METERS;
+		float centerY = (y + height / 2) / GameConstants.PIXELS_TO_METERS;
+		bodyDef.position.set(centerX, centerY);
+		bodyDef.fixedRotation = true;
+		bodyDef.linearDamping = 0.2f;
 
-		Body createdBody = world.createBody(bodyDef);
-
+		Body newBody = world.createBody(bodyDef);
 		PolygonShape shape = new PolygonShape();
-//		shape.setAsBox((width / 2) / PIXELS_TO_METERS, (height / 2) / PIXELS_TO_METERS);
-		shape.setAsBox(width / 2 / PIXELS_TO_METERS, height / 2 /PIXELS_TO_METERS);
-
-
+		shape.setAsBox((width / 2) / GameConstants.PIXELS_TO_METERS, (height / 2) / GameConstants.PIXELS_TO_METERS);
 
 		FixtureDef fixtureDef = new FixtureDef();
-//		fixtureDef.filter.categoryBits = 0x0001;  // Example category
-//		fixtureDef.filter.maskBits = 0x0FFF;      // Collide with everything
 		fixtureDef.shape = shape;
-		fixtureDef.density = 1.0f;
-		fixtureDef.friction = 0.3f;
-		fixtureDef.restitution = 0.5f;
-
-		Fixture fixture = createdBody.createFixture(fixtureDef); // Get the Fixture
-		fixture.setUserData(this); // Set user data on the fixture
+		fixtureDef.density = 5.0f;
+		fixtureDef.friction = 0.4f;
+		fixtureDef.restitution = 0.0f;
+		newBody.createFixture(fixtureDef);
 		shape.dispose();
-
-		return createdBody;
+		newBody.setUserData(this);
+		return newBody;
 	}
 
 	public NPCMovementManager getMovementManager() {
