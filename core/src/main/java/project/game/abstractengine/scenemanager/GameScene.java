@@ -6,29 +6,28 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Value.Fixed;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Box2D;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.collisionmanager.CollisionManager;
+import project.game.abstractengine.constants.GameConstants;
+import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
@@ -52,26 +51,23 @@ public class GameScene extends Scene {
 
     public static final float GAME_WIDTH = 640;
     public static final float GAME_HEIGHT = 480;
-
-    private static final float PLAYER_SPEED = 1600f;
+    private static final float PLAYER_SPEED = 600f;
     private static final float NPC_SPEED = 400f;
-
-    private final static float PIXELS_TO_METERS = 32f;
-    private static final float DROP_START_X = 0f / PIXELS_TO_METERS;
-    private static final float DROP_START_Y = 400f / PIXELS_TO_METERS;
-    private static final float BUCKET_START_X = 5f / PIXELS_TO_METERS;
-    private static final float BUCKET_START_Y = 400f / PIXELS_TO_METERS;
-
+    private static final float DROP_START_X = 0f;
+    private static final float DROP_START_Y = 0f;
+    private static final float DROP_WIDTH = 50f;
+    private static final float DROP_HEIGHT = 50f;
+    private static final float BUCKET_START_X = 400f;
+    private static final float BUCKET_START_Y = 400f;
+    private static final float BUCKET_WIDTH = 50f;
+    private static final float BUCKET_HEIGHT = 50f;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
-
     private SceneManager sceneManager;
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
-    private CollisionManager collisionManager;
     private TextButton button1, button2, button3;
-
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -85,6 +81,7 @@ public class GameScene extends Scene {
     private Box2DDebugRenderer debugRenderer;
     private OrthographicCamera camera;
     private Matrix4 debugMatrix;
+    private CollisionManager collisionManager;
 
     // public GameScene() {
     // sceneManager = new SceneManager();
@@ -99,11 +96,13 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        world = new World(new Vector2(0, -9.8f), true);
+        world = new World(new Vector2(0, 0), true);
 
         createScreenBoundaries();
         inputManager = new SceneIOManager();
         collisionManager = new CollisionManager(world);
+        collisionManager.init();
+        entityManager = new EntityManager();
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
@@ -128,8 +127,6 @@ public class GameScene extends Scene {
         popupMenu.add(table);
         stage.addActor(popupMenu);
 
-        // gameAsset = gameAsset.getInstance();
-        entityManager = new EntityManager();
         try {
             GameAsset.getInstance().loadTextureAssets("droplet.png");
             GameAsset.getInstance().loadTextureAssets("bucket.png");
@@ -159,9 +156,8 @@ public class GameScene extends Scene {
         }
 
         // Create entities
-        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, 50, 50, true);
-
-        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, 50, 50, true);
+        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, DROP_WIDTH, DROP_HEIGHT, true);
+        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, BUCKET_WIDTH, BUCKET_HEIGHT, true);
 
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
@@ -178,13 +174,12 @@ public class GameScene extends Scene {
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
                 .setSpeed(NPC_SPEED)
-                .withRandomisedMovement(behaviorPool, 3, 4)
+                .withFollowMovement(playerMovementManager)
                 .setDirection(Direction.RIGHT)
                 .build();
 
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
-        
 
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
@@ -204,7 +199,7 @@ public class GameScene extends Scene {
             Gdx.app.exit();
         });
 
-        camera = new OrthographicCamera(GAME_WIDTH, GAME_HEIGHT); // Initialize the camera
+        camera = new OrthographicCamera(GAME_WIDTH, GAME_HEIGHT);
         camera.position.set(GAME_WIDTH / 2, GAME_HEIGHT / 2, 0);
         camera.update();
 
@@ -215,7 +210,7 @@ public class GameScene extends Scene {
     public void show() {
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(inputManager); // Added first
+        multiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(multiplexer);
 
         float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
@@ -233,8 +228,6 @@ public class GameScene extends Scene {
             System.err.println("[ERROR] Exception during game update: " + e.getMessage());
             Gdx.app.error("Main", "Exception during game update", e);
         }
-        
-
 
         batch.begin();
         entityManager.draw(batch);
@@ -247,44 +240,87 @@ public class GameScene extends Scene {
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
 
-        debugMatrix = camera.combined.cpy().scl(PIXELS_TO_METERS);
-
+        debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
         debugRenderer.render(world, debugMatrix);
 
         // Fixed timestep for Box2D
-        float timeStep = 1 / 60f; // 60 frames per second
-        int velocityIterations = 6;
-        int positionIterations = 2;
-        world.step(timeStep, velocityIterations, positionIterations);
+        float timeStep = 1 / 60f;
+        world.step(timeStep, 6, 2);
+        collisionManager.processCollisions();
+        syncEntityPositions();
     }
 
     private void updateGame() {
+        // Update movement managers (input processing, etc.)
         playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
-
-        // Update movement; exceptions here will be logged and thrown upward
         playerMovementManager.updateMovement();
         npcMovementManager.updateMovement();
 
-        // Clamp sprite positions to screen boundaries
-        float bucketX = Math.max(0, Math.min(playerMovementManager.getX(), GAME_WIDTH - bucket.getWidth()));
-        float bucketY = Math.max(0, Math.min(playerMovementManager.getY(), GAME_HEIGHT - bucket.getHeight()));
-        float dropX = Math.max(0, Math.min(npcMovementManager.getX(), GAME_WIDTH - drop.getWidth()));
-        float dropY = Math.max(0, Math.min(npcMovementManager.getY(), GAME_HEIGHT - drop.getHeight()));
+        // Always update player (bucket) from input, regardless of collision state
+        float bucketX = playerMovementManager.getX();
+        float bucketY = playerMovementManager.getY();
 
-        // Synchronize rectangle positions with movement manager positions
-        bucket.setX(bucketX);
-        bucket.setY(bucketY);
-        drop.setX(dropX);
-        drop.setY(dropY);
+        // Clamp player positions so the player remains within screen bounds
+        bucketX = Math.max(0, Math.min(bucketX, GAME_WIDTH - bucket.getEntity().getWidth()));
+        bucketY = Math.max(0, Math.min(bucketY, GAME_HEIGHT - bucket.getEntity().getHeight()));
 
-        // Update Box2D body positions to match sprite positions
-        bucket.getBody().setTransform(bucket.getX() / PIXELS_TO_METERS, bucket.getY() / PIXELS_TO_METERS, 0);
-        drop.getBody().setTransform(drop.getX() / PIXELS_TO_METERS, drop.getY() / PIXELS_TO_METERS, 0);
+        // Update player's entity and Box2D body (convert pixels → meters)
+        bucket.getEntity().setX(bucketX);
+        bucket.getEntity().setY(bucketY);
+        bucket.getBody().setTransform(bucketX / GameConstants.PIXELS_TO_METERS,
+                bucketY / GameConstants.PIXELS_TO_METERS, 0);
+
+        // For the NPC (drop), check if it's in collision and blend if needed
+        if (!drop.isInCollision()) {
+            // Normal update when no collision is active for the NPC
+            float dropX = npcMovementManager.getX();
+            float dropY = npcMovementManager.getY();
+
+            // Clamp NPC positions
+            dropX = Math.max(0, Math.min(dropX, GAME_WIDTH - drop.getEntity().getWidth()));
+            dropY = Math.max(0, Math.min(dropY, GAME_HEIGHT - drop.getEntity().getHeight()));
+
+            drop.getEntity().setX(dropX);
+            drop.getEntity().setY(dropY);
+            drop.getBody().setTransform(dropX / GameConstants.PIXELS_TO_METERS,
+                    dropY / GameConstants.PIXELS_TO_METERS, 0);
+        } else {
+            // COLLISION MODE for NPC:
+            // Get current physics position (in pixels)
+            float physicsDropX = drop.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS;
+            float physicsDropY = drop.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS;
+
+            // Retrieve desired input position from the movement manager
+            float inputDropX = npcMovementManager.getX();
+            float inputDropY = npcMovementManager.getY();
+
+            // Blend physics with input using a blending factor
+            float blendFactor = 0.1f; // adjust as needed
+            float newDropX = physicsDropX + (inputDropX - physicsDropX) * blendFactor;
+            float newDropY = physicsDropY + (inputDropY - physicsDropY) * blendFactor;
+
+            // Update NPC's entity to the blended value and synchronize the movement manager
+            // so stale input does not accumulate
+            drop.getEntity().setX(newDropX);
+            drop.getEntity().setY(newDropY);
+            npcMovementManager.setX(newDropX);
+            npcMovementManager.setY(newDropY);
+        }
+    }
+
+    /**
+     * Syncs visual entity positions from Box2D bodies (convert meters → pixels)
+     */
+    private void syncEntityPositions() {
+        bucket.getEntity().setX(bucket.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS);
+        bucket.getEntity().setY(bucket.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS);
+        drop.getEntity().setX(drop.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS);
+        drop.getEntity().setY(drop.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS);
     }
 
     private void createScreenBoundaries() {
-        float screenWidth = GAME_WIDTH / PIXELS_TO_METERS;
-        float screenHeight = GAME_HEIGHT / PIXELS_TO_METERS;
+        float screenWidth = GAME_WIDTH / GameConstants.PIXELS_TO_METERS;
+        float screenHeight = GAME_HEIGHT / GameConstants.PIXELS_TO_METERS;
         float edgeThickness = 0.1f; // Adjust as needed
 
         // Create BodyDef for static boundaries
