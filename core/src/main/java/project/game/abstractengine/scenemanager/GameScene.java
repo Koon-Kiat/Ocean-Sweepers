@@ -2,6 +2,7 @@ package project.game.abstractengine.scenemanager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -77,7 +78,8 @@ public class GameScene extends Scene {
     private boolean isPaused = false;
     private InputMultiplexer inputMultiplexer;
 
-    public GameScene(SceneManager sceneManager) {
+    public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
+        super(inputManager);
         this.sceneManager = sceneManager;
     }
 
@@ -85,10 +87,11 @@ public class GameScene extends Scene {
     public void create() {
         batch = new SpriteBatch();
         World world = new World(new Vector2(0, -9.8f), true);
+        System.out.println("[DEBUG] GameScene inputManager instance: " + System.identityHashCode(inputManager));
 
         stage = new Stage();
 
-        options = new Options(sceneManager, this);
+        options = new Options(sceneManager, this, inputManager);
 
         options.setMainMenuButtonVisibility(true);
         options.getPopupMenu().setTouchable(Touchable.enabled);
@@ -96,8 +99,6 @@ public class GameScene extends Scene {
         popupMenu = options.getPopupMenu();
 
         inputMultiplexer = new InputMultiplexer();
-        // inputMultiplexer.addProcessor(inputManager);
-        // inputMultiplexer.addProcessor(stage);
 
         // Add popup menu to the stage
         if (popupMenu != null) {
@@ -125,21 +126,6 @@ public class GameScene extends Scene {
                 return true;
             }
         });
-
-        // // Instead of checking clicks manually in render, add click listeners here:
-        // inputManager.addClickListener(button1, () -> {
-        // System.out.println("Rebind Keys Clicked!");
-        // inputManager.promptForKeyBindings();
-        // });
-
-        // inputManager.addClickListener(button2, () -> {
-        // System.out.println("Return to main menu Clicked!");
-        // });
-
-        // inputManager.addClickListener(button3, () -> {
-        // System.out.println("Game Closed!");
-        // Gdx.app.exit();
-        // });
 
         // gameAsset = gameAsset.getInstance();
         entityManager = new EntityManager();
@@ -237,27 +223,12 @@ public class GameScene extends Scene {
             }
         }
 
-        // Print pressed keys for debugging
-        for (int keycode : inputManager.getPressedKeys()) {
-            System.out.println("[DEBUG] Pressed Key: " + Input.Keys.toString(keycode));
-        }
-
         if (!isPaused) {
             try {
                 updateGame();
-                // Print pressed keys and their associated directions for debugging
-                for (int keycode : inputManager.getPressedKeys()) {
-                    Direction direction = inputManager.getKeyBindings().get(keycode);
-                    if (direction != null) {
-                        System.out.println(
-                                "[DEBUG] Pressed Key: " + Input.Keys.toString(keycode) + ", Direction: " + direction);
-                    } else {
-                        System.out.println("[DEBUG] Pressed Key: " + Input.Keys.toString(keycode)
-                                + ", Direction: No Direction Assigned");
-                    }
-                }
             } catch (Exception e) {
-                System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+                System.err.println("[ERROR] Exception during game update: " +
+                        e.getMessage());
                 Gdx.app.error("Main", "Exception during game update", e);
             }
         }
@@ -275,17 +246,14 @@ public class GameScene extends Scene {
         entityManager.draw(batch);
         batch.end();
 
-        // if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-        // popupMenu.setVisible(!popupMenu.isVisible());
-        // }
-
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
     }
 
     private void updateGame() {
-        
-        playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+        Map<Integer, Direction> keyBindings = inputManager.getKeyBindings();
+
+        playerMovementManager.updateDirection(inputManager.getPressedKeys(), keyBindings);
 
         // Update movement; exceptions here will be logged and thrown upward
         playerMovementManager.updateMovement();

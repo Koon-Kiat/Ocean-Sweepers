@@ -21,7 +21,8 @@ public class MainMenuScene extends Scene {
     private GameScene gameScene;
     private Options options;
 
-    public MainMenuScene(SceneManager sceneManager) {
+    public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
+        super(inputManager);
         this.sceneManager = sceneManager;
         create();
     }
@@ -33,7 +34,7 @@ public class MainMenuScene extends Scene {
         playButton = new TextButton("PLAY", skin); // Start moves to gamescene
         optionsButton = new TextButton("OPTIONS", skin); // Options moves to options menu scene
         
-        options = new Options(sceneManager, gameScene);
+        options = new Options(sceneManager, gameScene, inputManager);
         options.create();
         options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin); // Exit closes game

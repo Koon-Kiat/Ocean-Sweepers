@@ -10,11 +10,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
+import project.game.abstractengine.iomanager.SceneIOManager;
+
 public class GameOverScene extends Scene {
     private Stage stage;
     private SpriteBatch batch;
     private Skin skin;
     private BitmapFont font;
+
+    // Provide an explicit constructor that calls the super constructor
+    public GameOverScene(SceneIOManager inputManager) {
+        super(inputManager);
+    }
 
     @Override
     public void create() {

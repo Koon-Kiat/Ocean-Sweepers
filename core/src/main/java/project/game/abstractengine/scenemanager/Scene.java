@@ -12,9 +12,9 @@ public abstract class Scene implements Screen {
     protected Stage stage;
     protected SceneIOManager inputManager;
 
-    public Scene() {
-        stage = new Stage(new ScreenViewport());// Initialize stage
-        inputManager = new SceneIOManager();  
+    public Scene(SceneIOManager inputManager) {
+        this.inputManager = inputManager;
+        stage = new Stage(new ScreenViewport()); // Initialize stage
         create(); // Call abstract method for subclass-specific setup
     }
 
