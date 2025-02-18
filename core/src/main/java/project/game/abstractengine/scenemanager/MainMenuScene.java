@@ -1,25 +1,23 @@
 package project.game.abstractengine.scenemanager;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-
-import project.game.abstractengine.iomanager.SceneIOManager;
 
 public class MainMenuScene extends Scene {
     private Texture backgroundTexture;
     private SpriteBatch batch;
     private Skin skin;
-    private TextButton playButton, exitButton;
+    private TextButton playButton, exitButton, optionsButton;
     private SceneManager sceneManager;
-    private SceneIOManager inputManager;
     private GameScene gameScene;
-
+    private Options options;
+    
     public MainMenuScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
     }
@@ -27,21 +25,38 @@ public class MainMenuScene extends Scene {
     // Init UI elements
     @Override
     public void create() {
-        inputManager = new SceneIOManager();
-
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        playButton = new TextButton("PLAY", skin);
-        // optionsButton = new TextButton("OPTIONS", skin); to add input
-        exitButton = new TextButton("EXIT", skin);
+        playButton = new TextButton("PLAY", skin); // Start moves to gamescene
+        optionsButton = new TextButton("OPTIONS", skin); // Options moves to options menu scene
+        options = new Options(sceneManager, gameScene);
+        options.create();
+        options.setMainMenuButtonVisibility(false);
+        exitButton = new TextButton("EXIT", skin); // Exit closes game
 
-        // Instead of checking clicks manually in render, add click listeners here:
-        inputManager.addClickListener(playButton, () -> {
-            System.out.println("Start Game Clicked!");
-            sceneManager.setScene("game");
+        // Add button functionality
+        playButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("Start Game Clicked!"); // Debug log
+                //sceneManager.addScene("game", new GameScene());
+                sceneManager.setScene("game"); // Switch to GameScene
+            }
         });
         
-        inputManager.addClickListener(exitButton, () -> {
-            Gdx.app.exit();
+        optionsButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("Options Clicked!"); // Debug log
+                System.out.println("Popup Menu Visible: " + options.getPopupMenu().isVisible());
+                options.getPopupMenu().setVisible(true);
+            }
+        });
+
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit(); // Close game
+            }
         });
 
         Table table = new Table();
@@ -49,30 +64,37 @@ public class MainMenuScene extends Scene {
 
         table.add(playButton).padBottom(10);
         table.row();
+        table.add(optionsButton).padBottom(10);
+        table.row();
         table.add(exitButton);
 
         stage.addActor(table);
 
     }
-
+    
     //
     @Override
     public void show() {
-        // backgroundTexture = new Texture("main_menu_background.png");
-        // batch = new SpriteBatch();
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(inputManager); // Added first
-        Gdx.input.setInputProcessor(multiplexer);
-
+        //backgroundTexture = new Texture("main_menu_background.png");
+        //batch = new SpriteBatch();
+        // Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void render(float delta) {
-        super.render(delta);
+        //Gdx.input.setInputProcessor(stage);
+        if (options.getPopupMenu().isVisible()) {
+            Gdx.input.setInputProcessor(options.getStage());
+        } else if (options.getRebindMenu().isVisible()) {
+            Gdx.input.setInputProcessor(options.getStage());
+        }
+        else {
+            Gdx.input.setInputProcessor(stage);
+        }
 
-        stage.act(delta);
-        stage.draw();
+        super.render(delta);
+        options.render();
+
     }
 
     @Override

@@ -1,4 +1,4 @@
-package project.game.scenemanager;
+package project.game.abstractengine.scenemanager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
