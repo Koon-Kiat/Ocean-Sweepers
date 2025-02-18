@@ -23,7 +23,7 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 	public Entity getEntity() {
 		return entity;
 	}
-	
+
 	@Override
 	public Body getBody() {
 		return body;
@@ -92,5 +92,5 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 	}
 
 	@Override
-	public abstract void onCollision(Entity other);
+	public abstract void onCollision(ICollidable other);
 }

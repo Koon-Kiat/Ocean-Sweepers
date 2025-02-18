@@ -15,7 +15,6 @@ public interface ICollidable {
 
 	boolean checkCollision(Entity other);
 
-	void onCollision(Entity other);
-
+	void onCollision(ICollidable other);
 
 }

@@ -64,8 +64,8 @@ public class EntityManager {
 					if (entityB instanceof ICollidable) {
 						ICollidable collidableB = (ICollidable) entityB;
 						if (collidableA.checkCollision(entityB)) {
-							collidableA.onCollision(entityB);
-							collidableB.onCollision(entityA);
+							collidableA.onCollision(collidableB);
+							collidableB.onCollision(collidableA);
 						}
 					}
 				}
