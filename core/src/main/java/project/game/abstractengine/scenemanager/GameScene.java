@@ -14,10 +14,13 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
@@ -60,9 +63,6 @@ public class GameScene extends Scene {
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
-    private SceneIOManager inputManager;
-    private TextButton button1, button2, button3;
-
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -86,27 +86,33 @@ public class GameScene extends Scene {
         batch = new SpriteBatch();
         World world = new World(new Vector2(0, -9.8f), true);
 
-        inputManager = new SceneIOManager();
-
         stage = new Stage();
         sceneManager = new SceneManager();
         System.out.println("Available scenes after init: " + sceneManager.getSceneList());
 
         options = new Options(sceneManager, this);
 
-        options.create();  
         options.setMainMenuButtonVisibility(true);
         options.getPopupMenu().setTouchable(Touchable.enabled);
+
+        popupMenu = options.getPopupMenu();
+
         inputMultiplexer = new InputMultiplexer();
-        //inputMultiplexer.addProcessor(inputManager);
-        //inputMultiplexer.addProcessor(stage);
+        // inputMultiplexer.addProcessor(inputManager);
+        // inputMultiplexer.addProcessor(stage);
 
         // Add popup menu to the stage
-        options.getPopupMenu().setVisible(false);
-        options.getPopupMenu().setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f - 100);
+        if (popupMenu != null) {
+            float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
+            float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
+            popupMenu.setPosition(centerX, centerY);
+        } else {
+            Gdx.app.log("GameScene", "popupMenu is null");
+        }
+
         stage.addActor(options.getPopupMenu());
         stage.addActor(options.getRebindMenu());
-        
+
         // Add listener for interaction
         options.getPopupMenu().addListener(new InputListener() {
             @Override
@@ -121,6 +127,21 @@ public class GameScene extends Scene {
                 return true;
             }
         });
+
+        // // Instead of checking clicks manually in render, add click listeners here:
+        // inputManager.addClickListener(button1, () -> {
+        // System.out.println("Rebind Keys Clicked!");
+        // inputManager.promptForKeyBindings();
+        // });
+
+        // inputManager.addClickListener(button2, () -> {
+        // System.out.println("Return to main menu Clicked!");
+        // });
+
+        // inputManager.addClickListener(button3, () -> {
+        // System.out.println("Game Closed!");
+        // Gdx.app.exit();
+        // });
 
         // gameAsset = gameAsset.getInstance();
         entityManager = new EntityManager();
@@ -182,35 +203,15 @@ public class GameScene extends Scene {
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
 
-        
-
-        // // Instead of checking clicks manually in render, add click listeners here:
-        // inputManager.addClickListener(button1, () -> {
-        //     System.out.println("Rebind Keys Clicked!");
-        //     inputManager.promptForKeyBindings();
-        // });
-
-        // inputManager.addClickListener(button2, () -> {
-        //     System.out.println("Return to main menu Clicked!");
-        // });
-
-        // inputManager.addClickListener(button3, () -> {
-        //     System.out.println("Game Closed!");
-        //     Gdx.app.exit();
-        // });
     }
 
-    // @Override
-    // public void show() {
-    //     InputMultiplexer multiplexer = new InputMultiplexer();
-    //     multiplexer.addProcessor(stage);
-    //     multiplexer.addProcessor(inputManager); // Added first
-    //     Gdx.input.setInputProcessor(multiplexer);
-
-    //     float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
-    //     float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
-    //     popupMenu.setPosition(centerX, centerY);
-    // }
+    @Override
+    public void show() {
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage); // Stage first
+        multiplexer.addProcessor(inputManager); // Then inputManager
+        Gdx.input.setInputProcessor(multiplexer);
+    }
 
     @Override
     public void render(float deltaTime) {
@@ -218,15 +219,25 @@ public class GameScene extends Scene {
 
         input();
 
-        // Small issue here where when user hits close button instead of "P" again, the game will not unpause itself
+        // Print pressed keys for debugging
+        for (int keycode : inputManager.getPressedKeys()) {
+            System.out.println("[DEBUG] Pressed Key: " + Input.Keys.toString(keycode));
+        }
 
-        if (isMenuOpen) {
-            stage.act(Gdx.graphics.getDeltaTime());
-            stage.draw();
-        } 
-        else if (!isPaused) {
+        if (!isPaused) {
             try {
                 updateGame();
+                // Print pressed keys and their associated directions for debugging
+                for (int keycode : inputManager.getPressedKeys()) {
+                    Direction direction = inputManager.getKeyBindings().get(keycode);
+                    if (direction != null) {
+                        System.out.println(
+                                "[DEBUG] Pressed Key: " + Input.Keys.toString(keycode) + ", Direction: " + direction);
+                    } else {
+                        System.out.println("[DEBUG] Pressed Key: " + Input.Keys.toString(keycode)
+                                + ", Direction: No Direction Assigned");
+                    }
+                }
             } catch (Exception e) {
                 System.err.println("[ERROR] Exception during game update: " + e.getMessage());
                 Gdx.app.error("Main", "Exception during game update", e);
@@ -235,10 +246,11 @@ public class GameScene extends Scene {
 
         // Original code for update game ONLY
         // try {
-        //     updateGame();
+        // updateGame();
         // } catch (Exception e) {
-        //     System.err.println("[ERROR] Exception during game update: " + e.getMessage());
-        //     Gdx.app.error("Main", "Exception during game update", e);
+        // System.err.println("[ERROR] Exception during game update: " +
+        // e.getMessage());
+        // Gdx.app.error("Main", "Exception during game update", e);
         // }
 
         batch.begin();
@@ -262,6 +274,7 @@ public class GameScene extends Scene {
     }
 
     private void updateGame() {
+        
         playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
 
         // Update movement; exceptions here will be logged and thrown upward
@@ -283,12 +296,13 @@ public class GameScene extends Scene {
     }
 
     public void closePopupMenu() {
-                isMenuOpen = false;
-                isPaused = false;
-                options.getPopupMenu().setVisible(false);
-                inputMultiplexer.removeProcessor(stage);
-                inputMultiplexer.addProcessor(inputManager);
-                System.out.println("[DEBUG] Popup closed and game unpaused");
-            }
+        isMenuOpen = false;
+        isPaused = false;
+        options.getPopupMenu().setVisible(false);
+        inputMultiplexer.removeProcessor(stage);
+        inputMultiplexer.addProcessor(inputManager);
+        inputManager.clearPressedKeys(); // Clear the pressedKeys set
+        System.out.println("[DEBUG] Popup closed and game unpaused");
+    }
 
 }
