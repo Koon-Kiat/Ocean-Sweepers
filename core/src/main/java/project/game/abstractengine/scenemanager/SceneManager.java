@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import project.game.abstractengine.iomanager.SceneIOManager;
+
 public class SceneManager{
     private final Map<String, Scene> scenes;
     private Scene currentScene;
+    private SceneIOManager sharedInputManager;
 
     public SceneManager() {
-        this.scenes = new HashMap<>();  
+        sharedInputManager = new SceneIOManager();
+        this.scenes = new HashMap<>();
     }
 
     public void addScene(String name, Scene scene) {
@@ -67,5 +71,9 @@ public class SceneManager{
 
     public Scene getCurrentScene() {
         return currentScene;
+    }
+
+    public SceneIOManager getInputManager() {
+        return sharedInputManager;
     }
 }

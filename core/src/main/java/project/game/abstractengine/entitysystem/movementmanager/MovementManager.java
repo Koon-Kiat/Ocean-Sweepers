@@ -92,6 +92,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
 
     @Override
     public void updateDirection(Set<Integer> pressedKeys, Map<Integer, Direction> keyBindings) {
+
         boolean up = false;
         boolean down = false;
         boolean left = false;

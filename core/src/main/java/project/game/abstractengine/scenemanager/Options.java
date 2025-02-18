@@ -14,29 +14,33 @@
 // import com.badlogic.gdx.scenes.scene2d.ui.Window;
 // import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-// import project.game.Direction;
+import project.game.Direction;
+import project.game.abstractengine.iomanager.SceneIOManager;
 
-// public class Options extends Scene {
-//     private Skin skin;
-//     private Window popupMenu;
-//     private SceneManager sceneManager;
-//     private Window rebindMenu;
-//     private TextButton mainMenuButton; // Added to make main menu button visible/invisible. Main menu button not needed
-//                                        // in the main menu, only in other scenes like game scene or fail state scene.
-//     private boolean isPaused = true;
-//     private GameScene gameScene;
-//     private MainMenuScene mainMenuScene;
-//     private SceneIOManager inputManager;
+public class Options extends Scene {
+    private Skin skin;
+    private Stage stage;
+    private Window popupMenu;
+    private SceneManager sceneManager;
+    private Window rebindMenu;
+    private TextButton mainMenuButton; // Added to make main menu button visible/invisible. Main menu button not needed
+                                       // in the main menu, only in other scenes like game scene or fail state scene.
+    private boolean isPaused = true;
+    private GameScene gameScene;
 
-//     public Options(SceneManager sceneManager, GameScene gameScene) {
-//         this.sceneManager = sceneManager;
-//         this.gameScene = gameScene;
-//         skin = new Skin(Gdx.files.internal("uiskin.json"));
-//         stage = new Stage();
-//         popupMenu = new Window("Options", skin);
-//         inputManager = new SceneIOManager();
-//         popupMenu.setSize(200, 200);
-//         popupMenu.setPosition(400, 270);
+    public Options(SceneManager sceneManager, GameScene gameScene, SceneIOManager inputManager) {
+        super(inputManager);
+        this.sceneManager = sceneManager;
+        this.gameScene = gameScene;
+    }
+
+    public void create() {
+        System.out.println("[DEBUG] Options inputManager instance: " + System.identityHashCode(inputManager));
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        stage = new Stage();
+        popupMenu = new Window("Options", skin);
+        popupMenu.setSize(200, 200);
+        popupMenu.setPosition(400, 270);
 
 //         popupMenu.setVisible(false);
 //         popupMenu.setModal(true); // Ensure that the popup menu blocks input to other UI elements
@@ -171,52 +175,24 @@
 //             popupMenu.setVisible(true);
 //         });
 
-//         inputManager.addClickListener(confirmButton, () -> {
-//             String upKeyString = textField1.getText().toUpperCase();
-//             String downKeyString = textField2.getText().toUpperCase();
-//             String leftKeyString = textField3.getText().toUpperCase();
-//             String rightKeyString = textField4.getText().toUpperCase();
-            
-//             // Call promptForKeyBindings with the key strings
-//             inputManager.promptForKeyBindings(upKeyString, downKeyString, leftKeyString, rightKeyString);
+        inputManager.addClickListener(confirmButton, () -> {
+            String upKeyString = textField1.getText().toUpperCase();
+            String downKeyString = textField2.getText().toUpperCase();
+            String leftKeyString = textField3.getText().toUpperCase();
+            String rightKeyString = textField4.getText().toUpperCase();
 
-//             // Print the key bindings after setting them
-//             System.out.println("[DEBUG] Key Bindings after setting:");
-//             inputManager.getKeyBindings().forEach((key, direction) -> System.out
-//                     .println("[DEBUG] Key: " + Input.Keys.toString(key) + ", Direction: " + direction));
+            if (upKeyString.isEmpty() || downKeyString.isEmpty() ||
+                    leftKeyString.isEmpty() || rightKeyString.isEmpty()) {
+                System.out.println("[DEBUG] No keys set");
+                return;
+            }
 
-//             rebindMenu.setVisible(false);
-//             popupMenu.setVisible(true);
-//         });
+            // Call promptForKeyBindings with the key strings
+            inputManager.promptForKeyBindings(upKeyString, downKeyString, leftKeyString, rightKeyString);
 
-//         // confirmButton.addListener(new ClickListener() {
-//         // @Override
-//         // public void clicked(InputEvent event, float x, float y) {
-//         // // Get the text from the text fields
-//         // String upKeyString = textField1.getText().toUpperCase();
-//         // String downKeyString = textField2.getText().toUpperCase();
-//         // String leftKeyString = textField3.getText().toUpperCase();
-//         // String rightKeyString = textField4.getText().toUpperCase();
-
-//         // // Print the key strings to check their values
-//         // System.out.println("[DEBUG] Up Key String: " + upKeyString);
-//         // System.out.println("[DEBUG] Down Key String: " + downKeyString);
-//         // System.out.println("[DEBUG] Left Key String: " + leftKeyString);
-//         // System.out.println("[DEBUG] Right Key String: " + rightKeyString);
-
-//         // // Call the promptForKeyBindings method with the new key bindings
-//         // inputManager.promptForKeyBindings(upKeyString, downKeyString, leftKeyString,
-//         // rightKeyString);
-//         // System.out.println("[DEBUG] Key Bindings after promptForKeyBindings:");
-//         // inputManager.getKeyBindings().forEach((key, direction) -> System.out
-//         // .println("[DEBUG] Key: " + Input.Keys.toString(key) + ", Direction: " +
-//         // direction));
-
-//         // // Hide the rebind menu
-//         // rebindMenu.setVisible(false);
-//         // popupMenu.setVisible(true);
-//         // }
-//         // });
+            rebindMenu.setVisible(false);
+            popupMenu.setVisible(true);
+        });
 
 //         Table rebindTable = new Table();
 //         rebindTable.add(rebindButton1).fillX().pad(5);

@@ -11,7 +11,8 @@ public class MainMenuScene extends Scene {
     private Skin skin;
     private TextButton playButton, exitButton, optionsButton;
 
-    public MainMenuScene(SceneManager sceneManager) {
+    public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
+        super(inputManager);
         this.sceneManager = sceneManager;
         create();
     }
@@ -22,6 +23,10 @@ public class MainMenuScene extends Scene {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         playButton = new TextButton("PLAY", skin); // Start moves to gamescene
         optionsButton = new TextButton("OPTIONS", skin); // Options moves to options menu scene
+        
+        options = new Options(sceneManager, gameScene, inputManager);
+        options.create();
+        options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin); // Exit closes game
 
         // Instead of checking clicks manually in render, add click listeners here:

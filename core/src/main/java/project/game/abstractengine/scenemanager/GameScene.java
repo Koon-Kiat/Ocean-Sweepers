@@ -2,6 +2,7 @@ package project.game.abstractengine.scenemanager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -65,7 +66,8 @@ public class GameScene extends Scene {
     private Table table;
     private boolean isPaused = false;
 
-    public GameScene(SceneManager sceneManager) {
+    public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
+        super(inputManager);
         this.sceneManager = sceneManager;
     }
 
@@ -73,11 +75,18 @@ public class GameScene extends Scene {
     public void create() {
         batch = new SpriteBatch();
         World world = new World(new Vector2(0, -9.8f), true);
+        System.out.println("[DEBUG] GameScene inputManager instance: " + System.identityHashCode(inputManager));
 
         stage = new Stage();
-        sceneManager = new SceneManager();
 
-        leaveGameMessage();
+        options = new Options(sceneManager, this, inputManager);
+
+        options.setMainMenuButtonVisibility(true);
+        options.getPopupMenu().setTouchable(Touchable.enabled);
+
+        popupMenu = options.getPopupMenu();
+
+        inputMultiplexer = new InputMultiplexer();
 
         // Add popup menu to the stage
         if (popupMenu != null) {
@@ -88,21 +97,23 @@ public class GameScene extends Scene {
             Gdx.app.log("GameScene", "popupMenu is null");
         }
 
+        stage.addActor(options.getPopupMenu());
+        stage.addActor(options.getRebindMenu());
 
-        // // Instead of checking clicks manually in render, add click listeners here:
-        // inputManager.addClickListener(button1, () -> {
-        // System.out.println("Rebind Keys Clicked!");
-        // inputManager.promptForKeyBindings();
-        // });
+        // Add listener for interaction
+        options.getPopupMenu().addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                System.out.println("[DEBUG] Popup Menu Key Pressed: " + Input.Keys.toString(keycode));
+                return true;
+            }
 
-        // inputManager.addClickListener(button2, () -> {
-        // System.out.println("Return to main menu Clicked!");
-        // });
-
-        // inputManager.addClickListener(button3, () -> {
-        // System.out.println("Game Closed!");
-        // Gdx.app.exit();
-        // });
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                System.out.println("[DEBUG] Popup Menu Touched at: (" + x + ", " + y + ")");
+                return true;
+            }
+        });
 
         // gameAsset = gameAsset.getInstance();
         entityManager = new EntityManager();
@@ -180,27 +191,12 @@ public class GameScene extends Scene {
 
         input();
 
-        // Print pressed keys for debugging
-        for (int keycode : inputManager.getPressedKeys()) {
-            System.out.println("[DEBUG] Pressed Key: " + Input.Keys.toString(keycode));
-        }
-
         if (!isPaused) {
             try {
                 updateGame();
-                // Print pressed keys and their associated directions for debugging
-                for (int keycode : inputManager.getPressedKeys()) {
-                    Direction direction = inputManager.getKeyBindings().get(keycode);
-                    if (direction != null) {
-                        System.out.println(
-                                "[DEBUG] Pressed Key: " + Input.Keys.toString(keycode) + ", Direction: " + direction);
-                    } else {
-                        System.out.println("[DEBUG] Pressed Key: " + Input.Keys.toString(keycode)
-                                + ", Direction: No Direction Assigned");
-                    }
-                }
             } catch (Exception e) {
-                System.err.println("[ERROR] Exception during game update: " + e.getMessage());
+                System.err.println("[ERROR] Exception during game update: " +
+                        e.getMessage());
                 Gdx.app.error("Main", "Exception during game update", e);
             }
         }
@@ -245,8 +241,9 @@ public class GameScene extends Scene {
     }
 
     private void updateGame() {
-        
-        playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+        Map<Integer, Direction> keyBindings = inputManager.getKeyBindings();
+
+        playerMovementManager.updateDirection(inputManager.getPressedKeys(), keyBindings);
 
         // Update movement; exceptions here will be logged and thrown upward
         playerMovementManager.updateMovement();

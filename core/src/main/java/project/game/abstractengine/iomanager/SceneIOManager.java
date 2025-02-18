@@ -12,7 +12,11 @@ import project.game.Direction;
 
 public class SceneIOManager extends IOManager {
 
+    
+
     private Map<Integer, Direction> keyBindings;
+
+    
 
     public SceneIOManager() {
         super();
@@ -28,8 +32,7 @@ public class SceneIOManager extends IOManager {
     }
 
     // Corrected promptForKeyBindings method
-    public void promptForKeyBindings(String upKeyString, String downKeyString, String leftKeyString,
-            String rightKeyString) {
+    public void promptForKeyBindings(String upKeyString, String downKeyString, String leftKeyString, String rightKeyString) {
         keyBindings.clear();
 
         // Convert the key strings to key codes
@@ -38,14 +41,7 @@ public class SceneIOManager extends IOManager {
         int leftKey = getKeycodeFromString(leftKeyString);
         int rightKey = getKeycodeFromString(rightKeyString);
 
-        // Print the key strings to check their values
-        System.out.println("[DEBUG] Up Key String: " + upKeyString);
-        System.out.println("[DEBUG] Down Key String: " + downKeyString);
-        System.out.println("[DEBUG] Left Key String: " + leftKeyString);
-        System.out.println("[DEBUG] Right Key String: " + rightKeyString);
 
-        // Gdx.app.log("SceneIOManager", "New keybindings: Up=" + upKey + ", Down=" +
-        // downKey + ", Left=" + leftKey + ", Right=" + rightKey);
 
         keyBindings.put(upKey, Direction.UP);
         keyBindings.put(downKey, Direction.DOWN);
@@ -72,10 +68,6 @@ public class SceneIOManager extends IOManager {
                     return Input.Keys.UNKNOWN; // Or a default key
             }
         }
-    }
-
-    public void setKeyBindings(Map<Integer, Direction> newKeyBindings) {
-        this.keyBindings = newKeyBindings;
     }
 
     public void clearPressedKeys() {
