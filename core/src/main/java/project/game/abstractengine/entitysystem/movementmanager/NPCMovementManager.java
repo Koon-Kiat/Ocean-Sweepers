@@ -3,8 +3,6 @@ package project.game.abstractengine.entitysystem.movementmanager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.badlogic.gdx.math.Vector2;
-
 import project.game.builder.NPCMovementBuilder;
 import project.game.exceptions.MovementException;
 
@@ -49,8 +47,4 @@ public class NPCMovementManager extends MovementManager {
         return this.builder;
     }
 
-    public void setDirection(Vector2 reflectedVelocity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setDirection'");
-    }
 }
