@@ -2,8 +2,10 @@ package project.game.abstractengine.testentity;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -15,6 +17,8 @@ import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 
 public class BucketEntity extends PlayerMovementManager implements ICollidable, IRenderable {
+
+	private static final float PIXELS_TO_METERS = 32f; // Define the conversion factor
 
 	private final PlayerMovementManager movementManager;
 	private final String texturePath;
@@ -47,15 +51,25 @@ public class BucketEntity extends PlayerMovementManager implements ICollidable, 
 
 	@Override
 	public boolean checkCollision(Entity other) {
-		return getX() < other.getX() + other.getWidth() &&
-				getX() + getWidth() > other.getX() &&
-				getY() < other.getY() + other.getHeight() &&
-				getY() + getHeight() > other.getY();
+		if (other == null) {
+			// Collision with screen boundary
+			return true;
+		} else if (other instanceof ICollidable) {
+			Body otherBody = ((ICollidable) other).getBody();
+			return body.getPosition().x < otherBody.getPosition().x + other.getWidth() &&
+					body.getPosition().x + getWidth() > otherBody.getPosition().x &&
+					body.getPosition().y < otherBody.getPosition().y + other.getHeight() &&
+					body.getPosition().y + getHeight() > otherBody.getPosition().y;
+		}
+		return false; // Or handle the case where 'other' is not ICollidable appropriately
 	}
 
 	@Override
 	public void onCollision(Entity other) {
-		System.out.println(getID() + " collided with " + other.getID());
+		System.out.println(getEntity().getClass().getSimpleName() + " collided with "
+				+ (other == null ? "boundary" : other.getClass().getSimpleName()));
+
+		// Do nothing - the bucket should not move upon collision
 	}
 
 	@Override
@@ -64,13 +78,14 @@ public class BucketEntity extends PlayerMovementManager implements ICollidable, 
 			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
 			batch.draw(texture, getX(), getY(), getWidth(), getHeight());
 		}
+
 	}
 
 	@Override
 	public final Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		bodyDef.position.set(x, y);
+		bodyDef.type = BodyDef.BodyType.StaticBody;
+		bodyDef.position.set(x / PIXELS_TO_METERS, y / PIXELS_TO_METERS); // Scale position
 
 		Body createBody = world.createBody(bodyDef);
 
@@ -80,10 +95,11 @@ public class BucketEntity extends PlayerMovementManager implements ICollidable, 
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.density = 1.0f;
-		fixtureDef.friction = 0.3f;
-		fixtureDef.restitution = 0.5f;
+		fixtureDef.friction = 0.4f;
+		fixtureDef.restitution = 0.2f;
 
-		createBody.createFixture(fixtureDef);
+		Fixture fixture = createBody.createFixture(fixtureDef); // Get the Fixture
+		fixture.setUserData(this); // Set user data on the fixture
 		shape.dispose();
 
 		return createBody;

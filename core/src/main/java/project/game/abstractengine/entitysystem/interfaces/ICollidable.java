@@ -17,4 +17,5 @@ public interface ICollidable {
 
 	void onCollision(Entity other);
 
+
 }

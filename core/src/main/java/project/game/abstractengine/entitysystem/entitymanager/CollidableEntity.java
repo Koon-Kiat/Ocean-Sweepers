@@ -73,6 +73,8 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 		createdBody.createFixture(fixtureDef);
 		shape.dispose();
 
+		createdBody.setUserData(this);
+
 		return createdBody;
 	}
 

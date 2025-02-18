@@ -14,11 +14,21 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Value.Fixed;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Box2D;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
@@ -46,10 +56,11 @@ public class GameScene extends Scene {
     private static final float PLAYER_SPEED = 1600f;
     private static final float NPC_SPEED = 400f;
 
-    private static final float DROP_START_X = 0f;
-    private static final float DROP_START_Y = 400f;
-    private static final float BUCKET_START_X = 5f;
-    private static final float BUCKET_START_Y = 40f;
+    private final static float PIXELS_TO_METERS = 32f;
+    private static final float DROP_START_X = 0f / PIXELS_TO_METERS;
+    private static final float DROP_START_Y = 400f / PIXELS_TO_METERS;
+    private static final float BUCKET_START_X = 5f / PIXELS_TO_METERS;
+    private static final float BUCKET_START_Y = 40f / PIXELS_TO_METERS;
 
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
@@ -69,6 +80,10 @@ public class GameScene extends Scene {
     private Stage stage;
     private Skin skin;
     private Table table;
+    private World world;
+    private Box2DDebugRenderer debugRenderer;
+    private OrthographicCamera camera;
+    private Matrix4 debugMatrix;
 
     // public GameScene() {
     // sceneManager = new SceneManager();
@@ -83,9 +98,11 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        World world = new World(new Vector2(0, -9.8f), true);
+        world = new World(new Vector2(0, -9.8f), true);
 
+        createScreenBoundaries();
         inputManager = new SceneIOManager();
+        new CollisionManager(world);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
@@ -184,6 +201,12 @@ public class GameScene extends Scene {
             System.out.println("Game Closed!");
             Gdx.app.exit();
         });
+
+        camera = new OrthographicCamera(GAME_WIDTH, GAME_HEIGHT); // Initialize the camera
+        camera.position.set(GAME_WIDTH / 2, GAME_HEIGHT / 2, 0);
+        camera.update();
+
+        debugRenderer = new Box2DDebugRenderer();
     }
 
     @Override
@@ -219,6 +242,16 @@ public class GameScene extends Scene {
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
+
+        debugMatrix = camera.combined.cpy().scl(PIXELS_TO_METERS);
+
+        debugRenderer.render(world, debugMatrix);
+
+        // Fixed timestep for Box2D
+        float timeStep = 1 / 60f; // 60 frames per second
+        int velocityIterations = 6;
+        int positionIterations = 2;
+        world.step(timeStep, velocityIterations, positionIterations);
     }
 
     private void updateGame() {
@@ -228,11 +261,73 @@ public class GameScene extends Scene {
         playerMovementManager.updateMovement();
         npcMovementManager.updateMovement();
 
+        // Clamp sprite positions to screen boundaries
+        float bucketX = Math.max(0, Math.min(playerMovementManager.getX(), GAME_WIDTH - bucket.getWidth()));
+        float bucketY = Math.max(0, Math.min(playerMovementManager.getY(), GAME_HEIGHT - bucket.getHeight()));
+        float dropX = Math.max(0, Math.min(npcMovementManager.getX(), GAME_WIDTH - drop.getWidth()));
+        float dropY = Math.max(0, Math.min(npcMovementManager.getY(), GAME_HEIGHT - drop.getHeight()));
+
         // Synchronize rectangle positions with movement manager positions
-        bucket.setX(playerMovementManager.getX());
-        bucket.setY(playerMovementManager.getY());
-        drop.setX(npcMovementManager.getX());
-        drop.setY(npcMovementManager.getY());
+        bucket.setX(bucketX);
+        bucket.setY(bucketY);
+        drop.setX(dropX);
+        drop.setY(dropY);
+
+        // Update Box2D body positions to match sprite positions
+        bucket.getBody().setTransform(bucket.getX() / PIXELS_TO_METERS, bucket.getY() / PIXELS_TO_METERS, 0);
+        drop.getBody().setTransform(drop.getX() / PIXELS_TO_METERS, drop.getY() / PIXELS_TO_METERS, 0);
+    }
+
+    private void createScreenBoundaries() {
+        float screenWidth = GAME_WIDTH / PIXELS_TO_METERS;
+        float screenHeight = GAME_HEIGHT / PIXELS_TO_METERS;
+        float edgeThickness = 0.1f; // Adjust as needed
+
+        // Create BodyDef for static boundaries
+        BodyDef boundaryDef = new BodyDef();
+        boundaryDef.type = BodyDef.BodyType.StaticBody;
+
+        // Create FixtureDef for boundaries
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.density = 1f;
+        fixtureDef.friction = 0.4f;
+        fixtureDef.restitution = 0.2f;
+
+        // Create top boundary
+        boundaryDef.position.set(0, screenHeight);
+        Body topBoundary = world.createBody(boundaryDef);
+        PolygonShape topShape = new PolygonShape();
+        topShape.setAsBox(screenWidth, edgeThickness);
+        fixtureDef.shape = topShape;
+        topBoundary.createFixture(fixtureDef);
+        topShape.dispose();
+
+        // Create bottom boundary
+        boundaryDef.position.set(0, 0);
+        Body bottomBoundary = world.createBody(boundaryDef);
+        PolygonShape bottomShape = new PolygonShape();
+        bottomShape.setAsBox(screenWidth, edgeThickness);
+        fixtureDef.shape = bottomShape;
+        bottomBoundary.createFixture(fixtureDef);
+        bottomShape.dispose();
+
+        // Create left boundary
+        boundaryDef.position.set(0, 0);
+        Body leftBoundary = world.createBody(boundaryDef);
+        PolygonShape leftShape = new PolygonShape();
+        leftShape.setAsBox(edgeThickness, screenHeight);
+        fixtureDef.shape = leftShape;
+        leftBoundary.createFixture(fixtureDef);
+        leftShape.dispose();
+
+        // Create right boundary
+        boundaryDef.position.set(screenWidth, 0);
+        Body rightBoundary = world.createBody(boundaryDef);
+        PolygonShape rightShape = new PolygonShape();
+        rightShape.setAsBox(edgeThickness, screenHeight);
+        fixtureDef.shape = rightShape;
+        rightBoundary.createFixture(fixtureDef);
+        rightShape.dispose();
     }
 
     @Override
@@ -240,6 +335,7 @@ public class GameScene extends Scene {
         batch.dispose();
         dropImage.dispose();
         bucketImage.dispose();
+        debugRenderer.dispose();
     }
 
 }
