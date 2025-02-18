@@ -60,7 +60,7 @@ public class GameScene extends Scene {
     private static final float DROP_START_X = 0f / PIXELS_TO_METERS;
     private static final float DROP_START_Y = 400f / PIXELS_TO_METERS;
     private static final float BUCKET_START_X = 5f / PIXELS_TO_METERS;
-    private static final float BUCKET_START_Y = 40f / PIXELS_TO_METERS;
+    private static final float BUCKET_START_Y = 400f / PIXELS_TO_METERS;
 
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
@@ -69,6 +69,7 @@ public class GameScene extends Scene {
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
+    private CollisionManager collisionManager;
     private TextButton button1, button2, button3;
 
     private SpriteBatch batch;
@@ -102,7 +103,7 @@ public class GameScene extends Scene {
 
         createScreenBoundaries();
         inputManager = new SceneIOManager();
-        new CollisionManager(world);
+        collisionManager = new CollisionManager(world);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
@@ -183,6 +184,7 @@ public class GameScene extends Scene {
 
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
+        
 
         entityManager.addEntity(bucket);
         entityManager.addEntity(drop);
@@ -231,6 +233,8 @@ public class GameScene extends Scene {
             System.err.println("[ERROR] Exception during game update: " + e.getMessage());
             Gdx.app.error("Main", "Exception during game update", e);
         }
+        
+
 
         batch.begin();
         entityManager.draw(batch);

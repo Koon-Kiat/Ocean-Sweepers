@@ -69,6 +69,7 @@ public class DropEntity extends NPCMovementManager implements ICollidable, IRend
 public void onCollision(Entity other) {
     System.out.println(getEntity().getClass().getSimpleName() + " collided with "
             + (other == null ? "boundary" : other.getClass().getSimpleName()));
+    
 
     if (other instanceof BucketEntity) {
 		System.out.println("Colliding with BucketEntity"); // Debug print
@@ -105,11 +106,14 @@ public void onCollision(Entity other) {
 
 	@Override
 	public void render(SpriteBatch batch) {
-		if (isActive() && GameAsset.getInstance().isLoaded()) {
-			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
-			batch.draw(texture, getX(), getY(), getWidth(), getHeight());
-		}
-	}
+	    if (isActive() && GameAsset.getInstance().isLoaded()) {
+	      // Offset render position so the texture is drawn centered on the physics body
+	      float renderX = getX() - this.getWidth() / 2;
+	      float renderY = getY() - this.getHeight() / 2;
+	      Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
+	      batch.draw(texture, renderX, renderY, this.getWidth(), this.getHeight());
+	    }
+	  }
 
 	@Override
 	public final Body createBody(World world, float x, float y, float width, float height) {
@@ -120,9 +124,14 @@ public void onCollision(Entity other) {
 		Body createdBody = world.createBody(bodyDef);
 
 		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(width / 2, height / 2);
+//		shape.setAsBox((width / 2) / PIXELS_TO_METERS, (height / 2) / PIXELS_TO_METERS);
+		shape.setAsBox(width / 2 / PIXELS_TO_METERS, height / 2 /PIXELS_TO_METERS);
+
+
 
 		FixtureDef fixtureDef = new FixtureDef();
+//		fixtureDef.filter.categoryBits = 0x0001;  // Example category
+//		fixtureDef.filter.maskBits = 0x0FFF;      // Collide with everything
 		fixtureDef.shape = shape;
 		fixtureDef.density = 1.0f;
 		fixtureDef.friction = 0.3f;

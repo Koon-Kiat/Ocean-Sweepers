@@ -53,6 +53,7 @@ public class BucketEntity extends PlayerMovementManager implements ICollidable, 
 	public boolean checkCollision(Entity other) {
 		if (other == null) {
 			// Collision with screen boundary
+			
 			return true;
 		} else if (other instanceof ICollidable) {
 			Body otherBody = ((ICollidable) other).getBody();
@@ -71,18 +72,22 @@ public class BucketEntity extends PlayerMovementManager implements ICollidable, 
 
 		// Do nothing - the bucket should not move upon collision
 	}
-
+	
 	@Override
 	public void render(SpriteBatch batch) {
-		if (isActive() && GameAsset.getInstance().isLoaded()) {
-			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
-			batch.draw(texture, getX(), getY(), getWidth(), getHeight());
-		}
-
-	}
+	    if (isActive() && GameAsset.getInstance().isLoaded()) {
+	      // Offset render position so the texture is drawn centered on the physics body
+	      float renderX = getX() - this.getWidth() / 2;
+	      float renderY = getY() - this.getHeight() / 2;
+	      Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
+	      batch.draw(texture, renderX, renderY, this.getWidth(), this.getHeight());
+	    }
+	  }
 
 	@Override
 	public final Body createBody(World world, float x, float y, float width, float height) {
+		System.out.println("width: " + width);
+		System.out.println("height: " + height);
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.StaticBody;
 		bodyDef.position.set(x / PIXELS_TO_METERS, y / PIXELS_TO_METERS); // Scale position
@@ -90,9 +95,13 @@ public class BucketEntity extends PlayerMovementManager implements ICollidable, 
 		Body createBody = world.createBody(bodyDef);
 
 		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(width / 2, height / 2);
+		shape.setAsBox((width / 2) / PIXELS_TO_METERS, (height / 2) / PIXELS_TO_METERS);
+
+
 
 		FixtureDef fixtureDef = new FixtureDef();
+//		fixtureDef.filter.categoryBits = 0x0001;  // Example category
+//		fixtureDef.filter.maskBits = 0x0FFF;      // Collide with everything
 		fixtureDef.shape = shape;
 		fixtureDef.density = 1.0f;
 		fixtureDef.friction = 0.4f;
