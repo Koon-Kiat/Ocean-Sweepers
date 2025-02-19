@@ -9,6 +9,7 @@ public abstract class MovableEntity extends Entity {
 	private Direction direction;
 
 	public MovableEntity(Entity entity, float speed) {
+		super(entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight(), entity.isActive());
 		this.entity = entity;
 		this.speed = speed;
 	}

@@ -23,7 +23,7 @@ public class EntityManager {
 
 	}
 
-	public boolean addEntity(IRenderable renderable) {
+	public boolean addRenderableEntity(IRenderable renderable) {
 		renderables.add(renderable);
 
 		if (renderable instanceof Entity) {
@@ -35,6 +35,16 @@ public class EntityManager {
 			entityIDs.add(entity.getID());
 			entityList.add(entity);
 		}
+		return true;
+	}
+	
+	public boolean addEntity(Entity entity) {
+		if (entityIDs.contains(entity.getID())) {
+			System.out.println("Duplicate ID: " + entity.getID());
+			return false;
+		}
+		entityIDs.add(entity.getID());
+		entityList.add(entity);
 		return true;
 	}
 
@@ -64,8 +74,8 @@ public class EntityManager {
 					if (entityB instanceof ICollidable) {
 						ICollidable collidableB = (ICollidable) entityB;
 						if (collidableA.checkCollision(entityB)) {
-							collidableA.onCollision(entityB);
-							collidableB.onCollision(entityA);
+							collidableA.onCollision(collidableB);
+							collidableB.onCollision(collidableA);
 						}
 					}
 				}
