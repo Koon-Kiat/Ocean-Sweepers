@@ -98,10 +98,7 @@ public class GameScene extends Scene {
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
 
-        createScreenBoundaries();
         inputManager = new SceneIOManager();
-        collisionManager = new CollisionManager(world);
-        collisionManager.init();
         entityManager = new EntityManager();
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
@@ -204,6 +201,11 @@ public class GameScene extends Scene {
         camera.update();
 
         debugRenderer = new Box2DDebugRenderer();
+
+        // Initialize CollisionManager and create screen boundaries
+        collisionManager = new CollisionManager(world, playerMovementManager, npcMovementManager, bucket, drop, inputManager);
+        collisionManager.init();
+        collisionManager.createScreenBoundaries(GAME_WIDTH, GAME_HEIGHT);
     }
 
     @Override
@@ -223,7 +225,7 @@ public class GameScene extends Scene {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         try {
-            updateGame();
+            collisionManager.updateGame(GAME_WIDTH, GAME_HEIGHT);
         } catch (Exception e) {
             System.err.println("[ERROR] Exception during game update: " + e.getMessage());
             Gdx.app.error("Main", "Exception during game update", e);
@@ -247,127 +249,7 @@ public class GameScene extends Scene {
         float timeStep = 1 / 60f;
         world.step(timeStep, 6, 2);
         collisionManager.processCollisions();
-        syncEntityPositions();
-    }
-
-    private void updateGame() {
-        // Update movement managers (input processing, etc.)
-        playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
-        playerMovementManager.updateMovement();
-        npcMovementManager.updateMovement();
-
-        // Always update player (bucket) from input, regardless of collision state
-        float bucketX = playerMovementManager.getX();
-        float bucketY = playerMovementManager.getY();
-
-        // Clamp player positions so the player remains within screen bounds
-        bucketX = Math.max(0, Math.min(bucketX, GAME_WIDTH - bucket.getEntity().getWidth()));
-        bucketY = Math.max(0, Math.min(bucketY, GAME_HEIGHT - bucket.getEntity().getHeight()));
-
-        // Update player's entity and Box2D body (convert pixels → meters)
-        bucket.getEntity().setX(bucketX);
-        bucket.getEntity().setY(bucketY);
-        bucket.getBody().setTransform(bucketX / GameConstants.PIXELS_TO_METERS,
-                bucketY / GameConstants.PIXELS_TO_METERS, 0);
-
-        // For the NPC (drop), check if it's in collision and blend if needed
-        if (!drop.isInCollision()) {
-            // Normal update when no collision is active for the NPC
-            float dropX = npcMovementManager.getX();
-            float dropY = npcMovementManager.getY();
-
-            // Clamp NPC positions
-            dropX = Math.max(0, Math.min(dropX, GAME_WIDTH - drop.getEntity().getWidth()));
-            dropY = Math.max(0, Math.min(dropY, GAME_HEIGHT - drop.getEntity().getHeight()));
-
-            drop.getEntity().setX(dropX);
-            drop.getEntity().setY(dropY);
-            drop.getBody().setTransform(dropX / GameConstants.PIXELS_TO_METERS,
-                    dropY / GameConstants.PIXELS_TO_METERS, 0);
-        } else {
-            // COLLISION MODE for NPC:
-            // Get current physics position (in pixels)
-            float physicsDropX = drop.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS;
-            float physicsDropY = drop.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS;
-
-            // Retrieve desired input position from the movement manager
-            float inputDropX = npcMovementManager.getX();
-            float inputDropY = npcMovementManager.getY();
-
-            // Blend physics with input using a blending factor
-            float blendFactor = 0.1f; // adjust as needed
-            float newDropX = physicsDropX + (inputDropX - physicsDropX) * blendFactor;
-            float newDropY = physicsDropY + (inputDropY - physicsDropY) * blendFactor;
-
-            // Update NPC's entity to the blended value and synchronize the movement manager
-            // so stale input does not accumulate
-            drop.getEntity().setX(newDropX);
-            drop.getEntity().setY(newDropY);
-            npcMovementManager.setX(newDropX);
-            npcMovementManager.setY(newDropY);
-        }
-    }
-
-    /**
-     * Syncs visual entity positions from Box2D bodies (convert meters → pixels)
-     */
-    private void syncEntityPositions() {
-        bucket.getEntity().setX(bucket.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS);
-        bucket.getEntity().setY(bucket.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS);
-        drop.getEntity().setX(drop.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS);
-        drop.getEntity().setY(drop.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS);
-    }
-
-    private void createScreenBoundaries() {
-        float screenWidth = GAME_WIDTH / GameConstants.PIXELS_TO_METERS;
-        float screenHeight = GAME_HEIGHT / GameConstants.PIXELS_TO_METERS;
-        float edgeThickness = 0.1f; // Adjust as needed
-
-        // Create BodyDef for static boundaries
-        BodyDef boundaryDef = new BodyDef();
-        boundaryDef.type = BodyDef.BodyType.StaticBody;
-
-        // Create FixtureDef for boundaries
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 1f;
-        fixtureDef.friction = 0.4f;
-        fixtureDef.restitution = 0.2f;
-
-        // Create top boundary
-        boundaryDef.position.set(0, screenHeight);
-        Body topBoundary = world.createBody(boundaryDef);
-        PolygonShape topShape = new PolygonShape();
-        topShape.setAsBox(screenWidth, edgeThickness);
-        fixtureDef.shape = topShape;
-        topBoundary.createFixture(fixtureDef);
-        topShape.dispose();
-
-        // Create bottom boundary
-        boundaryDef.position.set(0, 0);
-        Body bottomBoundary = world.createBody(boundaryDef);
-        PolygonShape bottomShape = new PolygonShape();
-        bottomShape.setAsBox(screenWidth, edgeThickness);
-        fixtureDef.shape = bottomShape;
-        bottomBoundary.createFixture(fixtureDef);
-        bottomShape.dispose();
-
-        // Create left boundary
-        boundaryDef.position.set(0, 0);
-        Body leftBoundary = world.createBody(boundaryDef);
-        PolygonShape leftShape = new PolygonShape();
-        leftShape.setAsBox(edgeThickness, screenHeight);
-        fixtureDef.shape = leftShape;
-        leftBoundary.createFixture(fixtureDef);
-        leftShape.dispose();
-
-        // Create right boundary
-        boundaryDef.position.set(screenWidth, 0);
-        Body rightBoundary = world.createBody(boundaryDef);
-        PolygonShape rightShape = new PolygonShape();
-        rightShape.setAsBox(edgeThickness, screenHeight);
-        fixtureDef.shape = rightShape;
-        rightBoundary.createFixture(fixtureDef);
-        rightShape.dispose();
+        collisionManager.syncEntityPositions();
     }
 
     @Override
