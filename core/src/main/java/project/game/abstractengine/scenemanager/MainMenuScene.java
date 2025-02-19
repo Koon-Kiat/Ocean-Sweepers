@@ -54,6 +54,7 @@ public class MainMenuScene extends Scene {
 
         inputManager.addClickListener(exitButton, () -> {
             Gdx.app.exit(); // Close game
+            dispose();
         });
 
         Table table = new Table();
