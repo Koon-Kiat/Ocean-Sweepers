@@ -4,8 +4,8 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.abstractengine.scenemanager.GameScene;
-import project.game.abstractengine.scenemanager.MainMenuScene;
+import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.SceneFactory;
 import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.logmanager.LogManager;
 
@@ -19,19 +19,20 @@ public class Main extends ApplicationAdapter {
     public static final float GAME_HEIGHT = 480;
 
     private SceneManager sceneManager;
-    private MainMenuScene mainMenuScene;
-    private GameScene gameScene;
 
     @Override
     public void create() {
         // Scene Manager setup
         sceneManager = new SceneManager();
-        mainMenuScene = new MainMenuScene(sceneManager);
-        gameScene = new GameScene(sceneManager);
-        sceneManager.addScene("menu", mainMenuScene);
-        sceneManager.addScene("game", gameScene);
+        SceneIOManager sharedInputManager = sceneManager.getInputManager();
+
+        // Initializing and registering scenes now done in Scene Factory
+        SceneFactory sceneFactory = new SceneFactory(sceneManager,sharedInputManager);
+        sceneFactory.createAndRegisterScenes();
+
         System.out.println("Available scenes: " + sceneManager.getSceneList());
         sceneManager.setScene("menu");
+        System.out.println("[DEBUG] sceneManager in main: " + sceneManager);
     }
 
     @Override
@@ -45,6 +46,6 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
-        // sceneManager.resize(width, height);
+        sceneManager.resize(width, height);
     }
 }

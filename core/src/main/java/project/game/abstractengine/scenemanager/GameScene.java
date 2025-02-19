@@ -11,16 +11,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
 
@@ -62,19 +59,16 @@ public class GameScene extends Scene {
     private static final float BUCKET_WIDTH = 50f;
     private static final float BUCKET_HEIGHT = 50f;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
-    private SceneManager sceneManager;
+
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
-    private SceneIOManager inputManager;
-    private TextButton button1, button2, button3;
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
     private DropEntity drop;
     private BucketEntity bucket;
     private Window popupMenu;
-    private Stage stage;
     private Skin skin;
     private Table table;
     private World world;
@@ -82,47 +76,32 @@ public class GameScene extends Scene {
     private OrthographicCamera camera;
     private Matrix4 debugMatrix;
     private CollisionManager collisionManager;
+    private boolean isPaused = false, isMenuOpen = false;
+    private InputMultiplexer inputMultiplexer;
+    private Options options;
 
-    // public GameScene() {
-    // sceneManager = new SceneManager();
-    // sceneManager.addScene("menu", new MainMenuScene());
-    // sceneManager.setScene("menu");
-    // }
-
-    public GameScene(SceneManager sceneManager) {
+    public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
+        super(inputManager);
         this.sceneManager = sceneManager;
     }
 
+    /*
+     * Initializes and draws the Game Scene
+     * Implements the game logic (collision detection, movement logic, loading entities, I/O)
+     */
     @Override
     public void create() {
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
+        System.out.println("[DEBUG] GameScene inputManager instance: " + System.identityHashCode(inputManager));
 
         inputManager = new SceneIOManager();
         entityManager = new EntityManager();
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        stage = new Stage();
-        table = new Table();
 
-        popupMenu = new Window("Pop up", skin);
-        popupMenu.setSize(200, 150);
-        popupMenu.setPosition(300, 300);
-        popupMenu.setVisible(false);
-
-        button1 = new TextButton("Rebind Keys", skin);
-        button2 = new TextButton("Return to main menu", skin);
-        button3 = new TextButton("Close", skin);
-
-        table = new Table();
-        table.add(button1).fillX().pad(5);
-        table.row();
-        table.add(button2).fillX().pad(5);
-        table.row();
-        table.add(button3).fillX().pad(5);
-
-        popupMenu.add(table);
-        stage.addActor(popupMenu);
+        initPopUpMenu();
+        displayMessage();
 
         try {
             GameAsset.getInstance().loadTextureAssets("droplet.png");
@@ -181,21 +160,6 @@ public class GameScene extends Scene {
         entityManager.addRenderableEntity(bucket);
         entityManager.addRenderableEntity(drop);
 
-        // Instead of checking clicks manually in render, add click listeners here:
-        inputManager.addClickListener(button1, () -> {
-            System.out.println("Rebind Keys Clicked!");
-            inputManager.promptForKeyBindings();
-        });
-
-        inputManager.addClickListener(button2, () -> {
-            System.out.println("Return to main menu Clicked!");
-        });
-
-        inputManager.addClickListener(button3, () -> {
-            System.out.println("Game Closed!");
-            Gdx.app.exit();
-        });
-
         camera = new OrthographicCamera(GAME_WIDTH, GAME_HEIGHT);
         camera.position.set(GAME_WIDTH / 2, GAME_HEIGHT / 2, 0);
         camera.update();
@@ -214,16 +178,14 @@ public class GameScene extends Scene {
         multiplexer.addProcessor(stage);
         multiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(multiplexer);
-
-        float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
-        float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
-        popupMenu.setPosition(centerX, centerY);
     }
 
     @Override
     public void render(float deltaTime) {
         ScreenUtils.clear(0, 0, 0f, 0);
 
+        input();
+        show();
         try {
             collisionManager.updateGame(GAME_WIDTH, GAME_HEIGHT);
         } catch (Exception e) {
@@ -234,10 +196,6 @@ public class GameScene extends Scene {
         batch.begin();
         entityManager.draw(batch);
         batch.end();
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            popupMenu.setVisible(!popupMenu.isVisible());
-        }
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
@@ -252,6 +210,102 @@ public class GameScene extends Scene {
         collisionManager.syncEntityPositions();
     }
 
+    /*
+     * Initializes the pop-up menu for the game scene from Options class
+     * Adds the pop-up menu to the stage
+     */
+    public void initPopUpMenu() {
+        options = new Options(sceneManager, this, inputManager);
+        
+        options.setMainMenuButtonVisibility(true);
+        options.getPopupMenu().setTouchable(Touchable.enabled);
+
+        popupMenu = options.getPopupMenu();
+        inputMultiplexer = new InputMultiplexer();
+
+        // Add popup menu to the stage
+        if (popupMenu != null) {
+            float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
+            float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
+            popupMenu.setPosition(centerX, centerY);
+        } else {
+            Gdx.app.log("GameScene", "popupMenu is null");
+        }
+
+        stage.addActor(options.getPopupMenu());
+        stage.addActor(options.getRebindMenu());
+    }
+
+    /*
+     * Handles input for scene transitions and toggling the options menu
+     * 
+     * Game Scene will transition to:
+     * - Main Menu Scene on 'M' key press
+     * - Game Over Scene on 'E' key press
+     * - Rebind Pop-up window on 'P' key press
+     */
+    private void input() {
+        
+        Gdx.input.setInputProcessor(inputManager);
+
+        // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game over scene
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            sceneManager.setScene("menu");
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            sceneManager.setScene("gameover");
+        }
+
+        // Toggle options menu with 'P'
+        // Will open the rebind menu 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            isMenuOpen = !isMenuOpen;
+            hideDisplayMessage();
+            options.getRebindMenu().setVisible(isMenuOpen);
+            if (isMenuOpen) {
+                isPaused = true;
+                inputMultiplexer.setProcessors(stage, inputManager); // Set stage first
+                System.out.println("[DEBUG] InputProcessor set to stage");
+
+            } else {
+                isPaused = false;
+                inputMultiplexer.removeProcessor(stage);
+                inputMultiplexer.addProcessor(inputManager);
+                stage.setKeyboardFocus(null);
+                System.out.println("[DEBUG] InputProcessor set to inputManager");
+            }        
+        }
+    }
+
+    /*
+     * Displays a message on the screen for key bindings
+     */
+    private void displayMessage() {
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
+        style.background = null; // Disable the background
+
+        final TextField textField = new TextField("", style);
+        textField.setWidth(300); // Adjust the width as needed
+        textField.setHeight(40); // Adjust the height as needed
+        textField.setPosition(stage.getWidth() / 2f - textField.getWidth() / 2f, stage.getHeight() - textField.getHeight());
+        textField.setMessageText("Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
+        textField.setDisabled(true);
+        stage.addActor(textField);
+
+        // Overlay text over the debug matrix
+        batch.begin();
+        skin.getFont("default-font").draw(batch, "Debug Mode Active", 10, stage.getHeight() - 10);
+        batch.end();
+    }
+
+    private void hideDisplayMessage() {
+        for (Actor actor : stage.getActors()) {
+            if (actor instanceof TextField) {
+                actor.remove();
+            }
+        }
+    }
+
     @Override
     public void dispose() {
         batch.dispose();
@@ -259,5 +313,19 @@ public class GameScene extends Scene {
         bucketImage.dispose();
         debugRenderer.dispose();
     }
+
+    /*
+     * Used in Options class to close the popup menu and unpause the game
+     */
+    public void closePopupMenu() {
+        isMenuOpen = false;
+        isPaused = false;
+        options.getPopupMenu().setVisible(false);
+        inputMultiplexer.removeProcessor(stage);
+        inputMultiplexer.addProcessor(inputManager);
+        inputManager.clearPressedKeys(); // Clear the pressedKeys set
+        System.out.println("[DEBUG] Popup closed and game unpaused");
+    }
+
 
 }
