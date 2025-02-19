@@ -2,7 +2,6 @@ package project.game.abstractengine.scenemanager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -275,20 +274,6 @@ public class GameScene extends Scene {
                 System.out.println("[DEBUG] InputProcessor set to inputManager");
             }        
         }
-    }
-
-    private void updateGame() {
-        debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
-        debugRenderer.render(world, debugMatrix);
-        Map<Integer, Direction> keyBindings = inputManager.getKeyBindings();
-
-        playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
-
-        // Fixed timestep for Box2D
-        float timeStep = 1 / 60f;
-        world.step(timeStep, 6, 2);
-        collisionManager.processCollisions();
-        collisionManager.syncEntityPositions();
     }
 
     /*
