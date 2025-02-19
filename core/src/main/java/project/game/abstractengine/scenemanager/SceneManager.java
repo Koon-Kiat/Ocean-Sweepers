@@ -4,21 +4,41 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class SceneManager {
+import project.game.abstractengine.iomanager.SceneIOManager;
+
+    /**
+     * The SceneManager class is responsible for managing different scenes in the game.
+     * It allows adding, removing, setting, and retrieving scenes, as well as rendering
+     * and resizing the current scene.
+     */
+public class SceneManager{
     private final Map<String, Scene> scenes;
     private Scene currentScene;
+    private SceneIOManager baseInputManager;
 
+    /**
+     * Initializes the SceneManager with a new SceneIOManager and an empty scene map.
+     */
     public SceneManager() {
+        baseInputManager = new SceneIOManager();
         this.scenes = new HashMap<>();
     }
 
+    /**
+     * Adds a new scene to the scene map with the given name.
+     *
+     * @param name  the name of the scene
+     * @param scene the scene to add
+     */
     public void addScene(String name, Scene scene) {
         scenes.put(name, scene);
-        if (currentScene == null) {
-            setScene(name); // Automatically set the first scene
-        }
     }
 
+    /**
+     * Sets the current scene to the scene with the given name.
+     *
+     * @param name the name of the scene to set
+     */
     public void setScene(String name) {
         if (!scenes.containsKey(name)) {
             throw new IllegalArgumentException("Scene '" + name + "' not found!");
@@ -63,14 +83,16 @@ public class SceneManager {
         }
         scenes.clear();
     }
-
+    
     public Set<String> getSceneList() {
-
         return scenes.keySet();
-
     }
 
     public Scene getCurrentScene() {
         return currentScene;
+    }
+
+    public SceneIOManager getInputManager() {
+        return baseInputManager;
     }
 }
