@@ -4,26 +4,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import project.game.Direction;
 
 public class SceneIOManager extends IOManager {
 
-    
-
+    // Map holding key codes mapped to their in-game Direction
     private Map<Integer, Direction> keyBindings;
 
-    
-
+    // Constructor: initialize default key bindings
     public SceneIOManager() {
         super();
         this.keyBindings = new HashMap<>();
         initializedefaultKeyBindings();
     }
 
+    // Set up initial key bindings using WASD
     private void initializedefaultKeyBindings() {
         keyBindings.put(Input.Keys.W, Direction.UP);
         keyBindings.put(Input.Keys.S, Direction.DOWN);
@@ -31,8 +30,9 @@ public class SceneIOManager extends IOManager {
         keyBindings.put(Input.Keys.D, Direction.RIGHT);
     }
 
-    // Corrected promptForKeyBindings method
-    public void promptForKeyBindings(String upKeyString, String downKeyString, String leftKeyString, String rightKeyString) {
+    // Update keyBindings based on new strings provided (e.g., during key rebind)
+    public void promptForKeyBindings(String upKeyString, String downKeyString, String leftKeyString,
+            String rightKeyString) {
         keyBindings.clear();
 
         // Convert the key strings to key codes
@@ -41,14 +41,13 @@ public class SceneIOManager extends IOManager {
         int leftKey = getKeycodeFromString(leftKeyString);
         int rightKey = getKeycodeFromString(rightKeyString);
 
-
-
         keyBindings.put(upKey, Direction.UP);
         keyBindings.put(downKey, Direction.DOWN);
         keyBindings.put(leftKey, Direction.LEFT);
         keyBindings.put(rightKey, Direction.RIGHT);
     }
 
+    // Convert a key string (e.g., "W", "UP") to a LibGDX input key code
     private int getKeycodeFromString(String keyString) {
         try {
             return Input.Keys.valueOf(keyString);
@@ -65,42 +64,43 @@ public class SceneIOManager extends IOManager {
                     return Input.Keys.RIGHT;
                 default:
                     System.err.println("[ERROR] Invalid key string: " + keyString);
-                    return Input.Keys.UNKNOWN; // Or a default key
+                    return Input.Keys.UNKNOWN; // // Fallback for invalid key strings
             }
         }
     }
 
-    public void clearPressedKeys() {
-        pressedKeys.clear();
-    }
-
-    @Override
-    public boolean keyDown(int keycode) {
-        pressedKeys.add(keycode);
-        // Update movement based on the new pressed keys
-        // movementManager.updateDirection(pressedKeys, keyBindings);
-        return true;
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        pressedKeys.remove(keycode);
-        // Update movement based on the updated pressed keys
-        // movementManager.updateDirection(pressedKeys, keyBindings);
-        return true;
-    }
-
+    // Getter for keyBindings map (for use by other systems)
     public Map<Integer, Direction> getKeyBindings() {
         return keyBindings;
     }
 
-    public void addClickListener(TextButton button, Runnable callback) {
-        button.addListener(new ClickListener() {
+    // Attach a click listener to an Actor that calls the provided callback on click.
+    public void addButtonClickListener(Actor actor, Runnable callback) {
+        actor.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 callback.run();
             }
         });
+    }
+
+    // Attach a touchDown listener to an Actor that calls a TouchDownCallback.
+    public void addWindowTouchDownListener(Actor actor, TouchDownCallback callback) {
+        actor.addListener(new ClickListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                // Optionally do something before calling the callback
+                callback.onTouchDown(event, x, y, pointer, button);
+                event.stop();
+                return super.touchDown(event, x, y, pointer, button);
+            }
+        });
+    }
+
+    // Functional interface for handling touchDown events via lambda expressions.
+    @FunctionalInterface
+    public interface TouchDownCallback {
+        void onTouchDown(InputEvent event, float x, float y, int pointer, int button);
     }
 
 }

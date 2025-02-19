@@ -41,18 +41,18 @@ public class MainMenuScene extends Scene {
         exitButton = new TextButton("EXIT", skin); // Exit closes game
 
         // Instead of checking clicks manually in render, add click listeners here:
-        inputManager.addClickListener(playButton, () -> {
+        inputManager.addButtonClickListener(playButton, () -> {
             System.out.println("Start Game Clicked!");
             sceneManager.setScene("game");
         });
 
-        inputManager.addClickListener(optionsButton, () -> {
+        inputManager.addButtonClickListener(optionsButton, () -> {
             System.out.println("Options Clicked!"); // Debug log
             sceneManager.setScene("options"); // Switch to OptionsScene
 
         });
 
-        inputManager.addClickListener(exitButton, () -> {
+        inputManager.addButtonClickListener(exitButton, () -> {
             Gdx.app.exit(); // Close game
             dispose();
         });
