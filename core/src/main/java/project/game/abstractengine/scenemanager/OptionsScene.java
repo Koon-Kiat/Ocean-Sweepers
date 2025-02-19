@@ -32,7 +32,7 @@ public class OptionsScene extends Scene {
 
         stage.addActor(tableScene);
 
-        inputManager.addClickListener(returnButton, () -> {
+        inputManager.addButtonClickListener(returnButton, () -> {
             sceneManager.setScene("menu");
         });
 

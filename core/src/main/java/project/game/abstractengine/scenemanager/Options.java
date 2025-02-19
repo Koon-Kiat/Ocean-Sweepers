@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -62,13 +63,13 @@ public class Options extends Scene {
             popupMenu.setVisible(false);
         });
 
-        inputManager.addButtonClickListener(closeButton, () -> {
-            System.out.println("'Close' selected");
-            // setPaused(false);
-            // ((GameScene) sceneManager.getCurrentScene()).closePopupMenu();
-            gameScene.closePopupMenu();
-            // popupMenu.setVisible(false);
-        });
+        // inputManager.addButtonClickListener(closeButton, () -> {
+        //     System.out.println("'Close' selected");
+        //     // setPaused(false);
+        //     // ((GameScene) sceneManager.getCurrentScene()).closePopupMenu();
+        //     gameScene.closePopupMenu();
+        //     // popupMenu.setVisible(false);
+        // });
 
         Table table = new Table();
         table.add(rebindButton).fillX().pad(5);
@@ -193,6 +194,10 @@ public class Options extends Scene {
         rebindTable.row();
         rebindTable.add(returnButton).fillX().pad(5);
         rebindTable.add(confirmButton).fillX().pad(5);
+
+        Label exitHintLabel = new Label("Hit 'P' again to exit this menu", skin);
+        rebindTable.row();
+        rebindTable.add(exitHintLabel).colspan(2).center().pad(5);
 
         rebindMenu.add(rebindTable);
 
