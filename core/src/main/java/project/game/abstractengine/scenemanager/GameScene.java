@@ -14,12 +14,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
@@ -172,6 +174,16 @@ public class GameScene extends Scene {
         collisionManager = new CollisionManager(world, playerMovementManager, npcMovementManager, bucket, drop, inputManager);
         collisionManager.init();
         collisionManager.createScreenBoundaries(GAME_WIDTH, GAME_HEIGHT);
+
+        stage = new Stage(new ScreenViewport());
+        audioManager = new AudioManager(stage); //Initialise the audio manager
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        Gdx.input.setInputProcessor(stage); //Set the input processor to the stage
+        audioManager.playMusic("BackgroundMusic");     
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(inputManager);
+        Gdx.input.setInputProcessor(multiplexer);
+
     }
 
     @Override
@@ -210,6 +222,9 @@ public class GameScene extends Scene {
         world.step(timeStep, 6, 2);
         collisionManager.processCollisions();
         collisionManager.syncEntityPositions();
+
+        
+    
     }
 
     /*
@@ -249,6 +264,15 @@ public class GameScene extends Scene {
     private void input() {
         
         Gdx.input.setInputProcessor(inputManager);
+
+        // //keys Binded pressed will produce a sound effect
+        // for(Integer key: inputManager.getKeyBindings().keySet()){
+        //     if(Gdx.input.isKeyJustPressed(key)){
+        //         System.out.println("[DEBUG] Direction Key pressed: " + Input.Keys.toString(key));
+        //         audioManager.playSoundEffect("keybuttons");
+        //     }
+        // }
+        
 
         // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game over scene
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
@@ -328,6 +352,8 @@ public class GameScene extends Scene {
         inputManager.clearPressedKeys(); // Clear the pressedKeys set
         System.out.println("[DEBUG] Popup closed and game unpaused");
     }
+
+    
 
 
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import project.game.abstractengine.audiomanager.AudioManager;
@@ -61,6 +62,7 @@ public class MainMenuScene extends Scene {
             sceneManager.setScene("game");
         });
         inputManager.addButtonClickListener(optionsButton, () -> {
+            audioManager.playSoundEffect("selection");
             System.out.println("Options Clicked!"); // Debug log
             sceneManager.setScene("options"); // Switch to OptionsScene
 
