@@ -18,7 +18,7 @@ import project.game.abstractengine.iomanager.SceneIOManager;
  *        scene. The Scene class is an abstract class that provides a template
  *        for creating new scenes.
  */
-public abstract class Scene extends SceneManager implements Screen {
+public abstract class Scene implements Screen {
     protected Stage stage;
     protected SceneIOManager inputManager;
     protected SceneManager sceneManager;
