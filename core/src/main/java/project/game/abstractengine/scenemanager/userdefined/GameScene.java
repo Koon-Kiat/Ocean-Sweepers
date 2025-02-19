@@ -22,7 +22,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.constants.GameConstants;
 import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
@@ -36,30 +35,12 @@ import project.game.abstractengine.testentity.BucketEntity;
 import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
+import project.game.constants.GameConstants;
 import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.ZigZagMovementBehavior;
-import project.game.logmanager.LogManager;
 
 public class GameScene extends Scene {
-
-    static {
-        LogManager.initialize();
-    }
-
-    public static final float GAME_WIDTH = 1920;
-    public static final float GAME_HEIGHT = 1080;
-
-    private static final float PLAYER_SPEED = 600f;
-    private static final float NPC_SPEED = 400f;
-    private static final float DROP_START_X = 0f;
-    private static final float DROP_START_Y = 0f;
-    private static final float DROP_WIDTH = 50f;
-    private static final float DROP_HEIGHT = 50f;
-    private static final float BUCKET_START_X = 400f;
-    private static final float BUCKET_START_Y = 400f;
-    private static final float BUCKET_WIDTH = 50f;
-    private static final float BUCKET_HEIGHT = 50f;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
@@ -134,24 +115,34 @@ public class GameScene extends Scene {
         }
 
         // Create entities
-        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, DROP_WIDTH, DROP_HEIGHT, true);
-        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, BUCKET_WIDTH, BUCKET_HEIGHT, true);
+        Entity genericDropEntity = new Entity(
+                GameConstants.DROP_START_X,
+                GameConstants.DROP_START_Y,
+                GameConstants.DROP_WIDTH,
+                GameConstants.DROP_HEIGHT,
+                true);
+        Entity genericBucketEntity = new Entity(
+                GameConstants.BUCKET_START_X,
+                GameConstants.BUCKET_START_Y,
+                GameConstants.BUCKET_WIDTH,
+                GameConstants.BUCKET_HEIGHT,
+                true);
 
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
-                .setSpeed(PLAYER_SPEED)
+                .setSpeed(GameConstants.PLAYER_SPEED)
                 .setDirection(Direction.NONE)
                 .withConstantMovement()
                 .build();
 
         behaviorPool = new ArrayList<>();
-        behaviorPool.add(new ConstantMovementBehavior(NPC_SPEED));
-        behaviorPool.add(new ZigZagMovementBehavior(NPC_SPEED, 100f, 5f));
-        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, NPC_SPEED));
+        behaviorPool.add(new ConstantMovementBehavior(GameConstants.NPC_SPEED));
+        behaviorPool.add(new ZigZagMovementBehavior(GameConstants.NPC_SPEED, 100f, 5f));
+        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, GameConstants.NPC_SPEED));
 
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
-                .setSpeed(NPC_SPEED)
+                .setSpeed(GameConstants.NPC_SPEED)
                 .withFollowMovement(playerMovementManager)
                 .setDirection(Direction.RIGHT)
                 .build();
@@ -162,17 +153,22 @@ public class GameScene extends Scene {
         entityManager.addRenderableEntity(bucket);
         entityManager.addRenderableEntity(drop);
 
-        camera = new OrthographicCamera(GAME_WIDTH, GAME_HEIGHT);
-        camera.position.set(GAME_WIDTH / 2, GAME_HEIGHT / 2, 0);
+        camera = new OrthographicCamera(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
+        camera.position.set(GameConstants.GAME_WIDTH / 2, GameConstants.GAME_HEIGHT / 2, 0);
         camera.update();
 
         debugRenderer = new Box2DDebugRenderer();
 
         // Initialize CollisionManager and create screen boundaries
-        collisionManager = new CollisionManager(world, playerMovementManager, npcMovementManager, bucket, drop,
+        collisionManager = new CollisionManager(
+                world,
+                playerMovementManager,
+                npcMovementManager,
+                bucket,
+                drop,
                 inputManager);
         collisionManager.init();
-        collisionManager.createScreenBoundaries(GAME_WIDTH, GAME_HEIGHT);
+        collisionManager.createScreenBoundaries(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
     }
 
     @Override
@@ -189,7 +185,7 @@ public class GameScene extends Scene {
         show();
 
         try {
-            collisionManager.updateGame(GAME_WIDTH, GAME_HEIGHT);
+            collisionManager.updateGame(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
         } catch (Exception e) {
             System.err.println("[ERROR] Exception during game update: " + e.getMessage());
             Gdx.app.error("Main", "Exception during game update", e);
@@ -209,6 +205,14 @@ public class GameScene extends Scene {
         world.step(timeStep, 6, 2);
         collisionManager.processCollisions();
         collisionManager.syncEntityPositions();
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+        dropImage.dispose();
+        bucketImage.dispose();
+        debugRenderer.dispose();
     }
 
     /*
@@ -308,14 +312,6 @@ public class GameScene extends Scene {
                 actor.remove();
             }
         }
-    }
-
-    @Override
-    public void dispose() {
-        batch.dispose();
-        dropImage.dispose();
-        bucketImage.dispose();
-        debugRenderer.dispose();
     }
 
     /*
