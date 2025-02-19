@@ -11,11 +11,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -26,6 +22,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.audiomanager.AudioManager;
 import project.game.abstractengine.constants.GameConstants;
 import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
@@ -82,6 +79,7 @@ public class GameScene extends Scene {
     private OrthographicCamera camera;
     private Matrix4 debugMatrix;
     private CollisionManager collisionManager;
+    private AudioManager audioManager;
 
     // public GameScene() {
     // sceneManager = new SceneManager();

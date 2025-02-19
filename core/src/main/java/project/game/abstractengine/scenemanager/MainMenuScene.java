@@ -7,8 +7,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Timer;
 
-
+import project.game.abstractengine.audiomanager.AudioManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
 
 public class MainMenuScene extends Scene {
@@ -19,6 +20,7 @@ public class MainMenuScene extends Scene {
     private SceneManager sceneManager;
     private SceneIOManager inputManager;
     private GameScene gameScene;
+    private AudioManager audioManager;
 
     public MainMenuScene(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
@@ -28,6 +30,7 @@ public class MainMenuScene extends Scene {
     @Override
     public void create() {
         inputManager = new SceneIOManager();
+        audioManager = new AudioManager(stage);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         playButton = new TextButton("PLAY", skin);
@@ -36,12 +39,20 @@ public class MainMenuScene extends Scene {
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addClickListener(playButton, () -> {
+            audioManager.playSoundEffect("selection");
             System.out.println("Start Game Clicked!");
             sceneManager.setScene("game");
         });
         
         inputManager.addClickListener(exitButton, () -> {
-            Gdx.app.exit();
+            audioManager.playSoundEffect("selection");
+            System.out.println("Exit Clicked!");
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    Gdx.app.exit();
+                }
+            }, 0.5f); // Delay before exit
         });
 
         Table table = new Table();
