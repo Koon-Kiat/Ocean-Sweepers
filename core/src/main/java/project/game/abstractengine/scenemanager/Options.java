@@ -12,9 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-import project.game.Direction;
 import project.game.abstractengine.iomanager.SceneIOManager;
 
 public class Options extends Scene {
@@ -48,31 +46,27 @@ public class Options extends Scene {
         popupMenu.setKeepWithinStage(true); // Ensure that the popup menu stays within the bounds of the stage
 
         // Debug log for popup menu touch event
-        popupMenu.addListener(new ClickListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("[DEBUG] PopupMenu touched at (" + x + ", " + y + ")");
-                event.stop();
-                return super.touchDown(event, x, y, pointer, button);
-            }
+        inputManager.addWindowTouchDownListener(popupMenu, (event, x, y, pointer, button) -> {
+            System.out.println("[DEBUG] PopupMenu touched at (" + x + ", " + y + ")");
         });
+
 
         TextButton rebindButton = new TextButton("Rebind Keys", skin);
         mainMenuButton = new TextButton("Main Menu", skin);
         TextButton closeButton = new TextButton("Close", skin);
 
-        inputManager.addClickListener(rebindButton, () -> {
+        inputManager.addButtonClickListener(rebindButton, () -> {
             System.out.println("'Rebind keys' selected");
             popupMenu.setVisible(false);
             rebindMenu.setVisible(true);
         });
 
-        inputManager.addClickListener(mainMenuButton, () -> {
+        inputManager.addButtonClickListener(mainMenuButton, () -> {
             System.out.println("'Return to main menu' selected");
             popupMenu.setVisible(false);
         });
 
-        inputManager.addClickListener(closeButton, () -> {
+        inputManager.addButtonClickListener(closeButton, () -> {
             System.out.println("'Close' selected");
             // setPaused(false);
             // ((GameScene) sceneManager.getCurrentScene()).closePopupMenu();
@@ -101,12 +95,12 @@ public class Options extends Scene {
         rebindMenu.setMovable(true); // Ensure that the popup menu cannot be moved
         rebindMenu.setKeepWithinStage(true); // Ensure that the popup menu stays within the bounds of the stage
 
-        rebindMenu.addListener(new ClickListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                event.stop();
-                return super.touchDown(event, x, y, pointer, button);
-            }
+        inputManager.addButtonClickListener(rebindMenu, () -> {
+            System.out.println("Window clicked!");
+        });
+
+        // Debug log for popup menu touch event
+        inputManager.addWindowTouchDownListener(rebindMenu, (event, x, y, pointer, button) -> {
         });
 
         TextButton rebindButton1 = new TextButton("Up", skin);
@@ -121,16 +115,18 @@ public class Options extends Scene {
         textField1.setMessageText("Press a key...");
 
         final TextField textField2 = new TextField("", skin);
-        textField2.setAlignment(1); // Set alignment to center (1)
+        textField2.setAlignment(1); 
         textField2.setMessageText("Press a key...");
 
         final TextField textField3 = new TextField("", skin);
-        textField3.setAlignment(1); // Set alignment to center (1)
+        textField3.setAlignment(1); 
         textField3.setMessageText("Press a key...");
 
         final TextField textField4 = new TextField("", skin);
-        textField4.setAlignment(1); // Set alignment to center (1)
+        textField4.setAlignment(1); 
         textField4.setMessageText("Press a key...");
+
+        // IO integration here ***
 
         InputListener textFieldListener = new InputListener() {
             @Override
@@ -143,12 +139,8 @@ public class Options extends Scene {
             @Override
             public boolean keyDown(InputEvent event, int keycode) {
                 TextField textField = (TextField) event.getTarget();
-                if (keycode == Input.Keys.ENTER) {
-                    System.out.println("TextField content: " + textField.getText());
-                    return true;
-                }
 
-                // Handle arrow keys
+                // Update field if an arrow key is pressed
                 if (keycode == Input.Keys.UP || keycode == Input.Keys.DOWN ||
                         keycode == Input.Keys.LEFT || keycode == Input.Keys.RIGHT) {
                     textField.setText(Input.Keys.toString(keycode).toUpperCase());
@@ -164,18 +156,17 @@ public class Options extends Scene {
         textField3.addListener(textFieldListener);
         textField4.addListener(textFieldListener);
 
-        // IO integration here ***
 
         //
 
         // Close rebind menu
-        inputManager.addClickListener(returnButton, () -> {
+        inputManager.addButtonClickListener(returnButton, () -> {
             System.out.println("'Return' selected");
             rebindMenu.setVisible(false);
             popupMenu.setVisible(true);
         });
 
-        inputManager.addClickListener(confirmButton, () -> {
+        inputManager.addButtonClickListener(confirmButton, () -> {
             String upKeyString = textField1.getText().toUpperCase();
             String downKeyString = textField2.getText().toUpperCase();
             String leftKeyString = textField3.getText().toUpperCase();

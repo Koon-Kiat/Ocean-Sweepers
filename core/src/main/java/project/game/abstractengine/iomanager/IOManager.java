@@ -1,18 +1,21 @@
 package project.game.abstractengine.iomanager;
 
 import java.util.HashSet;
-import java.util.Scanner;
 import java.util.Set;
 
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.Vector2;
 
+
+/**
+ * IOManager handles input events (keyboard and mouse) for the game.
+ * It extends LibGDX's InputAdapter to provide basic behavior.
+ */
 public class IOManager extends InputAdapter {
 
     private Vector2 mousePosition;
     private boolean isMouseClicked;
-    protected Set<Integer> pressedKeys;
-    protected static final Scanner SCANNER = new Scanner(System.in);
+    private Set<Integer> pressedKeys;
 
     public IOManager() {
         this.mousePosition = new Vector2();
@@ -53,5 +56,9 @@ public class IOManager extends InputAdapter {
 
     public Set<Integer> getPressedKeys() {
         return pressedKeys;
+    }
+
+    public void clearPressedKeys() {
+        getPressedKeys().clear();
     }
 }
