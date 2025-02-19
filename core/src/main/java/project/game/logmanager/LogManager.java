@@ -1,6 +1,10 @@
 package project.game.logmanager;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -37,9 +41,21 @@ public class LogManager {
                 logDir.mkdirs();
             }
 
-            // Create and add a FileHandler with absolute path
-            String logFile = new File(logDir, "Main.log").getAbsolutePath();
-            FileHandler fileHandler = new FileHandler(logFile, true);
+            // Check if there are more than 5 log files and delete the oldest ones
+            File[] logFiles = logDir.listFiles((dir, name) -> name.endsWith(".log"));
+            if (logFiles != null && logFiles.length > 5) {
+                Arrays.sort(logFiles, Comparator.comparingLong(File::lastModified));
+                int filesToDelete = logFiles.length - 5;
+                for (int i = 0; i < filesToDelete; i++) {
+                    logFiles[i].delete();
+                }
+            }
+
+            // Create a timestamped log file so a new one is created each run
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+            String timestamp = sdf.format(new Date());
+            String logFile = new File(logDir, "Main_" + timestamp + ".log").getAbsolutePath();
+            FileHandler fileHandler = new FileHandler(logFile);
             fileHandler.setLevel(Level.ALL);
             fileHandler.setFormatter(new SimpleFormatter());
             ROOT_LOGGER.addHandler(fileHandler);
