@@ -12,20 +12,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -100,14 +92,13 @@ public class GameScene extends Scene {
         world = new World(new Vector2(0, 0), true);
         System.out.println("[DEBUG] GameScene inputManager instance: " + System.identityHashCode(inputManager));
 
-
         inputManager = new SceneIOManager();
         entityManager = new EntityManager();
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        stage = new Stage();
 
-        stage.addActor(popupMenu);
+        initPopUpMenu();
+        displayMessage();
 
         try {
             GameAsset.getInstance().loadTextureAssets("droplet.png");
@@ -232,16 +223,18 @@ public class GameScene extends Scene {
     }
 
     private void input() {
-        // Set the initial input processor to the inputManager
-        // Update: using inputMultiplexer since we need to switch between inputManager and stage
-        //inputMultiplexer.addProcessor(inputManager);
+        
         Gdx.input.setInputProcessor(inputManager);
 
+        // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game over scene
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            sceneManager.setScene("gameover");
         }
 
         // Toggle options menu with 'P'
+        // Will open the rebind menu 
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
@@ -286,7 +279,7 @@ public class GameScene extends Scene {
         textField.setWidth(300); // Adjust the width as needed
         textField.setHeight(40); // Adjust the height as needed
         textField.setPosition(stage.getWidth() / 2f - textField.getWidth() / 2f, stage.getHeight() - textField.getHeight());
-        textField.setMessageText("Press M to return to main menu...\nPress P to pause and rebind keys");
+        textField.setMessageText("Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
         textField.setDisabled(true);
         stage.addActor(textField);
     }
@@ -317,14 +310,5 @@ public class GameScene extends Scene {
         System.out.println("[DEBUG] Popup closed and game unpaused");
     }
 
-    public void closePopupMenu() {
-        isMenuOpen = false;
-        isPaused = false;
-        options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(stage);
-        inputMultiplexer.addProcessor(inputManager);
-        inputManager.clearPressedKeys(); // Clear the pressedKeys set
-        System.out.println("[DEBUG] Popup closed and game unpaused");
-    }
 
 }

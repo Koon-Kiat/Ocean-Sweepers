@@ -26,12 +26,10 @@ public class Main extends ApplicationAdapter {
         sceneManager = new SceneManager();
         SceneIOManager sharedInputManager = sceneManager.getInputManager();
 
+        // Initializing and registering scenes now done in Scene Factory
         SceneFactory sceneFactory = new SceneFactory(sceneManager,sharedInputManager);
         sceneFactory.createAndRegisterScenes();
-        //mainMenuScene = new MainMenuScene(sceneManager,sharedInputManager);
-        //gameScene = new GameScene(sceneManager, sharedInputManager);
-        //sceneManager.addScene("menu", mainMenuScene);
-        //sceneManager.addScene("game", gameScene);
+
         System.out.println("Available scenes: " + sceneManager.getSceneList());
         sceneManager.setScene("menu");
         System.out.println("[DEBUG] sceneManager in main: " + sceneManager);

@@ -40,7 +40,6 @@ public class OptionsScene extends Scene {
 
     @Override
     public void create() {
-        // Implementation of the create method
     }
     
 }

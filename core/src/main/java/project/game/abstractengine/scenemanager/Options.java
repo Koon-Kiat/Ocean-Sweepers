@@ -32,7 +32,6 @@ public class Options extends Scene {
     public void create() {
         System.out.println("[DEBUG] Options inputManager instance: " + System.identityHashCode(inputManager));
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        stage = new Stage();
         popupMenu = new Window("Options", skin);
         popupMenu.setSize(200, 100);
         popupMenu.setPosition(400, 270);

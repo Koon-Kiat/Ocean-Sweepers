@@ -4,10 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
@@ -24,40 +23,41 @@ public class GameOverScene extends Scene {
 
     @Override
     public void create() {
-        stage = new Stage();
         batch = new SpriteBatch();
 
-        Gdx.input.setInputProcessor(stage);
-
+        // Font for Game Over text
+        font = new BitmapFont();
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-        TextButton retryButton = new TextButton("Retry", skin);
+        TextButton retryButton = new TextButton("Play again", skin);
         retryButton.setSize(200, 60);
         retryButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f);
-        retryButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
-                // Implement logic to restart the game scene
-            }
+        inputManager.addButtonClickListener(retryButton, () -> {
+            sceneManager.setScene("game");
+            sceneManager.getScene(null).create(); // To restart game at its initial state
         });
 
         TextButton exitButton = new TextButton("Exit", skin);
         exitButton.setSize(200, 60);
         exitButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f - 80);
-        exitButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
-                // Implement logic to return to the main menu
-            }
+        inputManager.addButtonClickListener(exitButton, () -> {
+            sceneManager.setScene("menu");
         });
+
+        Table table = new Table();
+        table.setFillParent(true);
+        stage.addActor(table);
 
         stage.addActor(retryButton);
         stage.addActor(exitButton);
 
     }
 
-    public void render() {
+    public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        super.render(delta);
+        Gdx.input.setInputProcessor(stage);
+
         batch.begin();
         font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
                 false);
