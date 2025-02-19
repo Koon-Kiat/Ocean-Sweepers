@@ -58,7 +58,8 @@ public class GameScene extends Scene {
     private OrthographicCamera camera;
     private Matrix4 debugMatrix;
     private CollisionManager collisionManager;
-    private boolean isPaused = false, isMenuOpen = false;
+    private boolean isPaused = false;
+    private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
 
@@ -215,9 +216,8 @@ public class GameScene extends Scene {
         debugRenderer.dispose();
     }
 
-    /*
-     * Initializes the pop-up menu for the game scene from Options class
-     * Adds the pop-up menu to the stage
+    /**
+     * @brief Initializes the popup menu for the game scene
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
@@ -241,35 +241,31 @@ public class GameScene extends Scene {
         stage.addActor(options.getRebindMenu());
     }
 
-    /*
-     * Handles input for scene transitions and toggling the options menu
+    /**
+     * @brief Handles input for the game scene
      * 
-     * Game Scene will transition to:
-     * - Main Menu Scene on 'M' key press
-     * - Game Over Scene on 'E' key press
-     * - Rebind Pop-up window on 'P' key press
+     *        Game Scene will transition to:
+     *        - Main Menu Scene on 'M' key press
+     *        - Game Over Scene on 'E' key press
+     *        - Rebind Pop-up window on 'P' key press
      */
     private void input() {
 
         Gdx.input.setInputProcessor(inputManager);
 
-        // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game
-        // over scene
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
         }
 
-        // Toggle options menu with 'P'
-        // Will open the rebind menu
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
             options.getRebindMenu().setVisible(isMenuOpen);
             if (isMenuOpen) {
                 isPaused = true;
-                inputMultiplexer.setProcessors(stage, inputManager); // Set stage first
+                inputMultiplexer.setProcessors(stage, inputManager);
                 System.out.println("[DEBUG] InputProcessor set to stage");
 
             } else {
@@ -282,8 +278,8 @@ public class GameScene extends Scene {
         }
     }
 
-    /*
-     * Displays a message on the screen for key bindings
+    /**
+     * @brief Displays a message on the screen for key bindings
      */
     private void displayMessage() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
@@ -314,8 +310,8 @@ public class GameScene extends Scene {
         }
     }
 
-    /*
-     * Used in Options class to close the popup menu and unpause the game
+    /**
+     * @brief Closes the popup menu and unpauses the game
      */
     public void closePopupMenu() {
         isMenuOpen = false;

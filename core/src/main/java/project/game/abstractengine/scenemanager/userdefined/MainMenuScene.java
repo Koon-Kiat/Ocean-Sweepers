@@ -24,17 +24,17 @@ public class MainMenuScene extends Scene {
         this.sceneManager = sceneManager;
     }
 
-    // Init UI elements
-    /*
-     * Initializes and draws the Main Menu Scene
-     * Play, Options, Exit buttons drawn here
-     * "PLAY" button moves to the game scene
-     * "OPTIONS" button moves to the options menu scene
-     * "EXIT" button closes
+    /**
+     * @brief Creates the main menu scene.
      * 
-     * First scene upon start up
-     * Can be returned from:
-     * Game Scene, Options Scene, Game Over Scene
+     *        Initializes and draws the Main Menu Scene Play, Options, Exit buttons
+     *        drawn here:
+     *        - "PLAY" button moves to the game scene
+     *        - "OPTIONS" button moves to the options menu scene
+     *        - "EXIT" button closes
+     * 
+     *        First scene upon start up and can be returned from:
+     *        Game Scene, Options Scene, Game Over Scene
      */
     @Override
     public void create() {

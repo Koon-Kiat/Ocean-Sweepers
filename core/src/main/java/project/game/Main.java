@@ -37,7 +37,6 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         float deltaTime = Gdx.graphics.getDeltaTime();
-        // Render current scene (Scene Manager)
         sceneManager.render(deltaTime);
     }
 

@@ -8,6 +8,16 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
 
+/**
+ * @class Scene
+ * @brief Represents a scene in the game.
+ * 
+ *        The Scene class represents a scene in the game. A scene is a
+ *        self-contained part of the game that can be switched in and out. Each
+ *        scene has its own stage, which contains the actors that make up the
+ *        scene. The Scene class is an abstract class that provides a template
+ *        for creating new scenes.
+ */
 public abstract class Scene extends SceneManager implements Screen {
     protected Stage stage;
     protected SceneIOManager inputManager;

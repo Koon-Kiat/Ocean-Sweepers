@@ -18,10 +18,12 @@ public class SceneFactory {
         this.sceneManager = sceneManager;
         this.inputManager = inputManager;
 
-        // Initializing scenes according to their names
-        /*
-         * The sceneCreators map is a map of scene names to scene creators.
-         * Each scene creator is a Supplier that creates a new instance of the scene.
+        /**
+         * @brief A map of scene creators.
+         * 
+         *        The sceneCreators map is a map of scene creators. Each entry in the
+         *        map is a pair of a scene name and a scene creator. The scene creator
+         *        is a lambda expression that creates a new instance of the scene.
          */
         sceneCreators = Map.of(
                 "menu", () -> new MainMenuScene(sceneManager, inputManager),
@@ -32,10 +34,13 @@ public class SceneFactory {
 
     public void createAndRegisterScenes() {
 
-        // Registering scenes to scene manager more efficiently
-        /*
-         * For each entry in the sceneCreators map, create a new instance of the scene
-         * using the corresponding scene creator and add it to the scene manager.
+        /**
+         * @brief Iterates over the sceneCreators map and registers each scene with the
+         *        scene manager.
+         *
+         *        For each entry in the sceneCreators map, create a new instance of the
+         *        scene using the corresponding scene creator and add it to the scene
+         *        manager.
          */
         sceneCreators.forEach((name, creator) -> {
             Scene scene = creator.get();

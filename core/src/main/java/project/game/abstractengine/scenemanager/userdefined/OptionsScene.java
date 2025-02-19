@@ -11,22 +11,16 @@ import project.game.abstractengine.scenemanager.SceneManager;
 
 public class OptionsScene extends Scene {
 
-    private Skin skin;
-    private Table tableScene;
-    private TextButton returnButton;
+    private final Skin skin;
+    private final Table tableScene;
+    private final TextButton returnButton;
 
-    /*
-     * Constructor for OptionsScene
+    /**
+     * @brief Constructor for the OptionsScene class.
      * 
-     * @param sceneManager SceneManager instance
-     * 
-     * @param inputManager SceneIOManager instance
-     * 
-     * Initializes and draws the Options Scene
-     * "return" button moves to the main menu scene
-     * Main Menu --> Options --> Main Menu
+     *        Initializes and draws the Options Scene "return" button moves to the
+     *        main menu scene Main Menu --> Options --> Main Menu
      */
-
     public OptionsScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
         this.sceneManager = sceneManager;
@@ -49,7 +43,6 @@ public class OptionsScene extends Scene {
         inputManager.addButtonClickListener(returnButton, () -> {
             sceneManager.setScene("menu");
         });
-
     }
 
     @Override
