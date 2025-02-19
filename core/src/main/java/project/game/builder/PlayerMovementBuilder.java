@@ -1,11 +1,7 @@
 package project.game.builder;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import project.game.Direction;
-import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.defaultmovements.AcceleratedMovementBehavior;
 import project.game.defaultmovements.ConstantMovementBehavior;
@@ -18,16 +14,11 @@ import project.game.exceptions.MovementException;
  *        This builder facilitates the creation of PlayerMovement instances with
  *        customizable movement behaviors.
  */
-public class PlayerMovementBuilder {
+public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovementBuilder> {
 
-    private static final Logger LOGGER = Logger.getLogger(PlayerMovementBuilder.class.getName());
     private static final float DEFAULT_SPEED = 200f;
     private static final float DEFAULT_ACCELERATION = 500f;
     private static final float DEFAULT_DECELERATION = 250f;
-    private Entity entity;
-    private float speed;
-    private Direction direction = Direction.NONE;
-    private IMovementBehavior movementBehavior;
 
     // Static factory methods
     public static PlayerMovementBuilder createDefaultPlayer() {
@@ -40,47 +31,6 @@ public class PlayerMovementBuilder {
         return new PlayerMovementBuilder()
                 .setSpeed(DEFAULT_SPEED)
                 .withAcceleratedMovement(DEFAULT_ACCELERATION, DEFAULT_DECELERATION);
-    }
-
-    public Entity getEntity() {
-        return entity;
-    }
-
-    public PlayerMovementBuilder withEntity(Entity entity) {
-        this.entity = entity;
-        return this;
-    }
-
-    public float getSpeed() {
-        return speed;
-    }
-
-    public PlayerMovementBuilder setSpeed(float speed) {
-        if (speed < 0) {
-            String errorMessage = "Negative speed provided: " + speed;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException("Speed must be non-negative.");
-        }
-        this.speed = speed;
-        return this;
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public PlayerMovementBuilder setDirection(Direction direction) {
-        if (direction == null) {
-            LOGGER.log(Level.WARNING, "No direction provided. Defaulting to Direction.NONE.");
-            this.direction = Direction.NONE;
-        } else {
-            this.direction = direction;
-        }
-        return this;
-    }
-
-    public IMovementBehavior getMovementBehavior() {
-        return movementBehavior;
     }
 
     public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
@@ -129,7 +79,8 @@ public class PlayerMovementBuilder {
         }
     }
 
-    private void validateBuildRequirements() {
+    @Override
+    protected void validateBuildRequirements() {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative. Current speed: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);

@@ -2,10 +2,8 @@ package project.game.builder;
 
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import project.game.Direction;
-import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
@@ -22,53 +20,11 @@ import project.game.exceptions.MovementException;
  *        This builder facilitates the creation of NPCMovement instances with
  *        customizable movement behaviors.
  */
-public class NPCMovementBuilder {
+public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuilder> {
 
-    private static final Logger LOGGER = Logger.getLogger(NPCMovementBuilder.class.getName());
-    private Entity entity;
-    private float speed;
-    private Direction direction;
-    private IMovementBehavior movementBehavior;
-
-    public Entity getEntity() {
-        return entity;
-    }
-
-    public NPCMovementBuilder withEntity(Entity entity) {
-        this.entity = entity;
-        return this;
-    }
-
-    public float getSpeed() {
-        return speed;
-    }
-
+    @Override
     public NPCMovementBuilder setSpeed(float speed) {
-        if (speed < 0) {
-            String errorMessage = "Negative speed provided: " + speed;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException("Speed must be non-negative.");
-        }
-        this.speed = speed;
-        return this;
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public NPCMovementBuilder setDirection(Direction direction) {
-        if (direction == null) {
-            LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to Direction.NONE.");
-            this.direction = Direction.NONE;
-        } else {
-            this.direction = direction;
-        }
-        return this;
-    }
-
-    public IMovementBehavior getMovementBehavior() {
-        return movementBehavior;
+        return super.setSpeed(speed);
     }
 
     public NPCMovementBuilder withConstantMovement() {
@@ -183,7 +139,8 @@ public class NPCMovementBuilder {
         }
     }
 
-    private void validateBuildRequirements() {
+    @Override
+    protected void validateBuildRequirements() {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative. Current speed: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
