@@ -18,7 +18,6 @@ import project.game.constants.GameConstants;
 
 public class DropEntity implements ICollidable, IRenderable {
 
-	private final float IMPUSLE_STRENGTH = 5f;
 	private final Entity entity;
 	private final NPCMovementManager movementManager;
 	private final String texturePath;
@@ -101,7 +100,7 @@ public class DropEntity implements ICollidable, IRenderable {
 				(other == null ? "boundary" : other.getClass().getSimpleName()));
 		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
 		if (other != null && (other instanceof BucketEntity)) {
-			float impulseStrength = IMPUSLE_STRENGTH;
+			float impulseStrength = GameConstants.IMPUSLE_STRENGTH;
 			Vector2 myPos = body.getPosition();
 			Vector2 otherPos = other.getBody().getPosition();
 			Vector2 normal = new Vector2(myPos.x - otherPos.x, myPos.y - otherPos.y).nor();

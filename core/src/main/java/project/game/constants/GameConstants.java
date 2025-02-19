@@ -4,6 +4,7 @@ public class GameConstants {
     // Collision constants
     public static final float PIXELS_TO_METERS = 32f;
     public static final long COLLISION_ACTIVE_DURATION = 1000; // in milliseconds
+    public static final float IMPUSLE_STRENGTH = 5f;
 
     // Screen constants
     public static final float GAME_WIDTH = 1920;
