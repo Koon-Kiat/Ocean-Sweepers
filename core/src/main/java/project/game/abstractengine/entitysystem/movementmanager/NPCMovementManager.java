@@ -46,5 +46,4 @@ public class NPCMovementManager extends MovementManager {
     public NPCMovementBuilder getBuilder() {
         return this.builder;
     }
-
 }

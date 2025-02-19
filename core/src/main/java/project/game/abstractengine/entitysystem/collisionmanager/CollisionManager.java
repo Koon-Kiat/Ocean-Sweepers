@@ -3,26 +3,22 @@ package project.game.abstractengine.entitysystem.collisionmanager;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.Manifold;
-import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.Direction;
 import project.game.abstractengine.constants.GameConstants;
-import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
-import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.testentity.BucketEntity;
 import project.game.abstractengine.testentity.DropEntity;
 
@@ -104,7 +100,7 @@ public class CollisionManager implements ContactListener {
     public void createScreenBoundaries(float gameWidth, float gameHeight) {
         float screenWidth = gameWidth / GameConstants.PIXELS_TO_METERS;
         float screenHeight = gameHeight / GameConstants.PIXELS_TO_METERS;
-        float edgeThickness = 0.1f; // Adjust as needed
+        float edgeThickness = 0.1f;
 
         // Create BodyDef for static boundaries
         BodyDef boundaryDef = new BodyDef();
