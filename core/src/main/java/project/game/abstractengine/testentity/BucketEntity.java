@@ -9,11 +9,11 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.constants.GameConstants;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.constants.GameConstants;
 
 public class BucketEntity implements ICollidable, IRenderable {
 
