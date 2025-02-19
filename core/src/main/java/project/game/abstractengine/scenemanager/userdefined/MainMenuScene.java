@@ -1,5 +1,8 @@
 package project.game.abstractengine.scenemanager.userdefined;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -12,10 +15,11 @@ import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
 
 public class MainMenuScene extends Scene {
+
+    private static final Logger LOGGER = Logger.getLogger(MainMenuScene.class.getName());
     private Skin skin;
     private TextButton playButton, exitButton, optionsButton;
     private GameScene gameScene;
-
     private OrthographicCamera camera;
     private FitViewport viewport;
 
@@ -53,12 +57,12 @@ public class MainMenuScene extends Scene {
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
-            System.out.println("Start Game Clicked!");
+            LOGGER.log(Level.INFO, "Start Game Clicked!");
             sceneManager.setScene("game");
         });
 
         inputManager.addButtonClickListener(optionsButton, () -> {
-            System.out.println("Options Clicked!");
+            LOGGER.log(Level.INFO, "Options Clicked!");
             sceneManager.setScene("options");
 
         });

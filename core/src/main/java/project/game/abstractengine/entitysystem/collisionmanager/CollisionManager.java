@@ -30,7 +30,7 @@ public class CollisionManager implements ContactListener {
     private final NPCMovementManager npcMovementManager;
     private final BucketEntity bucket;
     private final DropEntity drop;
-    private SceneIOManager inputManager;
+    private final SceneIOManager inputManager;
 
     public CollisionManager(World world, PlayerMovementManager playerMovementManager,
             NPCMovementManager npcMovementManager, BucketEntity bucket, DropEntity drop, SceneIOManager inputManager) {
@@ -139,7 +139,7 @@ public class CollisionManager implements ContactListener {
         leftShape.setAsBox(edgeThickness, screenHeight);
         fixtureDef.shape = leftShape;
         leftBoundary.createFixture(fixtureDef);
-        leftBoundary.setUserData("boundary");  
+        leftBoundary.setUserData("boundary");
         leftShape.dispose();
 
         // Create right boundary
@@ -158,39 +158,39 @@ public class CollisionManager implements ContactListener {
         playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
         playerMovementManager.updateMovement();
         npcMovementManager.updateMovement();
-    
+
         // Always update player (bucket) from input, regardless of collision state
         float bucketX = playerMovementManager.getX();
         float bucketY = playerMovementManager.getY();
-    
+
         // Calculate the bucket's half-width and half-height
         float bucketHalfWidth = bucket.getEntity().getWidth() / 2;
         float bucketHalfHeight = bucket.getEntity().getHeight() / 2;
-    
+
         // Clamp player positions so the player remains within screen bounds
         bucketX = Math.max(bucketHalfWidth, Math.min(bucketX, gameWidth - bucketHalfWidth));
         bucketY = Math.max(bucketHalfHeight, Math.min(bucketY, gameHeight - bucketHalfHeight));
-    
+
         // Update player's entity and Box2D body (convert pixels → meters)
         bucket.getEntity().setX(bucketX);
         bucket.getEntity().setY(bucketY);
         bucket.getBody().setTransform(bucketX / GameConstants.PIXELS_TO_METERS,
                 bucketY / GameConstants.PIXELS_TO_METERS, 0);
-    
+
         // For the NPC (drop), check if it's in collision and blend if needed
         if (!drop.isInCollision()) {
             // Normal update when no collision is active for the NPC
             float dropX = npcMovementManager.getX();
             float dropY = npcMovementManager.getY();
-    
+
             // Calculate the drop's half-width and half-height
             float dropHalfWidth = drop.getEntity().getWidth() / 2;
             float dropHalfHeight = drop.getEntity().getHeight() / 2;
-    
+
             // Clamp NPC positions
             dropX = Math.max(dropHalfWidth, Math.min(dropX, gameWidth - dropHalfWidth));
             dropY = Math.max(dropHalfHeight, Math.min(dropY, gameHeight - dropHalfHeight));
-    
+
             // Update drop's entity and Box2D body (convert pixels → meters)
             drop.getEntity().setX(dropX);
             drop.getEntity().setY(dropY);
@@ -201,16 +201,16 @@ public class CollisionManager implements ContactListener {
             // Get current physics position (in pixels)
             float physicsDropX = drop.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS;
             float physicsDropY = drop.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS;
-    
+
             // Retrieve desired input position from the movement manager
             float inputDropX = npcMovementManager.getX();
             float inputDropY = npcMovementManager.getY();
-    
+
             // Blend physics with input using a blending factor
             float blendFactor = 0.1f; // adjust as needed
             float newDropX = physicsDropX + (inputDropX - physicsDropX) * blendFactor;
             float newDropY = physicsDropY + (inputDropY - physicsDropY) * blendFactor;
-    
+
             // Update NPC's entity to the blended value and synchronize the movement manager
             // so stale input does not accumulate
             drop.getEntity().setX(newDropX);

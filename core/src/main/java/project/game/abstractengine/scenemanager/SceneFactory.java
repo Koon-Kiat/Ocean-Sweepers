@@ -2,6 +2,8 @@ package project.game.abstractengine.scenemanager;
 
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.userdefined.GameOverScene;
@@ -10,6 +12,8 @@ import project.game.abstractengine.scenemanager.userdefined.MainMenuScene;
 import project.game.abstractengine.scenemanager.userdefined.OptionsScene;
 
 public class SceneFactory {
+
+    private static final Logger LOGGER = Logger.getLogger(SceneFactory.class.getName());
     private final SceneManager sceneManager;
     private final SceneIOManager inputManager;
     private final Map<String, Supplier<Scene>> sceneCreators;
@@ -45,7 +49,7 @@ public class SceneFactory {
         sceneCreators.forEach((name, creator) -> {
             Scene scene = creator.get();
             sceneManager.addScene(name, scene);
-            System.out.println("Registered scene: " + name);
+            LOGGER.log(Level.INFO, "Registered scene: {0}", name);
         });
     }
 }

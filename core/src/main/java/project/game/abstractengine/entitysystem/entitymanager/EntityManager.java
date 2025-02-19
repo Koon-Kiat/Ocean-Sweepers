@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -15,6 +17,7 @@ public class EntityManager {
 	private final List<IRenderable> renderables;
 	private final List<Entity> entityList;
 	private final Set<String> entityIDs;
+	private static final Logger LOGGER = Logger.getLogger(EntityManager.class.getName());
 
 	public EntityManager() {
 		this.renderables = new ArrayList<>();
@@ -29,7 +32,7 @@ public class EntityManager {
 		if (renderable instanceof Entity) {
 			Entity entity = (Entity) renderable;
 			if (entityIDs.contains(entity.getID())) {
-				System.out.println("Duplicate ID: " + entity.getID());
+				LOGGER.log(Level.WARNING, "Duplicate ID: {0}", entity.getID());
 				return false;
 			}
 			entityIDs.add(entity.getID());
@@ -37,10 +40,10 @@ public class EntityManager {
 		}
 		return true;
 	}
-	
+
 	public boolean addEntity(Entity entity) {
 		if (entityIDs.contains(entity.getID())) {
-			System.out.println("Duplicate ID: " + entity.getID());
+			LOGGER.log(Level.WARNING, "Duplicate ID: {0}", entity.getID());
 			return false;
 		}
 		entityIDs.add(entity.getID());

@@ -1,5 +1,8 @@
 package project.game.abstractengine.testentity;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -9,6 +12,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import project.game.Main;
 import project.game.abstractengine.assetmanager.GameAsset;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
@@ -18,6 +22,7 @@ import project.game.constants.GameConstants;
 
 public class DropEntity implements ICollidable, IRenderable {
 
+	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 	private final Entity entity;
 	private final NPCMovementManager movementManager;
 	private final String texturePath;
@@ -96,8 +101,9 @@ public class DropEntity implements ICollidable, IRenderable {
 
 	@Override
 	public void onCollision(ICollidable other) {
-		System.out.println(getEntity().getClass().getSimpleName() + " collided with " +
-				(other == null ? "boundary" : other.getClass().getSimpleName()));
+		LOGGER.log(Level.INFO, "{0} collided with {1}",
+				new Object[] { getEntity().getClass().getSimpleName(),
+						other == null ? "boundary" : other.getClass().getSimpleName() });
 		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
 		if (other != null && (other instanceof BucketEntity)) {
 			float impulseStrength = GameConstants.IMPUSLE_STRENGTH;

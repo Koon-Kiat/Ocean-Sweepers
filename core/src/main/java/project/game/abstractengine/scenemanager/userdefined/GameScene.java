@@ -2,6 +2,8 @@ package project.game.abstractengine.scenemanager.userdefined;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -41,7 +43,7 @@ import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.ZigZagMovementBehavior;
 
 public class GameScene extends Scene {
-    List<IMovementBehavior> behaviorPool = new ArrayList<>();
+    private static final Logger LOGGER = Logger.getLogger(GameScene.class.getName());
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
@@ -62,6 +64,7 @@ public class GameScene extends Scene {
     private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
+    List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
@@ -83,7 +86,7 @@ public class GameScene extends Scene {
     public void create() {
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
-        System.out.println("[DEBUG] GameScene inputManager instance: " + System.identityHashCode(inputManager));
+        LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         inputManager = new SceneIOManager();
         entityManager = new EntityManager();
@@ -100,19 +103,19 @@ public class GameScene extends Scene {
                 dropImage = GameAsset.getInstance().getAsset("droplet.png", Texture.class);
                 bucketImage = GameAsset.getInstance().getAsset("bucket.png", Texture.class);
             } else {
-                System.err.println("[ERROR] Some assets not loaded yet!");
+                LOGGER.log(Level.WARNING, "Some assets not loaded yet!");
             }
-            System.out.println("[DEBUG] Loaded droplet.png successfully.");
-            System.out.println("[DEBUG] Loaded bucket.png successfully.");
+            LOGGER.log(Level.INFO, "Loaded droplet.png successfully.");
+            LOGGER.log(Level.INFO, "Loaded bucket.png successfully.");
             if (dropImage == null) {
-                System.err.println("[ERROR] dropImage is null after loading!");
+                LOGGER.log(Level.SEVERE, "dropImage is null after loading!");
             }
             if (bucketImage == null) {
-                System.err.println("[ERROR] bucketImage is null after loading!");
+                LOGGER.log(Level.SEVERE, "bucketImage is null after loading!");
             }
 
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to load assets: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Failed to load assets: {0}", e.getMessage());
         }
 
         // Create entities
@@ -188,8 +191,7 @@ public class GameScene extends Scene {
         try {
             collisionManager.updateGame(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
         } catch (Exception e) {
-            System.err.println("[ERROR] Exception during game update: " + e.getMessage());
-            Gdx.app.error("Main", "Exception during game update", e);
+            LOGGER.log(Level.SEVERE, "Exception during game update: {0}", e.getMessage());
         }
 
         batch.begin();
@@ -266,14 +268,14 @@ public class GameScene extends Scene {
             if (isMenuOpen) {
                 isPaused = true;
                 inputMultiplexer.setProcessors(stage, inputManager);
-                System.out.println("[DEBUG] InputProcessor set to stage");
+                LOGGER.log(Level.INFO, "InputProcessor set to stage");
 
             } else {
                 isPaused = false;
                 inputMultiplexer.removeProcessor(stage);
                 inputMultiplexer.addProcessor(inputManager);
                 stage.setKeyboardFocus(null);
-                System.out.println("[DEBUG] InputProcessor set to inputManager");
+                LOGGER.log(Level.INFO, "InputProcessor set to inputManager");
             }
         }
     }
@@ -284,11 +286,11 @@ public class GameScene extends Scene {
     private void displayMessage() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
-        style.background = null; // Disable the background
+        style.background = null;
 
         final TextField textField = new TextField("", style);
-        textField.setWidth(300); // Adjust the width as needed
-        textField.setHeight(40); // Adjust the height as needed
+        textField.setWidth(300);
+        textField.setHeight(40);
         textField.setPosition(stage.getWidth() / 2f - textField.getWidth() / 2f,
                 stage.getHeight() - textField.getHeight());
         textField.setMessageText(
@@ -320,7 +322,7 @@ public class GameScene extends Scene {
         inputMultiplexer.removeProcessor(stage);
         inputMultiplexer.addProcessor(inputManager);
         inputManager.clearPressedKeys(); // Clear the pressedKeys set
-        System.out.println("[DEBUG] Popup closed and game unpaused");
+        LOGGER.log(Level.INFO, "Popup closed and game unpaused");
     }
 
 }

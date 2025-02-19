@@ -1,27 +1,29 @@
 package project.game.abstractengine.assetmanager;
 
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.badlogic.gdx.utils.Logger;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class GameAsset implements Disposable {
 
     private static GameAsset instance;
     private final AssetManager assetManager;
-    private final Logger logger = new Logger("GameAsset", Logger.INFO);
+    private static final Logger LOGGER = Logger.getLogger(GameAsset.class.getName());
 
     // Reference counting to track asset usage
     private final Map<String, Integer> assetReferenceCount = new HashMap<>();
+
     // Group-based asset management
     private final Map<String, Set<String>> assetGroups = new HashMap<>();
 
@@ -41,9 +43,10 @@ public class GameAsset implements Disposable {
         if (!assetManager.isLoaded(filePath, type)) {
             try {
                 assetManager.load(filePath, type);
-                logger.info("Loading asset: " + filePath);
+                LOGGER.log(Level.INFO, "Loading asset: {0}", filePath);
             } catch (GdxRuntimeException e) {
-                logger.info("Failed to load asset: " + filePath + " | Error: " + e.getMessage());
+                LOGGER.log(Level.SEVERE, "Failed to load asset: {0} | Error: {1}",
+                        new Object[] { filePath, e.getMessage() });
                 return;
             }
         }
@@ -88,7 +91,7 @@ public class GameAsset implements Disposable {
     /** Ensures all assets finish loading */
     public void loadAndFinish() {
         assetManager.finishLoading();
-        logger.info("All assets finished loading.");
+        LOGGER.log(Level.INFO, "All assets finished loading.");
     }
 
     /** Gets asset if loaded */
@@ -109,12 +112,12 @@ public class GameAsset implements Disposable {
             } else {
                 if (assetManager.isLoaded(filePath)) {
                     assetManager.unload(filePath);
-                    logger.info("Unloaded asset: " + filePath);
+                    LOGGER.log(Level.INFO, "Unloaded asset: {0}", filePath);
                 }
                 assetReferenceCount.remove(filePath);
             }
         } else {
-            logger.error("Attempted to unload non-existent asset: " + filePath);
+            LOGGER.log(Level.SEVERE, "Attempted to unload non-existent asset: {0}", filePath);
         }
     }
 
@@ -122,10 +125,10 @@ public class GameAsset implements Disposable {
     public boolean isAssetLoaded(String filePath) {
         return assetManager.isLoaded(filePath);
     }
-    
+
     /** Asynchronously updates asset loading, returns true when done */
     public boolean isLoaded() {
-    	return assetManager.update();
+        return assetManager.update();
     }
 
     /** Gets asset loading progress */
@@ -144,7 +147,7 @@ public class GameAsset implements Disposable {
         assetReferenceCount.clear();
         assetGroups.clear();
         assetManager.dispose();
-        logger.info("All assets disposed.");
+        LOGGER.log(Level.INFO, "All assets disposed.");
     }
 
     /** Updates asset loading progress */

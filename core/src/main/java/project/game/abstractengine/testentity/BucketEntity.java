@@ -1,5 +1,8 @@
 package project.game.abstractengine.testentity;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -17,6 +20,7 @@ import project.game.constants.GameConstants;
 
 public class BucketEntity implements ICollidable, IRenderable {
 
+	private static final Logger LOGGER = Logger.getLogger(BucketEntity.class.getName());
 	private final Entity entity;
 	private final PlayerMovementManager movementManager;
 	private final String texturePath;
@@ -104,8 +108,9 @@ public class BucketEntity implements ICollidable, IRenderable {
 
 	@Override
 	public void onCollision(ICollidable other) {
-		System.out.println(getEntity().getClass().getSimpleName() + " collided with " +
-				(other == null ? "boundary" : other.getClass().getSimpleName()));
+		LOGGER.log(Level.INFO, "{0} collided with {1}",
+				new Object[] { getEntity().getClass().getSimpleName(),
+						other == null ? "boundary" : other.getClass().getSimpleName() });
 	}
 
 	@Override
