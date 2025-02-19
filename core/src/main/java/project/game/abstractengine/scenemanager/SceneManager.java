@@ -9,10 +9,10 @@ import project.game.abstractengine.iomanager.SceneIOManager;
 public class SceneManager {
     private final Map<String, Scene> scenes;
     private Scene currentScene;
-    private SceneIOManager sharedInputManager;
+    private SceneIOManager baseInputManager;
 
     public SceneManager() {
-        sharedInputManager = new SceneIOManager();
+        baseInputManager = new SceneIOManager();
         this.scenes = new HashMap<>();
     }
 
@@ -79,6 +79,6 @@ public class SceneManager {
     }
 
     public SceneIOManager getInputManager() {
-        return sharedInputManager;
+        return baseInputManager;
     }
 }
