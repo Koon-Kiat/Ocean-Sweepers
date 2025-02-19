@@ -1,4 +1,4 @@
-package project.game.abstractengine.scenemanager;
+package project.game.abstractengine.scenemanager.userdefined;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,24 +10,27 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.Scene;
+import project.game.abstractengine.scenemanager.SceneManager;
 
 public class GameOverScene extends Scene {
     private SpriteBatch batch;
     private BitmapFont font;
 
-    // Provide an explicit constructor that calls the super constructor
     public GameOverScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
         this.sceneManager = sceneManager;
     }
 
-    /*
-     * Initializes and draws the Game Over Scene when player ends the game
+    /**
+     * @class GameOverScene
+     * @brief Initializes and draws the Game Over Scene when player ends the game
      * 
-     * "Game Over" text displayed, to generalize end of game state
-     * 
-     * Game over scene transitions to:
-     * Game scene (Retry), Main menu scene (Exit)
+     *        This method initializes the Game Over Scene by creating a new
+     *        SpriteBatch and BitmapFont. It also creates a new Skin object and two
+     *        TextButtons for the player to either play again or exit the game. The
+     *        method also creates a new Table object and adds the TextButtons to the
+     *        stage.
      */
     @Override
     public void create() {
@@ -42,7 +45,7 @@ public class GameOverScene extends Scene {
         retryButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f);
         inputManager.addButtonClickListener(retryButton, () -> {
             sceneManager.setScene("game");
-            sceneManager.getScene(null).create(); // To restart game at its initial state
+            sceneManager.getScene(null).resetScene();
         });
 
         TextButton exitButton = new TextButton("Exit", skin);
@@ -61,6 +64,7 @@ public class GameOverScene extends Scene {
 
     }
 
+    @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         super.render(delta);
