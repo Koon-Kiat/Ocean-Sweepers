@@ -10,6 +10,7 @@ import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
+import project.game.constants.GameConstants;
 import project.game.exceptions.MovementException;
 
 /**
@@ -28,6 +29,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
 
     private static final Logger LOGGER = Logger.getLogger(MovementManager.class.getName());
     private IMovementBehavior movementBehavior;
+    public static boolean LENIENT_MODE = false;
 
     /**
      * Constructs a MovementManager with the specified parameters.
@@ -38,18 +40,33 @@ public abstract class MovementManager extends MovableEntity implements IMovement
      */
     public MovementManager(Entity entity, float speed, Direction direction, IMovementBehavior behavior) {
         super(entity, speed);
-        validateConstructorParameters(speed, behavior);
+        // Use lenient mode to set defaults instead of throwing an exception.
+        float correctedSpeed = speed;
+        if (speed < 0) {
+            if (LENIENT_MODE) {
+                LOGGER.log(Level.WARNING, "Negative speed provided ({0}). Using absolute value.", speed);
+                correctedSpeed = Math.abs(speed);
+            } else {
+                throw new MovementException("Speed cannot be negative: " + speed);
+            }
+        }
+        super.setSpeed(correctedSpeed);
+        if (behavior == null) {
+            if (LENIENT_MODE) {
+                LOGGER.log(Level.WARNING,
+                        "Movement behavior is null. Defaulting to ConstantMovementBehavior with speed 1.0.");
+                behavior = new project.game.defaultmovements.ConstantMovementBehavior(GameConstants.DEFAULT_SPEED);
+            } else {
+                throw new MovementException("Movement behavior cannot be null");
+            }
+        }
         setDirection((direction != null) ? direction : Direction.NONE);
         this.movementBehavior = behavior;
     }
 
-    private void validateConstructorParameters(float speed, IMovementBehavior behavior) {
-        if (speed < 0) {
-            throw new MovementException("Speed cannot be negative: " + speed);
-        }
-        if (behavior == null) {
-            throw new MovementException("Movement behavior cannot be null");
-        }
+    public static void setLenientMode(boolean mode) {
+        LENIENT_MODE = mode;
+        LOGGER.log(Level.INFO, "Lenient mode set to: {0}", mode);
     }
 
     public IMovementBehavior getMovementBehavior() {

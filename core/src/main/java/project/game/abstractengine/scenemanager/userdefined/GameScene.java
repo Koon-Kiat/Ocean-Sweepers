@@ -28,6 +28,7 @@ import project.game.abstractengine.entitysystem.collisionmanager.CollisionManage
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
@@ -118,6 +119,9 @@ public class GameScene extends Scene {
             LOGGER.log(Level.SEVERE, "Failed to load assets: {0}", e.getMessage());
         }
 
+        // Set lenient mode for movement manager
+        MovementManager.setLenientMode(true);
+
         // Create entities
         Entity genericDropEntity = new Entity(
                 GameConstants.DROP_START_X,
@@ -141,14 +145,15 @@ public class GameScene extends Scene {
 
         behaviorPool = new ArrayList<>();
         behaviorPool.add(new ConstantMovementBehavior(GameConstants.NPC_SPEED));
-        behaviorPool.add(new ZigZagMovementBehavior(GameConstants.NPC_SPEED, 100f, 5f));
+        behaviorPool.add(
+                new ZigZagMovementBehavior(GameConstants.NPC_SPEED, GameConstants.AMPLITUDE, GameConstants.FREQUENCY));
         behaviorPool.add(new FollowMovementBehavior(playerMovementManager, GameConstants.NPC_SPEED));
 
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
                 .setSpeed(GameConstants.NPC_SPEED)
-                .withFollowMovement(playerMovementManager)
-                .setDirection(Direction.RIGHT)
+                .withRandomisedMovement(behaviorPool, GameConstants.MIN_DURATION, GameConstants.MAX_DURATION)
+                .setDirection(Direction.NONE)
                 .build();
 
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");

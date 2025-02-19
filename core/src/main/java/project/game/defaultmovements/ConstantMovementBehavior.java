@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
+import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.MovementUtils;
 import project.game.exceptions.MovementException;
 
@@ -23,21 +24,20 @@ public class ConstantMovementBehavior implements IMovementBehavior {
     private static final Logger LOGGER = Logger.getLogger(ConstantMovementBehavior.class.getName());
     private final float speed;
 
-    /**
-     * Constructs a ConstantMovementBehavior with the specified speed. Terminates
-     * the program if a negative speed is provided.
-     * 
-     * @param speed Speed of the movement.
-     */
     public ConstantMovementBehavior(float speed) {
         if (speed < 0) {
-            String errorMessage = "Negative speed provided in ConstantMovementBehavior: " + speed;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException(errorMessage);
+            if (MovementManager.LENIENT_MODE) {
+                LOGGER.log(Level.WARNING,
+                        "Negative speed provided in ConstantMovementBehavior: {0}. Using absolute value.", speed);
+                speed = Math.abs(speed);
+            } else {
+                String errorMessage = "Negative speed provided in ConstantMovementBehavior: " + speed;
+                LOGGER.log(Level.SEVERE, errorMessage);
+                throw new MovementException(errorMessage);
+            }
         }
         this.speed = speed;
     }
-
     @Override
     public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {

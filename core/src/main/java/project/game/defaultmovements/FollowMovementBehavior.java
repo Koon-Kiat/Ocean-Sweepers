@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.exceptions.MovementException;
 
 /**
@@ -39,14 +40,22 @@ public class FollowMovementBehavior implements IMovementBehavior {
             String errorMessage = "Target manager cannot be null in FollowMovementBehavior.";
             LOGGER.log(Level.SEVERE, errorMessage);
             throw new MovementException(errorMessage);
+        } else {
+            this.targetManager = targetManager;
         }
         if (speed < 0) {
-            String errorMessage = "Negative speed provided in FollowMovementBehavior: " + speed;
-            LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException(errorMessage);
+            if (MovementManager.LENIENT_MODE) {
+                LOGGER.log(Level.WARNING,
+                        "Negative speed provided in FollowMovementBehavior: {0}. Using absolute value.", speed);
+                this.speed = Math.abs(speed);
+            } else {
+                String errorMessage = "Negative speed provided in FollowMovementBehavior: " + speed;
+                LOGGER.log(Level.SEVERE, errorMessage);
+                throw new MovementException(errorMessage);
+            }
+        } else {
+            this.speed = speed;
         }
-        this.targetManager = targetManager;
-        this.speed = speed;
     }
 
     @Override
@@ -61,11 +70,10 @@ public class FollowMovementBehavior implements IMovementBehavior {
             entity.setX(newX);
             entity.setY(newY);
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.SEVERE, "Illegal argument in FollowMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw e;
+            LOGGER.log(Level.SEVERE, "Illegal argument in FollowMovementBehavior: " + e.getMessage(), e);
+            throw new MovementException("Invalid argument in FollowMovementBehavior", e);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Runtime exception in FollowMovementBehavior.updatePosition: " + e.getMessage(),
-                    e);
+            LOGGER.log(Level.SEVERE, "Unexpected error in FollowMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error updating position in FollowMovementBehavior", e);
         }
     }
