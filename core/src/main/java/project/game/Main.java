@@ -15,9 +15,6 @@ public class Main extends ApplicationAdapter {
         LogManager.initialize();
     }
 
-    public static final float GAME_WIDTH = 640;
-    public static final float GAME_HEIGHT = 480;
-
     private SceneManager sceneManager;
 
     @Override
@@ -27,7 +24,7 @@ public class Main extends ApplicationAdapter {
         SceneIOManager sharedInputManager = sceneManager.getInputManager();
 
         // Initializing and registering scenes now done in Scene Factory
-        SceneFactory sceneFactory = new SceneFactory(sceneManager,sharedInputManager);
+        SceneFactory sceneFactory = new SceneFactory(sceneManager, sharedInputManager);
         sceneFactory.createAndRegisterScenes();
 
         System.out.println("Available scenes: " + sceneManager.getSceneList());
