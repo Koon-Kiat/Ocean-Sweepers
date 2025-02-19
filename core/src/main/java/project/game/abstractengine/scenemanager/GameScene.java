@@ -6,9 +6,16 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -19,6 +26,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.constants.GameConstants;
+import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
 import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
@@ -42,24 +51,23 @@ public class GameScene extends Scene {
 
     public static final float GAME_WIDTH = 640;
     public static final float GAME_HEIGHT = 480;
-
-    private static final float PLAYER_SPEED = 1600f;
+    private static final float PLAYER_SPEED = 600f;
     private static final float NPC_SPEED = 400f;
-
     private static final float DROP_START_X = 0f;
-    private static final float DROP_START_Y = 400f;
-    private static final float BUCKET_START_X = 5f;
-    private static final float BUCKET_START_Y = 40f;
-
+    private static final float DROP_START_Y = 0f;
+    private static final float DROP_WIDTH = 50f;
+    private static final float DROP_HEIGHT = 50f;
+    private static final float BUCKET_START_X = 400f;
+    private static final float BUCKET_START_Y = 400f;
+    private static final float BUCKET_WIDTH = 50f;
+    private static final float BUCKET_HEIGHT = 50f;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
-
     private SceneManager sceneManager;
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
     private SceneIOManager inputManager;
     private TextButton button1, button2, button3;
-
     private SpriteBatch batch;
     private Texture dropImage;
     private Texture bucketImage;
@@ -69,6 +77,11 @@ public class GameScene extends Scene {
     private Stage stage;
     private Skin skin;
     private Table table;
+    private World world;
+    private Box2DDebugRenderer debugRenderer;
+    private OrthographicCamera camera;
+    private Matrix4 debugMatrix;
+    private CollisionManager collisionManager;
 
     // public GameScene() {
     // sceneManager = new SceneManager();
@@ -83,9 +96,10 @@ public class GameScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        World world = new World(new Vector2(0, -9.8f), true);
+        world = new World(new Vector2(0, 0), true);
 
         inputManager = new SceneIOManager();
+        entityManager = new EntityManager();
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         stage = new Stage();
@@ -110,8 +124,6 @@ public class GameScene extends Scene {
         popupMenu.add(table);
         stage.addActor(popupMenu);
 
-        // gameAsset = gameAsset.getInstance();
-        entityManager = new EntityManager();
         try {
             GameAsset.getInstance().loadTextureAssets("droplet.png");
             GameAsset.getInstance().loadTextureAssets("bucket.png");
@@ -141,9 +153,8 @@ public class GameScene extends Scene {
         }
 
         // Create entities
-        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, 50, 50, true);
-
-        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, 50, 50, true);
+        Entity genericDropEntity = new Entity(DROP_START_X, DROP_START_Y, DROP_WIDTH, DROP_HEIGHT, true);
+        Entity genericBucketEntity = new Entity(BUCKET_START_X, BUCKET_START_Y, BUCKET_WIDTH, BUCKET_HEIGHT, true);
 
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
@@ -160,15 +171,15 @@ public class GameScene extends Scene {
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
                 .setSpeed(NPC_SPEED)
-                .withRandomisedMovement(behaviorPool, 3, 4)
+                .withFollowMovement(playerMovementManager)
                 .setDirection(Direction.RIGHT)
                 .build();
 
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
 
-        entityManager.addEntity(bucket);
-        entityManager.addEntity(drop);
+        entityManager.addRenderableEntity(bucket);
+        entityManager.addRenderableEntity(drop);
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addClickListener(button1, () -> {
@@ -184,13 +195,24 @@ public class GameScene extends Scene {
             System.out.println("Game Closed!");
             Gdx.app.exit();
         });
+
+        camera = new OrthographicCamera(GAME_WIDTH, GAME_HEIGHT);
+        camera.position.set(GAME_WIDTH / 2, GAME_HEIGHT / 2, 0);
+        camera.update();
+
+        debugRenderer = new Box2DDebugRenderer();
+
+        // Initialize CollisionManager and create screen boundaries
+        collisionManager = new CollisionManager(world, playerMovementManager, npcMovementManager, bucket, drop, inputManager);
+        collisionManager.init();
+        collisionManager.createScreenBoundaries(GAME_WIDTH, GAME_HEIGHT);
     }
 
     @Override
     public void show() {
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(inputManager); // Added first
+        multiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(multiplexer);
 
         float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
@@ -203,7 +225,7 @@ public class GameScene extends Scene {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         try {
-            updateGame();
+            collisionManager.updateGame(GAME_WIDTH, GAME_HEIGHT);
         } catch (Exception e) {
             System.err.println("[ERROR] Exception during game update: " + e.getMessage());
             Gdx.app.error("Main", "Exception during game update", e);
@@ -219,20 +241,15 @@ public class GameScene extends Scene {
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
-    }
 
-    private void updateGame() {
-        playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+        debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
+        debugRenderer.render(world, debugMatrix);
 
-        // Update movement; exceptions here will be logged and thrown upward
-        playerMovementManager.updateMovement();
-        npcMovementManager.updateMovement();
-
-        // Synchronize rectangle positions with movement manager positions
-        bucket.setX(playerMovementManager.getX());
-        bucket.setY(playerMovementManager.getY());
-        drop.setX(npcMovementManager.getX());
-        drop.setY(npcMovementManager.getY());
+        // Fixed timestep for Box2D
+        float timeStep = 1 / 60f;
+        world.step(timeStep, 6, 2);
+        collisionManager.processCollisions();
+        collisionManager.syncEntityPositions();
     }
 
     @Override
@@ -240,6 +257,7 @@ public class GameScene extends Scene {
         batch.dispose();
         dropImage.dispose();
         bucketImage.dispose();
+        debugRenderer.dispose();
     }
 
 }
