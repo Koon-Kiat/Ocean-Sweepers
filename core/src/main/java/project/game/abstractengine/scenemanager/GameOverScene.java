@@ -21,6 +21,14 @@ public class GameOverScene extends Scene {
         this.sceneManager = sceneManager;
     }
 
+    /*
+     * Initializes and draws the Game Over Scene when player ends the game
+     * 
+     * "Game Over" text displayed, to generalize end of game state
+     * 
+     * Game over scene transitions to:
+     * Game scene (Retry), Main menu scene (Exit)
+     */
     @Override
     public void create() {
         batch = new SpriteBatch();

@@ -86,6 +86,10 @@ public class GameScene extends Scene {
         this.sceneManager = sceneManager;
     }
 
+    /*
+     * Initializes and draws the Game Scene
+     * Implements the game logic (collision detection, movement logic, loading entities, I/O)
+     */
     @Override
     public void create() {
         batch = new SpriteBatch();
@@ -197,8 +201,20 @@ public class GameScene extends Scene {
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
 
+        debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
+        debugRenderer.render(world, debugMatrix);
+
+        // Fixed timestep for Box2D
+        float timeStep = 1 / 60f;
+        world.step(timeStep, 6, 2);
+        collisionManager.processCollisions();
+        collisionManager.syncEntityPositions();
     }
 
+    /*
+     * Initializes the pop-up menu for the game scene from Options class
+     * Adds the pop-up menu to the stage
+     */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
         
@@ -207,7 +223,6 @@ public class GameScene extends Scene {
 
         popupMenu = options.getPopupMenu();
         inputMultiplexer = new InputMultiplexer();
-
 
         // Add popup menu to the stage
         if (popupMenu != null) {
@@ -222,6 +237,14 @@ public class GameScene extends Scene {
         stage.addActor(options.getRebindMenu());
     }
 
+    /*
+     * Handles input for scene transitions and toggling the options menu
+     * 
+     * Game Scene will transition to:
+     * - Main Menu Scene on 'M' key press
+     * - Game Over Scene on 'E' key press
+     * - Rebind Pop-up window on 'P' key press
+     */
     private void input() {
         
         Gdx.input.setInputProcessor(inputManager);
@@ -250,10 +273,8 @@ public class GameScene extends Scene {
                 inputMultiplexer.addProcessor(inputManager);
                 stage.setKeyboardFocus(null);
                 System.out.println("[DEBUG] InputProcessor set to inputManager");
-            }        }
-
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
+            }        
+        }
     }
 
     private void updateGame() {
@@ -270,6 +291,9 @@ public class GameScene extends Scene {
         collisionManager.syncEntityPositions();
     }
 
+    /*
+     * Displays a message on the screen for key bindings
+     */
     private void displayMessage() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
@@ -282,6 +306,11 @@ public class GameScene extends Scene {
         textField.setMessageText("Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
         textField.setDisabled(true);
         stage.addActor(textField);
+
+        // Overlay text over the debug matrix
+        batch.begin();
+        skin.getFont("default-font").draw(batch, "Debug Mode Active", 10, stage.getHeight() - 10);
+        batch.end();
     }
 
     private void hideDisplayMessage() {
@@ -300,6 +329,9 @@ public class GameScene extends Scene {
         debugRenderer.dispose();
     }
 
+    /*
+     * Used in Options class to close the popup menu and unpause the game
+     */
     public void closePopupMenu() {
         isMenuOpen = false;
         isPaused = false;

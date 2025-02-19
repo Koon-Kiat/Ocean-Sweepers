@@ -24,6 +24,17 @@ public class MainMenuScene extends Scene {
     }
 
     // Init UI elements
+    /*
+     * Initializes and draws the Main Menu Scene 
+     * Play, Options, Exit buttons drawn here
+     * "PLAY" button moves to the game scene
+     * "OPTIONS" button moves to the options menu scene 
+     * "EXIT" button closes
+     * 
+     * First scene upon start up
+     * Can be returned from:
+     * Game Scene, Options Scene, Game Over Scene
+     */
     @Override
     public void create() {
         this.camera = new OrthographicCamera();

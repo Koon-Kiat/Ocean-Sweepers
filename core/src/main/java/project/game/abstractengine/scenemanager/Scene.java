@@ -15,7 +15,7 @@ public abstract class Scene extends SceneManager implements Screen {
 
     public Scene(SceneIOManager inputManager) {
         this.inputManager = inputManager;
-        this.stage = new Stage(new ScreenViewport()); // Initialize stage
+        this.stage = new Stage(new ScreenViewport()); // Initialize stage. Stage used across all scenes
         this.sceneManager = new SceneManager();
         create(); // Call abstract method for subclass-specific setup
     }

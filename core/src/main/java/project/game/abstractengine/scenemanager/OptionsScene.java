@@ -13,6 +13,16 @@ public class OptionsScene extends Scene {
     private Table tableScene;
     private TextButton returnButton;
 
+    /* 
+     * Constructor for OptionsScene
+     * @param sceneManager SceneManager instance
+     * @param inputManager SceneIOManager instance
+     * 
+     * Initializes and draws the Options Scene
+     * "return" button moves to the main menu scene
+     * Main Menu --> Options --> Main Menu
+     */
+
     public OptionsScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
         this.sceneManager = sceneManager;
