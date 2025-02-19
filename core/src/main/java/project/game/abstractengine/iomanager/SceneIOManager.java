@@ -49,23 +49,26 @@ public class SceneIOManager extends IOManager {
 
     // Convert a key string (e.g., "W", "UP") to a LibGDX input key code
     private int getKeycodeFromString(String keyString) {
-        try {
-            return Input.Keys.valueOf(keyString);
-        } catch (IllegalArgumentException e) {
-            // Handle arrow keys
-            switch (keyString) {
-                case "UP":
-                    return Input.Keys.UP;
-                case "DOWN":
-                    return Input.Keys.DOWN;
-                case "LEFT":
-                    return Input.Keys.LEFT;
-                case "RIGHT":
-                    return Input.Keys.RIGHT;
-                default:
+        // Ensure key string is uppercase
+        keyString = keyString.toUpperCase();
+    
+        // Handle arrow keys explicitly
+        switch (keyString) {
+            case "UP":
+                return Input.Keys.UP;
+            case "DOWN":
+                return Input.Keys.DOWN;
+            case "LEFT":
+                return Input.Keys.LEFT;
+            case "RIGHT":
+                return Input.Keys.RIGHT;
+            default:
+                try {
+                    return Input.Keys.valueOf(keyString);
+                } catch (IllegalArgumentException e) {
                     System.err.println("[ERROR] Invalid key string: " + keyString);
-                    return Input.Keys.UNKNOWN; // // Fallback for invalid key strings
-            }
+                    return Input.Keys.UNKNOWN;
+                }
         }
     }
 
@@ -74,7 +77,8 @@ public class SceneIOManager extends IOManager {
         return keyBindings;
     }
 
-    // Attach a click listener to an Actor that calls the provided callback on click.
+    // Attach a click listener to an Actor that calls the provided callback on
+    // click.
     public void addButtonClickListener(Actor actor, Runnable callback) {
         actor.addListener(new ClickListener() {
             @Override
