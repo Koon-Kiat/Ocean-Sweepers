@@ -1,4 +1,4 @@
-package project.game.abstractengine.scenemanager;
+package project.game.abstractengine.scenemanager.userdefined;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -8,6 +8,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.Scene;
+import project.game.abstractengine.scenemanager.SceneManager;
 
 public class MainMenuScene extends Scene {
     private Skin skin;
@@ -20,15 +22,14 @@ public class MainMenuScene extends Scene {
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
         this.sceneManager = sceneManager;
-        create();
     }
 
     // Init UI elements
     /*
-     * Initializes and draws the Main Menu Scene 
+     * Initializes and draws the Main Menu Scene
      * Play, Options, Exit buttons drawn here
      * "PLAY" button moves to the game scene
-     * "OPTIONS" button moves to the options menu scene 
+     * "OPTIONS" button moves to the options menu scene
      * "EXIT" button closes
      * 
      * First scene upon start up
@@ -41,15 +42,14 @@ public class MainMenuScene extends Scene {
         this.viewport = new FitViewport(stage.getHeight(), stage.getWidth(), camera);
         stage.setViewport(viewport);
 
-
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        playButton = new TextButton("PLAY", skin); // Start moves to gamescene
-        optionsButton = new TextButton("OPTIONS", skin); // Options moves to options menu scene
-        
+        playButton = new TextButton("PLAY", skin);
+        optionsButton = new TextButton("OPTIONS", skin);
+
         Options options = new Options(sceneManager, gameScene, inputManager);
         options.create();
         options.setMainMenuButtonVisibility(false);
-        exitButton = new TextButton("EXIT", skin); // Exit closes game
+        exitButton = new TextButton("EXIT", skin);
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
@@ -58,19 +58,18 @@ public class MainMenuScene extends Scene {
         });
 
         inputManager.addButtonClickListener(optionsButton, () -> {
-            System.out.println("Options Clicked!"); // Debug log
-            sceneManager.setScene("options"); // Switch to OptionsScene
+            System.out.println("Options Clicked!");
+            sceneManager.setScene("options");
 
         });
 
         inputManager.addButtonClickListener(exitButton, () -> {
-            Gdx.app.exit(); // Close game
+            Gdx.app.exit();
             dispose();
         });
 
         Table table = new Table();
         table.setFillParent(true);
-
         table.add(playButton).padBottom(10);
         table.row();
         table.add(optionsButton).padBottom(10);
@@ -81,11 +80,9 @@ public class MainMenuScene extends Scene {
 
     }
 
-    //
     @Override
     public void show() {
     }
-
 
     @Override
     public void render(float delta) {

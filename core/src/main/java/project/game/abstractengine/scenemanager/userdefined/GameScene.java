@@ -1,4 +1,4 @@
-package project.game.abstractengine.scenemanager;
+package project.game.abstractengine.scenemanager.userdefined;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
@@ -31,6 +30,8 @@ import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.Scene;
+import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.abstractengine.testentity.BucketEntity;
 import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
@@ -59,7 +60,6 @@ public class GameScene extends Scene {
     private static final float BUCKET_WIDTH = 50f;
     private static final float BUCKET_HEIGHT = 50f;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
-
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
@@ -85,9 +85,16 @@ public class GameScene extends Scene {
         this.sceneManager = sceneManager;
     }
 
-    /*
-     * Initializes and draws the Game Scene
-     * Implements the game logic (collision detection, movement logic, loading entities, I/O)
+    /**
+     * @class GameScene
+     * @brief Initializes and draws the Game Scene when player starts the game
+     * 
+     *        This method initializes the Game Scene by creating a new SpriteBatch
+     *        and two Textures for the player and NPC entities. It also creates a
+     *        new Skin object and a Stage object. The method also creates a new
+     *        EntityManager object and adds the player and NPC entities to the
+     *        EntityManager. The method also creates a new OrthographicCamera object
+     *        and a Box2DDebugRenderer object.
      */
     @Override
     public void create() {
@@ -97,29 +104,23 @@ public class GameScene extends Scene {
 
         inputManager = new SceneIOManager();
         entityManager = new EntityManager();
-
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-
         initPopUpMenu();
         displayMessage();
 
         try {
             GameAsset.getInstance().loadTextureAssets("droplet.png");
             GameAsset.getInstance().loadTextureAssets("bucket.png");
-            GameAsset.getInstance().update(); // Update the asset manager
-            GameAsset.getInstance().getAssetManager().finishLoading(); // Force loading to complete
-
+            GameAsset.getInstance().update();
+            GameAsset.getInstance().getAssetManager().finishLoading();
             if (GameAsset.getInstance().isLoaded()) {
                 dropImage = GameAsset.getInstance().getAsset("droplet.png", Texture.class);
                 bucketImage = GameAsset.getInstance().getAsset("bucket.png", Texture.class);
             } else {
-                System.err.println("[ERROR] Some assets not loaded yet!"); // More general message
+                System.err.println("[ERROR] Some assets not loaded yet!");
             }
-
             System.out.println("[DEBUG] Loaded droplet.png successfully.");
             System.out.println("[DEBUG] Loaded bucket.png successfully.");
-
-            // Check if textures are null after loading
             if (dropImage == null) {
                 System.err.println("[ERROR] dropImage is null after loading!");
             }
@@ -167,7 +168,8 @@ public class GameScene extends Scene {
         debugRenderer = new Box2DDebugRenderer();
 
         // Initialize CollisionManager and create screen boundaries
-        collisionManager = new CollisionManager(world, playerMovementManager, npcMovementManager, bucket, drop, inputManager);
+        collisionManager = new CollisionManager(world, playerMovementManager, npcMovementManager, bucket, drop,
+                inputManager);
         collisionManager.init();
         collisionManager.createScreenBoundaries(GAME_WIDTH, GAME_HEIGHT);
     }
@@ -182,10 +184,9 @@ public class GameScene extends Scene {
 
     @Override
     public void render(float deltaTime) {
-        ScreenUtils.clear(0, 0, 0f, 0);
-
         input();
         show();
+
         try {
             collisionManager.updateGame(GAME_WIDTH, GAME_HEIGHT);
         } catch (Exception e) {
@@ -199,7 +200,6 @@ public class GameScene extends Scene {
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
-
         debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
         debugRenderer.render(world, debugMatrix);
 
@@ -216,7 +216,7 @@ public class GameScene extends Scene {
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
-        
+
         options.setMainMenuButtonVisibility(true);
         options.getPopupMenu().setTouchable(Touchable.enabled);
 
@@ -245,10 +245,11 @@ public class GameScene extends Scene {
      * - Rebind Pop-up window on 'P' key press
      */
     private void input() {
-        
+
         Gdx.input.setInputProcessor(inputManager);
 
-        // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game over scene
+        // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game
+        // over scene
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -256,7 +257,7 @@ public class GameScene extends Scene {
         }
 
         // Toggle options menu with 'P'
-        // Will open the rebind menu 
+        // Will open the rebind menu
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
@@ -272,7 +273,7 @@ public class GameScene extends Scene {
                 inputMultiplexer.addProcessor(inputManager);
                 stage.setKeyboardFocus(null);
                 System.out.println("[DEBUG] InputProcessor set to inputManager");
-            }        
+            }
         }
     }
 
@@ -287,8 +288,10 @@ public class GameScene extends Scene {
         final TextField textField = new TextField("", style);
         textField.setWidth(300); // Adjust the width as needed
         textField.setHeight(40); // Adjust the height as needed
-        textField.setPosition(stage.getWidth() / 2f - textField.getWidth() / 2f, stage.getHeight() - textField.getHeight());
-        textField.setMessageText("Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
+        textField.setPosition(stage.getWidth() / 2f - textField.getWidth() / 2f,
+                stage.getHeight() - textField.getHeight());
+        textField.setMessageText(
+                "Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
         textField.setDisabled(true);
         stage.addActor(textField);
 
@@ -326,6 +329,5 @@ public class GameScene extends Scene {
         inputManager.clearPressedKeys(); // Clear the pressedKeys set
         System.out.println("[DEBUG] Popup closed and game unpaused");
     }
-
 
 }

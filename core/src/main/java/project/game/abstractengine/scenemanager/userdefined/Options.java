@@ -1,4 +1,4 @@
-package project.game.abstractengine.scenemanager;
+package project.game.abstractengine.scenemanager.userdefined;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -13,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.Scene;
+import project.game.abstractengine.scenemanager.SceneManager;
 
 public class Options extends Scene {
     private Skin skin;
@@ -33,7 +35,8 @@ public class Options extends Scene {
      * Initializes and draws the Options Scene "Rebind keys" button moves to the
      * rebind menu scene "Main Menu" button moves to the main menu scene
      * "Confirm" button saves the key bindings
-     * (This is not a scene, but a popup menu "manager" that can be called from the game scene or other scenes)
+     * (This is not a scene, but a popup menu "manager" that can be called from the
+     * game scene or other scenes)
      */
     public void create() {
         System.out.println("[DEBUG] Options inputManager instance: " + System.identityHashCode(inputManager));
@@ -52,10 +55,9 @@ public class Options extends Scene {
             System.out.println("[DEBUG] PopupMenu touched at (" + x + ", " + y + ")");
         });
 
-
         TextButton rebindButton = new TextButton("Rebind Keys", skin);
         mainMenuButton = new TextButton("Main Menu", skin);
-        //TextButton closeButton = new TextButton("Close", skin);
+        // TextButton closeButton = new TextButton("Close", skin);
 
         inputManager.addButtonClickListener(rebindButton, () -> {
             System.out.println("'Rebind keys' selected");
@@ -69,11 +71,11 @@ public class Options extends Scene {
         });
 
         // inputManager.addButtonClickListener(closeButton, () -> {
-        //     System.out.println("'Close' selected");
-        //     // setPaused(false);
-        //     // ((GameScene) sceneManager.getCurrentScene()).closePopupMenu();
-        //     gameScene.closePopupMenu();
-        //     // popupMenu.setVisible(false);
+        // System.out.println("'Close' selected");
+        // // setPaused(false);
+        // // ((GameScene) sceneManager.getCurrentScene()).closePopupMenu();
+        // gameScene.closePopupMenu();
+        // // popupMenu.setVisible(false);
         // });
 
         Table table = new Table();
@@ -109,7 +111,7 @@ public class Options extends Scene {
         TextButton rebindButton2 = new TextButton("Down", skin);
         TextButton rebindButton3 = new TextButton("Left", skin);
         TextButton rebindButton4 = new TextButton("Right", skin);
-        //TextButton returnButton = new TextButton("Return", skin);
+        // TextButton returnButton = new TextButton("Return", skin);
         TextButton confirmButton = new TextButton("Confirm", skin);
 
         final TextField textField1 = new TextField("", skin);
@@ -117,15 +119,15 @@ public class Options extends Scene {
         textField1.setMessageText("Press a key...");
 
         final TextField textField2 = new TextField("", skin);
-        textField2.setAlignment(1); 
+        textField2.setAlignment(1);
         textField2.setMessageText("Press a key...");
 
         final TextField textField3 = new TextField("", skin);
-        textField3.setAlignment(1); 
+        textField3.setAlignment(1);
         textField3.setMessageText("Press a key...");
 
         final TextField textField4 = new TextField("", skin);
-        textField4.setAlignment(1); 
+        textField4.setAlignment(1);
         textField4.setMessageText("Press a key...");
 
         // IO integration here ***
@@ -160,9 +162,9 @@ public class Options extends Scene {
 
         // Close rebind menu
         // inputManager.addButtonClickListener(returnButton, () -> {
-        //     System.out.println("'Return' selected");
-        //     rebindMenu.setVisible(false);
-        //     //popupMenu.setVisible(true);
+        // System.out.println("'Return' selected");
+        // rebindMenu.setVisible(false);
+        // //popupMenu.setVisible(true);
         // });
 
         inputManager.addButtonClickListener(confirmButton, () -> {
@@ -194,7 +196,7 @@ public class Options extends Scene {
         rebindTable.add(rebindButton4).fillX().pad(5);
         rebindTable.add(textField4).width(150).pad(5);
         rebindTable.row();
-        //rebindTable.add(returnButton).fillX().pad(5);
+        // rebindTable.add(returnButton).fillX().pad(5);
         rebindTable.add(confirmButton).colspan(2).center().pad(5);
 
         Label exitHintLabel = new Label("Hit 'P' again to exit this menu", skin);
