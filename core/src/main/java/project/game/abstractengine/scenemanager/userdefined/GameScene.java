@@ -23,7 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.Direction;
-import project.game.abstractengine.assetmanager.assetManager;
+import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
@@ -98,13 +98,13 @@ public class GameScene extends Scene {
         displayMessage();
 
         try {
-            assetManager.getInstance().loadTextureAssets("droplet.png");
-            assetManager.getInstance().loadTextureAssets("bucket.png");
-            assetManager.getInstance().update();
-            assetManager.getInstance().getasset_Manager().finishLoading();
-            if (assetManager.getInstance().isLoaded()) {
-                dropImage = assetManager.getInstance().getAsset("droplet.png", Texture.class);
-                bucketImage = assetManager.getInstance().getAsset("bucket.png", Texture.class);
+            CustomAssetManager.getInstance().loadTextureAssets("droplet.png");
+            CustomAssetManager.getInstance().loadTextureAssets("bucket.png");
+            CustomAssetManager.getInstance().update();
+            CustomAssetManager.getInstance().getasset_Manager().finishLoading();
+            if (CustomAssetManager.getInstance().isLoaded()) {
+                dropImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
+                bucketImage = CustomAssetManager.getInstance().getAsset("bucket.png", Texture.class);
             } else {
                 LOGGER.log(Level.WARNING, "Some assets not loaded yet!");
             }

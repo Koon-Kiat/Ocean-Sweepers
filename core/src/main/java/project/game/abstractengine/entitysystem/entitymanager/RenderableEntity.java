@@ -3,7 +3,7 @@ package project.game.abstractengine.entitysystem.entitymanager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.abstractengine.assetmanager.assetManager;
+import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 
 public abstract class RenderableEntity extends Entity implements IRenderable {
@@ -25,13 +25,13 @@ public abstract class RenderableEntity extends Entity implements IRenderable {
 	}
 
 	public void loadTexture() {
-		assetManager.getInstance().loadTextureAssets(texturePath);
+		CustomAssetManager.getInstance().loadTextureAssets(texturePath);
 	}
 
 	@Override
 	public void render(SpriteBatch batch) {
-		if (entity.isActive() && assetManager.getInstance().isLoaded()) {
-			Texture texture = assetManager.getInstance().getAsset(texturePath, Texture.class);
+		if (entity.isActive() && CustomAssetManager.getInstance().isLoaded()) {
+			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
 			batch.draw(texture, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 		}
 	}

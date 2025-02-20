@@ -15,11 +15,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-public class assetManager implements Disposable {
+public class CustomAssetManager implements Disposable {
 
-    private static assetManager instance;
+    private static CustomAssetManager instance;
     private final AssetManager asset_Manager;
-    private static final Logger LOGGER = Logger.getLogger(assetManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CustomAssetManager.class.getName());
 
     // Reference counting to track asset usage
     private final Map<String, Integer> assetReferenceCount = new HashMap<>();
@@ -27,13 +27,13 @@ public class assetManager implements Disposable {
     // Group-based asset management
     private final Map<String, Set<String>> assetGroups = new HashMap<>();
 
-    private assetManager() {
+    private CustomAssetManager() {
         asset_Manager = new AssetManager();
     }
 
-    public static synchronized assetManager getInstance() {
+    public static synchronized CustomAssetManager getInstance() {
         if (instance == null) {
-            instance = new assetManager();
+            instance = new CustomAssetManager();
         }
         return instance;
     }
