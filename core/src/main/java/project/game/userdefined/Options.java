@@ -1,4 +1,4 @@
-package project.game.abstractengine.scenemanager.userdefined;
+package project.game.userdefined;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

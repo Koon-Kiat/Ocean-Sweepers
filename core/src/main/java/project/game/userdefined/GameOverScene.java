@@ -1,4 +1,4 @@
-package project.game.abstractengine.scenemanager.userdefined;
+package project.game.userdefined;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;

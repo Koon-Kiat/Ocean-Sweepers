@@ -6,10 +6,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.userdefined.GameOverScene;
-import project.game.abstractengine.scenemanager.userdefined.GameScene;
-import project.game.abstractengine.scenemanager.userdefined.MainMenuScene;
-import project.game.abstractengine.scenemanager.userdefined.OptionsScene;
+import project.game.userdefined.GameOverScene;
+import project.game.userdefined.GameScene;
+import project.game.userdefined.MainMenuScene;
+import project.game.userdefined.OptionsScene;
 
 public class SceneFactory {
 

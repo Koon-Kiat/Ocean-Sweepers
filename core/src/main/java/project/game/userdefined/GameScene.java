@@ -1,4 +1,4 @@
-package project.game.abstractengine.scenemanager.userdefined;
+package project.game.userdefined;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,15 +34,15 @@ import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementMa
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
-import project.game.abstractengine.testentity.BucketEntity;
-import project.game.abstractengine.testentity.DropEntity;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
+import project.game.testentity.NonMovableDroplet;
 import project.game.constants.GameConstants;
 import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.ZigZagMovementBehavior;
-import project.game.abstractengine.testentity.NonMovableDroplet;
+import project.game.testentity.BucketEntity;
+import project.game.testentity.DropEntity;
 
 public class GameScene extends Scene {
     private static final Logger LOGGER = Logger.getLogger(GameScene.class.getName());

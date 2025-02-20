@@ -1,4 +1,4 @@
-package project.game.abstractengine.testentity;
+package project.game.testentity;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
