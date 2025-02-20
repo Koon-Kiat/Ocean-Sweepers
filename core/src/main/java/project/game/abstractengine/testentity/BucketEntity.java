@@ -12,43 +12,41 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.entitysystem.entitymanager.CollidableEntity;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.constants.GameConstants;
 
-public class BucketEntity implements ICollidable, IRenderable {
+public class BucketEntity extends CollidableEntity implements IRenderable {
 
 	private static final Logger LOGGER = Logger.getLogger(BucketEntity.class.getName());
-	private final Entity entity;
 	private final PlayerMovementManager movementManager;
 	private final String texturePath;
-	private final Body body;
 	private boolean collisionActive = false;
 	private long collisionEndTime = 0;
 
 	public BucketEntity(Entity entity, World world, PlayerMovementManager movementManager, String texturePath) {
-		this.entity = entity;
+		super(entity, world);
 		this.movementManager = movementManager;
 		this.texturePath = texturePath;
-		this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 	}
 
 	private float entityX() {
-		return entity.getX();
+		return super.getEntity().getX();
 	}
 
 	private float entityY() {
-		return entity.getY();
+		return super.getEntity().getY();
 	}
 
 	private float entityWidth() {
-		return entity.getWidth();
+		return super.getEntity().getWidth();
 	}
 
 	private float entityHeight() {
-		return entity.getHeight();
+		return super.getEntity().getHeight();
 	}
 
 	public boolean isActive() {
@@ -57,7 +55,7 @@ public class BucketEntity implements ICollidable, IRenderable {
 
 	@Override
 	public Body getBody() {
-		return body;
+		return super.getBody();
 	}
 
 	@Override
@@ -67,7 +65,7 @@ public class BucketEntity implements ICollidable, IRenderable {
 
 	@Override
 	public Entity getEntity() {
-		return entity;
+		return super.getEntity();
 	}
 
 	@Override
@@ -98,10 +96,10 @@ public class BucketEntity implements ICollidable, IRenderable {
 			return true;
 		} else if (other instanceof ICollidable) {
 			Body otherBody = ((ICollidable) other).getBody();
-			return body.getPosition().x < otherBody.getPosition().x + other.getWidth() &&
-					body.getPosition().x + entityWidth() > otherBody.getPosition().x &&
-					body.getPosition().y < otherBody.getPosition().y + other.getHeight() &&
-					body.getPosition().y + entityHeight() > otherBody.getPosition().y;
+			return super.getBody().getPosition().x < otherBody.getPosition().x + other.getWidth() &&
+			super.getBody().getPosition().x + entityWidth() > otherBody.getPosition().x &&
+			super.getBody().getPosition().y < otherBody.getPosition().y + other.getHeight() &&
+			super.getBody().getPosition().y + entityHeight() > otherBody.getPosition().y;
 		}
 		return false;
 	}

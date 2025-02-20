@@ -30,7 +30,7 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 	}
 
 	@Override
-	public final Body createBody(World world, float x, float y, float width, float height) {
+	public Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
 		bodyDef.position.set(x, y);

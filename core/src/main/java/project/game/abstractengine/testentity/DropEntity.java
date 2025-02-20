@@ -14,43 +14,41 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
 import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.entitysystem.entitymanager.CollidableEntity;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.constants.GameConstants;
 
-public class DropEntity implements ICollidable, IRenderable {
+public class DropEntity extends CollidableEntity implements IRenderable {
 
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
-	private final Entity entity;
 	private final NPCMovementManager movementManager;
 	private final String texturePath;
-	private final Body body;
 	private boolean collisionActive = false;
 	private long collisionEndTime = 0;
 
 	public DropEntity(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
-		this.entity = entity;
+		super(entity, world);
 		this.movementManager = movementManager;
 		this.texturePath = texturePath;
-		this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 	}
 
 	private float entityX() {
-		return entity.getX();
+		return super.getEntity().getX();
 	}
 
 	private float entityY() {
-		return entity.getY();
+		return super.getEntity().getY();
 	}
 
 	private float entityWidth() {
-		return entity.getWidth();
+		return super.getEntity().getWidth();
 	}
 
 	private float entityHeight() {
-		return entity.getHeight();
+		return super.getEntity().getHeight();
 	}
 
 	public boolean isActive() {
@@ -59,7 +57,7 @@ public class DropEntity implements ICollidable, IRenderable {
 
 	@Override
 	public Body getBody() {
-		return body;
+		return super.getBody();
 	}
 
 	@Override
@@ -69,7 +67,7 @@ public class DropEntity implements ICollidable, IRenderable {
 
 	@Override
 	public Entity getEntity() {
-		return entity;
+		return super.getEntity();
 	}
 
 	@Override
@@ -107,14 +105,14 @@ public class DropEntity implements ICollidable, IRenderable {
 		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
 		if (other != null && (other instanceof BucketEntity)) {
 			float impulseStrength = GameConstants.IMPUSLE_STRENGTH;
-			Vector2 myPos = body.getPosition();
+			Vector2 myPos = super.getBody().getPosition();
 			Vector2 otherPos = other.getBody().getPosition();
 			Vector2 normal = new Vector2(myPos.x - otherPos.x, myPos.y - otherPos.y).nor();
 			Vector2 impulse = normal.scl(impulseStrength);
-			body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
+			super.getBody().applyLinearImpulse(impulse, super.getBody().getWorldCenter(), true);
 		} else {
 			Vector2 impulse = new Vector2(-5f, 5f);
-			body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
+			super.getBody().applyLinearImpulse(impulse, super.getBody().getWorldCenter(), true);
 		}
 	}
 
