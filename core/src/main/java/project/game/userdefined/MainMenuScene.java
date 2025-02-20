@@ -77,7 +77,7 @@ public class MainMenuScene extends Scene {
 
         inputManager.addButtonClickListener(exitButton, () -> {
             audioManager.playSoundEffect("selection");
-            System.out.println("Exit Clicked!"); // Debug log
+            LOGGER.log(Level.INFO, "Exit Clicked!");
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {

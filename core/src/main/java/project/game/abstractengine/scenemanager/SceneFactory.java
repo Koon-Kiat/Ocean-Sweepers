@@ -11,6 +11,7 @@ import project.game.userdefined.GameScene;
 import project.game.userdefined.MainMenuScene;
 import project.game.userdefined.OptionsScene;
 
+@SuppressWarnings("unused")
 public class SceneFactory {
 
     private static final Logger LOGGER = Logger.getLogger(SceneFactory.class.getName());

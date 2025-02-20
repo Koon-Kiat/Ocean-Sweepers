@@ -19,6 +19,7 @@ import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
 
+@SuppressWarnings("unused")
 public class Options extends Scene {
 
     private static final Logger LOGGER = Logger.getLogger(Options.class.getName());
@@ -26,7 +27,7 @@ public class Options extends Scene {
     private Window popupMenu;
     private Window rebindMenu;
     private boolean isPaused = true;
-    private GameScene gameScene;
+    private final GameScene gameScene;
 
     // Added to make main menu button visible/invisible.
     private TextButton mainMenuButton;
