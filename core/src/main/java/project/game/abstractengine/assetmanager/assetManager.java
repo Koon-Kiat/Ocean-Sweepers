@@ -15,11 +15,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-public class GameAsset implements Disposable {
+public class assetManager implements Disposable {
 
-    private static GameAsset instance;
-    private final AssetManager assetManager;
-    private static final Logger LOGGER = Logger.getLogger(GameAsset.class.getName());
+    private static assetManager instance;
+    private final AssetManager asset_Manager;
+    private static final Logger LOGGER = Logger.getLogger(assetManager.class.getName());
 
     // Reference counting to track asset usage
     private final Map<String, Integer> assetReferenceCount = new HashMap<>();
@@ -27,22 +27,22 @@ public class GameAsset implements Disposable {
     // Group-based asset management
     private final Map<String, Set<String>> assetGroups = new HashMap<>();
 
-    private GameAsset() {
-        assetManager = new AssetManager();
+    private assetManager() {
+        asset_Manager = new AssetManager();
     }
 
-    public static synchronized GameAsset getInstance() {
+    public static synchronized assetManager getInstance() {
         if (instance == null) {
-            instance = new GameAsset();
+            instance = new assetManager();
         }
         return instance;
     }
 
     /** Generalized asset loading method with reference counting */
     public synchronized <T> void loadAsset(String filePath, Class<T> type) {
-        if (!assetManager.isLoaded(filePath, type)) {
+        if (!asset_Manager.isLoaded(filePath, type)) {
             try {
-                assetManager.load(filePath, type);
+                asset_Manager.load(filePath, type);
                 LOGGER.log(Level.INFO, "Loading asset: {0}", filePath);
             } catch (GdxRuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Failed to load asset: {0} | Error: {1}",
@@ -90,14 +90,14 @@ public class GameAsset implements Disposable {
 
     /** Ensures all assets finish loading */
     public void loadAndFinish() {
-        assetManager.finishLoading();
+        asset_Manager.finishLoading();
         LOGGER.log(Level.INFO, "All assets finished loading.");
     }
 
     /** Gets asset if loaded */
     public <T> T getAsset(String filePath, Class<T> type) {
-        if (assetManager.isLoaded(filePath, type)) {
-            return assetManager.get(filePath, type);
+        if (asset_Manager.isLoaded(filePath, type)) {
+            return asset_Manager.get(filePath, type);
         } else {
             throw new GdxRuntimeException("Asset not loaded: " + filePath);
         }
@@ -110,8 +110,8 @@ public class GameAsset implements Disposable {
             if (count > 1) {
                 assetReferenceCount.put(filePath, count - 1);
             } else {
-                if (assetManager.isLoaded(filePath)) {
-                    assetManager.unload(filePath);
+                if (asset_Manager.isLoaded(filePath)) {
+                    asset_Manager.unload(filePath);
                     LOGGER.log(Level.INFO, "Unloaded asset: {0}", filePath);
                 }
                 assetReferenceCount.remove(filePath);
@@ -123,22 +123,22 @@ public class GameAsset implements Disposable {
 
     /** Checks if an asset is loaded */
     public boolean isAssetLoaded(String filePath) {
-        return assetManager.isLoaded(filePath);
+        return asset_Manager.isLoaded(filePath);
     }
 
     /** Asynchronously updates asset loading, returns true when done */
     public boolean isLoaded() {
-        return assetManager.update();
+        return asset_Manager.update();
     }
 
     /** Gets asset loading progress */
     public float getLoadProgress() {
-        return assetManager.getProgress();
+        return asset_Manager.getProgress();
     }
 
     /** Gets the asset manager */
-    public AssetManager getAssetManager() {
-        return this.assetManager;
+    public AssetManager getasset_Manager() {
+        return this.asset_Manager;
     }
 
     /** Properly disposes of all assets */
@@ -146,12 +146,12 @@ public class GameAsset implements Disposable {
     public synchronized void dispose() {
         assetReferenceCount.clear();
         assetGroups.clear();
-        assetManager.dispose();
+        asset_Manager.dispose();
         LOGGER.log(Level.INFO, "All assets disposed.");
     }
 
     /** Updates asset loading progress */
     public void update() {
-        assetManager.update();
+        asset_Manager.update();
     }
 }

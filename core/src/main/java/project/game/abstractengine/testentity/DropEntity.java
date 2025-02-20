@@ -13,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.assetmanager.assetManager;
 import project.game.abstractengine.entitysystem.entitymanager.CollidableEntity;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.interfaces.ICollidable;
@@ -72,10 +72,10 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 
 	@Override
 	public void render(SpriteBatch batch) {
-		if (isActive() && GameAsset.getInstance().isLoaded()) {
+		if (isActive() && assetManager.getInstance().isLoaded()) {
 			float renderX = entityX() - entityWidth() / 2;
 			float renderY = entityY() - entityHeight() / 2;
-			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
+			Texture texture = assetManager.getInstance().getAsset(texturePath, Texture.class);
 			batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
 		}
 	}
