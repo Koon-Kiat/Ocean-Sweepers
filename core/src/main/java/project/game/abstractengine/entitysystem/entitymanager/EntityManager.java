@@ -76,6 +76,7 @@ public class EntityManager {
 						if (collidableA.checkCollision(entityB)) {
 							collidableA.onCollision(collidableB);
 							collidableB.onCollision(collidableA);
+                            
 						}
 					}
 				}

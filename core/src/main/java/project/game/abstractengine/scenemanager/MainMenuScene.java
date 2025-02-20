@@ -5,8 +5,10 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.viewport.FitViewport; //Timer for delay on exit
 
+import project.game.abstractengine.audiomanager.AudioManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
 
 public class MainMenuScene extends Scene {
@@ -16,6 +18,7 @@ public class MainMenuScene extends Scene {
 
     private OrthographicCamera camera;
     private FitViewport viewport;
+    private AudioManager audioManager;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
@@ -51,21 +54,35 @@ public class MainMenuScene extends Scene {
         options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin); // Exit closes game
 
+        audioManager = new AudioManager(stage); // AudioManager for sound effects and music
+
+
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
+            audioManager.playSoundEffect("selection");
             System.out.println("Start Game Clicked!");
             sceneManager.setScene("game");
         });
 
         inputManager.addButtonClickListener(optionsButton, () -> {
+            audioManager.playSoundEffect("selection");
             System.out.println("Options Clicked!"); // Debug log
             sceneManager.setScene("options"); // Switch to OptionsScene
 
         });
 
+
+
         inputManager.addButtonClickListener(exitButton, () -> {
-            Gdx.app.exit(); // Close game
-            dispose();
+            audioManager.playSoundEffect("selection");
+            System.out.println("Exit Clicked!"); // Debug log
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    Gdx.app.exit(); // Close game
+                    dispose();
+                }
+            }, 0.5f);
         });
 
         Table table = new Table();
