@@ -69,7 +69,7 @@ public class MainMenuScene extends Scene {
 
         inputManager.addButtonClickListener(exitButton, () -> {
             Gdx.app.exit();
-            dispose();
+            sceneManager.dispose();
         });
 
         Table table = new Table();
