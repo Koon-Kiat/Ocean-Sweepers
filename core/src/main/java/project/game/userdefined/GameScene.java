@@ -95,7 +95,6 @@ public class GameScene extends Scene {
         LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         inputManager = new SceneIOManager();
-        entityManager = new EntityManager();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         initPopUpMenu();
         displayMessage();
@@ -124,8 +123,7 @@ public class GameScene extends Scene {
             LOGGER.log(Level.SEVERE, "Failed to load assets: {0}", e.getMessage());
         }
 
-        // Set lenient mode for movement manager
-        MovementManager.setLenientMode(true);
+        entityManager = new EntityManager();
 
         // Create entities
         Entity genericDropEntity = new Entity(
@@ -143,6 +141,9 @@ public class GameScene extends Scene {
 
         Entity genericNonMovableDroplet = new Entity(100f, 200f, 50f, 50f, false);
 
+        // Set lenient mode for movement manager
+        MovementManager.setLenientMode(true);
+
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
                 .setSpeed(GameConstants.PLAYER_SPEED)
@@ -159,7 +160,7 @@ public class GameScene extends Scene {
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
                 .setSpeed(GameConstants.NPC_SPEED)
-                .withRandomisedMovement(behaviorPool, GameConstants.MIN_DURATION, GameConstants.MAX_DURATION)
+                .withFollowMovement(playerMovementManager)
                 .setDirection(Direction.NONE)
                 .build();
 
@@ -167,6 +168,7 @@ public class GameScene extends Scene {
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
         nonMovableDroplet = new NonMovableDroplet(genericNonMovableDroplet, "droplet.png");
 
+        // Add entities to the entity manager
         entityManager.addRenderableEntity(bucket);
         entityManager.addRenderableEntity(drop);
         entityManager.addRenderableEntity(nonMovableDroplet);
@@ -188,8 +190,10 @@ public class GameScene extends Scene {
 
         collisionManager.init();
         collisionManager.createScreenBoundaries(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
-        audioManager = new AudioManager(stage);// AudioManager for sound effects and music
-        audioManager.playMusic("BackgroundMusic"); // Play background music
+
+        // Initialize AudioManager and play background music
+        audioManager = new AudioManager(stage);
+        audioManager.playMusic("BackgroundMusic");
 
     }
 
@@ -220,7 +224,6 @@ public class GameScene extends Scene {
         debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
         debugRenderer.render(world, debugMatrix);
 
-        // Fixed timestep for Box2D
         float timeStep = 1 / 60f;
         world.step(timeStep, 6, 2);
         collisionManager.processCollisions();
@@ -248,7 +251,6 @@ public class GameScene extends Scene {
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
-
         options.setMainMenuButtonVisibility(true);
         options.getPopupMenu().setTouchable(Touchable.enabled);
 

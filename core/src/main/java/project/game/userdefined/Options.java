@@ -21,12 +21,12 @@ import project.game.abstractengine.scenemanager.SceneManager;
 
 public class Options extends Scene {
 
+    private static final Logger LOGGER = Logger.getLogger(Options.class.getName());
     private Skin skin;
     private Window popupMenu;
     private Window rebindMenu;
     private boolean isPaused = true;
     private GameScene gameScene;
-    private static final Logger LOGGER = Logger.getLogger(Options.class.getName());
 
     // Added to make main menu button visible/invisible.
     private TextButton mainMenuButton;
@@ -54,7 +54,6 @@ public class Options extends Scene {
         popupMenu = new Window("Options", skin);
         popupMenu.setSize(200, 100);
         popupMenu.setPosition(400, 270);
-
         popupMenu.setVisible(false);
 
         // Ensure that the popup menu blocks input to other UI elements
@@ -106,7 +105,7 @@ public class Options extends Scene {
         rebindMenu.setKeepWithinStage(true);
 
         inputManager.addButtonClickListener(rebindMenu, () -> {
-            LOGGER.log(Level.INFO, "Window clicked!"); 
+            LOGGER.log(Level.INFO, "Window clicked!");
         });
 
         // Debug log for popup menu touch event
@@ -117,7 +116,6 @@ public class Options extends Scene {
         TextButton rebindButton2 = new TextButton("Down", skin);
         TextButton rebindButton3 = new TextButton("Left", skin);
         TextButton rebindButton4 = new TextButton("Right", skin);
-        // TextButton returnButton = new TextButton("Return", skin);
         TextButton confirmButton = new TextButton("Confirm", skin);
 
         final TextField textField1 = new TextField("", skin);

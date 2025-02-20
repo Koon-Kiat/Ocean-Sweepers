@@ -17,9 +17,9 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class CustomAssetManager implements Disposable {
 
+    private static final Logger LOGGER = Logger.getLogger(CustomAssetManager.class.getName());
     private static CustomAssetManager instance;
     private final AssetManager asset_Manager;
-    private static final Logger LOGGER = Logger.getLogger(CustomAssetManager.class.getName());
 
     // Reference counting to track asset usage
     private final Map<String, Integer> assetReferenceCount = new HashMap<>();

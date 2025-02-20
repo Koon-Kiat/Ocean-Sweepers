@@ -1,5 +1,6 @@
 package project.game.userdefined;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
@@ -7,10 +8,11 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import project.game.abstractengine.audiomanager.AudioManager;
-import project.game.abstractengine.iomanager.SceneIOManager; //Timer for delay on exit
+import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
 
@@ -54,10 +56,10 @@ public class MainMenuScene extends Scene {
         Options options = new Options(sceneManager, gameScene, inputManager);
         options.create();
         options.setMainMenuButtonVisibility(false);
-        exitButton = new TextButton("EXIT", skin); // Exit closes game
+        exitButton = new TextButton("EXIT", skin);
 
-        audioManager = new AudioManager(stage); // AudioManager for sound effects and music
-
+        // AudioManager for sound effects and music
+        audioManager = new AudioManager(stage);
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
@@ -73,15 +75,13 @@ public class MainMenuScene extends Scene {
 
         });
 
-
-
         inputManager.addButtonClickListener(exitButton, () -> {
             audioManager.playSoundEffect("selection");
             System.out.println("Exit Clicked!"); // Debug log
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
-                    Gdx.app.exit(); // Close game
+                    Gdx.app.exit();
                     dispose();
                 }
             }, 0.5f);
