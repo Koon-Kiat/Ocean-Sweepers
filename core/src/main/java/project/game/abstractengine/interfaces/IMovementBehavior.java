@@ -1,4 +1,4 @@
-package project.game.abstractengine.entitysystem.interfaces;
+package project.game.abstractengine.interfaces;
 
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 

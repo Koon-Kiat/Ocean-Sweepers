@@ -14,9 +14,9 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.interfaces.ICollidable;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.constants.GameConstants;
 import project.game.testentity.BucketEntity;

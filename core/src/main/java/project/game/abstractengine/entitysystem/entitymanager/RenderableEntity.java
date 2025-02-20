@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import project.game.abstractengine.assetmanager.CustomAssetManager;
-import project.game.abstractengine.entitysystem.interfaces.IRenderable;
+import project.game.abstractengine.interfaces.IRenderable;
 
 public abstract class RenderableEntity extends Entity implements IRenderable {
 	private final Entity entity;

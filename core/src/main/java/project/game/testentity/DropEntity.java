@@ -16,9 +16,9 @@ import project.game.Main;
 import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.entitysystem.entitymanager.CollidableEntity;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.entitysystem.interfaces.ICollidable;
-import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.abstractengine.interfaces.ICollidable;
+import project.game.abstractengine.interfaces.IRenderable;
 import project.game.constants.GameConstants;
 
 public class DropEntity extends CollidableEntity implements IRenderable {

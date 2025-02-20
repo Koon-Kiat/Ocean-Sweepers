@@ -1,4 +1,4 @@
-package project.game.abstractengine.entitysystem.interfaces;
+package project.game.abstractengine.interfaces;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 

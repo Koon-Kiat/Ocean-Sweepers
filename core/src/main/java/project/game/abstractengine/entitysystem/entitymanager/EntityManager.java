@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.abstractengine.entitysystem.interfaces.ICollidable;
-import project.game.abstractengine.entitysystem.interfaces.IRenderable;
+import project.game.abstractengine.interfaces.ICollidable;
+import project.game.abstractengine.interfaces.IRenderable;
 
 public class EntityManager {
 

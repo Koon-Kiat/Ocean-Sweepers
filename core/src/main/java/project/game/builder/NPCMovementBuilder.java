@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.logging.Level;
 
 import project.game.Direction;
-import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
-import project.game.abstractengine.entitysystem.interfaces.IMovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.abstractengine.interfaces.IMovementBehavior;
+import project.game.abstractengine.interfaces.IMovementManager;
 import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.RandomisedMovementBehavior;

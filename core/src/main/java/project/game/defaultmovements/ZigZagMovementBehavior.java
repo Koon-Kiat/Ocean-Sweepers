@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
-import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
+import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**

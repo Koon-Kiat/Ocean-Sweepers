@@ -14,9 +14,9 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.entitysystem.entitymanager.CollidableEntity;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.entitysystem.interfaces.ICollidable;
-import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.interfaces.ICollidable;
+import project.game.abstractengine.interfaces.IRenderable;
 import project.game.constants.GameConstants;
 
 public class BucketEntity extends CollidableEntity implements IRenderable {

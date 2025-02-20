@@ -8,8 +8,8 @@ import java.util.logging.Logger;
 import com.badlogic.gdx.math.MathUtils;
 
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
-import project.game.abstractengine.entitysystem.interfaces.IMovementBehavior;
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
+import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.constants.GameConstants;
 import project.game.exceptions.MovementException;
 

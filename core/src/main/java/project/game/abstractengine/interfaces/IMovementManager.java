@@ -1,4 +1,4 @@
-package project.game.abstractengine.entitysystem.interfaces;
+package project.game.abstractengine.interfaces;
 
 import java.util.Map;
 import java.util.Set;
