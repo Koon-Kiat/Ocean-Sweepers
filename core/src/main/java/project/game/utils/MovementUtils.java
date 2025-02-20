@@ -1,4 +1,4 @@
-package project.game.abstractengine.entitysystem.movementmanager;
+package project.game.utils;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

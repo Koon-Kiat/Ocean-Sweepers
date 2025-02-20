@@ -8,9 +8,9 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.Direction;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
-import project.game.abstractengine.entitysystem.movementmanager.MovementUtils;
 import project.game.abstractengine.interfaces.IStoppableMovementBehavior;
 import project.game.exceptions.MovementException;
+import project.game.utils.MovementUtils;
 
 /**
  * @class AcceleratedMovementBehavior
