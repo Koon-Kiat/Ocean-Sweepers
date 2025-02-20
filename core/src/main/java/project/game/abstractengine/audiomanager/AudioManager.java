@@ -2,6 +2,8 @@ package project.game.abstractengine.audiomanager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
@@ -18,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 public class AudioManager {
+    private static final Logger LOGGER = Logger.getLogger(AudioManager.class.getName());
     private float setsoundVolume = 0.2f;
     private float setmusicVolume = 0.1f;
     private boolean isSoundEnabled = true;
@@ -53,9 +56,15 @@ public class AudioManager {
         createVolumeControls();
     }
 
-    public static synchronized AudioManager getInstance(Stage stage) {
+    @SuppressWarnings("DoubleCheckedLocking")
+    public static AudioManager getInstance(Stage stage) {
         if (instance == null) {
-            instance = new AudioManager(stage);
+            synchronized (AudioManager.class) {
+                if (instance == null) {
+                    // Double-checked locking with volatile instance
+                    instance = new AudioManager(stage);
+                }
+            }
         }
         return instance;
     }
@@ -68,7 +77,7 @@ public class AudioManager {
             // Remove the file extension from the track name
             String trackName = track.replace(".mp3", "");
             if (!Gdx.files.internal(track).exists()) {
-                System.out.println("Failed to Load Music: " + track);
+                LOGGER.log(Level.WARNING, "Failed to Load Music: {0}", track);
                 continue;
             }
 
@@ -76,9 +85,9 @@ public class AudioManager {
             Music music = Gdx.audio.newMusic(Gdx.files.internal(track));
 
             if (music == null) {
-                System.out.println("Failed to Load Music: " + track);
+                LOGGER.log(Level.WARNING, "Failed to Load Music: {0}", track);
             } else {
-                System.out.println("Loaded Music: " + track);
+                LOGGER.log(Level.INFO, "Loaded Music: {0}", track);
                 music.setLooping(true);
                 music.setVolume(setmusicVolume);
                 musicTrack.put(trackName, music);
@@ -97,9 +106,9 @@ public class AudioManager {
             Sound sound = Gdx.audio.newSound(Gdx.files.internal(soundNames[i]));
 
             if (sound == null) {
-                System.out.println("Failed to Load Sound Effect: " + soundNames[i]);
+                LOGGER.log(Level.WARNING, "Failed to Load Sound Effect: {0}", soundNames[i]);
             } else {
-                System.out.println("Loaded Sound Effect: " + soundNames[i]);
+                LOGGER.log(Level.INFO, "Loaded Sound Effect: {0}", soundNames[i]);
                 soundEffects.put(keys[i], sound);
             }
         }
@@ -115,7 +124,7 @@ public class AudioManager {
         Preferences prefs = Gdx.app.getPreferences("AudioSettings");
         prefs.putBoolean("soundEnabled", isSoundEnabled);
         prefs.flush();
-        System.out.println("[Debug] Sound Effects Enabled: " + isSoundEnabled + " | Volume: " + isSoundEnabled);
+        LOGGER.log(Level.INFO, "Sound Effects Enabled: {0} | Volume: {1}", new Object[] { isSoundEnabled, setsoundVolume });
     }
 
     public void playMusic(String trackName) {
@@ -154,7 +163,7 @@ public class AudioManager {
         for (Music music : musicTrack.values()) {
             music.setVolume(setmusicVolume);
         }
-        System.out.println("Updated Music Volume: " + musicvolume);
+        LOGGER.log(Level.INFO, "Updated Music Volume: {0}", musicvolume);
     }
 
     public void setLooping(boolean isLooping) {
@@ -181,7 +190,7 @@ public class AudioManager {
             hideVolumeControls();
             Gdx.input.setInputProcessor(null);
         }
-        System.out.println("[Debug] Audio Paused: " + isPaused);
+        LOGGER.log(Level.INFO, "Audio Paused: {0}", isPaused);
     }
 
     public void hideVolumeControls() {
@@ -212,7 +221,7 @@ public class AudioManager {
             public void changed(ChangeEvent event, Actor actor) {
                 boolean isChecked = soundToggle.isChecked();
                 toggleSoundEffects(isChecked);
-                System.out.println("[Debug] Checkbox Changed: " + isChecked);
+                LOGGER.log(Level.INFO, "Sound Effects Enabled: {0}", isChecked);
             }
         });
 
