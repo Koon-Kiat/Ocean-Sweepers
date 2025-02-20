@@ -22,6 +22,9 @@ import project.game.constants.GameConstants;
 import project.game.testentity.BucketEntity;
 import project.game.testentity.DropEntity;
 
+
+// TODO: Remove context from the class
+
 public class CollisionManager implements ContactListener {
 
     private final World world;
@@ -43,6 +46,7 @@ public class CollisionManager implements ContactListener {
         this.drop = drop;
         this.inputManager = inputManager;
     }
+
     public void init() {
         world.setContactListener(this);
     }
@@ -75,15 +79,12 @@ public class CollisionManager implements ContactListener {
         }
 
         if ((userDataA instanceof DropEntity && userDataB instanceof BucketEntity) ||
-        (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)){
-            // System.out.println("Collision detected between Drop and Bucket !");
+                (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)) {
             collided = true;
-
         }
     }
 
-        
-    public boolean collision(){
+    public boolean collision() {
         return collided;
     }
 
@@ -92,17 +93,17 @@ public class CollisionManager implements ContactListener {
         // Called when two fixtures stop touching.
         Fixture fixtureA = contact.getFixtureA();
         Fixture fixtureB = contact.getFixtureB();
-    
+
         Object userDataA = fixtureA.getBody().getUserData();
         Object userDataB = fixtureB.getBody().getUserData();
-    
+
         // Reset collided to false when entities are no longer in contact
-        if ((userDataA instanceof DropEntity && userDataB instanceof BucketEntity) || 
-            (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)) {
-            // System.out.println("Collision ended between Drop and Bucket!");
-            collided = false;  // Set collided to false when the collision ends
+        if ((userDataA instanceof DropEntity && userDataB instanceof BucketEntity) ||
+                (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)) {
+            collided = false;
         }
     }
+
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
         // Modify the contact properties if needed.
