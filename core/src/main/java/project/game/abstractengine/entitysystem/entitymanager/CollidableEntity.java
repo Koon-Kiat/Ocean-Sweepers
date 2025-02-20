@@ -11,12 +11,16 @@ import project.game.abstractengine.entitysystem.interfaces.ICollidable;
 public abstract class CollidableEntity extends Entity implements ICollidable {
 
 	private final Entity entity;
-	private final Body body;
+	private Body body;
 
 	public CollidableEntity(Entity baseEntity, World world) {
 		this.entity = baseEntity;
-		this.body = createBody(world, baseEntity.getX(), baseEntity.getY(), baseEntity.getWidth(),
-				baseEntity.getHeight());
+	}
+
+	public final void initBody(World world) {
+		if (body == null) {
+			body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
+		}
 	}
 
 	@Override
@@ -52,7 +56,7 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 		return createdBody;
 	}
 
-	public final Body createBody(World world, float x, float y, float width, float height, float density,
+	public Body createBody(World world, float x, float y, float width, float height, float density,
 			float friction,
 			float restitution) {
 		BodyDef bodyDef = new BodyDef();

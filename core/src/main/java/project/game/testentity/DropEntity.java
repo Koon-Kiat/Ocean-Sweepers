@@ -51,6 +51,7 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 		return super.getEntity().getHeight();
 	}
 
+	@Override
 	public boolean isActive() {
 		return movementManager.isActive();
 	}

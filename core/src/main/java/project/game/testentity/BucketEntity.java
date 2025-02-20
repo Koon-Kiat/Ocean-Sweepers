@@ -49,6 +49,7 @@ public class BucketEntity extends CollidableEntity implements IRenderable {
 		return super.getEntity().getHeight();
 	}
 
+	@Override
 	public boolean isActive() {
 		return movementManager.isActive();
 	}
@@ -97,9 +98,9 @@ public class BucketEntity extends CollidableEntity implements IRenderable {
 		} else if (other instanceof ICollidable) {
 			Body otherBody = ((ICollidable) other).getBody();
 			return super.getBody().getPosition().x < otherBody.getPosition().x + other.getWidth() &&
-			super.getBody().getPosition().x + entityWidth() > otherBody.getPosition().x &&
-			super.getBody().getPosition().y < otherBody.getPosition().y + other.getHeight() &&
-			super.getBody().getPosition().y + entityHeight() > otherBody.getPosition().y;
+					super.getBody().getPosition().x + entityWidth() > otherBody.getPosition().x &&
+					super.getBody().getPosition().y < otherBody.getPosition().y + other.getHeight() &&
+					super.getBody().getPosition().y + entityHeight() > otherBody.getPosition().y;
 		}
 		return false;
 	}

@@ -45,6 +45,7 @@ import project.game.testentity.BucketEntity;
 import project.game.testentity.DropEntity;
 import project.game.testentity.NonMovableDroplet;
 
+@SuppressWarnings({ "unused", "FieldMayBeFinal" })
 public class GameScene extends Scene {
     private static final Logger LOGGER = Logger.getLogger(GameScene.class.getName());
     private EntityManager entityManager;
@@ -64,8 +65,8 @@ public class GameScene extends Scene {
     private Matrix4 debugMatrix;
     private CollisionManager collisionManager;
     private boolean isPaused = false;
-    private boolean isMenuOpen = false;
     private boolean isVolumePopupOpen = false;
+    private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
     private AudioManager audioManager;
@@ -167,6 +168,9 @@ public class GameScene extends Scene {
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
         nonMovableDroplet = new NonMovableDroplet(genericNonMovableDroplet, "droplet.png");
+
+        bucket.initBody(world);
+        drop.initBody(world);
 
         // Add entities to the entity manager
         entityManager.addRenderableEntity(bucket);
