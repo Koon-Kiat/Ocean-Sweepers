@@ -197,7 +197,6 @@ public class GameScene extends Scene {
     @Override
     public void render(float deltaTime) {
         input();
-        show();
 
         try {
             collisionManager.updateGame(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
@@ -263,16 +262,13 @@ public class GameScene extends Scene {
      *        - Rebind Pop-up window on 'P' key press
      */
     private void input() {
-
-        Gdx.input.setInputProcessor(inputManager);
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+        if (inputManager.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+        } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+        if (inputManager.isKeyJustPressed(Input.Keys.P)) {
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
             options.getRebindMenu().setVisible(isMenuOpen);
@@ -280,7 +276,6 @@ public class GameScene extends Scene {
                 isPaused = true;
                 inputMultiplexer.setProcessors(stage, inputManager);
                 LOGGER.log(Level.INFO, "InputProcessor set to stage");
-
             } else {
                 isPaused = false;
                 inputMultiplexer.removeProcessor(stage);
@@ -332,7 +327,6 @@ public class GameScene extends Scene {
         options.getPopupMenu().setVisible(false);
         inputMultiplexer.removeProcessor(stage);
         inputMultiplexer.addProcessor(inputManager);
-        inputManager.clearPressedKeys(); // Clear the pressedKeys set
         LOGGER.log(Level.INFO, "Popup closed and game unpaused");
     }
 
