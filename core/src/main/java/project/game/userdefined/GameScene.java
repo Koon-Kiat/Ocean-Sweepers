@@ -23,6 +23,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.Direction;
+import project.game.abstractengine.assetmanager.GameAsset;
+import project.game.abstractengine.audiomanager.AudioManager;
+import project.game.abstractengine.constants.GameConstants;
 import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
@@ -63,9 +66,10 @@ public class GameScene extends Scene {
     private Matrix4 debugMatrix;
     private CollisionManager collisionManager;
     private boolean isPaused = false;
-    private boolean isMenuOpen = false;
+    private boolean isMenuOpen = false, isVolumePopupOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
+    private AudioManager audioManager;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
     private NonMovableDroplet nonMovableDroplet;
 
@@ -183,7 +187,11 @@ public class GameScene extends Scene {
                 drop,
                 inputManager);
         collisionManager.init();
+        // collisionManager.create(stage);
         collisionManager.createScreenBoundaries(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
+        audioManager = new AudioManager(stage);// AudioManager for sound effects and music
+        audioManager.playMusic("BackgroundMusic"); // Play background music
+
     }
 
     @Override
@@ -218,6 +226,14 @@ public class GameScene extends Scene {
         world.step(timeStep, 6, 2);
         collisionManager.processCollisions();
         collisionManager.syncEntityPositions();
+
+        if (collisionManager.collision()) {
+            if (audioManager != null) {
+                audioManager.playSoundEffect("drophit");
+            } else {
+                System.err.println("[ERROR] AudioManager is null!");
+            }
+        }
     }
 
     @Override
@@ -261,14 +277,60 @@ public class GameScene extends Scene {
      *        - Game Over Scene on 'E' key press
      *        - Rebind Pop-up window on 'P' key press
      */
+
+    // public void closeVolumePopup() {
+    // isVolumePopupOpen = false;
+    // audioManager.hideVolumeControls();
+    // }
+
+    // public void closeRebindPopup() {
+    // isRebindPopupOpen = false;
+    // options.getRebindMenu().setVisible(false);
+    // }
+
     private void input() {
-        if (inputManager.isKeyJustPressed(Input.Keys.M)) {
+
+        Gdx.input.setInputProcessor(inputManager);
+
+        // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game
+        // over scene
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
         } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
         }
 
-        if (inputManager.isKeyJustPressed(Input.Keys.P)) {
+        if (!audioManager.isPaused) {
+            Gdx.input.setInputProcessor(inputManager);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
+            if (isMenuOpen) {
+                isMenuOpen = !isMenuOpen;
+                options.getRebindMenu().setVisible(isMenuOpen);
+            }
+            isVolumePopupOpen = !isVolumePopupOpen;
+            if (isVolumePopupOpen) {
+                audioManager.togglePause();
+                audioManager.showVolumeControls();
+                Gdx.input.setInputProcessor(stage);
+            } else {
+                audioManager.hideVolumeControls();
+                audioManager.togglePause();
+                Gdx.input.setInputProcessor(inputManager);
+            }
+        }
+
+        // Keys Binded for directional movement will make a sound effect
+        for (Integer key : inputManager.getKeyBindings().keySet()) {
+            if (Gdx.input.isKeyJustPressed(key)) {
+                System.out.println("Key Pressed: " + Input.Keys.toString(key));
+                audioManager.playSoundEffect("keybuttons");
+            }
+        }
+
+        // Toggle options menu with 'P'
+        // Will open the rebind menu
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
             options.getRebindMenu().setVisible(isMenuOpen);

@@ -1,6 +1,5 @@
 package project.game.userdefined;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
@@ -10,7 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.audiomanager.AudioManager;
+import project.game.abstractengine.iomanager.SceneIOManager; //Timer for delay on exit
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
 
@@ -22,6 +22,7 @@ public class MainMenuScene extends Scene {
     private GameScene gameScene;
     private OrthographicCamera camera;
     private FitViewport viewport;
+    private AudioManager audioManager;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
@@ -53,23 +54,37 @@ public class MainMenuScene extends Scene {
         Options options = new Options(sceneManager, gameScene, inputManager);
         options.create();
         options.setMainMenuButtonVisibility(false);
-        exitButton = new TextButton("EXIT", skin);
+        exitButton = new TextButton("EXIT", skin); // Exit closes game
+
+        audioManager = new AudioManager(stage); // AudioManager for sound effects and music
+
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
+            audioManager.playSoundEffect("selection");
             LOGGER.log(Level.INFO, "Start Game Clicked!");
             sceneManager.setScene("game");
         });
 
         inputManager.addButtonClickListener(optionsButton, () -> {
+            audioManager.playSoundEffect("selection");
             LOGGER.log(Level.INFO, "Options Clicked!");
             sceneManager.setScene("options");
 
         });
 
+
+
         inputManager.addButtonClickListener(exitButton, () -> {
-            Gdx.app.exit();
-            sceneManager.dispose();
+            audioManager.playSoundEffect("selection");
+            System.out.println("Exit Clicked!"); // Debug log
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    Gdx.app.exit(); // Close game
+                    dispose();
+                }
+            }, 0.5f);
         });
 
         Table table = new Table();

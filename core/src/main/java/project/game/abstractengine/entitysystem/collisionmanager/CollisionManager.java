@@ -31,6 +31,7 @@ public class CollisionManager implements ContactListener {
     private final BucketEntity bucket;
     private final DropEntity drop;
     private final SceneIOManager inputManager;
+    private boolean collided = false;
 
     public CollisionManager(World world, PlayerMovementManager playerMovementManager,
             NPCMovementManager npcMovementManager, BucketEntity bucket, DropEntity drop, SceneIOManager inputManager) {
@@ -42,7 +43,6 @@ public class CollisionManager implements ContactListener {
         this.drop = drop;
         this.inputManager = inputManager;
     }
-
     public void init() {
         world.setContactListener(this);
     }
@@ -73,13 +73,36 @@ public class CollisionManager implements ContactListener {
             ICollidable collidableB = (ICollidable) userDataB;
             collisionQueue.add(() -> collidableB.onCollision(null));
         }
+
+        if ((userDataA instanceof DropEntity && userDataB instanceof BucketEntity) ||
+        (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)){
+            // System.out.println("Collision detected between Drop and Bucket !");
+            collided = true;
+
+        }
+    }
+
+        
+    public boolean collision(){
+        return collided;
     }
 
     @Override
     public void endContact(Contact contact) {
         // Called when two fixtures stop touching.
+        Fixture fixtureA = contact.getFixtureA();
+        Fixture fixtureB = contact.getFixtureB();
+    
+        Object userDataA = fixtureA.getBody().getUserData();
+        Object userDataB = fixtureB.getBody().getUserData();
+    
+        // Reset collided to false when entities are no longer in contact
+        if ((userDataA instanceof DropEntity && userDataB instanceof BucketEntity) || 
+            (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)) {
+            // System.out.println("Collision ended between Drop and Bucket!");
+            collided = false;  // Set collided to false when the collision ends
+        }
     }
-
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
         // Modify the contact properties if needed.
