@@ -42,6 +42,7 @@ import project.game.constants.GameConstants;
 import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.ZigZagMovementBehavior;
+import project.game.abstractengine.testentity.NonMovableDroplet;
 
 public class GameScene extends Scene {
     private static final Logger LOGGER = Logger.getLogger(GameScene.class.getName());
@@ -66,6 +67,7 @@ public class GameScene extends Scene {
     private InputMultiplexer inputMultiplexer;
     private Options options;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
+    private NonMovableDroplet nonMovableDroplet;
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
@@ -136,6 +138,8 @@ public class GameScene extends Scene {
                 GameConstants.BUCKET_HEIGHT,
                 true);
 
+        Entity genericNonMovableDroplet = new Entity(100f, 200f, 50f, 50f, false);
+
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
                 .setSpeed(GameConstants.PLAYER_SPEED)
@@ -158,9 +162,11 @@ public class GameScene extends Scene {
 
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
+        nonMovableDroplet = new NonMovableDroplet(genericNonMovableDroplet, "droplet.png");
 
         entityManager.addRenderableEntity(bucket);
         entityManager.addRenderableEntity(drop);
+        entityManager.addRenderableEntity(nonMovableDroplet);
 
         camera = new OrthographicCamera(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
         camera.position.set(GameConstants.GAME_WIDTH / 2, GameConstants.GAME_HEIGHT / 2, 0);
