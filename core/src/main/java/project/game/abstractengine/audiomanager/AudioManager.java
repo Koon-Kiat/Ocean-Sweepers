@@ -13,13 +13,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 public class AudioManager {
     private float setsoundVolume = 0.2f; //Set default sound effects
-    private float setmusicVolume = 0.2f; //Set default music volume
+    private float setmusicVolume = 0.1f; //Set default music volume
     private boolean isSoundEnabled = true; //Set sound effects to be enabled by default
     private final boolean musicEnable = true; //Set music to be enabled by default
     private final Map<String, Sound> soundEffects; //Create a hashmap to store the sound effects
@@ -32,7 +31,6 @@ public class AudioManager {
     private Label musicLabel;
     private Label soundLabel;
     private Window volumeWindow;
-    private TextButton settingsButton;
     private static volatile AudioManager instance;
     public boolean isPaused = false;
 
@@ -91,7 +89,7 @@ public class AudioManager {
 
     private void loadSoundEffects(){ //Load the sound effects
         String[] soundNames = {"Boinkeffect.mp3", "Selection.mp3", "Watercollision.mp3"}; //Create an array of sound effect names
-        String[] keys = {"keybuttons", "selection", "watercollision"}; //Create an array of keys for the sound effects
+        String[] keys = {"keybuttons", "selection", "drophit"}; //Create an array of keys for the sound effects
         for(int i = 0; i < soundNames.length; i++){
             Sound sound = Gdx.audio.newSound(Gdx.files.internal(soundNames[i])); //Load the sound effect
         
@@ -211,14 +209,14 @@ public class AudioManager {
         });
         
         // Close Button
-        TextButton closeButton = new TextButton("Close", skin);
-        closeButton.addListener(new ChangeListener(){
-            @Override
-            public void changed(ChangeEvent event, Actor actor){
-                volumeWindow.setVisible(false);
-                togglePause(); //Unpause the game upon close
-            }
-        });
+        // TextButton closeButton = new TextButton("Close", skin);
+        // closeButton.addListener(new ChangeListener(){
+        //     @Override
+        //     public void changed(ChangeEvent event, Actor actor){
+        //         volumeWindow.setVisible(false);
+        //         togglePause(); //Unpause the game upon close
+        //     }
+        // });
 
         //Add components to the window
         Table table = new Table();
@@ -229,8 +227,8 @@ public class AudioManager {
         table.add(soundLabel).padBottom(10); //Add the sound label to the window
         table.row();
         table.add(soundToggle).padBottom(20); //Add the sound slider to the window
-        table.row();
-        table.add(closeButton).padTop(10); //Add the close button to the top of the window
+        // table.row();
+        // table.add(closeButton).padTop(10); //Add the close button to the top of the window
         
         volumeWindow.add(table);
         stage.addActor(volumeWindow);
@@ -251,5 +249,4 @@ public class AudioManager {
         }
         soundEffects.clear();
     }
-
 }

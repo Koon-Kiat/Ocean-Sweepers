@@ -14,14 +14,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.GameAsset;
@@ -79,10 +77,10 @@ public class GameScene extends Scene {
     private OrthographicCamera camera;
     private Matrix4 debugMatrix;
     private CollisionManager collisionManager;
-    private AudioManager audioManager;
-    private boolean isPaused = false, isMenuOpen = false;
+    private boolean isPaused = false, isMenuOpen = false, isVolumePopupOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
+    private AudioManager audioManager;
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
@@ -173,17 +171,11 @@ public class GameScene extends Scene {
         // Initialize CollisionManager and create screen boundaries
         collisionManager = new CollisionManager(world, playerMovementManager, npcMovementManager, bucket, drop, inputManager);
         collisionManager.init();
+        // collisionManager.create(stage);
         collisionManager.createScreenBoundaries(GAME_WIDTH, GAME_HEIGHT);
-
-        stage = new Stage(new ScreenViewport());
-        audioManager = new AudioManager(stage); //Initialise the audio manager
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        Gdx.input.setInputProcessor(stage); //Set the input processor to the stage
-        audioManager.playMusic("BackgroundMusic");     
-        multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(inputManager);
-        Gdx.input.setInputProcessor(multiplexer);
-
+        audioManager = new AudioManager(stage);// AudioManager for sound effects and music
+        audioManager.playMusic("BackgroundMusic"); // Play background music
+        
     }
 
     @Override
@@ -222,9 +214,13 @@ public class GameScene extends Scene {
         world.step(timeStep, 6, 2);
         collisionManager.processCollisions();
         collisionManager.syncEntityPositions();
-
-        
-    
+        if(collisionManager.collision()){
+            if (audioManager != null){
+                audioManager.playSoundEffect("drophit");
+            }else{
+                System.err.println("[ERROR] AudioManager is null!");
+            }
+        }
     }
 
     /*
@@ -261,18 +257,64 @@ public class GameScene extends Scene {
      * - Game Over Scene on 'E' key press
      * - Rebind Pop-up window on 'P' key press
      */
+
+    // public void closeVolumePopup() {
+    //     isVolumePopupOpen = false;
+    //     audioManager.hideVolumeControls();
+    // }
+
+    // public void closeRebindPopup() {
+    //     isRebindPopupOpen = false;
+    //     options.getRebindMenu().setVisible(false);
+    // }
+
     private void input() {
         
         Gdx.input.setInputProcessor(inputManager);
 
-        // //keys Binded pressed will produce a sound effect
-        // for(Integer key: inputManager.getKeyBindings().keySet()){
-        //     if(Gdx.input.isKeyJustPressed(key)){
-        //         System.out.println("[DEBUG] Direction Key pressed: " + Input.Keys.toString(key));
-        //         audioManager.playSoundEffect("keybuttons");
+        // if (Gdx.input.isKeyJustPressed(Input.Keys.V)){
+        //     if(isRebindPopupOpen){ // If rebind popup is open, do not allow volume popup to open
         //     }
+        //     isVolumePopupOpen = true;
+        //     audioManager.showVolumeControls();
+        //     Gdx.input.setInputProcessor(isVolumePopupOpen ? stage : inputManager);
         // }
-        
+
+    //     if (Gdx.input.isKeyJustPressed(Input.Keys.P)){
+    //         if(isVolumePopupOpen){ // If volume popup is open, do not allow rebind popup to open
+    //             closeVolumePopup();
+    //         }
+    //         isRebindPopupOpen = true;
+    //         options.getRebindMenu().setVisible(isRebindPopupOpen);
+    //         Gdx.input.setInputProcessor(isRebindPopupOpen ? stage : inputManager);
+    // }
+        if(!audioManager.isPaused){
+            Gdx.input.setInputProcessor(inputManager);
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.V)){
+            if(isMenuOpen){
+                isMenuOpen = !isMenuOpen;
+                options.getRebindMenu().setVisible(isMenuOpen);
+        }
+            isVolumePopupOpen = !isVolumePopupOpen;
+            if(isVolumePopupOpen){
+                audioManager.togglePause();
+                audioManager.showVolumeControls();
+                Gdx.input.setInputProcessor(stage);
+            }else{
+                audioManager.hideVolumeControls();
+                audioManager.togglePause();
+                Gdx.input.setInputProcessor(inputManager);
+            }
+        }
+
+        //Keys Binded for directional movement will make a sound effect
+        for(Integer key: inputManager.getKeyBindings().keySet()){
+            if(Gdx.input.isKeyJustPressed(key)){
+                System.out.println("Key Pressed: " + Input.Keys.toString(key));
+                audioManager.playSoundEffect("keybuttons");
+            }
+        }
 
         // Keyboard inputs to change scenes: "M" to go to main menu, "E" to go to game over scene
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
@@ -284,6 +326,11 @@ public class GameScene extends Scene {
         // Toggle options menu with 'P'
         // Will open the rebind menu 
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            if (isVolumePopupOpen) {
+                isVolumePopupOpen = !isVolumePopupOpen;
+                audioManager.hideVolumeControls();
+                audioManager.togglePause();
+            }
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
             options.getRebindMenu().setVisible(isMenuOpen);
@@ -352,8 +399,6 @@ public class GameScene extends Scene {
         inputManager.clearPressedKeys(); // Clear the pressedKeys set
         System.out.println("[DEBUG] Popup closed and game unpaused");
     }
-
-    
 
 
 }

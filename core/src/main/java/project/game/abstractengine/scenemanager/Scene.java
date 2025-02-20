@@ -8,7 +8,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
 
-public abstract class Scene extends SceneManager implements Screen {
+public abstract class Scene implements Screen {
     protected Stage stage;
     protected SceneIOManager inputManager;
     protected SceneManager sceneManager;
