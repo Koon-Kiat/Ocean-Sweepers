@@ -14,16 +14,10 @@ import project.game.constants.GameConstants;
 import project.game.exceptions.MovementException;
 
 /**
- * @abstractclass MovementManager
- * @brief Manages the movement logic for game entities.
- *
- *        MovementManager serves as the base class for different types of
- *        movement
- *        managers, handling common properties such as position, speed,
- *        direction, and
- *        the associated movement behavior. It provides methods to update
- *        positions,
- *        and control movement states.
+ * MovementManager is an abstract class that provides basic movement
+ * functionality for entities in the game.
+ * 
+ * It extends MovableEntity and implements IMovementManager.
  */
 public abstract class MovementManager extends MovableEntity implements IMovementManager {
 
@@ -33,10 +27,6 @@ public abstract class MovementManager extends MovableEntity implements IMovement
 
     /**
      * Constructs a MovementManager with the specified parameters.
-     *
-     * @param speed     Movement speed.
-     * @param direction Initial movement direction.
-     * @param behavior  Movement behavior strategy.
      */
     public MovementManager(Entity entity, float speed, Direction direction, IMovementBehavior behavior) {
         super(entity, speed);

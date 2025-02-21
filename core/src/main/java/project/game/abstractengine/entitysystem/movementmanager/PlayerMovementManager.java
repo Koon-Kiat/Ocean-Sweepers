@@ -7,14 +7,11 @@ import project.game.builder.PlayerMovementBuilder;
 import project.game.exceptions.MovementException;
 
 /**
- * @class PlayerMovement
- * @brief Manages the movement logic specific to the player entity.
- *
- *        Extends the abstract MovementManager to provide player-specific
- *        movement
- *        behaviors. Utilizes a Builder pattern to allow flexible configuration
- *        of
- *        movement properties.
+ * PlayerMovementManager is a concrete class that extends MovementManager and
+ * provides movement functionality for the player character in the game.
+ * 
+ * It extends MovementManager and uses the PlayerMovementBuilder to configure
+ * the player's movement behavior.
  */
 public class PlayerMovementManager extends MovementManager {
 
@@ -23,8 +20,6 @@ public class PlayerMovementManager extends MovementManager {
 
     /**
      * Private constructor to enforce the use of the Builder.
-     *
-     * @param builder The Builder instance containing configuration parameters.
      */
     public PlayerMovementManager(PlayerMovementBuilder builder) {
         super(checkBuilder(builder).getEntity(),
