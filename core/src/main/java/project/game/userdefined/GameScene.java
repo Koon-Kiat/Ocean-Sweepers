@@ -84,7 +84,6 @@ public class GameScene extends Scene {
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
-        inputManager = new SceneIOManager();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
@@ -193,10 +192,14 @@ public class GameScene extends Scene {
 
     @Override
     public void show() {
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(stage);
-        multiplexer.addProcessor(inputManager);
-        Gdx.input.setInputProcessor(multiplexer);
+        if (inputMultiplexer == null) {
+            inputMultiplexer = new InputMultiplexer();
+        } else {
+            inputMultiplexer.clear();
+        }
+        inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(inputManager);
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override
@@ -294,9 +297,7 @@ public class GameScene extends Scene {
             } else {
                 audioManager.hideVolumeControls();
             }
-            inputMultiplexer.setProcessors(stage, inputManager);
         }
-
         // Toggle game menu
         if (inputManager.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
@@ -305,9 +306,7 @@ public class GameScene extends Scene {
             audioManager.stopMusic();
             audioManager.hideVolumeControls();
             options.getRebindMenu().setVisible(false);
-            inputMultiplexer.setProcessors(inputManager);
         }
-
         // Toggle pause menu
         if (inputManager.isKeyJustPressed(Input.Keys.P)) {
             if (isVolumePopupOpen) {
