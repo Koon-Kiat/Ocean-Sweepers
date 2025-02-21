@@ -2,6 +2,10 @@ package project.game.abstractengine.entitysystem.entitymanager;
 
 import project.game.Direction;
 
+/**
+ * MovableEntity is an abstract class that extends Entity and provides the
+ * necessary methods and fields for entities that can move.
+ */
 public abstract class MovableEntity extends Entity {
 
 	private final Entity entity;

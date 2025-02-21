@@ -12,6 +12,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import project.game.abstractengine.interfaces.ICollidable;
 import project.game.abstractengine.interfaces.IRenderable;
 
+/**
+ * EntityManager class that manages entities and renderables
+ */
 public class EntityManager {
 
 	private final List<IRenderable> renderables;

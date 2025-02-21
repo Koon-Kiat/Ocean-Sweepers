@@ -8,6 +8,9 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.abstractengine.interfaces.ICollidable;
 
+/**
+ * Abstract class for entities that can collide with other entities.
+ */
 public abstract class CollidableEntity extends Entity implements ICollidable {
 
 	private final Entity entity;

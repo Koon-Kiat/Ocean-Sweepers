@@ -6,6 +6,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.interfaces.IRenderable;
 
+/**
+ * RenderableEntity is an abstract class that extends Entity and provides the
+ * necessary methods and fields for entities that are renderable.
+ */
 public abstract class RenderableEntity extends Entity implements IRenderable {
 	private final Entity entity;
 	private final String texturePath;

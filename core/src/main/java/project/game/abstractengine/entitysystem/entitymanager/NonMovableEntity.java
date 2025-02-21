@@ -1,5 +1,9 @@
 package project.game.abstractengine.entitysystem.entitymanager;
 
+/**
+ * NonMovableEntity is an abstract class that extends Entity and provides the
+ * necessary methods and fields for entities that are non-movable.
+ */
 public abstract class NonMovableEntity extends Entity {
 
 	public NonMovableEntity(float x, float y, float width, float height, boolean active) {
