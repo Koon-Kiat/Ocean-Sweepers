@@ -105,7 +105,7 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 						other == null ? "boundary" : other.getClass().getSimpleName() });
 		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
 		if (other != null && (other instanceof BucketEntity)) {
-			float impulseStrength = GameConstants.IMPUSLE_STRENGTH;
+			float impulseStrength = GameConstants.IMPULSE_STRENGTH;
 			Vector2 myPos = super.getBody().getPosition();
 			Vector2 otherPos = other.getBody().getPosition();
 			Vector2 normal = new Vector2(myPos.x - otherPos.x, myPos.y - otherPos.y).nor();
