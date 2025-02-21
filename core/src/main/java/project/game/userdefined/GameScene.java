@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.audiomanager.AudioManager;
+import project.game.abstractengine.entitysystem.collisionmanager.BoundaryFactory;
 import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
@@ -193,7 +194,7 @@ public class GameScene extends Scene {
                 inputManager);
 
         collisionManager.init();
-        collisionManager.createScreenBoundaries(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
+        BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 0.1f);
 
         // Initialize AudioManager and play background music
         audioManager = new AudioManager(stage);
@@ -284,19 +285,16 @@ public class GameScene extends Scene {
      */
 
     private void input() {
-
-        // TODO: Refactor this to use the input manager
-        // Volume control
         if (inputManager.isKeyJustPressed(Input.Keys.V)) {
             isVolumePopupOpen = !isVolumePopupOpen;
             if (isVolumePopupOpen) {
                 audioManager.togglePause();
                 audioManager.showVolumeControls();
-                inputMultiplexer.setProcessors(stage, inputManager); // Stage gets priority
+                inputMultiplexer.setProcessors(stage, inputManager);
             } else {
                 audioManager.hideVolumeControls();
                 audioManager.togglePause();
-                inputMultiplexer.setProcessors(inputManager, stage); // inputManager gets priority
+                inputMultiplexer.setProcessors(inputManager, stage);
             }
         }
 
@@ -304,6 +302,7 @@ public class GameScene extends Scene {
             sceneManager.setScene("menu");
         } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
+            audioManager.stopMusic();
         }
 
         if (inputManager.isKeyJustPressed(Input.Keys.P)) {
