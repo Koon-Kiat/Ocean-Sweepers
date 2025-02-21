@@ -38,7 +38,9 @@ public class CustomAssetManager implements Disposable {
         return instance;
     }
 
-    /** Generalized asset loading method with reference counting */
+    /**
+     * Generalized asset loading method with reference counting
+     */
     public synchronized <T> void loadAsset(String filePath, Class<T> type) {
         if (!asset_Manager.isLoaded(filePath, type)) {
             try {
@@ -78,7 +80,9 @@ public class CustomAssetManager implements Disposable {
         }
     }
 
-    /** Unloads all assets in a group */
+    /**
+     * Unloads all assets in a group
+     */
     public void unloadAssetGroup(String groupName) {
         if (assetGroups.containsKey(groupName)) {
             for (String filePath : assetGroups.get(groupName)) {
@@ -88,13 +92,17 @@ public class CustomAssetManager implements Disposable {
         }
     }
 
-    /** Ensures all assets finish loading */
+    /**
+     * Ensures all assets finish loading
+     */
     public void loadAndFinish() {
         asset_Manager.finishLoading();
         LOGGER.log(Level.INFO, "All assets finished loading.");
     }
 
-    /** Gets asset if loaded */
+    /**
+     * Gets asset if loaded
+     */
     public <T> T getAsset(String filePath, Class<T> type) {
         if (asset_Manager.isLoaded(filePath, type)) {
             return asset_Manager.get(filePath, type);
@@ -103,7 +111,9 @@ public class CustomAssetManager implements Disposable {
         }
     }
 
-    /** Unloads asset only when reference count reaches zero */
+    /**
+     * Unloads asset only when reference count reaches zero
+     */
     public synchronized void unloadAsset(String filePath) {
         if (assetReferenceCount.containsKey(filePath)) {
             int count = assetReferenceCount.get(filePath);
@@ -121,27 +131,37 @@ public class CustomAssetManager implements Disposable {
         }
     }
 
-    /** Checks if an asset is loaded */
+    /**
+     * Checks if an asset is loaded
+     */
     public boolean isAssetLoaded(String filePath) {
         return asset_Manager.isLoaded(filePath);
     }
 
-    /** Asynchronously updates asset loading, returns true when done */
+    /**
+     * Asynchronously updates asset loading, returns true when done
+     */
     public boolean isLoaded() {
         return asset_Manager.update();
     }
 
-    /** Gets asset loading progress */
+    /**
+     * Gets asset loading progress
+     */
     public float getLoadProgress() {
         return asset_Manager.getProgress();
     }
 
-    /** Gets the asset manager */
+    /**
+     * Gets the asset manager
+     */
     public AssetManager getasset_Manager() {
         return this.asset_Manager;
     }
 
-    /** Properly disposes of all assets */
+    /**
+     * Properly disposes of all assets
+     */
     @Override
     public synchronized void dispose() {
         assetReferenceCount.clear();
@@ -150,7 +170,9 @@ public class CustomAssetManager implements Disposable {
         LOGGER.log(Level.INFO, "All assets disposed.");
     }
 
-    /** Updates asset loading progress */
+    /**
+     * Updates asset loading progress
+     */
     public void update() {
         asset_Manager.update();
     }

@@ -19,6 +19,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
+/**
+ * AudioManager is a singleton class that manages the audio settings and
+ * playback of music and sound effects in the game.
+ * 
+ * It uses LibGDX's audio classes to load and play music and sound effects.
+ */
 public class AudioManager {
     private static final Logger LOGGER = Logger.getLogger(AudioManager.class.getName());
     private float setsoundVolume = 0.2f;
@@ -124,7 +130,8 @@ public class AudioManager {
         Preferences prefs = Gdx.app.getPreferences("AudioSettings");
         prefs.putBoolean("soundEnabled", isSoundEnabled);
         prefs.flush();
-        LOGGER.log(Level.INFO, "Sound Effects Enabled: {0} | Volume: {1}", new Object[] { isSoundEnabled, setsoundVolume });
+        LOGGER.log(Level.INFO, "Sound Effects Enabled: {0} | Volume: {1}",
+                new Object[] { isSoundEnabled, setsoundVolume });
     }
 
     public void playMusic(String trackName) {
