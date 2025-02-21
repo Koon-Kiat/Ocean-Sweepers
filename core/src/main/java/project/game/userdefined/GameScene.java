@@ -278,6 +278,10 @@ public class GameScene extends Scene {
     private void input() {
         // Toggle volume controls
         if (inputManager.isKeyJustPressed(Input.Keys.V)) {
+            if (isMenuOpen) {
+                isMenuOpen = false;
+                options.getRebindMenu().setVisible(false);
+            }
             isVolumePopupOpen = !isVolumePopupOpen;
             if (isVolumePopupOpen) {
                 audioManager.showVolumeControls();
@@ -293,10 +297,17 @@ public class GameScene extends Scene {
         } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
             audioManager.stopMusic();
+            audioManager.hideVolumeControls();
+            options.getRebindMenu().setVisible(false);
+            inputMultiplexer.setProcessors(inputManager);
         }
 
         // Toggle pause menu
         if (inputManager.isKeyJustPressed(Input.Keys.P)) {
+            if (isVolumePopupOpen) {
+                audioManager.hideVolumeControls();
+                isVolumePopupOpen = false;
+            }
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
             options.getRebindMenu().setVisible(isMenuOpen);
