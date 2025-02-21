@@ -16,6 +16,10 @@ import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.interfaces.ICollidable;
 import project.game.abstractengine.iomanager.SceneIOManager;
 
+/**
+ * CollisionManager is a class that manages the collision detection and
+ * resolution of entities in the game.
+ */
 public class CollisionManager implements ContactListener {
 
     private final World world;
@@ -76,7 +80,6 @@ public class CollisionManager implements ContactListener {
 
     @Override
     public void endContact(Contact contact) {
-        // Called when two fixtures stop touching.
         Fixture fixtureA = contact.getFixtureA();
         Fixture fixtureB = contact.getFixtureB();
 
@@ -107,14 +110,10 @@ public class CollisionManager implements ContactListener {
     }
 
     public void updateGame(float gameWidth, float gameHeight) {
-        // Update movement managers for all entities (input processing).
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
-            // Assume that each movement manager independently updates its state.
             entry.getValue().updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
             entry.getValue().updateMovement();
         }
-
-        // Update each entity using our generic updater.
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
             EntityCollisionUpdater.updateEntity(entry.getKey(), entry.getValue(), gameWidth, gameHeight);
         }

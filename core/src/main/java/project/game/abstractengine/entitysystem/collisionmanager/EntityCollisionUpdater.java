@@ -1,23 +1,25 @@
 //// filepath: /c:/OOPProject/core/src/main/java/project/game/abstractengine/entitysystem/collisionmanager/EntityCollisionUpdater.java
 package project.game.abstractengine.entitysystem.collisionmanager;
 
-import project.game.abstractengine.interfaces.ICollidable;
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
+import project.game.abstractengine.interfaces.ICollidable;
 import project.game.constants.GameConstants;
 
+/**
+ * EntityCollisionUpdater is a utility class that updates an entity’s position
+ * based on its MovementManager and collision state.
+ * 
+ * It also synchronizes the entity’s position with its Box2D body.
+ */
 public class EntityCollisionUpdater {
 
     /**
      * Updates an entity’s position using its MovementManager.
+     * 
      * If the entity is not in collision, the target (input) position is clamped
      * and used to update the Box2D body.
      * If it is in collision, a blend is performed between the physics position and
      * the input.
-     *
-     * @param entity          the collidable entity
-     * @param movementManager that controls the entity’s movement state and input
-     * @param gameWidth       scene width in pixels
-     * @param gameHeight      scene height in pixels
      */
     public static void updateEntity(ICollidable entity, MovementManager movementManager, float gameWidth,
             float gameHeight) {
@@ -55,8 +57,6 @@ public class EntityCollisionUpdater {
 
     /**
      * Synchronizes the logical entity’s position from the Box2D body.
-     *
-     * @param entity the collidable entity to sync
      */
     public static void syncEntity(ICollidable entity) {
         float x = entity.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS;

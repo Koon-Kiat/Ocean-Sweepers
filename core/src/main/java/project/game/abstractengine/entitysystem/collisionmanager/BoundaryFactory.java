@@ -8,16 +8,15 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.constants.GameConstants;
 
+/**
+ * BoundaryFactory is a factory class that creates screen boundaries for a Box2D
+ * world.
+ */
 public class BoundaryFactory {
 
     /**
      * Creates screen boundaries using the specified scene width, height, and
      * boundary thickness.
-     * 
-     * @param world         the Box2D world
-     * @param gameWidth     width of the game scene in pixels
-     * @param gameHeight    height of the game scene in pixels
-     * @param edgeThickness thickness of the boundary in meters
      */
     public static void createScreenBoundaries(World world, float gameWidth, float gameHeight, float edgeThickness) {
         // Convert pixel dimensions to Box2D meters.
