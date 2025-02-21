@@ -286,36 +286,19 @@ public class GameScene extends Scene {
     private void input() {
 
         // TODO: Refactor this to use the input manager
-        /*
-         * (Gdx.input.setInputProcessor(inputManager);
-         * if (!audioManager.isPaused) {
-         * Gdx.input.setInputProcessor(inputManager);
-         * }
-         * if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
-         * if (isMenuOpen) {
-         * isMenuOpen = !isMenuOpen;
-         * options.getRebindMenu().setVisible(isMenuOpen);
-         * }
-         * isVolumePopupOpen = !isVolumePopupOpen;
-         * if (isVolumePopupOpen) {
-         * audioManager.togglePause();
-         * audioManager.showVolumeControls();
-         * Gdx.input.setInputProcessor(stage);
-         * } else {
-         * audioManager.hideVolumeControls();
-         * audioManager.togglePause();
-         * Gdx.input.setInputProcessor(inputManager);
-         * }
-         * }
-         * 
-         * // Keys Binded for directional movement will make a sound effect
-         * for (Integer key : inputManager.getKeyBindings().keySet()) {
-         * if (Gdx.input.isKeyJustPressed(key)) {
-         * System.out.println("Key Pressed: " + Input.Keys.toString(key));
-         * audioManager.playSoundEffect("keybuttons");
-         * }
-         * }
-         */
+        // Volume control
+        if (inputManager.isKeyJustPressed(Input.Keys.V)) {
+            isVolumePopupOpen = !isVolumePopupOpen;
+            if (isVolumePopupOpen) {
+                audioManager.togglePause();
+                audioManager.showVolumeControls();
+                inputMultiplexer.setProcessors(stage, inputManager); // Stage gets priority
+            } else {
+                audioManager.hideVolumeControls();
+                audioManager.togglePause();
+                inputMultiplexer.setProcessors(inputManager, stage); // inputManager gets priority
+            }
+        }
 
         if (inputManager.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
