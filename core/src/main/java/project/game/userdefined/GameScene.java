@@ -276,6 +276,12 @@ public class GameScene extends Scene {
      * Handles key inputs for game control:
      */
     private void input() {
+        for (Integer key : inputManager.getKeyBindings().keySet()) {
+            if (inputManager.isKeyJustPressed(key)) {
+                LOGGER.log(Level.INFO, "Direction Key pressed: {0}", Input.Keys.toString(key));
+                audioManager.playSoundEffect("keybuttons");
+            }
+        }
         // Toggle volume controls
         if (inputManager.isKeyJustPressed(Input.Keys.V)) {
             if (isMenuOpen) {
