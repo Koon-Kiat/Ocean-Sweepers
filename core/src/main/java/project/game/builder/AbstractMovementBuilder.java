@@ -9,6 +9,12 @@ import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.constants.GameConstants;
 import project.game.exceptions.MovementException;
 
+/**
+ * Base builder class for movement builders.
+ * 
+ * It provides fluent method chaining for setting an entity, speed, and
+ * direction, and ensures that parameters are validated.
+ */
 public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<T>> {
 
     protected static final Logger LOGGER = Logger.getLogger(AbstractMovementBuilder.class.getName());

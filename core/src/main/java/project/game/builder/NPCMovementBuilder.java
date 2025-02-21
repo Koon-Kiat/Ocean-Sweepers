@@ -15,11 +15,7 @@ import project.game.defaultmovements.ZigZagMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
- * @class NPCMovementBuilder
- * @brief Builder for NPCMovement
- *
- *        This builder facilitates the creation of NPCMovement instances with
- *        customizable movement behaviors.
+ * Builder class for creating NPCMovementManager objects.
  */
 public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuilder> {
 
@@ -129,7 +125,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         }
     }
 
-    // Private validations
+    // Private validation method
     @Override
     protected void validateBuildRequirements() {
         if (speed < 0) {

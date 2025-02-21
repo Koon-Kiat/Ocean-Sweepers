@@ -8,11 +8,7 @@ import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
- * @class PlayerMovementBuilder
- * @brief Builder for PlayerMovement
- *
- *        This builder facilitates the creation of PlayerMovement instances with
- *        customizable movement behaviors.
+ * Builder class for creating PlayerMovementManager objects.
  */
 public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovementBuilder> {
 
@@ -76,7 +72,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
         }
     }
 
-    // Private validation methods
+    // Private validation method
     @Override
     protected void validateBuildRequirements() {
         if (speed < 0) {
