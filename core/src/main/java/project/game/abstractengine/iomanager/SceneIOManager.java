@@ -2,6 +2,8 @@ package project.game.abstractengine.iomanager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -11,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import project.game.Direction;
 
 public class SceneIOManager extends IOManager {
+
+    private static final Logger LOGGER = Logger.getLogger(SceneIOManager.class.getName());
 
     // Map holding key codes mapped to their in-game Direction
     private Map<Integer, Direction> keyBindings;
@@ -51,7 +55,7 @@ public class SceneIOManager extends IOManager {
     private int getKeycodeFromString(String keyString) {
         // Ensure key string is uppercase
         keyString = keyString.toUpperCase();
-    
+
         // Handle arrow keys explicitly
         switch (keyString) {
             case "UP":
@@ -66,7 +70,7 @@ public class SceneIOManager extends IOManager {
                 try {
                     return Input.Keys.valueOf(keyString);
                 } catch (IllegalArgumentException e) {
-                    System.err.println("[ERROR] Invalid key string: " + keyString);
+                    LOGGER.log(Level.WARNING, "Invalid key string: {0}", keyString);
                     return Input.Keys.UNKNOWN;
                 }
         }

@@ -84,6 +84,7 @@ public class BucketEntity extends CollidableEntity implements IRenderable {
 		collisionEndTime = System.currentTimeMillis() + durationMillis;
 	}
 
+	@Override
 	public boolean isInCollision() {
 		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
 			collisionActive = false;

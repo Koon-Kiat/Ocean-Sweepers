@@ -234,7 +234,7 @@ public class GameScene extends Scene {
             if (audioManager != null) {
                 audioManager.playSoundEffect("drophit");
             } else {
-                System.err.println("[ERROR] AudioManager is null!");
+                LOGGER.log(Level.SEVERE, "AudioManager is null!");
             }
         }
     }
