@@ -12,6 +12,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import project.game.Direction;
 
+/**
+ * SceneIOManager handles input events (keyboard and mouse) for the game.
+ * It extends IOManager to provide additional functionality for scene-based
+ * input handling.
+ */
 public class SceneIOManager extends IOManager {
 
     private static final Logger LOGGER = Logger.getLogger(SceneIOManager.class.getName());

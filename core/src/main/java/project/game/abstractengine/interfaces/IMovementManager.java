@@ -6,11 +6,7 @@ import java.util.Set;
 import project.game.Direction;
 
 /**
- * @interface IMovementManager
- * @brief Defines the contract for movement managers.
- * 
- *        Classes implementing this interface must provide methods to update the
- *        direction and movement of an entity.
+ * Interface for movement managers.
  */
 public interface IMovementManager {
 

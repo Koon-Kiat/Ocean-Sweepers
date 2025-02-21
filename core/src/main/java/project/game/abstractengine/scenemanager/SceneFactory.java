@@ -11,6 +11,9 @@ import project.game.userdefined.GameScene;
 import project.game.userdefined.MainMenuScene;
 import project.game.userdefined.OptionsScene;
 
+/**
+ * Factory class for creating and registering scenes.
+ */
 @SuppressWarnings("unused")
 public class SceneFactory {
 
@@ -24,11 +27,10 @@ public class SceneFactory {
         this.inputManager = inputManager;
 
         /**
-         * @brief A map of scene creators.
+         * Map of scene creators for each scene in the game.
          * 
-         *        The sceneCreators map is a map of scene creators. Each entry in the
-         *        map is a pair of a scene name and a scene creator. The scene creator
-         *        is a lambda expression that creates a new instance of the scene.
+         * The key is the name of the scene and the value is a lambda expression that
+         * creates a new instance of the scene.
          */
         sceneCreators = Map.of(
                 "menu", () -> new MainMenuScene(sceneManager, inputManager),
@@ -40,12 +42,7 @@ public class SceneFactory {
     public void createAndRegisterScenes() {
 
         /**
-         * @brief Iterates over the sceneCreators map and registers each scene with the
-         *        scene manager.
-         *
-         *        For each entry in the sceneCreators map, create a new instance of the
-         *        scene using the corresponding scene creator and add it to the scene
-         *        manager.
+         * Create and register each scene in the game.
          */
         sceneCreators.forEach((name, creator) -> {
             Scene scene = creator.get();

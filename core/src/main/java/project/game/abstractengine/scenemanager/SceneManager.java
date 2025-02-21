@@ -7,12 +7,7 @@ import java.util.Set;
 import project.game.abstractengine.iomanager.SceneIOManager;
 
 /**
- * @class SceneManager
- * @brief Manages the scenes of the game.
- * 
- *        The SceneManager class is responsible for managing different scenes in
- *        the game. It allows adding, removing, setting, and retrieving scenes,
- *        as well as rendering and resizing the current scene.
+ * Manages the scenes in the game.
  */
 public class SceneManager {
     private final Map<String, Scene> scenes;

@@ -5,6 +5,11 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
 
+/**
+ * Interface for collidable entities.
+ * 
+ * Provides methods for creating and checking collisions between entities.
+ */
 public interface ICollidable {
 
 	Entity getEntity();

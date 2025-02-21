@@ -3,13 +3,10 @@ package project.game.abstractengine.interfaces;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 
 /**
- * @interface IStoppableMovementBehavior
- * @brief Defines the contract for movement behaviors that can be stopped and
- *        resumed.
- *
- *        Classes implementing this interface must provide methods to stop and
- *        resume
- *        the movement of an entity.
+ * Interface for stoppable movement behaviors.
+ * 
+ * Classes implementing this interface must provide methods to stop and resume
+ * movement behaviors.
  */
 public interface IStoppableMovementBehavior extends IMovementBehavior {
 
