@@ -12,12 +12,10 @@ import project.game.exceptions.MovementException;
 import project.game.utils.MovementUtils;
 
 /**
- * @class ConstantMovementBehavior
- * @brief Moves the entity in a constant direction using MovementData.
+ * Provides constant movement for movable entities.
  * 
- *        This class implements a movement behavior that moves the entity in a
- *        constant
- *        direction. The speed of the movement can be set in the constructor.
+ * The entity moves in a single direction at a constant speed.
+ * The speed is provided in the constructor.
  */
 public class ConstantMovementBehavior implements IMovementBehavior {
 
@@ -38,6 +36,7 @@ public class ConstantMovementBehavior implements IMovementBehavior {
         }
         this.speed = speed;
     }
+
     @Override
     public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {

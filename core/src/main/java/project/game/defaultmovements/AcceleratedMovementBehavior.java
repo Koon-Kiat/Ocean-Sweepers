@@ -13,20 +13,7 @@ import project.game.exceptions.MovementException;
 import project.game.utils.MovementUtils;
 
 /**
- * @class AcceleratedMovementBehavior
- * 
- * @brief Moves the entity with acceleration and deceleration using
- *        MovementData.
- * 
- *        Moves the entity with acceleration and deceleration using
- *        MovementData.
- * 
- *        This class implements a movement behavior that moves the entity with
- *        acceleration and deceleration. The acceleration, deceleration, and
- *        maximum
- *        speed can be set in the constructor. The entity accelerates when
- *        moving in a
- *        direction and decelerates when stopping or changing direction.
+ * Provides accelerated movement for movable entities.
  */
 public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
 
@@ -39,13 +26,9 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
     /**
      * Constructs an AcceleratedMovementBehavior with specified parameters.
      * Terminates the program if any provided parameter is negative.
-     *
-     * @param acceleration Rate of acceleration.
-     * @param deceleration Rate of deceleration.
-     * @param maxSpeed     Maximum achievable speed.
      */
     public AcceleratedMovementBehavior(float acceleration, float deceleration, float maxSpeed) {
-       if (acceleration < 0 || deceleration < 0 || maxSpeed < 0) {
+        if (acceleration < 0 || deceleration < 0 || maxSpeed < 0) {
             String errorMessage = "Illegal negative values provided: acceleration=" + acceleration +
                     ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
             LOGGER.log(Level.SEVERE, errorMessage);
@@ -127,7 +110,6 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
                     throw new MovementException(errorMessage);
             }
 
-            // Update the position in MovementData.
             float newX = entity.getX() + deltaMovement.x;
             float newY = entity.getY() + deltaMovement.y;
             entity.setX(newX);

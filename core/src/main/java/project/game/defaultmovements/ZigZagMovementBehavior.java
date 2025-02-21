@@ -12,9 +12,12 @@ import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
- * Moves the entity in a zig-zag pattern. The entity moves forward in the
- * primary direction while oscillating sideways. A negative amplitude inverts
- * the oscillation.
+ * Provides zig-zag movement for movable entities.
+ * 
+ * The entity moves in a zig-zag pattern at a constant speed. The amplitude and
+ * frequency of the oscillation are provided in the constructor. The entity
+ * moves in the primary direction and oscillates in the perpendicular direction.
+ * 
  */
 public class ZigZagMovementBehavior implements IMovementBehavior {
 

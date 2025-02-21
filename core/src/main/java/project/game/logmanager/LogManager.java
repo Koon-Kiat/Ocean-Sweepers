@@ -13,6 +13,9 @@ import java.util.logging.SimpleFormatter;
 
 import project.game.Main;
 
+/**
+ * Configures the logging system for the game.
+ */
 public class LogManager {
 
     private static final Logger ROOT_LOGGER = Logger.getLogger("");

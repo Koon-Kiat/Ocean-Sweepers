@@ -12,15 +12,10 @@ import project.game.abstractengine.interfaces.IMovementManager;
 import project.game.exceptions.MovementException;
 
 /**
- * @class FollowMovementBehavior
- * @brief Moves the entity towards a target using MovementData.
+ * Provides follow movement for movable entities.
  * 
- *        This class implements a movement behavior that moves the entity
- *        towards a
- *        target. The target is specified by an IMovementManager, which provides
- *        the
- *        target's position. The speed of the movement can be set in the
- *        constructor.
+ * The entity moves towards the target entity at a constant speed.
+ * The target entity is provided by an IMovementManager.
  */
 public class FollowMovementBehavior implements IMovementBehavior {
 
@@ -31,9 +26,6 @@ public class FollowMovementBehavior implements IMovementBehavior {
     /**
      * Constructs a FollowMovementBehavior with the specified parameters.
      * Terminates the program if any provided parameter is negative or null.
-     * 
-     * @param targetManager IMovementManager providing the target's position.
-     * @param speed         Speed of the movement.
      */
     public FollowMovementBehavior(IMovementManager targetManager, float speed) {
         if (targetManager == null) {

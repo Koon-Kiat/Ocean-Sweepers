@@ -1,5 +1,8 @@
 package project.game.constants;
 
+/**
+ * Constants used throughout the game.
+ */
 public class GameConstants {
     // Collision constants
     public static final float PIXELS_TO_METERS = 32f;
@@ -35,10 +38,9 @@ public class GameConstants {
     public static final float MAX_DURATION = 3f;
 
     // Default constants
-    //* Only used during LENIENT_MODE for MovementManager
+    // * Only used during LENIENT_MODE for MovementManager
     public static final float DEFAULT_SPEED = 600.0f;
 
     private GameConstants() {
-
     }
 }

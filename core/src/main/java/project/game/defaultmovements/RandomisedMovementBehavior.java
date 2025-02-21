@@ -14,15 +14,10 @@ import project.game.constants.GameConstants;
 import project.game.exceptions.MovementException;
 
 /**
- * @class RandomisedMovementBehavior
- * @brief Randomly selects a behavior from a pool and uses it for a random
- *        duration.
+ * Provides randomised movement for movable entities.
  * 
- *        This class implements a movement behavior that randomly selects a
- *        behavior from
- *        a pool of behaviors and uses it for a random duration. The duration is
- *        set in
- *        the constructor and the behavior is randomly selected from the pool.
+ * The entity moves in a random direction at a random speed for a random duration.
+ * The behavior pool is provided in the constructor.
  */
 public class RandomisedMovementBehavior implements IMovementBehavior {
 
@@ -35,10 +30,6 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
 
     /**
      * Constructs a RandomisedMovementBehavior with the specified parameters.
-     * 
-     * @param behaviorPool List of movement behaviors to choose from.
-     * @param minDuration  Minimum duration for each behavior.
-     * @param maxDuration  Maximum duration for each behavior.
      */
     public RandomisedMovementBehavior(List<IMovementBehavior> behaviorPool, float minDuration, float maxDuration) {
         if (behaviorPool == null || behaviorPool.isEmpty()) {
@@ -58,7 +49,8 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
         if (minDuration <= 0 || maxDuration <= 0) {
             String errorMessage = "Invalid duration range: minDuration=" + minDuration + ", maxDuration=" + maxDuration;
             if (MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING, "{0} Using fallback values: minDuration=1.0f, maxDuration=2.0f.", errorMessage);
+                LOGGER.log(Level.WARNING, "{0} Using fallback values: minDuration=1.0f, maxDuration=2.0f.",
+                        errorMessage);
                 this.minDuration = 1.0f;
                 this.maxDuration = 2.0f;
             } else {
