@@ -280,14 +280,11 @@ public class GameScene extends Scene {
         if (inputManager.isKeyJustPressed(Input.Keys.V)) {
             isVolumePopupOpen = !isVolumePopupOpen;
             if (isVolumePopupOpen) {
-                audioManager.togglePause();
                 audioManager.showVolumeControls();
-                inputMultiplexer.setProcessors(stage, inputManager);
             } else {
                 audioManager.hideVolumeControls();
-                audioManager.togglePause();
-                inputMultiplexer.setProcessors(inputManager, stage);
             }
+            inputMultiplexer.setProcessors(stage, inputManager);
         }
 
         // Toggle game menu

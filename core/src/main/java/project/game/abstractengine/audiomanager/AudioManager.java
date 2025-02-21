@@ -128,7 +128,7 @@ public class AudioManager {
             stopAllSounds();
         }
         Preferences prefs = Gdx.app.getPreferences("AudioSettings");
-        prefs.putBoolean("soundEnabled", isSoundEnabled);
+        prefs.putBoolean("isSoundEnabled", isSoundEnabled);
         prefs.flush();
         LOGGER.log(Level.INFO, "Sound Effects Enabled: {0} | Volume: {1}",
                 new Object[] { isSoundEnabled, setsoundVolume });
