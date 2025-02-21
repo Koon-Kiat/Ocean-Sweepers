@@ -1,7 +1,9 @@
 package project.game.abstractengine.entitysystem.collisionmanager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -10,39 +12,33 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
-import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.interfaces.ICollidable;
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.constants.GameConstants;
-import project.game.testentity.BucketEntity;
-import project.game.testentity.DropEntity;
-
 
 public class CollisionManager implements ContactListener {
 
     private final World world;
     private final List<Runnable> collisionQueue;
-    private final PlayerMovementManager playerMovementManager;
-    private final NPCMovementManager npcMovementManager;
-    private final BucketEntity bucket;
-    private final DropEntity drop;
     private final SceneIOManager inputManager;
+
+    // Maintain a map of collidable entities and their associated MovementManager.
+    private final Map<ICollidable, MovementManager> entityMap;
     private boolean collided = false;
 
-    public CollisionManager(World world, PlayerMovementManager playerMovementManager,
-            NPCMovementManager npcMovementManager, BucketEntity bucket, DropEntity drop, SceneIOManager inputManager) {
+    public CollisionManager(World world, SceneIOManager inputManager) {
         this.world = world;
-        this.collisionQueue = new ArrayList<>();
-        this.playerMovementManager = playerMovementManager;
-        this.npcMovementManager = npcMovementManager;
-        this.bucket = bucket;
-        this.drop = drop;
         this.inputManager = inputManager;
+        this.collisionQueue = new ArrayList<>();
+        this.entityMap = new HashMap<>();
     }
 
     public void init() {
         world.setContactListener(this);
+    }
+
+    public void addEntity(ICollidable entity, MovementManager movementManager) {
+        entityMap.put(entity, movementManager);
     }
 
     @Override
@@ -57,29 +53,25 @@ public class CollisionManager implements ContactListener {
             ICollidable collidableA = (ICollidable) userDataA;
             ICollidable collidableB = (ICollidable) userDataB;
 
-            // Enqueue collision responses instead of calling onCollision directly.
+            // Invoke collision responses if collision is confirmed.
             if (collidableA.checkCollision(collidableB.getEntity())) {
                 collisionQueue.add(() -> collidableA.onCollision(collidableB));
             }
             if (collidableB.checkCollision(collidableA.getEntity())) {
                 collisionQueue.add(() -> collidableB.onCollision(collidableA));
             }
-        } else if (userDataA instanceof ICollidable && userDataB instanceof String && userDataB.equals("boundary")) {
+            collided = true;
+        } else if (userDataA instanceof ICollidable && userDataB instanceof String
+                && userDataB.equals("boundary")) {
             ICollidable collidableA = (ICollidable) userDataA;
             collisionQueue.add(() -> collidableA.onCollision(null));
-        } else if (userDataB instanceof ICollidable && userDataA instanceof String && userDataA.equals("boundary")) {
+            collided = true;
+        } else if (userDataB instanceof ICollidable && userDataA instanceof String
+                && userDataA.equals("boundary")) {
             ICollidable collidableB = (ICollidable) userDataB;
             collisionQueue.add(() -> collidableB.onCollision(null));
-        }
-
-        if ((userDataA instanceof DropEntity && userDataB instanceof BucketEntity) ||
-                (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)) {
             collided = true;
         }
-    }
-
-    public boolean collision() {
-        return collided;
     }
 
     @Override
@@ -92,20 +84,19 @@ public class CollisionManager implements ContactListener {
         Object userDataB = fixtureB.getBody().getUserData();
 
         // Reset collided to false when entities are no longer in contact
-        if ((userDataA instanceof DropEntity && userDataB instanceof BucketEntity) ||
-                (userDataB instanceof DropEntity && userDataA instanceof BucketEntity)) {
+        if ((userDataA instanceof ICollidable && userDataB instanceof ICollidable) ||
+                (userDataA instanceof ICollidable && userDataB instanceof String && userDataB.equals("boundary")) ||
+                (userDataB instanceof ICollidable && userDataA instanceof String && userDataA.equals("boundary"))) {
             collided = false;
         }
     }
 
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-        // Modify the contact properties if needed.
     }
 
     @Override
     public void postSolve(Contact contact, ContactImpulse impulse) {
-        // Called after a collision is resolved.
     }
 
     public void processCollisions() {
@@ -116,76 +107,26 @@ public class CollisionManager implements ContactListener {
     }
 
     public void updateGame(float gameWidth, float gameHeight) {
-        // Update movement managers (input processing, etc.)
-        playerMovementManager.updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
-        playerMovementManager.updateMovement();
-        npcMovementManager.updateMovement();
+        // Update movement managers for all entities (input processing).
+        for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
+            // Assume that each movement manager independently updates its state.
+            entry.getValue().updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+            entry.getValue().updateMovement();
+        }
 
-        // Always update player (bucket) from input, regardless of collision state
-        float bucketX = playerMovementManager.getX();
-        float bucketY = playerMovementManager.getY();
-
-        // Calculate the bucket's half-width and half-height
-        float bucketHalfWidth = bucket.getEntity().getWidth() / 2;
-        float bucketHalfHeight = bucket.getEntity().getHeight() / 2;
-
-        // Clamp player positions so the player remains within screen bounds
-        bucketX = Math.max(bucketHalfWidth, Math.min(bucketX, gameWidth - bucketHalfWidth));
-        bucketY = Math.max(bucketHalfHeight, Math.min(bucketY, gameHeight - bucketHalfHeight));
-
-        // Update player's entity and Box2D body (convert pixels → meters)
-        bucket.getEntity().setX(bucketX);
-        bucket.getEntity().setY(bucketY);
-        bucket.getBody().setTransform(bucketX / GameConstants.PIXELS_TO_METERS,
-                bucketY / GameConstants.PIXELS_TO_METERS, 0);
-
-        // For the NPC (drop), check if it's in collision and blend if needed
-        if (!drop.isInCollision()) {
-            // Normal update when no collision is active for the NPC
-            float dropX = npcMovementManager.getX();
-            float dropY = npcMovementManager.getY();
-
-            // Calculate the drop's half-width and half-height
-            float dropHalfWidth = drop.getEntity().getWidth() / 2;
-            float dropHalfHeight = drop.getEntity().getHeight() / 2;
-
-            // Clamp NPC positions
-            dropX = Math.max(dropHalfWidth, Math.min(dropX, gameWidth - dropHalfWidth));
-            dropY = Math.max(dropHalfHeight, Math.min(dropY, gameHeight - dropHalfHeight));
-
-            // Update drop's entity and Box2D body (convert pixels → meters)
-            drop.getEntity().setX(dropX);
-            drop.getEntity().setY(dropY);
-            drop.getBody().setTransform(dropX / GameConstants.PIXELS_TO_METERS,
-                    dropY / GameConstants.PIXELS_TO_METERS, 0);
-        } else {
-            // COLLISION MODE for NPC:
-            // Get current physics position (in pixels)
-            float physicsDropX = drop.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS;
-            float physicsDropY = drop.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS;
-
-            // Retrieve desired input position from the movement manager
-            float inputDropX = npcMovementManager.getX();
-            float inputDropY = npcMovementManager.getY();
-
-            // Blend physics with input using a blending factor
-            float blendFactor = 0.1f; // adjust as needed
-            float newDropX = physicsDropX + (inputDropX - physicsDropX) * blendFactor;
-            float newDropY = physicsDropY + (inputDropY - physicsDropY) * blendFactor;
-
-            // Update NPC's entity to the blended value and synchronize the movement manager
-            // so stale input does not accumulate
-            drop.getEntity().setX(newDropX);
-            drop.getEntity().setY(newDropY);
-            npcMovementManager.setX(newDropX);
-            npcMovementManager.setY(newDropY);
+        // Update each entity using our generic updater.
+        for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
+            EntityCollisionUpdater.updateEntity(entry.getKey(), entry.getValue(), gameWidth, gameHeight);
         }
     }
 
     public void syncEntityPositions() {
-        bucket.getEntity().setX(bucket.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS);
-        bucket.getEntity().setY(bucket.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS);
-        drop.getEntity().setX(drop.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS);
-        drop.getEntity().setY(drop.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS);
+        for (ICollidable entity : entityMap.keySet()) {
+            EntityCollisionUpdater.syncEntity(entity);
+        }
+    }
+
+    public boolean collision() {
+        return collided;
     }
 }

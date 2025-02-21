@@ -185,15 +185,11 @@ public class GameScene extends Scene {
         debugRenderer = new Box2DDebugRenderer();
 
         // Initialize CollisionManager and create screen boundaries
-        collisionManager = new CollisionManager(
-                world,
-                playerMovementManager,
-                npcMovementManager,
-                bucket,
-                drop,
-                inputManager);
-
+        collisionManager = new CollisionManager(world, inputManager);
         collisionManager.init();
+        collisionManager.addEntity(drop, npcMovementManager);
+        collisionManager.addEntity(bucket, playerMovementManager);
+
         BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 0.1f);
 
         // Initialize AudioManager and play background music

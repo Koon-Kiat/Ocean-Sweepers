@@ -17,4 +17,6 @@ public interface ICollidable {
 
 	void onCollision(ICollidable other);
 
+	boolean isInCollision();
+
 }
