@@ -29,7 +29,7 @@ public class Options extends Scene {
     private boolean isPaused = true;
     private final GameScene gameScene;
 
-    // Added to make main menu button visible/invisible.
+    // Button to control main menu visibility.
     private TextButton mainMenuButton;
 
     public Options(SceneManager sceneManager, GameScene gameScene, SceneIOManager inputManager) {
@@ -39,13 +39,7 @@ public class Options extends Scene {
     }
 
     /**
-     * @brief Creates the options menu.
-     * 
-     *        Initializes and draws the Options Scene "Rebind keys" button moves to
-     *        the rebind menu scene "Main Menu" button moves to the main menu scene
-     *        "Confirm" button saves the key bindings (This is not a scene, but a
-     *        popup menu "manager" that can be called from the game scene or other
-     *        scenes)
+     * Constructs an Options scene.
      */
     @Override
     public void create() {
@@ -57,16 +51,12 @@ public class Options extends Scene {
         popupMenu.setPosition(400, 270);
         popupMenu.setVisible(false);
 
-        // Ensure that the popup menu blocks input to other UI elements
+        // Configure the popup menu.
         popupMenu.setModal(true);
-
-        // Ensure that the popup menu cannot be moved
         popupMenu.setMovable(false);
-
-        // Ensure that the popup menu stays within the bounds of the stage
         popupMenu.setKeepWithinStage(true);
 
-        // Debug log for popup menu touch event
+        // Log touch events on the popup menu.
         inputManager.addWindowTouchDownListener(popupMenu, (event, x, y, pointer, button) -> {
             LOGGER.log(Level.INFO, "Popup menu touched at ({0}, {1})", new Object[] { x, y });
         });

@@ -79,25 +79,15 @@ public class GameScene extends Scene {
         this.sceneManager = sceneManager;
     }
 
-    /**
-     * @class GameScene
-     * @brief Initializes and draws the Game Scene when player starts the game
-     * 
-     *        This method initializes the Game Scene by creating a new SpriteBatch
-     *        and two Textures for the player and NPC entities. It also creates a
-     *        new Skin object and a Stage object. The method also creates a new
-     *        EntityManager object and adds the player and NPC entities to the
-     *        EntityManager. The method also creates a new OrthographicCamera object
-     *        and a Box2DDebugRenderer object.
-     */
     @Override
     public void create() {
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
-        LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
-
+        debugRenderer = new Box2DDebugRenderer();
         inputManager = new SceneIOManager();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
+
         initPopUpMenu();
         displayMessage();
 
@@ -140,7 +130,6 @@ public class GameScene extends Scene {
                 GameConstants.BUCKET_WIDTH,
                 GameConstants.BUCKET_HEIGHT,
                 true);
-
         Entity genericNonMovableDroplet = new Entity(100f, 200f, 50f, 50f, false);
 
         // Set lenient mode for movement manager
@@ -153,6 +142,7 @@ public class GameScene extends Scene {
                 .withConstantMovement()
                 .build();
 
+        // Add behavior to the pool for Random Movement
         behaviorPool = new ArrayList<>();
         behaviorPool.add(new ConstantMovementBehavior(GameConstants.NPC_SPEED));
         behaviorPool.add(
@@ -166,10 +156,12 @@ public class GameScene extends Scene {
                 .setDirection(Direction.NONE)
                 .build();
 
+        // Initialize entities
         bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
         drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
         nonMovableDroplet = new NonMovableDroplet(genericNonMovableDroplet, "droplet.png");
 
+        // Initialize bodies
         bucket.initBody(world);
         drop.initBody(world);
 
@@ -182,14 +174,15 @@ public class GameScene extends Scene {
         camera.position.set(GameConstants.GAME_WIDTH / 2, GameConstants.GAME_HEIGHT / 2, 0);
         camera.update();
 
-        debugRenderer = new Box2DDebugRenderer();
-
-        // Initialize CollisionManager and create screen boundaries
+        // Initialize CollisionManager
         collisionManager = new CollisionManager(world, inputManager);
         collisionManager.init();
+
+        // Add entities to the collision manager
         collisionManager.addEntity(drop, npcMovementManager);
         collisionManager.addEntity(bucket, playerMovementManager);
 
+        // Create screen boundaries
         BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 0.1f);
 
         // Initialize AudioManager and play background music
@@ -216,20 +209,28 @@ public class GameScene extends Scene {
             LOGGER.log(Level.SEVERE, "Exception during game update: {0}", e.getMessage());
         }
 
+        // Draw entities
         batch.begin();
         entityManager.draw(batch);
         batch.end();
 
+        // Draw stage
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
+
+        // Render debug matrix
         debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
         debugRenderer.render(world, debugMatrix);
 
+        // Step the physics simulation forward at a rate of 60hz
         float timeStep = 1 / 60f;
         world.step(timeStep, 6, 2);
+
+        // Process collisions
         collisionManager.processCollisions();
         collisionManager.syncEntityPositions();
 
+        // Play sound effect on collision
         if (collisionManager.collision()) {
             if (audioManager != null) {
                 audioManager.playSoundEffect("drophit");
@@ -248,7 +249,7 @@ public class GameScene extends Scene {
     }
 
     /**
-     * @brief Initializes the popup menu for the game scene
+     * Initializes the in-game popup menu for options and key rebinding.
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
@@ -272,15 +273,10 @@ public class GameScene extends Scene {
     }
 
     /**
-     * @brief Handles input for the game scene
-     * 
-     *        Game Scene will transition to:
-     *        - Main Menu Scene on 'M' key press
-     *        - Game Over Scene on 'E' key press
-     *        - Rebind Pop-up window on 'P' key press
+     * Handles key inputs for game control:
      */
-
     private void input() {
+        // Toggle volume controls
         if (inputManager.isKeyJustPressed(Input.Keys.V)) {
             isVolumePopupOpen = !isVolumePopupOpen;
             if (isVolumePopupOpen) {
@@ -294,6 +290,7 @@ public class GameScene extends Scene {
             }
         }
 
+        // Toggle game menu
         if (inputManager.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
         } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
@@ -301,6 +298,7 @@ public class GameScene extends Scene {
             audioManager.stopMusic();
         }
 
+        // Toggle pause menu
         if (inputManager.isKeyJustPressed(Input.Keys.P)) {
             isMenuOpen = !isMenuOpen;
             hideDisplayMessage();
@@ -320,7 +318,7 @@ public class GameScene extends Scene {
     }
 
     /**
-     * @brief Displays a message on the screen for key bindings
+     * Displays an on-screen message with key binding instructions.
      */
     private void displayMessage() {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
@@ -337,12 +335,15 @@ public class GameScene extends Scene {
         textField.setDisabled(true);
         stage.addActor(textField);
 
-        // Overlay text over the debug matrix
+        // Overlay debug message
         batch.begin();
         skin.getFont("default-font").draw(batch, "Debug Mode Active", 10, stage.getHeight() - 10);
         batch.end();
     }
 
+    /**
+     * Removes the on-screen key binding message.
+     */
     private void hideDisplayMessage() {
         for (Actor actor : stage.getActors()) {
             if (actor instanceof TextField) {
@@ -352,7 +353,7 @@ public class GameScene extends Scene {
     }
 
     /**
-     * @brief Closes the popup menu and unpauses the game
+     * Closes the popup menu and resumes game play.
      */
     public void closePopupMenu() {
         isMenuOpen = false;

@@ -9,18 +9,16 @@ import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
 
+/**
+ * The OptionsScene class represents the game scene where users can adjust
+ * options.
+ */
 public class OptionsScene extends Scene {
 
     private final Skin skin;
     private final Table tableScene;
     private final TextButton returnButton;
 
-    /**
-     * @brief Constructor for the OptionsScene class.
-     * 
-     *        Initializes and draws the Options Scene "return" button moves to the
-     *        main menu scene Main Menu --> Options --> Main Menu
-     */
     public OptionsScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
         this.sceneManager = sceneManager;
@@ -31,7 +29,7 @@ public class OptionsScene extends Scene {
         tableScene = new Table();
         inputManager = new SceneIOManager();
 
-        // Scene change buttons. Return goes to last scene
+        // Create the "Return" button for scene navigation
         returnButton = new TextButton("Return", skin);
 
         tableScene.setFillParent(true);

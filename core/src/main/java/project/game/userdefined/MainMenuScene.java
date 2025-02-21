@@ -32,16 +32,8 @@ public class MainMenuScene extends Scene {
     }
 
     /**
-     * @brief Creates the main menu scene.
-     * 
-     *        Initializes and draws the Main Menu Scene Play, Options, Exit buttons
-     *        drawn here:
-     *        - "PLAY" button moves to the game scene
-     *        - "OPTIONS" button moves to the options menu scene
-     *        - "EXIT" button closes
-     * 
-     *        First scene upon start up and can be returned from:
-     *        Game Scene, Options Scene, Game Over Scene
+     * Initializes the main menu scene with Play, Options, and Exit buttons.
+     * Sets up the viewport, UI skin, audio manager, and button click listeners.
      */
     @Override
     public void create() {
@@ -58,7 +50,7 @@ public class MainMenuScene extends Scene {
         options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin);
 
-        // AudioManager for sound effects and music
+        // Initialize AudioManager for sound effects and music.
         audioManager = new AudioManager(stage);
 
         // Instead of checking clicks manually in render, add click listeners here:

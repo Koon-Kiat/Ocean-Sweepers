@@ -23,14 +23,8 @@ public class GameOverScene extends Scene {
     }
 
     /**
-     * @class GameOverScene
-     * @brief Initializes and draws the Game Over Scene when player ends the game
-     * 
-     *        This method initializes the Game Over Scene by creating a new
-     *        SpriteBatch and BitmapFont. It also creates a new Skin object and two
-     *        TextButtons for the player to either play again or exit the game. The
-     *        method also creates a new Table object and adds the TextButtons to the
-     *        stage.
+     * Initializes the Game Over scene by creating UI elements such as buttons and
+     * tables.
      */
     @Override
     public void create() {
@@ -64,6 +58,10 @@ public class GameOverScene extends Scene {
 
     }
 
+    /**
+     * Renders the Game Over scene by clearing the screen, drawing the "Game Over"
+     * text, and updating the stage.
+     */
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -78,6 +76,9 @@ public class GameOverScene extends Scene {
         stage.draw();
     }
 
+    /**
+     * Updates the viewport when the window is resized.
+     */
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
