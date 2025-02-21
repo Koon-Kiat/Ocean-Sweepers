@@ -6,17 +6,24 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.abstractengine.entitysystem.interfaces.ICollidable;
+import project.game.abstractengine.interfaces.ICollidable;
 
+/**
+ * Abstract class for entities that can collide with other entities.
+ */
 public abstract class CollidableEntity extends Entity implements ICollidable {
 
 	private final Entity entity;
-	private final Body body;
+	private Body body;
 
 	public CollidableEntity(Entity baseEntity, World world) {
 		this.entity = baseEntity;
-		this.body = createBody(world, baseEntity.getX(), baseEntity.getY(), baseEntity.getWidth(),
-				baseEntity.getHeight());
+	}
+
+	public final void initBody(World world) {
+		if (body == null) {
+			body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
+		}
 	}
 
 	@Override
@@ -30,7 +37,7 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 	}
 
 	@Override
-	public final Body createBody(World world, float x, float y, float width, float height) {
+	public Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
 		bodyDef.position.set(x, y);
@@ -52,7 +59,7 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 		return createdBody;
 	}
 
-	public final Body createBody(World world, float x, float y, float width, float height, float density,
+	public Body createBody(World world, float x, float y, float width, float height, float density,
 			float friction,
 			float restitution) {
 		BodyDef bodyDef = new BodyDef();

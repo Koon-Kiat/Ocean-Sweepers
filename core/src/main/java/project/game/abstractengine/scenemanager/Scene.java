@@ -8,6 +8,9 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
 
+/**
+ * Abstract class for creating scenes in the game.
+ */
 public abstract class Scene implements Screen {
     protected Stage stage;
     protected SceneIOManager inputManager;
@@ -15,26 +18,26 @@ public abstract class Scene implements Screen {
 
     public Scene(SceneIOManager inputManager) {
         this.inputManager = inputManager;
-        this.stage = new Stage(new ScreenViewport()); // Initialize stage. Stage used across all scenes
+        this.stage = new Stage(new ScreenViewport());
         this.sceneManager = new SceneManager();
-        create(); // Call abstract method for subclass-specific setup
+        initialize();
     }
 
-    protected abstract void create();
-
-    // public abstract void update(float delta);
+    public final void initialize() {
+        create();
+    }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clear the screen
-        stage.act(delta); // Update stage
-        stage.draw(); // Draw stage elements
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stage.act(delta);
+        stage.draw();
     }
 
     @Override
     public void show() {
         Gdx.app.log("Scene", "Showing: " + this.getClass().getSimpleName());
-        Gdx.input.setInputProcessor(stage); // Set input to this scene's stage
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
@@ -62,4 +65,11 @@ public abstract class Scene implements Screen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
+
+    public void resetScene() {
+        create();
+    }
+
+    protected abstract void create();
+
 }

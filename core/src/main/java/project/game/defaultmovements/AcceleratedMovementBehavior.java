@@ -7,25 +7,13 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
-import project.game.abstractengine.entitysystem.interfaces.IStoppableMovementBehavior;
-import project.game.abstractengine.entitysystem.movementmanager.MovementUtils;
+import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
+import project.game.abstractengine.interfaces.IStoppableMovementBehavior;
 import project.game.exceptions.MovementException;
+import project.game.utils.MovementUtils;
 
 /**
- * @class AcceleratedMovementBehavior
- * 
- * @brief Moves the entity with acceleration and deceleration using
- *        MovementData.
- * 
- *        Moves the entity with acceleration and deceleration using
- *        MovementData.
- * 
- *        This class implements a movement behavior that moves the entity with
- *        acceleration and deceleration. The acceleration, deceleration, and
- *        maximum
- *        speed can be set in the constructor. The entity accelerates when
- *        moving in a
- *        direction and decelerates when stopping or changing direction.
+ * Provides accelerated movement for movable entities.
  */
 public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
 
@@ -38,21 +26,25 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
     /**
      * Constructs an AcceleratedMovementBehavior with specified parameters.
      * Terminates the program if any provided parameter is negative.
-     *
-     * @param acceleration Rate of acceleration.
-     * @param deceleration Rate of deceleration.
-     * @param maxSpeed     Maximum achievable speed.
      */
     public AcceleratedMovementBehavior(float acceleration, float deceleration, float maxSpeed) {
         if (acceleration < 0 || deceleration < 0 || maxSpeed < 0) {
-            String errorMessage = "Illegal negative values provided: acceleration="
-                    + acceleration + ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
+            String errorMessage = "Illegal negative values provided: acceleration=" + acceleration +
+                    ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            throw new MovementException(errorMessage);
+            if (MovementManager.LENIENT_MODE) {
+                this.acceleration = Math.abs(acceleration);
+                this.deceleration = Math.abs(deceleration);
+                this.maxSpeed = Math.abs(maxSpeed);
+                LOGGER.log(Level.WARNING, "LENIENT_MODE enabled: Using absolute values for parameters.");
+            } else {
+                throw new MovementException(errorMessage);
+            }
+        } else {
+            this.acceleration = acceleration;
+            this.deceleration = deceleration;
+            this.maxSpeed = maxSpeed;
         }
-        this.acceleration = acceleration;
-        this.deceleration = deceleration;
-        this.maxSpeed = maxSpeed;
         this.currentSpeed = 0f;
     }
 
@@ -118,19 +110,24 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
                     throw new MovementException(errorMessage);
             }
 
-            // Update the position in MovementData.
             float newX = entity.getX() + deltaMovement.x;
             float newY = entity.getY() + deltaMovement.y;
-
             entity.setX(newX);
             entity.setY(newY);
         } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
+            if (MovementManager.LENIENT_MODE) {
+                entity.setDirection(Direction.NONE);
+            } else {
+                throw e;
+            }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE,
-                    "Unexpected exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
+            LOGGER.log(Level.SEVERE, "Unexpected error in AcceleratedMovementBehavior: " + e.getMessage(), e);
+            if (MovementManager.LENIENT_MODE) {
+                entity.setDirection(Direction.NONE);
+            } else {
+                throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
+            }
         }
     }
 

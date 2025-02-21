@@ -3,9 +3,9 @@ package project.game.abstractengine.iomanager;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.Vector2;
-
 
 /**
  * IOManager handles input events (keyboard and mouse) for the game.
@@ -56,6 +56,10 @@ public class IOManager extends InputAdapter {
 
     public Set<Integer> getPressedKeys() {
         return pressedKeys;
+    }
+
+    public boolean isKeyJustPressed(int keycode) {
+        return Gdx.input.isKeyJustPressed(keycode);
     }
 
     public void clearPressedKeys() {

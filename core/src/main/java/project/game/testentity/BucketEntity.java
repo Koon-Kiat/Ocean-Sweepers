@@ -1,4 +1,7 @@
-package project.game.abstractengine.testentity;
+package project.game.testentity;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -8,52 +11,52 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.abstractengine.assetmanager.GameAsset;
-import project.game.abstractengine.constants.GameConstants;
+import project.game.abstractengine.assetmanager.CustomAssetManager;
+import project.game.abstractengine.entitysystem.entitymanager.CollidableEntity;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.entitysystem.interfaces.ICollidable;
-import project.game.abstractengine.entitysystem.interfaces.IRenderable;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.abstractengine.interfaces.ICollidable;
+import project.game.abstractengine.interfaces.IRenderable;
+import project.game.constants.GameConstants;
 
-public class BucketEntity implements ICollidable, IRenderable {
+public class BucketEntity extends CollidableEntity implements IRenderable {
 
-	private final Entity entity;
+	private static final Logger LOGGER = Logger.getLogger(BucketEntity.class.getName());
 	private final PlayerMovementManager movementManager;
 	private final String texturePath;
-	private final Body body;
 	private boolean collisionActive = false;
 	private long collisionEndTime = 0;
 
 	public BucketEntity(Entity entity, World world, PlayerMovementManager movementManager, String texturePath) {
-		this.entity = entity;
+		super(entity, world);
 		this.movementManager = movementManager;
 		this.texturePath = texturePath;
-		this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 	}
 
 	private float entityX() {
-		return entity.getX();
+		return super.getEntity().getX();
 	}
 
 	private float entityY() {
-		return entity.getY();
+		return super.getEntity().getY();
 	}
 
 	private float entityWidth() {
-		return entity.getWidth();
+		return super.getEntity().getWidth();
 	}
 
 	private float entityHeight() {
-		return entity.getHeight();
+		return super.getEntity().getHeight();
 	}
 
+	@Override
 	public boolean isActive() {
 		return movementManager.isActive();
 	}
 
 	@Override
 	public Body getBody() {
-		return body;
+		return super.getBody();
 	}
 
 	@Override
@@ -63,24 +66,30 @@ public class BucketEntity implements ICollidable, IRenderable {
 
 	@Override
 	public Entity getEntity() {
-		return entity;
+		return super.getEntity();
 	}
 
 	@Override
 	public void render(SpriteBatch batch) {
-		if (isActive() && GameAsset.getInstance().isLoaded()) {
+		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+
+			// Render the entity using offset for BOX2D body
 			float renderX = entityX() - entityWidth() / 2;
 			float renderY = entityY() - entityHeight() / 2;
-			Texture texture = GameAsset.getInstance().getAsset(texturePath, Texture.class);
+			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
 			batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
 		}
 	}
 
+	/**
+	 * Set the collision to be active for a certain duration.
+	 */
 	public void setCollisionActive(long durationMillis) {
 		collisionActive = true;
 		collisionEndTime = System.currentTimeMillis() + durationMillis;
 	}
 
+	@Override
 	public boolean isInCollision() {
 		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
 			collisionActive = false;
@@ -94,18 +103,19 @@ public class BucketEntity implements ICollidable, IRenderable {
 			return true;
 		} else if (other instanceof ICollidable) {
 			Body otherBody = ((ICollidable) other).getBody();
-			return body.getPosition().x < otherBody.getPosition().x + other.getWidth() &&
-					body.getPosition().x + entityWidth() > otherBody.getPosition().x &&
-					body.getPosition().y < otherBody.getPosition().y + other.getHeight() &&
-					body.getPosition().y + entityHeight() > otherBody.getPosition().y;
+			return super.getBody().getPosition().x < otherBody.getPosition().x + other.getWidth() &&
+					super.getBody().getPosition().x + entityWidth() > otherBody.getPosition().x &&
+					super.getBody().getPosition().y < otherBody.getPosition().y + other.getHeight() &&
+					super.getBody().getPosition().y + entityHeight() > otherBody.getPosition().y;
 		}
 		return false;
 	}
 
 	@Override
 	public void onCollision(ICollidable other) {
-		System.out.println(getEntity().getClass().getSimpleName() + " collided with " +
-				(other == null ? "boundary" : other.getClass().getSimpleName()));
+		LOGGER.log(Level.INFO, "{0} collided with {1}",
+				new Object[] { getEntity().getClass().getSimpleName(),
+						other == null ? "boundary" : other.getClass().getSimpleName() });
 	}
 
 	@Override

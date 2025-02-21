@@ -2,6 +2,8 @@ package project.game.abstractengine.iomanager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -10,7 +12,14 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import project.game.Direction;
 
+/**
+ * SceneIOManager handles input events (keyboard and mouse) for the game.
+ * It extends IOManager to provide additional functionality for scene-based
+ * input handling.
+ */
 public class SceneIOManager extends IOManager {
+
+    private static final Logger LOGGER = Logger.getLogger(SceneIOManager.class.getName());
 
     // Map holding key codes mapped to their in-game Direction
     private Map<Integer, Direction> keyBindings;
@@ -49,23 +58,26 @@ public class SceneIOManager extends IOManager {
 
     // Convert a key string (e.g., "W", "UP") to a LibGDX input key code
     private int getKeycodeFromString(String keyString) {
-        try {
-            return Input.Keys.valueOf(keyString);
-        } catch (IllegalArgumentException e) {
-            // Handle arrow keys
-            switch (keyString) {
-                case "UP":
-                    return Input.Keys.UP;
-                case "DOWN":
-                    return Input.Keys.DOWN;
-                case "LEFT":
-                    return Input.Keys.LEFT;
-                case "RIGHT":
-                    return Input.Keys.RIGHT;
-                default:
-                    System.err.println("[ERROR] Invalid key string: " + keyString);
-                    return Input.Keys.UNKNOWN; // // Fallback for invalid key strings
-            }
+        // Ensure key string is uppercase
+        keyString = keyString.toUpperCase();
+
+        // Handle arrow keys explicitly
+        switch (keyString) {
+            case "UP":
+                return Input.Keys.UP;
+            case "DOWN":
+                return Input.Keys.DOWN;
+            case "LEFT":
+                return Input.Keys.LEFT;
+            case "RIGHT":
+                return Input.Keys.RIGHT;
+            default:
+                try {
+                    return Input.Keys.valueOf(keyString);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.log(Level.WARNING, "Invalid key string: {0}", keyString);
+                    return Input.Keys.UNKNOWN;
+                }
         }
     }
 
@@ -74,7 +86,8 @@ public class SceneIOManager extends IOManager {
         return keyBindings;
     }
 
-    // Attach a click listener to an Actor that calls the provided callback on click.
+    // Attach a click listener to an Actor that calls the provided callback on
+    // click.
     public void addButtonClickListener(Actor actor, Runnable callback) {
         actor.addListener(new ClickListener() {
             @Override

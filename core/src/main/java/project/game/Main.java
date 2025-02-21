@@ -1,5 +1,8 @@
 package project.game;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -14,10 +17,8 @@ public class Main extends ApplicationAdapter {
     static {
         LogManager.initialize();
     }
-
-    public static final float GAME_WIDTH = 640;
-    public static final float GAME_HEIGHT = 480;
-
+    
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
     private SceneManager sceneManager;
 
     @Override
@@ -27,12 +28,12 @@ public class Main extends ApplicationAdapter {
         SceneIOManager sharedInputManager = sceneManager.getInputManager();
 
         // Initializing and registering scenes now done in Scene Factory
-        SceneFactory sceneFactory = new SceneFactory(sceneManager,sharedInputManager);
+        SceneFactory sceneFactory = new SceneFactory(sceneManager, sharedInputManager);
         sceneFactory.createAndRegisterScenes();
 
-        System.out.println("Available scenes: " + sceneManager.getSceneList());
+        LOGGER.log(Level.INFO, "Available scenes: {0}", sceneManager.getSceneList());
         sceneManager.setScene("menu");
-        System.out.println("[DEBUG] sceneManager in main: " + sceneManager);
+        LOGGER.log(Level.INFO, "Current scene: {0}", sceneManager.getCurrentScene());
     }
 
     @Override
@@ -40,7 +41,6 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         float deltaTime = Gdx.graphics.getDeltaTime();
-        // Render current scene (Scene Manager)
         sceneManager.render(deltaTime);
     }
 

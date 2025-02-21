@@ -7,14 +7,11 @@ import project.game.builder.NPCMovementBuilder;
 import project.game.exceptions.MovementException;
 
 /**
- * @class EnemyMovement
- * @brief Manages the movement logic specific to enemy entities.
- *
- *        Extends the abstract MovementManager to provide enemy-specific
- *        movement
- *        behaviors, such as zig-zag movement. Utilizes a Builder pattern for
- *        flexible
- *        configuration.
+ * NPCMovementManager is a concrete class that extends MovementManager and
+ * provides movement functionality for non-player characters (NPCs) in the game.
+ * 
+ * It extends MovementManager and uses the NPCMovementBuilder to configure the
+ * NPC's movement behavior.
  */
 public class NPCMovementManager extends MovementManager {
 
@@ -23,8 +20,6 @@ public class NPCMovementManager extends MovementManager {
 
     /**
      * Private constructor to enforce the use of the Builder.
-     *
-     * @param builder The Builder instance containing configuration parameters.
      */
     public NPCMovementManager(NPCMovementBuilder builder) {
         super(checkBuilder(builder).getEntity(),

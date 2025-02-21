@@ -1,4 +1,4 @@
-package project.game.abstractengine.entitysystem.movementmanager;
+package project.game.utils;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -6,23 +6,13 @@ import java.util.logging.Logger;
 import project.game.exceptions.MovementException;
 
 /**
- * @class MovementUtils
- * @brief Provides utility methods for movement calculations.
- *
- *        This class provides a static method to calculate the diagonal speed
- *        based on the current speed. This is useful for maintaining consistent
- *        overall speed when moving diagonally.
+ * Calculates the adjusted speed for an entity moving diagonally to maintain
+ * the overall velocity consistency.
  */
 public class MovementUtils {
 
     private static final Logger LOGGER = Logger.getLogger(MovementUtils.class.getName());
 
-    /**
-     * Calculates the diagonal speed to maintain consistent overall speed.
-     *
-     * @param speed The current speed.
-     * @return The diagonal speed.
-     */
     public static float calculateDiagonalSpeed(float speed) {
         if (speed < 0) {
             String errorMessage = "Speed cannot be negative in calculateDiagonalSpeed.";
