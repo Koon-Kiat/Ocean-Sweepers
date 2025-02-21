@@ -24,9 +24,9 @@ public class NonMovableDroplet implements IRenderable {
 
     @Override
     public void render(SpriteBatch batch) {
-        // Ensure that the asset manager has loaded assets and the entity is not null.
         if (entity != null && CustomAssetManager.getInstance().isLoaded()) {
-            // Use the entity's position and dimensions for rendering.
+
+            // Render the entity using offset for BOX2D body
             float renderX = entity.getX() - entity.getWidth() / 2;
             float renderY = entity.getY() - entity.getHeight() / 2;
             Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);

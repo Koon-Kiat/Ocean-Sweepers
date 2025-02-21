@@ -72,6 +72,8 @@ public class BucketEntity extends CollidableEntity implements IRenderable {
 	@Override
 	public void render(SpriteBatch batch) {
 		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+
+			// Render the entity using offset for BOX2D body
 			float renderX = entityX() - entityWidth() / 2;
 			float renderY = entityY() - entityHeight() / 2;
 			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
@@ -79,6 +81,9 @@ public class BucketEntity extends CollidableEntity implements IRenderable {
 		}
 	}
 
+	/**
+	 * Set the collision to be active for a certain duration.
+	 */
 	public void setCollisionActive(long durationMillis) {
 		collisionActive = true;
 		collisionEndTime = System.currentTimeMillis() + durationMillis;

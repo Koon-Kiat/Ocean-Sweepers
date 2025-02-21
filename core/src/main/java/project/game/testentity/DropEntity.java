@@ -74,6 +74,8 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 	@Override
 	public void render(SpriteBatch batch) {
 		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+
+			// Render the entity using offset for BOX2D body
 			float renderX = entityX() - entityWidth() / 2;
 			float renderY = entityY() - entityHeight() / 2;
 			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
@@ -81,6 +83,9 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 		}
 	}
 
+	/**
+	 * Set the collision to be active for a certain duration.
+	 */
 	public void setCollisionActive(long durationMillis) {
 		collisionActive = true;
 		collisionEndTime = System.currentTimeMillis() + durationMillis;
@@ -105,6 +110,8 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 				new Object[] { getEntity().getClass().getSimpleName(),
 						other == null ? "boundary" : other.getClass().getSimpleName() });
 		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
+
+		// Apply impulse to the entity when colliding with another entity.
 		if (other != null && (other instanceof BucketEntity)) {
 			float impulseStrength = GameConstants.IMPULSE_STRENGTH;
 			Vector2 myPos = super.getBody().getPosition();
