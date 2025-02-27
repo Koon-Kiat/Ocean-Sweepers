@@ -8,11 +8,9 @@ import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.abstractengine.interfaces.IPositionable;
-import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
-import project.game.defaultmovements.RandomisedMovementBehavior;
-import project.game.defaultmovements.ZigZagMovementBehavior;
 import project.game.exceptions.MovementException;
+import project.game.factory.MovementBehaviorFactory;
 
 /**
  * Builder class for creating NPCMovementManager objects.
@@ -26,7 +24,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withConstantMovement() {
         try {
-            this.movementBehavior = new ConstantMovementBehavior(this.speed);
+            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed);
         } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Error in ConstantMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in ConstantMovementBehavior: " + e.getMessage(), e);
@@ -36,7 +34,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
         try {
-            this.movementBehavior = new ZigZagMovementBehavior(this.speed, amplitude, frequency);
+            this.movementBehavior = MovementBehaviorFactory.createZigZagMovement(this.speed, amplitude, frequency);
         } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Error in ZigZagMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in ZigZagMovementBehavior: " + e.getMessage(), e);
@@ -51,7 +49,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             throw new MovementException(errorMsg);
         }
         try {
-            this.movementBehavior = new FollowMovementBehavior(target, this.speed);
+            this.movementBehavior = MovementBehaviorFactory.createFollowMovement(target, this.speed);
         } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Error in FollowMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in FollowMovementBehavior: " + e.getMessage(), e);
@@ -77,7 +75,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             }
         }
         try {
-            this.movementBehavior = new RandomisedMovementBehavior(behaviorPool, minDuration, maxDuration);
+            this.movementBehavior = MovementBehaviorFactory.createRandomisedMovement(behaviorPool, minDuration,
+                    maxDuration);
         } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Error in RandomisedMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in RandomisedMovementBehavior: " + e.getMessage(), e);
