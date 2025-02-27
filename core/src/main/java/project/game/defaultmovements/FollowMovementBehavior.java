@@ -8,7 +8,6 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.interfaces.IMovementBehavior;
-import project.game.abstractengine.interfaces.IMovementManager;
 import project.game.abstractengine.interfaces.IPositionable;
 import project.game.exceptions.MovementException;
 
@@ -16,7 +15,7 @@ import project.game.exceptions.MovementException;
  * Provides follow movement for movable entities.
  * 
  * The entity moves towards the target entity at a constant speed.
- * The target entity is provided by an IMovementManager.
+ * The target entity is provided by an IPositionable interface.
  */
 public class FollowMovementBehavior implements IMovementBehavior {
 
@@ -28,15 +27,13 @@ public class FollowMovementBehavior implements IMovementBehavior {
      * Constructs a FollowMovementBehavior with the specified parameters.
      * Terminates the program if any provided parameter is negative or null.
      */
-    public FollowMovementBehavior(IMovementManager targetManager, float speed) {
-        if (targetManager == null) {
-            String errorMessage = "Target manager cannot be null in FollowMovementBehavior.";
+    public FollowMovementBehavior(IPositionable target, float speed) {
+        if (target == null) {
+            String errorMessage = "Target cannot be null in FollowMovementBehavior.";
             LOGGER.log(Level.SEVERE, errorMessage);
             throw new MovementException(errorMessage);
         } else {
-            // We can safely use targetManager as an IPositionable since IMovementManager
-            // extends IPositionable
-            this.target = targetManager;
+            this.target = target;
         }
         if (speed < 0) {
             if (MovementManager.LENIENT_MODE) {
@@ -56,7 +53,6 @@ public class FollowMovementBehavior implements IMovementBehavior {
     @Override
     public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
-            // Use the target directly as an IPositionable instead of casting
             Vector2 targetPos = new Vector2(target.getX(), target.getY());
             Vector2 currentPos = new Vector2(entity.getX(), entity.getY());
             Vector2 direction = targetPos.sub(currentPos).nor();

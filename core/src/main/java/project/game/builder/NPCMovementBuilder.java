@@ -7,7 +7,7 @@ import project.game.Direction;
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.abstractengine.interfaces.IMovementBehavior;
-import project.game.abstractengine.interfaces.IMovementManager;
+import project.game.abstractengine.interfaces.IPositionable;
 import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.defaultmovements.FollowMovementBehavior;
 import project.game.defaultmovements.RandomisedMovementBehavior;
@@ -44,14 +44,14 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    public NPCMovementBuilder withFollowMovement(IMovementManager targetManager) {
-        if (targetManager == null) {
-            String errorMsg = "Target manager is null in withFollowMovement.";
+    public NPCMovementBuilder withFollowMovement(IPositionable target) {
+        if (target == null) {
+            String errorMsg = "Target is null in withFollowMovement.";
             LOGGER.log(Level.SEVERE, errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
-            this.movementBehavior = new FollowMovementBehavior(targetManager, this.speed);
+            this.movementBehavior = new FollowMovementBehavior(target, this.speed);
         } catch (MovementException e) {
             LOGGER.log(Level.SEVERE, "Error in FollowMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in FollowMovementBehavior: " + e.getMessage(), e);
