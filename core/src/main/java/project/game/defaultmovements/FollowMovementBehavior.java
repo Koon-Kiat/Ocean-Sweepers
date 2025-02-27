@@ -9,6 +9,7 @@ import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.abstractengine.interfaces.IMovementManager;
+import project.game.abstractengine.interfaces.IPositionable;
 import project.game.exceptions.MovementException;
 
 /**
@@ -20,7 +21,7 @@ import project.game.exceptions.MovementException;
 public class FollowMovementBehavior implements IMovementBehavior {
 
     private static final Logger LOGGER = Logger.getLogger(FollowMovementBehavior.class.getName());
-    private final IMovementManager targetManager;
+    private final IPositionable target;
     private final float speed;
 
     /**
@@ -33,7 +34,9 @@ public class FollowMovementBehavior implements IMovementBehavior {
             LOGGER.log(Level.SEVERE, errorMessage);
             throw new MovementException(errorMessage);
         } else {
-            this.targetManager = targetManager;
+            // We can safely use targetManager as an IPositionable since IMovementManager
+            // extends IPositionable
+            this.target = targetManager;
         }
         if (speed < 0) {
             if (MovementManager.LENIENT_MODE) {
@@ -53,8 +56,8 @@ public class FollowMovementBehavior implements IMovementBehavior {
     @Override
     public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
-            Vector2 targetPos = new Vector2(((MovableEntity) targetManager).getX(),
-                    ((MovableEntity) targetManager).getY());
+            // Use the target directly as an IPositionable instead of casting
+            Vector2 targetPos = new Vector2(target.getX(), target.getY());
             Vector2 currentPos = new Vector2(entity.getX(), entity.getY());
             Vector2 direction = targetPos.sub(currentPos).nor();
             float newX = entity.getX() + direction.x * speed * deltaTime;

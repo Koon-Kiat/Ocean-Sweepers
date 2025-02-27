@@ -7,8 +7,10 @@ import project.game.Direction;
 
 /**
  * Interface for movement managers.
+ * Extends IPositionable to ensure all movement managers have position
+ * information.
  */
-public interface IMovementManager {
+public interface IMovementManager extends IPositionable {
 
     void updateMovement();
 

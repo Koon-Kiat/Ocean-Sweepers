@@ -16,7 +16,8 @@ import project.game.exceptions.MovementException;
 /**
  * Provides randomised movement for movable entities.
  * 
- * The entity moves in a random direction at a random speed for a random duration.
+ * The entity moves in a random direction at a random speed for a random
+ * duration.
  * The behavior pool is provided in the constructor.
  */
 public class RandomisedMovementBehavior implements IMovementBehavior {
