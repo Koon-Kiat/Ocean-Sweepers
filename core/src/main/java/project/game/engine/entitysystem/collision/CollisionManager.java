@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collisionmanager;
+package project.game.engine.entitysystem.collision;
 
 import java.util.ArrayList;
 import java.util.HashMap;

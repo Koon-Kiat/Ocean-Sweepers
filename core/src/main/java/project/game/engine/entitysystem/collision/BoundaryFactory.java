@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collisionmanager;
+package project.game.engine.entitysystem.collision;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
