@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-import project.game.Direction;
+import project.game.context.core.Direction;
 
 /**
  * SceneIOManager handles input events (keyboard and mouse) for the game.

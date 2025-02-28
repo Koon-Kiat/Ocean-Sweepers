@@ -5,12 +5,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.Direction;
+import project.game.common.exception.MovementException;
+import project.game.context.core.Direction;
 import project.game.engine.api.IMovementBehavior;
 import project.game.engine.api.IMovementManager;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
-import project.game.common.exception.MovementException;
 
 /**
  * MovementManager is an abstract class that provides basic movement
