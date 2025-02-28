@@ -1,7 +1,7 @@
 //// filepath: /c:/OOPProject/core/src/main/java/project/game/engine/entitysystem/collisionmanager/EntityCollisionUpdater.java
 package project.game.engine.entitysystem.collision;
 
-import project.game.constants.GameConstants;
+import project.game.context.core.GameConstants;
 import project.game.engine.api.ICollidable;
 import project.game.engine.entitysystem.movement.MovementManager;
 

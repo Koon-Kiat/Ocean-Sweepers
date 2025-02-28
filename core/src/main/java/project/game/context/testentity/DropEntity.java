@@ -13,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.constants.GameConstants;
+import project.game.context.core.GameConstants;
 import project.game.engine.api.ICollidable;
 import project.game.engine.api.IRenderable;
 import project.game.engine.asset.CustomAssetManager;

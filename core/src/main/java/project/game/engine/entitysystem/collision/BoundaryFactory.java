@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.constants.GameConstants;
+import project.game.context.core.GameConstants;
 
 /**
  * BoundaryFactory is a factory class that creates screen boundaries for a Box2D

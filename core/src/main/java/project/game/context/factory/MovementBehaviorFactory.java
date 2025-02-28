@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.common.exception.MovementException;
-import project.game.constants.GameConstants;
+import project.game.context.core.GameConstants;
 import project.game.context.defaultmovements.ConstantMovementBehavior;
 import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.defaultmovements.RandomisedMovementBehavior;

@@ -1,4 +1,4 @@
-package project.game.constants;
+package project.game.context.core;
 
 /**
  * Constants used throughout the game.

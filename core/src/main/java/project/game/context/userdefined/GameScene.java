@@ -23,9 +23,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.Direction;
-import project.game.constants.GameConstants;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
+import project.game.context.core.GameConstants;
 import project.game.context.defaultmovements.ConstantMovementBehavior;
 import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.defaultmovements.ZigZagMovementBehavior;
