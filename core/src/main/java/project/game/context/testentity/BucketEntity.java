@@ -17,7 +17,7 @@ import project.game.engine.api.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entity.CollidableEntity;
 import project.game.engine.entitysystem.entity.Entity;
-import project.game.engine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.engine.entitysystem.movement.PlayerMovementManager;
 
 public class BucketEntity extends CollidableEntity implements IRenderable {
 

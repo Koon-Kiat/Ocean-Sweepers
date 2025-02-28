@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.movementmanager;
+package project.game.engine.entitysystem.movement;
 
 import java.util.Map;
 import java.util.Set;

@@ -3,7 +3,7 @@ package project.game.engine.entitysystem.collision;
 
 import project.game.constants.GameConstants;
 import project.game.engine.api.ICollidable;
-import project.game.engine.entitysystem.movementmanager.MovementManager;
+import project.game.engine.entitysystem.movement.MovementManager;
 
 /**
  * EntityCollisionUpdater is a utility class that updates an entity’s position

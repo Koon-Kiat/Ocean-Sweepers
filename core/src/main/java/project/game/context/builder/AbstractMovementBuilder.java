@@ -45,7 +45,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
         if (speed < 0) {
             String errorMessage = "Negative speed provided: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
-            if (project.game.engine.entitysystem.movementmanager.MovementManager.LENIENT_MODE) {
+            if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
                 this.speed = GameConstants.DEFAULT_SPEED;
             } else {
                 throw new MovementException("Speed must be non-negative.");

@@ -13,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.engine.api.ICollidable;
-import project.game.engine.entitysystem.movementmanager.MovementManager;
+import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.io.SceneIOManager;
 
 /**

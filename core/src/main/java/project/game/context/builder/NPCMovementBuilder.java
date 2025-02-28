@@ -8,8 +8,8 @@ import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.factory.MovementBehaviorFactory;
 import project.game.engine.api.IMovementBehavior;
 import project.game.engine.api.IPositionable;
-import project.game.engine.entitysystem.movementmanager.MovementManager;
-import project.game.engine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.engine.entitysystem.movement.MovementManager;
+import project.game.engine.entitysystem.movement.NPCMovementManager;
 import project.game.exceptions.MovementException;
 
 /**
