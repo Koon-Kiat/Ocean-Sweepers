@@ -12,7 +12,7 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import project.game.engine.audio.AudioManager;
-import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.io.SceneIOManager;
 import project.game.engine.scenemanager.Scene;
 import project.game.engine.scenemanager.SceneManager;
 

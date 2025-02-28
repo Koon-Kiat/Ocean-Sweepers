@@ -7,7 +7,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.io.SceneIOManager;
 import project.game.engine.scenemanager.SceneFactory;
 import project.game.engine.scenemanager.SceneManager;
 import project.game.logmanager.LogManager;

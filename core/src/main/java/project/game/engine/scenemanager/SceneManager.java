@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.io.SceneIOManager;
 
 /**
  * Manages the scenes in the game.

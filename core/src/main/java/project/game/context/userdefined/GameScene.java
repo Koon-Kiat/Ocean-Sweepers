@@ -42,7 +42,7 @@ import project.game.engine.entitysystem.entitymanager.EntityManager;
 import project.game.engine.entitysystem.movementmanager.MovementManager;
 import project.game.engine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.engine.entitysystem.movementmanager.PlayerMovementManager;
-import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.io.SceneIOManager;
 import project.game.engine.scenemanager.Scene;
 import project.game.engine.scenemanager.SceneManager;
 

@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.io.SceneIOManager;
 
 /**
  * Abstract class for creating scenes in the game.

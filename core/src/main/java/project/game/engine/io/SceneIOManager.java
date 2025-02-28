@@ -1,4 +1,4 @@
-package project.game.engine.iomanager;
+package project.game.engine.io;
 
 import java.util.HashMap;
 import java.util.Map;

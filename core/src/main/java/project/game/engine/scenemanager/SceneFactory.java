@@ -5,11 +5,11 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.engine.iomanager.SceneIOManager;
 import project.game.context.userdefined.GameOverScene;
 import project.game.context.userdefined.GameScene;
 import project.game.context.userdefined.MainMenuScene;
 import project.game.context.userdefined.OptionsScene;
+import project.game.engine.io.SceneIOManager;
 
 /**
  * Factory class for creating and registering scenes.
