@@ -1,4 +1,4 @@
-package project.game.context.userdefined;
+package project.game.context.scene;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -5,10 +5,10 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.context.userdefined.GameOverScene;
-import project.game.context.userdefined.GameScene;
-import project.game.context.userdefined.MainMenuScene;
-import project.game.context.userdefined.OptionsScene;
+import project.game.context.scene.GameOverScene;
+import project.game.context.scene.GameScene;
+import project.game.context.scene.MainMenuScene;
+import project.game.context.scene.OptionsScene;
 import project.game.engine.io.SceneIOManager;
 
 /**
