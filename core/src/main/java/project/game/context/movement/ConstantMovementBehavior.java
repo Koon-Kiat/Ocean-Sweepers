@@ -1,4 +1,4 @@
-package project.game.context.defaultmovements;
+package project.game.context.movement;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -5,8 +5,8 @@ import java.util.logging.Level;
 
 import project.game.common.exception.MovementException;
 import project.game.context.core.Direction;
-import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.factory.MovementBehaviorFactory;
+import project.game.context.movement.FollowMovementBehavior;
 import project.game.engine.api.IMovementBehavior;
 import project.game.engine.api.IPositionable;
 import project.game.engine.entitysystem.movement.MovementManager;

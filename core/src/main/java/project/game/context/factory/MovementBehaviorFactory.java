@@ -6,10 +6,10 @@ import java.util.logging.Logger;
 
 import project.game.common.exception.MovementException;
 import project.game.context.core.GameConstants;
-import project.game.context.defaultmovements.ConstantMovementBehavior;
-import project.game.context.defaultmovements.FollowMovementBehavior;
-import project.game.context.defaultmovements.RandomisedMovementBehavior;
-import project.game.context.defaultmovements.ZigZagMovementBehavior;
+import project.game.context.movement.ConstantMovementBehavior;
+import project.game.context.movement.FollowMovementBehavior;
+import project.game.context.movement.RandomisedMovementBehavior;
+import project.game.context.movement.ZigZagMovementBehavior;
 import project.game.engine.api.IMovementBehavior;
 import project.game.engine.api.IPositionable;
 
