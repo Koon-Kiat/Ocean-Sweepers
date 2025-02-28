@@ -6,10 +6,10 @@ import java.util.logging.Level;
 import project.game.Direction;
 import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.factory.MovementBehaviorFactory;
+import project.game.engine.api.IMovementBehavior;
+import project.game.engine.api.IPositionable;
 import project.game.engine.entitysystem.movementmanager.MovementManager;
 import project.game.engine.entitysystem.movementmanager.NPCMovementManager;
-import project.game.engine.interfaces.IMovementBehavior;
-import project.game.engine.interfaces.IPositionable;
 import project.game.exceptions.MovementException;
 
 /**

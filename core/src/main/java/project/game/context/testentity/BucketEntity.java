@@ -12,12 +12,12 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.constants.GameConstants;
+import project.game.engine.api.ICollidable;
+import project.game.engine.api.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entitymanager.CollidableEntity;
 import project.game.engine.entitysystem.entitymanager.Entity;
 import project.game.engine.entitysystem.movementmanager.PlayerMovementManager;
-import project.game.engine.interfaces.ICollidable;
-import project.game.engine.interfaces.IRenderable;
 
 public class BucketEntity extends CollidableEntity implements IRenderable {
 

@@ -1,4 +1,4 @@
-package project.game.engine.interfaces;
+package project.game.engine.api;
 
 import project.game.engine.entitysystem.entitymanager.MovableEntity;
 

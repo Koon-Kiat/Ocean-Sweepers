@@ -5,10 +5,10 @@ import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.engine.api.IMovementBehavior;
+import project.game.engine.api.IPositionable;
 import project.game.engine.entitysystem.entitymanager.MovableEntity;
 import project.game.engine.entitysystem.movementmanager.MovementManager;
-import project.game.engine.interfaces.IMovementBehavior;
-import project.game.engine.interfaces.IPositionable;
 import project.game.exceptions.MovementException;
 
 /**

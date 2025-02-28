@@ -9,8 +9,8 @@ import project.game.context.defaultmovements.ConstantMovementBehavior;
 import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.defaultmovements.RandomisedMovementBehavior;
 import project.game.context.defaultmovements.ZigZagMovementBehavior;
-import project.game.engine.interfaces.IMovementBehavior;
-import project.game.engine.interfaces.IPositionable;
+import project.game.engine.api.IMovementBehavior;
+import project.game.engine.api.IPositionable;
 import project.game.exceptions.MovementException;
 
 /**

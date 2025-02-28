@@ -1,4 +1,4 @@
-package project.game.engine.interfaces;
+package project.game.engine.api;
 
 import java.util.Map;
 import java.util.Set;

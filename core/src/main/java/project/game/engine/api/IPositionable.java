@@ -1,4 +1,4 @@
-package project.game.engine.interfaces;
+package project.game.engine.api;
 
 public interface IPositionable {
 

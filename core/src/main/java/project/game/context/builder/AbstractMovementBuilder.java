@@ -5,8 +5,8 @@ import java.util.logging.Logger;
 
 import project.game.Direction;
 import project.game.constants.GameConstants;
+import project.game.engine.api.IMovementBehavior;
 import project.game.engine.entitysystem.entitymanager.Entity;
-import project.game.engine.interfaces.IMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**

@@ -1,4 +1,4 @@
-package project.game.engine.interfaces;
+package project.game.engine.api;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
