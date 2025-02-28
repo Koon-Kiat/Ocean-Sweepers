@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import project.game.common.exception.MovementException;
 import project.game.constants.GameConstants;
 import project.game.context.defaultmovements.ConstantMovementBehavior;
 import project.game.context.defaultmovements.FollowMovementBehavior;
@@ -11,7 +12,6 @@ import project.game.context.defaultmovements.RandomisedMovementBehavior;
 import project.game.context.defaultmovements.ZigZagMovementBehavior;
 import project.game.engine.api.IMovementBehavior;
 import project.game.engine.api.IPositionable;
-import project.game.exceptions.MovementException;
 
 /**
  * Factory class for creating movement behaviors.

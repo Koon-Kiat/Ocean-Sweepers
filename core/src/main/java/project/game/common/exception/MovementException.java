@@ -1,4 +1,4 @@
-package project.game.exceptions;
+package project.game.common.exception;
 
 public class MovementException extends GameException {
     public MovementException(String message) {

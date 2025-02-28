@@ -10,7 +10,7 @@ import project.game.engine.api.IMovementBehavior;
 import project.game.engine.api.IMovementManager;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
-import project.game.exceptions.MovementException;
+import project.game.common.exception.MovementException;
 
 /**
  * MovementManager is an abstract class that provides basic movement

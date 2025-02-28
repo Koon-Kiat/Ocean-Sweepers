@@ -1,10 +1,9 @@
-package project.game.utils;
+package project.game.common.util;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.exceptions.MovementException;
-
+import project.game.common.exception.MovementException;
 /**
  * Calculates the adjusted speed for an entity moving diagonally to maintain
  * the overall velocity consistency.

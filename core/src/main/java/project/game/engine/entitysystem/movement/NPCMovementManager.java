@@ -3,8 +3,8 @@ package project.game.engine.entitysystem.movement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import project.game.common.exception.MovementException;
 import project.game.context.builder.NPCMovementBuilder;
-import project.game.exceptions.MovementException;
 
 /**
  * NPCMovementManager is a concrete class that extends MovementManager and

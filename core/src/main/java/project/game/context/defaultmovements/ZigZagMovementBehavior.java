@@ -7,9 +7,9 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
+import project.game.common.exception.MovementException;
 import project.game.engine.api.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
-import project.game.exceptions.MovementException;
 
 /**
  * Provides zig-zag movement for movable entities.

@@ -1,4 +1,4 @@
-package project.game.logmanager;
+package project.game.common.logging;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

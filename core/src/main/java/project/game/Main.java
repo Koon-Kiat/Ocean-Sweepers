@@ -7,10 +7,10 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import project.game.common.logging.LogManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.SceneFactory;
 import project.game.engine.scene.SceneManager;
-import project.game.logmanager.LogManager;
 
 public class Main extends ApplicationAdapter {
 
