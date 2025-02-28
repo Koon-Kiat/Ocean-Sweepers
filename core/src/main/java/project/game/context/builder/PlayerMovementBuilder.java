@@ -1,11 +1,11 @@
-package project.game.builder;
+package project.game.context.builder;
 
 import java.util.logging.Level;
 
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.context.factory.MovementBehaviorFactory;
 import project.game.exceptions.MovementException;
-import project.game.factory.MovementBehaviorFactory;
 
 /**
  * Builder class for creating PlayerMovementManager objects.

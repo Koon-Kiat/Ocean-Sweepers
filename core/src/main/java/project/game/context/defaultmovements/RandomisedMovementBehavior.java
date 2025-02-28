@@ -1,4 +1,4 @@
-package project.game.defaultmovements;
+package project.game.context.defaultmovements;
 
 import java.util.ArrayList;
 import java.util.List;

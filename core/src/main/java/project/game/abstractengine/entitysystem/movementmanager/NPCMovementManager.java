@@ -3,7 +3,7 @@ package project.game.abstractengine.entitysystem.movementmanager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.builder.NPCMovementBuilder;
+import project.game.context.builder.NPCMovementBuilder;
 import project.game.exceptions.MovementException;
 
 /**

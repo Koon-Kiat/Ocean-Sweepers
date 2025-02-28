@@ -1,4 +1,4 @@
-package project.game.testentity;
+package project.game.context.testentity;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -1,4 +1,4 @@
-package project.game.userdefined;
+package project.game.context.userdefined;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;

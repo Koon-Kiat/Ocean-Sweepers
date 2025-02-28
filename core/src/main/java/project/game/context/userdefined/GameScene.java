@@ -1,4 +1,4 @@
-package project.game.userdefined;
+package project.game.context.userdefined;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,15 +36,15 @@ import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
-import project.game.builder.NPCMovementBuilder;
-import project.game.builder.PlayerMovementBuilder;
 import project.game.constants.GameConstants;
-import project.game.defaultmovements.ConstantMovementBehavior;
-import project.game.defaultmovements.FollowMovementBehavior;
-import project.game.defaultmovements.ZigZagMovementBehavior;
-import project.game.testentity.BucketEntity;
-import project.game.testentity.DropEntity;
-import project.game.testentity.NonMovableDroplet;
+import project.game.context.builder.NPCMovementBuilder;
+import project.game.context.builder.PlayerMovementBuilder;
+import project.game.context.defaultmovements.ConstantMovementBehavior;
+import project.game.context.defaultmovements.FollowMovementBehavior;
+import project.game.context.defaultmovements.ZigZagMovementBehavior;
+import project.game.context.testentity.BucketEntity;
+import project.game.context.testentity.DropEntity;
+import project.game.context.testentity.NonMovableDroplet;
 
 @SuppressWarnings({ "unused", "FieldMayBeFinal" })
 public class GameScene extends Scene {

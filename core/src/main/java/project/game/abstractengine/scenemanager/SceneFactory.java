@@ -6,10 +6,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.userdefined.GameOverScene;
-import project.game.userdefined.GameScene;
-import project.game.userdefined.MainMenuScene;
-import project.game.userdefined.OptionsScene;
+import project.game.context.userdefined.GameOverScene;
+import project.game.context.userdefined.GameScene;
+import project.game.context.userdefined.MainMenuScene;
+import project.game.context.userdefined.OptionsScene;
 
 /**
  * Factory class for creating and registering scenes.

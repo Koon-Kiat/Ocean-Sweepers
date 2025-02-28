@@ -44,7 +44,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
             if (LENIENT_MODE) {
                 LOGGER.log(Level.WARNING,
                         "Movement behavior is null. Defaulting to ConstantMovementBehavior with speed 1.0.");
-                behavior = project.game.factory.MovementBehaviorFactory.createDefaultMovement();
+                behavior = project.game.context.factory.MovementBehaviorFactory.createDefaultMovement();
             } else {
                 throw new MovementException("Movement behavior cannot be null");
             }
