@@ -1,4 +1,4 @@
-package project.game.engine.audiomanager;
+package project.game.engine.audio;
 
 import java.util.HashMap;
 import java.util.Map;

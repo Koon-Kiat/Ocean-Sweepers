@@ -33,7 +33,7 @@ import project.game.context.testentity.BucketEntity;
 import project.game.context.testentity.DropEntity;
 import project.game.context.testentity.NonMovableDroplet;
 import project.game.engine.asset.CustomAssetManager;
-import project.game.engine.audiomanager.AudioManager;
+import project.game.engine.audio.AudioManager;
 import project.game.engine.entitysystem.collisionmanager.BoundaryFactory;
 import project.game.engine.entitysystem.collisionmanager.CollisionManager;
 import project.game.engine.entitysystem.entitymanager.Entity;
