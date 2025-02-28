@@ -1,4 +1,4 @@
-package project.game.engine.scenemanager;
+package project.game.engine.scene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;

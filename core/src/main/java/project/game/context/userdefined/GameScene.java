@@ -43,8 +43,8 @@ import project.game.engine.entitysystem.movementmanager.MovementManager;
 import project.game.engine.entitysystem.movementmanager.NPCMovementManager;
 import project.game.engine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.engine.io.SceneIOManager;
-import project.game.engine.scenemanager.Scene;
-import project.game.engine.scenemanager.SceneManager;
+import project.game.engine.scene.Scene;
+import project.game.engine.scene.SceneManager;
 
 @SuppressWarnings({ "unused", "FieldMayBeFinal" })
 public class GameScene extends Scene {
