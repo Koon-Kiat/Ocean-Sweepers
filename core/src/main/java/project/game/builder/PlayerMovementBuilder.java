@@ -4,8 +4,8 @@ import java.util.logging.Level;
 
 import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
-import project.game.defaultmovements.ConstantMovementBehavior;
 import project.game.exceptions.MovementException;
+import project.game.factory.MovementBehaviorFactory;
 
 /**
  * Builder class for creating PlayerMovementManager objects.
@@ -31,17 +31,20 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
 
     public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
         try {
-            this.movementBehavior = new ConstantMovementBehavior(this.speed);
+            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed);
+            // Note: This seems to be using a ConstantMovementBehavior but should probably
+            // use
+            // an accelerated movement behavior - you might want to add that to your factory
         } catch (MovementException e) {
-            LOGGER.log(Level.SEVERE, "Error in ConstantMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error in ConstantMovementBehavior: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Error in movement behavior creation: " + e.getMessage(), e);
+            throw new MovementException("Error in movement behavior creation: " + e.getMessage(), e);
         }
         return this;
     }
 
     public PlayerMovementBuilder withConstantMovement() {
         try {
-            this.movementBehavior = new ConstantMovementBehavior(this.speed);
+            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to create ConstantMovementBehavior", e);
             throw new MovementException("Failed to create ConstantMovementBehavior", e);
