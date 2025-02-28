@@ -1,35 +1,33 @@
-package project.game.context.testentity;
+package project.game.context.entity;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.Main;
 import project.game.context.core.GameConstants;
 import project.game.engine.api.ICollidable;
 import project.game.engine.api.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entity.CollidableEntity;
 import project.game.engine.entitysystem.entity.Entity;
-import project.game.engine.entitysystem.movement.NPCMovementManager;
+import project.game.engine.entitysystem.movement.PlayerMovementManager;
 
-public class DropEntity extends CollidableEntity implements IRenderable {
+public class BucketEntity extends CollidableEntity implements IRenderable {
 
-	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
-	private final NPCMovementManager movementManager;
+	private static final Logger LOGGER = Logger.getLogger(BucketEntity.class.getName());
+	private final PlayerMovementManager movementManager;
 	private final String texturePath;
 	private boolean collisionActive = false;
 	private long collisionEndTime = 0;
 
-	public DropEntity(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
+	public BucketEntity(Entity entity, World world, PlayerMovementManager movementManager, String texturePath) {
 		super(entity, world);
 		this.movementManager = movementManager;
 		this.texturePath = texturePath;
@@ -101,7 +99,16 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 
 	@Override
 	public boolean checkCollision(Entity other) {
-		return true;
+		if (other == null) {
+			return true;
+		} else if (other instanceof ICollidable) {
+			Body otherBody = ((ICollidable) other).getBody();
+			return super.getBody().getPosition().x < otherBody.getPosition().x + other.getWidth() &&
+					super.getBody().getPosition().x + entityWidth() > otherBody.getPosition().x &&
+					super.getBody().getPosition().y < otherBody.getPosition().y + other.getHeight() &&
+					super.getBody().getPosition().y + entityHeight() > otherBody.getPosition().y;
+		}
+		return false;
 	}
 
 	@Override
@@ -109,20 +116,6 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 		LOGGER.log(Level.INFO, "{0} collided with {1}",
 				new Object[] { getEntity().getClass().getSimpleName(),
 						other == null ? "boundary" : other.getClass().getSimpleName() });
-		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
-
-		// Apply impulse to the entity when colliding with another entity.
-		if (other != null && (other instanceof BucketEntity)) {
-			float impulseStrength = GameConstants.IMPULSE_STRENGTH;
-			Vector2 myPos = super.getBody().getPosition();
-			Vector2 otherPos = other.getBody().getPosition();
-			Vector2 normal = new Vector2(myPos.x - otherPos.x, myPos.y - otherPos.y).nor();
-			Vector2 impulse = normal.scl(impulseStrength);
-			super.getBody().applyLinearImpulse(impulse, super.getBody().getWorldCenter(), true);
-		} else {
-			Vector2 impulse = new Vector2(-5f, 5f);
-			super.getBody().applyLinearImpulse(impulse, super.getBody().getWorldCenter(), true);
-		}
 	}
 
 	@Override
@@ -133,7 +126,7 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 		float centerY = (y + height / 2) / GameConstants.PIXELS_TO_METERS;
 		bodyDef.position.set(centerX, centerY);
 		bodyDef.fixedRotation = true;
-		bodyDef.linearDamping = 0.2f;
+		bodyDef.linearDamping = 0.1f;
 
 		Body newBody = world.createBody(bodyDef);
 		PolygonShape shape = new PolygonShape();
@@ -141,16 +134,16 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
-		fixtureDef.density = 5.0f;
-		fixtureDef.friction = 0.4f;
-		fixtureDef.restitution = 0.0f;
+		fixtureDef.density = 1000.0f;
+		fixtureDef.friction = 0.2f;
+		fixtureDef.restitution = 0.1f;
 		newBody.createFixture(fixtureDef);
 		shape.dispose();
 		newBody.setUserData(this);
 		return newBody;
 	}
 
-	public NPCMovementManager getMovementManager() {
+	public PlayerMovementManager getMovementManager() {
 		return this.movementManager;
 	}
 }
