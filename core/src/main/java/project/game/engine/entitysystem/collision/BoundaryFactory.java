@@ -30,18 +30,21 @@ public class BoundaryFactory {
         private final String userData;
 
         /**
-         * Creates a new boundary with specified physical properties.
+         * Creates a new boundary with specified physical properties. The boundary is
+         * defined as a rectangular Box2D body with the specified parameters.
          *
-         * @param world       the Box2D world
-         * @param posX        center x-position of the boundary
-         * @param posY        center y-position of the boundary
-         * @param halfWidth   half of the total width for setAsBox
-         * @param halfHeight  half of the total height for setAsBox
-         * @param bodyType    the body type (Static, Dynamic, etc.)
-         * @param density     density of the fixture
-         * @param friction    friction of the fixture
-         * @param restitution bounciness of the fixture
-         * @param userData    string identifier for the body
+         * @param world       The Box2D world where the boundary will be created
+         * @param posX        Center x-position of the boundary in Box2D coordinates
+         * @param posY        Center y-position of the boundary in Box2D coordinates
+         * @param halfWidth   Half of the total width for the boundary rectangle (in
+         *                    Box2D meters)
+         * @param halfHeight  Half of the total height for the boundary rectangle (in
+         *                    Box2D meters)
+         * @param bodyType    The body type (typically StaticBody for boundaries)
+         * @param density     Density of the fixture (affects mass in dynamic bodies)
+         * @param friction    Friction of the fixture (affects sliding behavior)
+         * @param restitution Bounciness of the fixture (affects how objects bounce off)
+         * @param userData    String identifier for the body used in collision detection
          */
         public Boundary(World world,
                 float posX,
@@ -99,8 +102,7 @@ public class BoundaryFactory {
 
     /**
      * Creates screen boundaries using the specified scene width (pixels), height
-     * (pixels),
-     * and boundary thickness (meters).
+     * (pixels) and boundary thickness (meters).
      *
      * @param world         the Box2D world
      * @param gameWidth     the width in pixels
