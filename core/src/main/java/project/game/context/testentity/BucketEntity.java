@@ -12,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.constants.GameConstants;
-import project.game.engine.assetmanager.CustomAssetManager;
+import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entitymanager.CollidableEntity;
 import project.game.engine.entitysystem.entitymanager.Entity;
 import project.game.engine.entitysystem.movementmanager.PlayerMovementManager;

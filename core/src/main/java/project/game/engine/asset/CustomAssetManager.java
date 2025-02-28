@@ -1,4 +1,4 @@
-package project.game.engine.assetmanager;
+package project.game.engine.asset;
 
 import java.util.HashMap;
 import java.util.HashSet;
