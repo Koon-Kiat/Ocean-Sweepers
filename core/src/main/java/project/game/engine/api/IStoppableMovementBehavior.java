@@ -1,6 +1,6 @@
 package project.game.engine.api;
 
-import project.game.engine.entitysystem.entitymanager.MovableEntity;
+import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Interface for stoppable movement behaviors.

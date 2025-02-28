@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.MathUtils;
 
 import project.game.constants.GameConstants;
 import project.game.engine.api.IMovementBehavior;
-import project.game.engine.entitysystem.entitymanager.MovableEntity;
+import project.game.engine.entitysystem.entity.MovableEntity;
 import project.game.engine.entitysystem.movementmanager.MovementManager;
 import project.game.exceptions.MovementException;
 

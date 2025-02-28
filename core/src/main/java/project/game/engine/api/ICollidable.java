@@ -3,7 +3,7 @@ package project.game.engine.api;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.engine.entitysystem.entitymanager.Entity;
+import project.game.engine.entitysystem.entity.Entity;
 
 /**
  * Interface for collidable entities.

@@ -8,8 +8,8 @@ import java.util.logging.Logger;
 import project.game.Direction;
 import project.game.engine.api.IMovementBehavior;
 import project.game.engine.api.IMovementManager;
-import project.game.engine.entitysystem.entitymanager.Entity;
-import project.game.engine.entitysystem.entitymanager.MovableEntity;
+import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.MovableEntity;
 import project.game.exceptions.MovementException;
 
 /**

@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.entitymanager;
+package project.game.engine.entitysystem.entity;
 
 import project.game.Direction;
 import project.game.engine.api.IPositionable;

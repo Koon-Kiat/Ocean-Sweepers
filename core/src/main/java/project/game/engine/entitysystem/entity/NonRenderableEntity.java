@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.entitymanager;
+package project.game.engine.entitysystem.entity;
 
 /**
  * NonRenderableEntity is an abstract class that extends Entity and provides the

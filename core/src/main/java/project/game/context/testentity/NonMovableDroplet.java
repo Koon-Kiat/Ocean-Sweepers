@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import project.game.engine.api.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
-import project.game.engine.entitysystem.entitymanager.Entity;
+import project.game.engine.entitysystem.entity.Entity;
 
 public class NonMovableDroplet implements IRenderable {
 
