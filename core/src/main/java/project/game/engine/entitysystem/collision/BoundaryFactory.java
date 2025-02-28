@@ -15,65 +15,152 @@ import project.game.context.core.GameConstants;
 public class BoundaryFactory {
 
     /**
-     * Creates screen boundaries using the specified scene width, height, and
-     * boundary thickness.
+     * A class representing a single boundary in the game world.
      */
-    public static void createScreenBoundaries(World world, float gameWidth, float gameHeight, float edgeThickness) {
-        // Convert pixel dimensions to Box2D meters.
+    private static class Boundary {
+        private final World world;
+        private final float posX;
+        private final float posY;
+        private final float halfWidth;
+        private final float halfHeight;
+        private final BodyDef.BodyType bodyType;
+        private final float density;
+        private final float friction;
+        private final float restitution;
+        private final String userData;
+
+        /**
+         * Creates a new boundary with specified physical properties.
+         *
+         * @param world       the Box2D world
+         * @param posX        center x-position of the boundary
+         * @param posY        center y-position of the boundary
+         * @param halfWidth   half of the total width for setAsBox
+         * @param halfHeight  half of the total height for setAsBox
+         * @param bodyType    the body type (Static, Dynamic, etc.)
+         * @param density     density of the fixture
+         * @param friction    friction of the fixture
+         * @param restitution bounciness of the fixture
+         * @param userData    string identifier for the body
+         */
+        public Boundary(World world,
+                float posX,
+                float posY,
+                float halfWidth,
+                float halfHeight,
+                BodyDef.BodyType bodyType,
+                float density,
+                float friction,
+                float restitution,
+                String userData) {
+            this.world = world;
+            this.posX = posX;
+            this.posY = posY;
+            this.halfWidth = halfWidth;
+            this.halfHeight = halfHeight;
+            this.bodyType = bodyType;
+            this.density = density;
+            this.friction = friction;
+            this.restitution = restitution;
+            this.userData = userData;
+        }
+
+        /**
+         * Creates and adds this boundary to the Box2D world.
+         */
+        public void create() {
+            // Create body definition
+            BodyDef boundaryDef = new BodyDef();
+            boundaryDef.type = bodyType;
+            boundaryDef.position.set(posX, posY);
+
+            // Create the body
+            Body body = world.createBody(boundaryDef);
+
+            // Create shape
+            PolygonShape shape = new PolygonShape();
+            // setAsBox expects half-width and half-height
+            shape.setAsBox(halfWidth, halfHeight);
+
+            // Create fixture
+            FixtureDef fixtureDef = new FixtureDef();
+            fixtureDef.shape = shape;
+            fixtureDef.density = density;
+            fixtureDef.friction = friction;
+            fixtureDef.restitution = restitution;
+
+            body.createFixture(fixtureDef);
+            body.setUserData(userData);
+
+            // Cleanup
+            shape.dispose();
+        }
+    }
+
+    /**
+     * Creates screen boundaries using the specified scene width (pixels), height
+     * (pixels),
+     * and boundary thickness (meters).
+     *
+     * @param world         the Box2D world
+     * @param gameWidth     the width in pixels
+     * @param gameHeight    the height in pixels
+     * @param edgeThickness the boundary thickness in Box2D meters
+     */
+    public static void createScreenBoundaries(World world,
+            float gameWidth,
+            float gameHeight,
+            float edgeThickness) {
+
+        // Convert pixel dimensions to Box2D meters
         float screenWidth = gameWidth / GameConstants.PIXELS_TO_METERS;
         float screenHeight = gameHeight / GameConstants.PIXELS_TO_METERS;
+        float edgeThicknessMeters = edgeThickness / GameConstants.PIXELS_TO_METERS;
 
-        // Create a BodyDef for static boundaries.
-        BodyDef boundaryDef = new BodyDef();
-        boundaryDef.type = BodyDef.BodyType.StaticBody;
+        // Half-thickness of the boundary (Box2D uses half-extents)
+        float halfThickness = edgeThicknessMeters / 2f;
 
-        // Create a FixtureDef for boundaries.
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.density = 1f;
-        fixtureDef.friction = 0.4f;
-        fixtureDef.restitution = 0.2f;
+        // Common physical properties
+        BodyDef.BodyType bodyType = BodyDef.BodyType.StaticBody;
+        float density = 1f;
+        float friction = 0.4f;
+        float restitution = 0.2f;
+        String userData = "boundary";
 
-        // Top boundary.
-        boundaryDef.position.set(0, screenHeight);
-        Body topBoundary = world.createBody(boundaryDef);
-        PolygonShape topShape = new PolygonShape();
-        topShape.setAsBox(screenWidth, edgeThickness);
-        fixtureDef.shape = topShape;
-        topBoundary.createFixture(fixtureDef);
-        topBoundary.setUserData("boundary");
-        topShape.dispose();
+        new Boundary(
+                world,
+                screenWidth / 2f, // centerX
+                screenHeight - halfThickness, // centerY
+                screenWidth / 2f, // halfWidth = half the total width
+                halfThickness, // halfHeight = half the total thickness
+                bodyType, density, friction, restitution, userData).create();
 
-        // Bottom boundary.
-        boundaryDef.position.set(0, 0);
-        Body bottomBoundary = world.createBody(boundaryDef);
-        PolygonShape bottomShape = new PolygonShape();
-        bottomShape.setAsBox(screenWidth, edgeThickness);
-        fixtureDef.shape = bottomShape;
-        bottomBoundary.createFixture(fixtureDef);
-        bottomBoundary.setUserData("boundary");
-        bottomShape.dispose();
+        new Boundary(
+                world,
+                screenWidth / 2f,
+                halfThickness,
+                screenWidth / 2f,
+                halfThickness,
+                bodyType, density, friction, restitution, userData).create();
 
-        // Left boundary.
-        boundaryDef.position.set(0, 0);
-        Body leftBoundary = world.createBody(boundaryDef);
-        PolygonShape leftShape = new PolygonShape();
-        leftShape.setAsBox(edgeThickness, screenHeight);
-        fixtureDef.shape = leftShape;
-        leftBoundary.createFixture(fixtureDef);
-        leftBoundary.setUserData("boundary");
-        leftShape.dispose();
+        new Boundary(
+                world,
+                halfThickness,
+                screenHeight / 2f,
+                halfThickness,
+                screenHeight / 2f,
+                bodyType, density, friction, restitution, userData).create();
 
-        // Right boundary.
-        boundaryDef.position.set(screenWidth, 0);
-        Body rightBoundary = world.createBody(boundaryDef);
-        PolygonShape rightShape = new PolygonShape();
-        rightShape.setAsBox(edgeThickness, screenHeight);
-        fixtureDef.shape = rightShape;
-        rightBoundary.createFixture(fixtureDef);
-        rightBoundary.setUserData("boundary");
-        rightShape.dispose();
+        new Boundary(
+                world,
+                screenWidth - halfThickness,
+                screenHeight / 2f,
+                halfThickness,
+                screenHeight / 2f,
+                bodyType, density, friction, restitution, userData).create();
     }
 
     private BoundaryFactory() {
+        // Private constructor to prevent instantiation
     }
 }

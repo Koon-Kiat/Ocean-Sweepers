@@ -181,8 +181,8 @@ public class GameScene extends Scene {
         collisionManager.addEntity(drop, npcMovementManager);
         collisionManager.addEntity(bucket, playerMovementManager);
 
-        // Create screen boundaries
-        BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 0.1f);
+        // Create boundaries
+        BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 1f);
 
         // Initialize AudioManager and play background music
         audioManager = new AudioManager(stage);
