@@ -15,9 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
-import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.Scene;
-import project.game.abstractengine.scenemanager.SceneManager;
+import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.scenemanager.Scene;
+import project.game.engine.scenemanager.SceneManager;
 
 @SuppressWarnings("unused")
 public class Options extends Scene {

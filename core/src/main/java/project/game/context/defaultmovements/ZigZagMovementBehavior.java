@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.Direction;
-import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
-import project.game.abstractengine.interfaces.IMovementBehavior;
+import project.game.engine.entitysystem.entitymanager.MovableEntity;
+import project.game.engine.interfaces.IMovementBehavior;
 import project.game.exceptions.MovementException;
 
 /**
@@ -29,7 +29,7 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
 
     public ZigZagMovementBehavior(float speed, float amplitude, float frequency) {
         if (speed < 0) {
-            if (project.game.abstractengine.entitysystem.movementmanager.MovementManager.LENIENT_MODE) {
+            if (project.game.engine.entitysystem.movementmanager.MovementManager.LENIENT_MODE) {
                 LOGGER.log(Level.WARNING,
                         "Negative speed provided in ZigZagMovementBehavior: {0}. Using absolute value.", speed);
                 speed = Math.abs(speed);
@@ -41,7 +41,7 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             }
         }
         if (frequency < 0) {
-            if (project.game.abstractengine.entitysystem.movementmanager.MovementManager.LENIENT_MODE) {
+            if (project.game.engine.entitysystem.movementmanager.MovementManager.LENIENT_MODE) {
                 LOGGER.log(Level.WARNING,
                         "Negative frequency provided in ZigZagMovementBehavior: {0}. Using absolute value.", frequency);
                 frequency = Math.abs(frequency);

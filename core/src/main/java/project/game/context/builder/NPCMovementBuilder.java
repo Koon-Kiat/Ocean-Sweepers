@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.logging.Level;
 
 import project.game.Direction;
-import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
-import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
-import project.game.abstractengine.interfaces.IMovementBehavior;
-import project.game.abstractengine.interfaces.IPositionable;
 import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.factory.MovementBehaviorFactory;
+import project.game.engine.entitysystem.movementmanager.MovementManager;
+import project.game.engine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.engine.interfaces.IMovementBehavior;
+import project.game.engine.interfaces.IPositionable;
 import project.game.exceptions.MovementException;
 
 /**

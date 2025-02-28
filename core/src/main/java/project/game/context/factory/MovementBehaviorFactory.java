@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.abstractengine.interfaces.IMovementBehavior;
-import project.game.abstractengine.interfaces.IPositionable;
 import project.game.constants.GameConstants;
 import project.game.context.defaultmovements.ConstantMovementBehavior;
 import project.game.context.defaultmovements.FollowMovementBehavior;
 import project.game.context.defaultmovements.RandomisedMovementBehavior;
 import project.game.context.defaultmovements.ZigZagMovementBehavior;
+import project.game.engine.interfaces.IMovementBehavior;
+import project.game.engine.interfaces.IPositionable;
 import project.game.exceptions.MovementException;
 
 /**

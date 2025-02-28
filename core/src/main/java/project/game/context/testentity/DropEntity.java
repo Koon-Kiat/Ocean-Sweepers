@@ -13,13 +13,13 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.abstractengine.assetmanager.CustomAssetManager;
-import project.game.abstractengine.entitysystem.entitymanager.CollidableEntity;
-import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
-import project.game.abstractengine.interfaces.ICollidable;
-import project.game.abstractengine.interfaces.IRenderable;
 import project.game.constants.GameConstants;
+import project.game.engine.assetmanager.CustomAssetManager;
+import project.game.engine.entitysystem.entitymanager.CollidableEntity;
+import project.game.engine.entitysystem.entitymanager.Entity;
+import project.game.engine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.engine.interfaces.ICollidable;
+import project.game.engine.interfaces.IRenderable;
 
 public class DropEntity extends CollidableEntity implements IRenderable {
 

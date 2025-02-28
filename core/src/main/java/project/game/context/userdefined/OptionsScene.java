@@ -5,9 +5,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
-import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.Scene;
-import project.game.abstractengine.scenemanager.SceneManager;
+import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.scenemanager.Scene;
+import project.game.engine.scenemanager.SceneManager;
 
 /**
  * The OptionsScene class represents the game scene where users can adjust

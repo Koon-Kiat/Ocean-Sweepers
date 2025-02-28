@@ -3,9 +3,9 @@ package project.game.context.testentity;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.abstractengine.assetmanager.CustomAssetManager;
-import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.interfaces.IRenderable;
+import project.game.engine.assetmanager.CustomAssetManager;
+import project.game.engine.entitysystem.entitymanager.Entity;
+import project.game.engine.interfaces.IRenderable;
 
 public class NonMovableDroplet implements IRenderable {
 

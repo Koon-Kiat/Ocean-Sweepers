@@ -9,9 +9,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
 
-import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.Scene;
-import project.game.abstractengine.scenemanager.SceneManager;
+import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.scenemanager.Scene;
+import project.game.engine.scenemanager.SceneManager;
 
 public class GameOverScene extends Scene {
     private SpriteBatch batch;

@@ -23,19 +23,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.Direction;
-import project.game.abstractengine.assetmanager.CustomAssetManager;
-import project.game.abstractengine.audiomanager.AudioManager;
-import project.game.abstractengine.entitysystem.collisionmanager.BoundaryFactory;
-import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
-import project.game.abstractengine.entitysystem.entitymanager.Entity;
-import project.game.abstractengine.entitysystem.entitymanager.EntityManager;
-import project.game.abstractengine.entitysystem.movementmanager.MovementManager;
-import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManager;
-import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
-import project.game.abstractengine.interfaces.IMovementBehavior;
-import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.Scene;
-import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.constants.GameConstants;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
@@ -45,6 +32,19 @@ import project.game.context.defaultmovements.ZigZagMovementBehavior;
 import project.game.context.testentity.BucketEntity;
 import project.game.context.testentity.DropEntity;
 import project.game.context.testentity.NonMovableDroplet;
+import project.game.engine.assetmanager.CustomAssetManager;
+import project.game.engine.audiomanager.AudioManager;
+import project.game.engine.entitysystem.collisionmanager.BoundaryFactory;
+import project.game.engine.entitysystem.collisionmanager.CollisionManager;
+import project.game.engine.entitysystem.entitymanager.Entity;
+import project.game.engine.entitysystem.entitymanager.EntityManager;
+import project.game.engine.entitysystem.movementmanager.MovementManager;
+import project.game.engine.entitysystem.movementmanager.NPCMovementManager;
+import project.game.engine.entitysystem.movementmanager.PlayerMovementManager;
+import project.game.engine.interfaces.IMovementBehavior;
+import project.game.engine.iomanager.SceneIOManager;
+import project.game.engine.scenemanager.Scene;
+import project.game.engine.scenemanager.SceneManager;
 
 @SuppressWarnings({ "unused", "FieldMayBeFinal" })
 public class GameScene extends Scene {
