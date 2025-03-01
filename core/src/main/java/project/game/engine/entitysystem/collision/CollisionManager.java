@@ -91,19 +91,20 @@ public class CollisionManager implements ContactListener {
         collisionQueue.clear();
     }
 
-    public void updateGame(float gameWidth, float gameHeight) {
+    public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
             entry.getValue().updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
             entry.getValue().updateMovement();
         }
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
-            EntityCollisionUpdater.updateEntity(entry.getKey(), entry.getValue(), gameWidth, gameHeight);
+            EntityCollisionUpdater.updateEntity(entry.getKey(), entry.getValue(), gameWidth, gameHeight,
+                    pixelsToMeters);
         }
     }
 
-    public void syncEntityPositions() {
+    public void syncEntityPositions(float pixelsToMeters) {
         for (ICollidable entity : entityMap.keySet()) {
-            EntityCollisionUpdater.syncEntity(entity);
+            EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
         }
     }
 

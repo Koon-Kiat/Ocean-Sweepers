@@ -186,7 +186,8 @@ public class GameScene extends Scene {
         collisionManager.addEntity(bucket, playerMovementManager);
 
         // Create boundaries
-        BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f);
+        BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
+                constants.PIXELS_TO_METERS());
 
         // Initialize AudioManager and play background music
         audioManager = new AudioManager(stage);
@@ -211,7 +212,7 @@ public class GameScene extends Scene {
         input();
 
         try {
-            collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+            collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(), constants.PIXELS_TO_METERS());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Exception during game update: {0}", e.getMessage());
         }
@@ -235,7 +236,7 @@ public class GameScene extends Scene {
 
         // Process collisions
         collisionManager.processCollisions();
-        collisionManager.syncEntityPositions();
+        collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
 
         // Play sound effect on collision
         if (collisionManager.collision()) {

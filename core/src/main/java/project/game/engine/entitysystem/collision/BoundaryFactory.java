@@ -6,8 +6,6 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.context.factory.GameConstantsFactory;
-
 /**
  * BoundaryFactory is a factory class that creates screen boundaries for a Box2D
  * world.
@@ -104,20 +102,22 @@ public class BoundaryFactory {
      * Creates screen boundaries using the specified scene width (pixels), height
      * (pixels) and boundary thickness (meters).
      *
-     * @param world         the Box2D world
-     * @param gameWidth     the width in pixels
-     * @param gameHeight    the height in pixels
-     * @param edgeThickness the boundary thickness in Box2D meters
+     * @param world          the Box2D world
+     * @param gameWidth      the width in pixels
+     * @param gameHeight     the height in pixels
+     * @param edgeThickness  the boundary thickness in Box2D meters
+     * @param pixelsToMeters conversion factor from pixels to Box2D meters
      */
     public static void createScreenBoundaries(World world,
             float gameWidth,
             float gameHeight,
-            float edgeThickness) {
+            float edgeThickness,
+            float pixelsToMeters) {
 
         // Convert pixel dimensions to Box2D meters
-        float screenWidth = gameWidth / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float screenHeight = gameHeight / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float edgeThicknessMeters = edgeThickness / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+        float screenWidth = gameWidth / pixelsToMeters;
+        float screenHeight = gameHeight / pixelsToMeters;
+        float edgeThicknessMeters = edgeThickness / pixelsToMeters;
 
         // Half-thickness of the boundary (Box2D uses half-extents)
         float halfThickness = edgeThicknessMeters / 2f;
