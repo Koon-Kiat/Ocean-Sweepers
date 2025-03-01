@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import project.game.Main;
+import project.game.common.api.ILogger;
 
 /**
  * Manages the logging system for the game. Provides a configurable, centralized

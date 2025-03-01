@@ -4,8 +4,8 @@ import java.util.logging.Level;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.ILogger;
 import project.game.common.logging.LogManager;
 import project.game.common.util.MovementUtils;
 import project.game.engine.api.movement.IMovementBehavior;

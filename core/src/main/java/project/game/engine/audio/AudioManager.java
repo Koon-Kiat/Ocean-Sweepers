@@ -18,7 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import project.game.common.logging.ILogger;
+import project.game.common.api.ILogger;
 import project.game.common.logging.LogManager;
 
 /**

@@ -14,7 +14,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-import project.game.common.logging.ILogger;
+import project.game.common.api.ILogger;
 import project.game.common.logging.LogManager;
 
 public class CustomAssetManager implements Disposable {

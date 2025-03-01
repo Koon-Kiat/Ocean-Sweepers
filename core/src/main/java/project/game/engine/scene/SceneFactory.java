@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
-import project.game.common.logging.ILogger;
+import project.game.common.api.ILogger;
 import project.game.common.logging.LogManager;
 import project.game.context.scene.GameOverScene;
 import project.game.context.scene.GameScene;

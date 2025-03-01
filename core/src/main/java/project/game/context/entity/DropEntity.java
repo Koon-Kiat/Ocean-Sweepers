@@ -12,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.common.logging.ILogger;
+import project.game.common.api.ILogger;
 import project.game.common.logging.LogManager;
 import project.game.context.core.GameConstants;
 import project.game.engine.api.collision.ICollidable;

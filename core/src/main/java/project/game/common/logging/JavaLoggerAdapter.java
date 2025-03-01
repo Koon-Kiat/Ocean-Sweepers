@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import project.game.common.api.ILogger;
+
 /**
  * Adapter for Java's built-in Logger to our ILogger interface.
  */

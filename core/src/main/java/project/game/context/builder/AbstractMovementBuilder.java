@@ -2,8 +2,8 @@ package project.game.context.builder;
 
 import java.util.logging.Level;
 
+import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.ILogger;
 import project.game.common.logging.LogManager;
 import project.game.context.core.Direction;
 import project.game.context.core.GameConstants;

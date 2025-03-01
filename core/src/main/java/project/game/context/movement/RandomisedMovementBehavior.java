@@ -6,8 +6,8 @@ import java.util.logging.Level;
 
 import com.badlogic.gdx.math.MathUtils;
 
+import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.ILogger;
 import project.game.common.logging.LogManager;
 import project.game.context.core.GameConstants;
 import project.game.engine.api.movement.IMovementBehavior;
