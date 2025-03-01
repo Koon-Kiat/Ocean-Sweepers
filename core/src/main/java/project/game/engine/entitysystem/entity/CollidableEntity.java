@@ -1,5 +1,7 @@
 package project.game.engine.entitysystem.entity;
 
+import java.util.List;
+
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -7,17 +9,20 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.engine.api.ICollidable;
+import project.game.engine.api.ICollisionHandler;
 
 /**
  * Abstract class for entities that can collide with other entities.
  */
-public abstract class CollidableEntity extends Entity implements ICollidable {
+public abstract class CollidableEntity extends Entity implements ICollidable, ICollisionHandler {
 
 	private final Entity entity;
 	private Body body;
+	private boolean inCollision;
 
 	public CollidableEntity(Entity baseEntity, World world) {
 		this.entity = baseEntity;
+		this.inCollision = false;
 	}
 
 	public final void initBody(World world) {
@@ -100,4 +105,63 @@ public abstract class CollidableEntity extends Entity implements ICollidable {
 
 	@Override
 	public abstract void onCollision(ICollidable other);
+
+	@Override
+	public void collideWith(Object other) {
+		// Default implementation - delegates to onCollision if other is an ICollidable
+		if (other instanceof ICollidable) {
+			onCollision((ICollidable) other);
+		}
+	}
+
+	@Override
+	public void collideWithBoundary() {
+		// Default implementation - calls onCollision with null to indicate boundary
+		// collision
+		onCollision(null);
+	}
+
+	@Override
+	public boolean isInCollision() {
+		return inCollision;
+	}
+
+	/**
+	 * Sets the collision state of this entity
+	 * 
+	 * @param inCollision Whether this entity is in a collision
+	 */
+	public void setInCollision(boolean inCollision) {
+		this.inCollision = inCollision;
+	}
+
+	/**
+	 * Implementation of the CollisionHandler interface for polymorphic dispatch
+	 */
+	@Override
+	public void handleCollisionWith(Object other, List<Runnable> collisionQueue) {
+		// Handle boundary case
+		if ("boundary".equals(other)) {
+			collisionQueue.add(this::collideWithBoundary);
+			return;
+		}
+
+		// Handle other collidables
+		if (other instanceof ICollidable) {
+			ICollidable otherCollidable = (ICollidable) other;
+
+			// Check if collision should be processed
+			if (checkCollision(otherCollidable.getEntity())) {
+				final ICollidable otherFinal = otherCollidable;
+				collisionQueue.add(() -> collideWith(otherFinal));
+			}
+		}
+	}
+
+	@Override
+	public boolean handlesCollisionWith(Class<?> clazz) {
+		// This entity can handle collisions with ICollidables and boundaries
+		return ICollidable.class.isAssignableFrom(clazz) ||
+				String.class.equals(clazz); // For boundary collisions
+	}
 }

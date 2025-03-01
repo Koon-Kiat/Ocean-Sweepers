@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.engine.api.ICollidable;
+import project.game.engine.api.ICollisionHandler;
 import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.io.SceneIOManager;
 
@@ -53,53 +54,45 @@ public class CollisionManager implements ContactListener {
         Object userDataA = fixtureA.getBody().getUserData();
         Object userDataB = fixtureB.getBody().getUserData();
 
-        if (userDataA instanceof ICollidable && userDataB instanceof ICollidable) {
-            ICollidable collidableA = (ICollidable) userDataA;
-            ICollidable collidableB = (ICollidable) userDataB;
+        handleCollisionEvent(userDataA, userDataB);
+    }
 
-            // Invoke collision responses if collision is confirmed.
-            if (collidableA.checkCollision(collidableB.getEntity())) {
-                collisionQueue.add(() -> collidableA.onCollision(collidableB));
-            }
-            if (collidableB.checkCollision(collidableA.getEntity())) {
-                collisionQueue.add(() -> collidableB.onCollision(collidableA));
-            }
-            collided = true;
-        } else if (userDataA instanceof ICollidable && userDataB instanceof String
-                && userDataB.equals("boundary")) {
-            ICollidable collidableA = (ICollidable) userDataA;
-            collisionQueue.add(() -> collidableA.onCollision(null));
-            collided = true;
-        } else if (userDataB instanceof ICollidable && userDataA instanceof String
-                && userDataA.equals("boundary")) {
-            ICollidable collidableB = (ICollidable) userDataB;
-            collisionQueue.add(() -> collidableB.onCollision(null));
-            collided = true;
+    /**
+     * Handle collision events between two objects using visitor pattern
+     */
+    private void handleCollisionEvent(Object objectA, Object objectB) {
+        handleCollisionSide(objectA, objectB);
+        handleCollisionSide(objectB, objectA);
+
+        // Mark collision status
+        collided = true;
+    }
+
+    /**
+     * Handle one side of a collision
+     */
+    private void handleCollisionSide(Object object, Object otherObject) {
+        if (object instanceof ICollisionHandler) {
+            // Polymorphically delegate collision handling
+            ICollisionHandler handler = (ICollisionHandler) object;
+            handler.handleCollisionWith(otherObject, collisionQueue);
         }
     }
 
     @Override
     public void endContact(Contact contact) {
-        Fixture fixtureA = contact.getFixtureA();
-        Fixture fixtureB = contact.getFixtureB();
-
-        Object userDataA = fixtureA.getBody().getUserData();
-        Object userDataB = fixtureB.getBody().getUserData();
-
-        // Reset collided to false when entities are no longer in contact
-        if ((userDataA instanceof ICollidable && userDataB instanceof ICollidable) ||
-                (userDataA instanceof ICollidable && userDataB instanceof String && userDataB.equals("boundary")) ||
-                (userDataB instanceof ICollidable && userDataA instanceof String && userDataA.equals("boundary"))) {
-            collided = false;
-        }
+        // Reset collision status when objects separate
+        collided = false;
     }
 
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
+        // No implementation required
     }
 
     @Override
     public void postSolve(Contact contact, ContactImpulse impulse) {
+        // No implementation required
     }
 
     public void processCollisions() {

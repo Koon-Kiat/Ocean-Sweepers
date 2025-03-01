@@ -22,6 +22,10 @@ public interface ICollidable {
 
 	void onCollision(ICollidable other);
 
+	void collideWith(Object other);
+
+	void collideWithBoundary();
+
 	boolean isInCollision();
 
 }
