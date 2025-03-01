@@ -10,8 +10,8 @@ import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.context.movement.RandomisedMovementBehavior;
 import project.game.context.movement.ZigZagMovementBehavior;
-import project.game.engine.api.IMovementBehavior;
-import project.game.engine.api.IPositionable;
+import project.game.engine.api.movement.IMovementBehavior;
+import project.game.engine.api.movement.IPositionable;
 
 /**
  * Factory class for creating movement behaviors.

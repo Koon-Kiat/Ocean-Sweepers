@@ -1,7 +1,7 @@
 package project.game.engine.entitysystem.entity;
 
 import project.game.context.core.Direction;
-import project.game.engine.api.IPositionable;
+import project.game.engine.api.movement.IPositionable;
 
 /**
  * MovableEntity is an abstract class that extends Entity and provides the

@@ -1,4 +1,4 @@
-package project.game.engine.api;
+package project.game.engine.api.collision;
 
 /**
  * An interface representing a target that can be collided with.

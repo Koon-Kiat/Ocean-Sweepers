@@ -2,8 +2,8 @@ package project.game.engine.entitysystem.collision;
 
 import java.util.List;
 
-import project.game.engine.api.ICollidable;
-import project.game.engine.api.ICollisionHandler;
+import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollisionHandler;
 import project.game.engine.entitysystem.entity.Entity;
 
 /**

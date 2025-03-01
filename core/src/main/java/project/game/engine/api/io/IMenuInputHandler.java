@@ -1,4 +1,4 @@
-package project.game.engine.api;
+package project.game.engine.api.io;
 
 /**
  * Interface for handling menu input.

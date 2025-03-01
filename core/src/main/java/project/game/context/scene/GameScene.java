@@ -32,7 +32,7 @@ import project.game.context.entity.NonMovableDroplet;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.context.movement.ZigZagMovementBehavior;
-import project.game.engine.api.IMovementBehavior;
+import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.audio.AudioManager;
 import project.game.engine.entitysystem.collision.BoundaryFactory;

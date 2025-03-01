@@ -1,4 +1,4 @@
-package project.game.engine.api;
+package project.game.engine.api.render;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 

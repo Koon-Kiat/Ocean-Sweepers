@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.engine.api.ICollidable;
-import project.game.engine.api.IRenderable;
+import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.render.IRenderable;
 
 /**
  * EntityManager class that manages entities and renderables

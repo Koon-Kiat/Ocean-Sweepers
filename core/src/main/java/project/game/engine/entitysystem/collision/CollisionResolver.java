@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import project.game.engine.api.ICollidable;
-import project.game.engine.api.ICollisionTarget;
+import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollisionTarget;
 
 /**
  * A resolver class that handles collisions using the visitor pattern.

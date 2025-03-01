@@ -1,7 +1,7 @@
 package project.game.engine.entitysystem.collision;
 
-import project.game.engine.api.ICollidable;
-import project.game.engine.api.ICollisionTarget;
+import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollisionTarget;
 
 /**
  * Represents a boundary in the game world that can be collided with.

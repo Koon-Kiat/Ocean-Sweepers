@@ -1,4 +1,4 @@
-package project.game.engine.api;
+package project.game.engine.api.movement;
 
 import project.game.engine.entitysystem.entity.MovableEntity;
 

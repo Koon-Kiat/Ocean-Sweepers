@@ -2,7 +2,7 @@
 package project.game.engine.entitysystem.collision;
 
 import project.game.context.core.GameConstants;
-import project.game.engine.api.ICollidable;
+import project.game.engine.api.collision.ICollidable;
 import project.game.engine.entitysystem.movement.MovementManager;
 
 /**

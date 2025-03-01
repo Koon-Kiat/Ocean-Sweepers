@@ -1,4 +1,4 @@
-package project.game.engine.api;
+package project.game.engine.api.collision;
 
 import java.util.List;
 
