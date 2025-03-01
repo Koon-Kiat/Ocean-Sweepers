@@ -13,19 +13,19 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.engine.api.ICollidable;
-import project.game.engine.api.ICollisionHandler;
 import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.io.SceneIOManager;
 
 /**
  * CollisionManager is a class that manages the collision detection and
- * resolution of entities in the game.
+ * resolution of entities in the game using a pure polymorphic approach.
  */
 public class CollisionManager implements ContactListener {
 
     private final World world;
     private final List<Runnable> collisionQueue;
     private final SceneIOManager inputManager;
+    private final CollisionResolver collisionResolver;
 
     // Maintain a map of collidable entities and their associated MovementManager.
     private final Map<ICollidable, MovementManager> entityMap;
@@ -36,6 +36,10 @@ public class CollisionManager implements ContactListener {
         this.inputManager = inputManager;
         this.collisionQueue = new ArrayList<>();
         this.entityMap = new HashMap<>();
+        this.collisionResolver = new CollisionResolver();
+
+        // Register boundary by default
+        collisionResolver.registerBoundary();
     }
 
     public void init() {
@@ -44,6 +48,9 @@ public class CollisionManager implements ContactListener {
 
     public void addEntity(ICollidable entity, MovementManager movementManager) {
         entityMap.put(entity, movementManager);
+
+        // Register entity with the collision resolver
+        collisionResolver.registerCollidable(entity);
     }
 
     @Override
@@ -54,29 +61,11 @@ public class CollisionManager implements ContactListener {
         Object userDataA = fixtureA.getBody().getUserData();
         Object userDataB = fixtureB.getBody().getUserData();
 
-        handleCollisionEvent(userDataA, userDataB);
-    }
-
-    /**
-     * Handle collision events between two objects using visitor pattern
-     */
-    private void handleCollisionEvent(Object objectA, Object objectB) {
-        handleCollisionSide(objectA, objectB);
-        handleCollisionSide(objectB, objectA);
+        // Delegate to collision resolver which uses pure polymorphism
+        collisionResolver.resolveCollision(userDataA, userDataB, collisionQueue);
 
         // Mark collision status
         collided = true;
-    }
-
-    /**
-     * Handle one side of a collision
-     */
-    private void handleCollisionSide(Object object, Object otherObject) {
-        if (object instanceof ICollisionHandler) {
-            // Polymorphically delegate collision handling
-            ICollisionHandler handler = (ICollisionHandler) object;
-            handler.handleCollisionWith(otherObject, collisionQueue);
-        }
     }
 
     @Override
