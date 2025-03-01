@@ -1,7 +1,7 @@
 //// filepath: /c:/OOPProject/core/src/main/java/project/game/engine/entitysystem/collisionmanager/EntityCollisionUpdater.java
 package project.game.engine.entitysystem.collision;
 
-import project.game.context.core.GameConstants;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.entitysystem.movement.MovementManager;
 
@@ -38,12 +38,12 @@ public class EntityCollisionUpdater {
             // Normal update: override physics using clamped input.
             entity.getEntity().setX(inputX);
             entity.getEntity().setY(inputY);
-            entity.getBody().setTransform(inputX / GameConstants.PIXELS_TO_METERS,
-                    inputY / GameConstants.PIXELS_TO_METERS, 0);
+            entity.getBody().setTransform(inputX / GameConstantsFactory.getConstants().PIXELS_TO_METERS(),
+                    inputY / GameConstantsFactory.getConstants().PIXELS_TO_METERS(), 0);
         } else {
             // Collision mode: blend input with current physics position.
-            float physicsX = entity.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS;
-            float physicsY = entity.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS;
+            float physicsX = entity.getBody().getPosition().x * GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+            float physicsY = entity.getBody().getPosition().y * GameConstantsFactory.getConstants().PIXELS_TO_METERS();
             float blendFactor = 0.1f; // adjust blending factor as needed
             float newX = physicsX + (inputX - physicsX) * blendFactor;
             float newY = physicsY + (inputY - physicsY) * blendFactor;
@@ -59,8 +59,8 @@ public class EntityCollisionUpdater {
      * Synchronizes the logical entity’s position from the Box2D body.
      */
     public static void syncEntity(ICollidable entity) {
-        float x = entity.getBody().getPosition().x * GameConstants.PIXELS_TO_METERS;
-        float y = entity.getBody().getPosition().y * GameConstants.PIXELS_TO_METERS;
+        float x = entity.getBody().getPosition().x * GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+        float y = entity.getBody().getPosition().y * GameConstantsFactory.getConstants().PIXELS_TO_METERS();
         entity.getEntity().setX(x);
         entity.getEntity().setY(y);
     }

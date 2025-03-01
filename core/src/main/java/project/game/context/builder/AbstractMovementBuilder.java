@@ -6,7 +6,7 @@ import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.LogManager;
 import project.game.context.core.Direction;
-import project.game.context.core.GameConstants;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.Entity;
 
@@ -47,7 +47,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
             String errorMessage = "Negative speed provided: " + speed;
             LOGGER.log(Level.SEVERE, errorMessage);
             if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
-                this.speed = GameConstants.DEFAULT_SPEED;
+                this.speed = GameConstantsFactory.getConstants().DEFAULT_SPEED();
             } else {
                 throw new MovementException("Speed must be non-negative.");
             }

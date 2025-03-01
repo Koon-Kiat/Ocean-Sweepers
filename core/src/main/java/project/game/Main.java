@@ -9,6 +9,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import project.game.common.api.ILogger;
 import project.game.common.logging.GameLogFormatter;
 import project.game.common.logging.LogManager;
+import project.game.common.util.ProjectPaths;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.SceneFactory;
 import project.game.engine.scene.SceneManager;
@@ -31,6 +33,9 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
+        String configPath = ProjectPaths.getResourcePath("core/src/main/java/project/game/config/default-config.json");
+        GameConstantsFactory.initialize(configPath);
+
         // Scene Manager setup
         sceneManager = new SceneManager();
         SceneIOManager sharedInputManager = sceneManager.getInputManager();

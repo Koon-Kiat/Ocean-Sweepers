@@ -14,7 +14,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.Main;
 import project.game.common.api.ILogger;
 import project.game.common.logging.LogManager;
-import project.game.context.core.GameConstants;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
@@ -110,11 +110,11 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 		LOGGER.log(Level.INFO, "{0} collided with {1}",
 				new Object[] { getEntity().getClass().getSimpleName(),
 						other == null ? "boundary" : other.getClass().getSimpleName() });
-		setCollisionActive(GameConstants.COLLISION_ACTIVE_DURATION);
+		setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
 
 		// Apply impulse to the entity when colliding with another entity.
 		if (other != null && (other instanceof BucketEntity)) {
-			float impulseStrength = GameConstants.IMPULSE_STRENGTH;
+			float impulseStrength = GameConstantsFactory.getConstants().IMPULSE_STRENGTH();
 			Vector2 myPos = super.getBody().getPosition();
 			Vector2 otherPos = other.getBody().getPosition();
 			Vector2 normal = new Vector2(myPos.x - otherPos.x, myPos.y - otherPos.y).nor();
@@ -130,15 +130,16 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 	public final Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		float centerX = (x + width / 2) / GameConstants.PIXELS_TO_METERS;
-		float centerY = (y + height / 2) / GameConstants.PIXELS_TO_METERS;
+		float centerX = (x + width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+		float centerY = (y + height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
 		bodyDef.position.set(centerX, centerY);
 		bodyDef.fixedRotation = true;
 		bodyDef.linearDamping = 0.2f;
 
 		Body newBody = world.createBody(bodyDef);
 		PolygonShape shape = new PolygonShape();
-		shape.setAsBox((width / 2) / GameConstants.PIXELS_TO_METERS, (height / 2) / GameConstants.PIXELS_TO_METERS);
+		shape.setAsBox((width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS(),
+				(height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS());
 
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;

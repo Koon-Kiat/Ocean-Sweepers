@@ -12,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.common.api.ILogger;
 import project.game.common.logging.LogManager;
-import project.game.context.core.GameConstants;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
@@ -123,15 +123,16 @@ public class BucketEntity extends CollidableEntity implements IRenderable {
 	public final Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		float centerX = (x + width / 2) / GameConstants.PIXELS_TO_METERS;
-		float centerY = (y + height / 2) / GameConstants.PIXELS_TO_METERS;
+		float centerX = (x + width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+		float centerY = (y + height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
 		bodyDef.position.set(centerX, centerY);
 		bodyDef.fixedRotation = true;
 		bodyDef.linearDamping = 0.1f;
 
 		Body newBody = world.createBody(bodyDef);
 		PolygonShape shape = new PolygonShape();
-		shape.setAsBox((width / 2) / GameConstants.PIXELS_TO_METERS, (height / 2) / GameConstants.PIXELS_TO_METERS);
+		shape.setAsBox((width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS(),
+				(height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS());
 
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;

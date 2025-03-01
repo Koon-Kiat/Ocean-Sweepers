@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.MathUtils;
 import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.LogManager;
-import project.game.context.core.GameConstants;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
 import project.game.engine.entitysystem.movement.MovementManager;
@@ -40,7 +40,8 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
             if (MovementManager.LENIENT_MODE) {
                 LOGGER.log(Level.WARNING, "{0} Using fallback pool with ConstantMovementBehavior.", errorMessage);
                 this.behaviorPool = new ArrayList<>();
-                this.behaviorPool.add(new ConstantMovementBehavior(GameConstants.DEFAULT_SPEED));
+                this.behaviorPool
+                        .add(new ConstantMovementBehavior(GameConstantsFactory.getConstants().DEFAULT_SPEED()));
             } else {
                 throw new MovementException(errorMessage);
             }

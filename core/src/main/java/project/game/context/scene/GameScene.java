@@ -26,10 +26,11 @@ import project.game.common.logging.LogManager;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
 import project.game.context.core.Direction;
-import project.game.context.core.GameConstants;
+import project.game.context.core.IGameConstants;
 import project.game.context.entity.BucketEntity;
 import project.game.context.entity.DropEntity;
 import project.game.context.entity.NonMovableDroplet;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.context.movement.ZigZagMovementBehavior;
@@ -73,6 +74,7 @@ public class GameScene extends Scene {
     private Options options;
     private AudioManager audioManager;
     private NonMovableDroplet nonMovableDroplet;
+    private IGameConstants constants;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
@@ -86,6 +88,7 @@ public class GameScene extends Scene {
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        constants = GameConstantsFactory.getConstants();
         LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         initPopUpMenu();
@@ -119,16 +122,16 @@ public class GameScene extends Scene {
 
         // Create entities
         Entity genericDropEntity = new Entity(
-                GameConstants.DROP_START_X,
-                GameConstants.DROP_START_Y,
-                GameConstants.DROP_WIDTH,
-                GameConstants.DROP_HEIGHT,
+                constants.DROP_START_X(),
+                constants.DROP_START_Y(),
+                constants.DROP_WIDTH(),
+                constants.DROP_HEIGHT(),
                 true);
         Entity genericBucketEntity = new Entity(
-                GameConstants.BUCKET_START_X,
-                GameConstants.BUCKET_START_Y,
-                GameConstants.BUCKET_WIDTH,
-                GameConstants.BUCKET_HEIGHT,
+                constants.BUCKET_START_X(),
+                constants.BUCKET_START_Y(),
+                constants.BUCKET_WIDTH(),
+                constants.BUCKET_HEIGHT(),
                 true);
         Entity genericNonMovableDroplet = new Entity(100f, 200f, 50f, 50f, false);
 
@@ -137,21 +140,21 @@ public class GameScene extends Scene {
 
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
-                .setSpeed(GameConstants.PLAYER_SPEED)
+                .setSpeed(constants.PLAYER_SPEED())
                 .setDirection(Direction.NONE)
                 .withConstantMovement()
                 .build();
 
         // Add behavior to the pool for Random Movement
         behaviorPool = new ArrayList<>();
-        behaviorPool.add(new ConstantMovementBehavior(GameConstants.NPC_SPEED));
+        behaviorPool.add(new ConstantMovementBehavior(constants.NPC_SPEED()));
         behaviorPool.add(
-                new ZigZagMovementBehavior(GameConstants.NPC_SPEED, GameConstants.AMPLITUDE, GameConstants.FREQUENCY));
-        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, GameConstants.NPC_SPEED));
+                new ZigZagMovementBehavior(constants.NPC_SPEED(), constants.AMPLITUDE(), constants.FREQUENCY()));
+        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, constants.NPC_SPEED()));
 
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
-                .setSpeed(GameConstants.NPC_SPEED)
+                .setSpeed(constants.NPC_SPEED())
                 .withFollowMovement(playerMovementManager)
                 .setDirection(Direction.NONE)
                 .build();
@@ -170,8 +173,8 @@ public class GameScene extends Scene {
         entityManager.addRenderableEntity(drop);
         entityManager.addRenderableEntity(nonMovableDroplet);
 
-        camera = new OrthographicCamera(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
-        camera.position.set(GameConstants.GAME_WIDTH / 2, GameConstants.GAME_HEIGHT / 2, 0);
+        camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+        camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
         camera.update();
 
         // Initialize CollisionManager
@@ -183,7 +186,7 @@ public class GameScene extends Scene {
         collisionManager.addEntity(bucket, playerMovementManager);
 
         // Create boundaries
-        BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 1f);
+        BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f);
 
         // Initialize AudioManager and play background music
         audioManager = new AudioManager(stage);
@@ -208,7 +211,7 @@ public class GameScene extends Scene {
         input();
 
         try {
-            collisionManager.updateGame(GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT);
+            collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Exception during game update: {0}", e.getMessage());
         }
@@ -223,7 +226,7 @@ public class GameScene extends Scene {
         stage.draw();
 
         // Render debug matrix
-        debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
+        debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
         debugRenderer.render(world, debugMatrix);
 
         // Step the physics simulation forward at a rate of 60hz

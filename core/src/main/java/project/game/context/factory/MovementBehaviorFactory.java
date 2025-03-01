@@ -6,7 +6,6 @@ import java.util.logging.Level;
 import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.LogManager;
-import project.game.context.core.GameConstants;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.context.movement.RandomisedMovementBehavior;
@@ -105,6 +104,6 @@ public class MovementBehaviorFactory {
      * @return A new ConstantMovementBehavior with default speed.
      */
     public static IMovementBehavior createDefaultMovement() {
-        return createConstantMovement(GameConstants.DEFAULT_SPEED);
+        return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED());
     }
 }
