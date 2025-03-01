@@ -2,7 +2,6 @@ package project.game.common.logging;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -13,8 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import project.game.Main;
 import project.game.common.api.ILogger;
+import project.game.common.util.ProjectPaths;
 
 /**
  * Manages the logging system for the game. Provides a configurable, centralized
@@ -274,21 +273,23 @@ public class LogManager {
     }
 
     /**
-     * Default implementation of ProjectPathStrategy that uses the Main class
-     * location.
+     * Default implementation of ProjectPathStrategy that uses ProjectPaths utility.
      */
     private static class DefaultProjectPathStrategy implements ProjectPathStrategy {
         @Override
-        public String getProjectRootPath() throws URISyntaxException {
-            return new File(Main.class.getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI())
-                    .getParentFile()
-                    .getParentFile()
-                    .getParentFile()
-                    .getParentFile()
-                    .getAbsolutePath();
+        public String getProjectRootPath() {
+            String baseProjectRoot = ProjectPaths.getProjectRoot();
+            File projectDir = new File(baseProjectRoot);
+
+            // Always ensure we're using the core directory
+            if (!projectDir.getName().equals("core")) {
+                File coreDir = new File(projectDir, "core");
+                if (coreDir.exists() && coreDir.isDirectory()) {
+                    return coreDir.getAbsolutePath();
+                }
+            }
+
+            return projectDir.getAbsolutePath();
         }
     }
 

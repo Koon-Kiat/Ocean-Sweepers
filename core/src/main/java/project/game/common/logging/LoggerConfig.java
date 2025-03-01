@@ -10,8 +10,8 @@ import java.util.logging.Level;
  */
 public class LoggerConfig {
     // Use default values that are more generic
-    private String logDirectory = "core\\src\\main\\java\\project\\game\\log";
-    private String logFilePrefix = "app";
+    private String logDirectory = "src/main/java/project/game/log";
+    private String logFilePrefix = "GameLog";
     private String logFileExtension = ".log";
     private String dateTimeFormat = "yyyy-MM-dd_HH-mm-ss";
     private Level fileLogLevel = Level.INFO;
