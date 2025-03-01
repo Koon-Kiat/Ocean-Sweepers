@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
@@ -15,9 +14,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
+
 public class CustomAssetManager implements Disposable {
 
-    private static final Logger LOGGER = Logger.getLogger(CustomAssetManager.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(CustomAssetManager.class);
     private static CustomAssetManager instance;
     private final AssetManager asset_Manager;
 

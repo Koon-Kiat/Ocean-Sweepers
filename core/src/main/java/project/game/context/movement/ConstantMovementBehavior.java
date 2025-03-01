@@ -1,11 +1,12 @@
 package project.game.context.movement;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.common.util.MovementUtils;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -19,7 +20,7 @@ import project.game.engine.entitysystem.movement.MovementManager;
  */
 public class ConstantMovementBehavior implements IMovementBehavior {
 
-    private static final Logger LOGGER = Logger.getLogger(ConstantMovementBehavior.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(ConstantMovementBehavior.class);
     private final float speed;
 
     public ConstantMovementBehavior(float speed) {

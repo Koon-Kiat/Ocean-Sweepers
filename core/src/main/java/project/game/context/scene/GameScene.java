@@ -3,7 +3,6 @@ package project.game.context.scene;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -22,6 +21,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
 import project.game.context.core.Direction;
@@ -48,7 +49,7 @@ import project.game.engine.scene.SceneManager;
 
 @SuppressWarnings({ "unused", "FieldMayBeFinal" })
 public class GameScene extends Scene {
-    private static final Logger LOGGER = Logger.getLogger(GameScene.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(GameScene.class);
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;

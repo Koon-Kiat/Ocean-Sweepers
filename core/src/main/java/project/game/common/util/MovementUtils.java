@@ -1,16 +1,18 @@
 package project.game.common.util;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
+
 /**
  * Calculates the adjusted speed for an entity moving diagonally to maintain
  * the overall velocity consistency.
  */
 public class MovementUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(MovementUtils.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(MovementUtils.class);
 
     public static float calculateDiagonalSpeed(float speed) {
         if (speed < 0) {

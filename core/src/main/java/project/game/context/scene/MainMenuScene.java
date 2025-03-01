@@ -1,7 +1,6 @@
 package project.game.context.scene;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -11,6 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.engine.audio.AudioManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.Scene;
@@ -18,7 +19,7 @@ import project.game.engine.scene.SceneManager;
 
 public class MainMenuScene extends Scene {
 
-    private static final Logger LOGGER = Logger.getLogger(MainMenuScene.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(MainMenuScene.class);
     private Skin skin;
     private TextButton playButton, exitButton, optionsButton;
     private GameScene gameScene;

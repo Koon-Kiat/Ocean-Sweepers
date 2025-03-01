@@ -3,11 +3,12 @@ package project.game.context.movement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.MathUtils;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.core.GameConstants;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -22,7 +23,7 @@ import project.game.engine.entitysystem.movement.MovementManager;
  */
 public class RandomisedMovementBehavior implements IMovementBehavior {
 
-    private static final Logger LOGGER = Logger.getLogger(RandomisedMovementBehavior.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(RandomisedMovementBehavior.class);
     private final List<IMovementBehavior> behaviorPool;
     private final float minDuration;
     private final float maxDuration;

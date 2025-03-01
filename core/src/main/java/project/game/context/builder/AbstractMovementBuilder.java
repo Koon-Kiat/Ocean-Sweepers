@@ -1,9 +1,10 @@
 package project.game.context.builder;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.core.Direction;
 import project.game.context.core.GameConstants;
 import project.game.engine.api.movement.IMovementBehavior;
@@ -17,7 +18,7 @@ import project.game.engine.entitysystem.entity.Entity;
  */
 public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<T>> {
 
-    protected static final Logger LOGGER = Logger.getLogger(AbstractMovementBuilder.class.getName());
+    protected static final ILogger LOGGER = LogManager.getLogger(AbstractMovementBuilder.class);
     protected Entity entity;
     protected float speed;
     protected Direction direction = Direction.NONE;

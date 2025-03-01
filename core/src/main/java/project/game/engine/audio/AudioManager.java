@@ -3,7 +3,6 @@ package project.game.engine.audio;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
@@ -19,6 +18,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
+
 /**
  * AudioManager is a singleton class that manages the audio settings and
  * playback of music and sound effects in the game.
@@ -26,7 +28,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
  * It uses LibGDX's audio classes to load and play music and sound effects.
  */
 public class AudioManager {
-    private static final Logger LOGGER = Logger.getLogger(AudioManager.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(AudioManager.class);
     private float setsoundVolume = 0.2f;
     private float setmusicVolume = 0.1f;
     private boolean isSoundEnabled = true;

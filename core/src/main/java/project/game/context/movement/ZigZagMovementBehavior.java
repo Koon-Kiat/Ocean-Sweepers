@@ -1,12 +1,13 @@
 package project.game.context.movement;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.core.Direction;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -21,7 +22,7 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  */
 public class ZigZagMovementBehavior implements IMovementBehavior {
 
-    private static final Logger LOGGER = Logger.getLogger(ZigZagMovementBehavior.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(ZigZagMovementBehavior.class);
     private final float speed;
     private final float amplitude;
     private final float frequency;

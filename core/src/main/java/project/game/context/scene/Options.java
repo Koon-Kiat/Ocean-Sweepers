@@ -1,7 +1,6 @@
 package project.game.context.scene;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -15,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
@@ -22,7 +23,7 @@ import project.game.engine.scene.SceneManager;
 @SuppressWarnings("unused")
 public class Options extends Scene {
 
-    private static final Logger LOGGER = Logger.getLogger(Options.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(Options.class);
     private Skin skin;
     private Window popupMenu;
     private Window rebindMenu;

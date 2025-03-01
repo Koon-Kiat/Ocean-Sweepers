@@ -1,9 +1,10 @@
 package project.game.engine.entitysystem.movement;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.builder.PlayerMovementBuilder;
 
 /**
@@ -15,7 +16,7 @@ import project.game.context.builder.PlayerMovementBuilder;
  */
 public class PlayerMovementManager extends MovementManager {
 
-    private static final Logger LOGGER = Logger.getLogger(PlayerMovementManager.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(PlayerMovementManager.class);
     private final PlayerMovementBuilder builder;
 
     /**

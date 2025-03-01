@@ -1,7 +1,6 @@
 package project.game.context.entity;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,6 +10,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.core.GameConstants;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
@@ -21,7 +22,7 @@ import project.game.engine.entitysystem.movement.PlayerMovementManager;
 
 public class BucketEntity extends CollidableEntity implements IRenderable {
 
-	private static final Logger LOGGER = Logger.getLogger(BucketEntity.class.getName());
+	private static final ILogger LOGGER = LogManager.getLogger(BucketEntity.class);
 	private final PlayerMovementManager movementManager;
 	private final String texturePath;
 	private boolean collisionActive = false;

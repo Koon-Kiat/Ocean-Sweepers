@@ -3,13 +3,14 @@ package project.game.engine.io;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.core.Direction;
 
 /**
@@ -19,10 +20,10 @@ import project.game.context.core.Direction;
  */
 public class SceneIOManager extends IOManager {
 
-    private static final Logger LOGGER = Logger.getLogger(SceneIOManager.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(SceneIOManager.class);
 
     // Map holding key codes mapped to their in-game Direction
-    private Map<Integer, Direction> keyBindings;
+    private final Map<Integer, Direction> keyBindings;
 
     // Constructor: initialize default key bindings
     public SceneIOManager() {

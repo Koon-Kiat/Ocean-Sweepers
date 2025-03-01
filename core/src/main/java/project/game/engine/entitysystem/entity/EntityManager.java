@@ -5,10 +5,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
 
@@ -17,10 +18,10 @@ import project.game.engine.api.render.IRenderable;
  */
 public class EntityManager {
 
+	private static final ILogger LOGGER = LogManager.getLogger(EntityManager.class);
 	private final List<IRenderable> renderables;
 	private final List<Entity> entityList;
 	private final Set<String> entityIDs;
-	private static final Logger LOGGER = Logger.getLogger(EntityManager.class.getName());
 
 	public EntityManager() {
 		this.renderables = new ArrayList<>();

@@ -1,11 +1,12 @@
 package project.game.context.movement;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.common.util.MovementUtils;
 import project.game.context.core.Direction;
 import project.game.engine.api.movement.IStoppableMovementBehavior;
@@ -17,7 +18,7 @@ import project.game.engine.entitysystem.movement.MovementManager;
  */
 public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
 
-    private static final Logger LOGGER = Logger.getLogger(AcceleratedMovementBehavior.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(AcceleratedMovementBehavior.class);
     private final float acceleration;
     private final float deceleration;
     private final float maxSpeed;

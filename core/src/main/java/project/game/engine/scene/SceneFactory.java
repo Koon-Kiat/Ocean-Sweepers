@@ -3,8 +3,9 @@ package project.game.engine.scene;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.scene.GameOverScene;
 import project.game.context.scene.GameScene;
 import project.game.context.scene.MainMenuScene;
@@ -17,7 +18,7 @@ import project.game.engine.io.SceneIOManager;
 @SuppressWarnings("unused")
 public class SceneFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(SceneFactory.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(SceneFactory.class);
     private final SceneManager sceneManager;
     private final SceneIOManager inputManager;
     private final Map<String, Supplier<Scene>> sceneCreators;

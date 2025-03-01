@@ -1,12 +1,13 @@
 package project.game;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import project.game.common.logging.GameLogFormatter;
+import project.game.common.logging.ILogger;
 import project.game.common.logging.LogManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.SceneFactory;
@@ -15,10 +16,17 @@ import project.game.engine.scene.SceneManager;
 public class Main extends ApplicationAdapter {
 
     static {
-        LogManager.initialize();
+        new LogManager.Builder()
+                .logFilePrefix("GameLog")
+                .dateTimeFormat("yyyy-MM-dd_HH-mm-ss")
+                .fileLogLevel(Level.ALL)
+                .consoleLogLevel(Level.INFO)
+                .maxLogFiles(5)
+                .formatter(GameLogFormatter.class.getName())
+                .initialize();
     }
-    
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+
+    private static final ILogger LOGGER = LogManager.getLogger(Main.class);
     private SceneManager sceneManager;
 
     @Override

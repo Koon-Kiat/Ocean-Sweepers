@@ -2,9 +2,10 @@ package project.game.context.factory;
 
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.core.GameConstants;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
@@ -19,7 +20,7 @@ import project.game.engine.api.movement.IPositionable;
  * Dependency Inversion Principle.
  */
 public class MovementBehaviorFactory {
-    private static final Logger LOGGER = Logger.getLogger(MovementBehaviorFactory.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(MovementBehaviorFactory.class);
 
     /**
      * Creates a constant movement behavior.

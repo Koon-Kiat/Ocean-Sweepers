@@ -3,9 +3,10 @@ package project.game.engine.entitysystem.movement;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import project.game.common.exception.MovementException;
+import project.game.common.logging.ILogger;
+import project.game.common.logging.LogManager;
 import project.game.context.core.Direction;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IMovementManager;
@@ -20,7 +21,7 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  */
 public abstract class MovementManager extends MovableEntity implements IMovementManager {
 
-    private static final Logger LOGGER = Logger.getLogger(MovementManager.class.getName());
+    private static final ILogger LOGGER = LogManager.getLogger(MovementManager.class);
     private IMovementBehavior movementBehavior;
     public static boolean LENIENT_MODE = false;
 

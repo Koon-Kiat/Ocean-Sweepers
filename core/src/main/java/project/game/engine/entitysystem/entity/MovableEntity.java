@@ -37,13 +37,8 @@ public abstract class MovableEntity extends Entity implements IPositionable {
 
 	public void setDirection(Direction direction) {
 		if (direction == null) {
-			// LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to
-			// Direction.NONE.");
 			this.direction = Direction.NONE;
 		}
 		this.direction = direction;
 	}
-
-	// These methods are inherited from Entity and already satisfy the IPositionable
-	// interface
 }
