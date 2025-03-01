@@ -21,7 +21,6 @@ public class CollidableEntityTarget implements ICollisionTarget {
     public void acceptCollision(ICollidable visitor, Runnable collisionAction) {
         // First check if the collision is valid according to collision detection logic
         Entity visitorEntity = visitor.getEntity();
-        Entity targetEntity = collidable.getEntity();
 
         // Only handle collision if detector confirms it
         if (collidable.checkCollision(visitorEntity)) {

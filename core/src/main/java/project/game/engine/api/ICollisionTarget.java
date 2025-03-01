@@ -2,8 +2,6 @@ package project.game.engine.api;
 
 /**
  * An interface representing a target that can be collided with.
- * This is part of a visitor pattern implementation to eliminate instanceof
- * checks.
  */
 public interface ICollisionTarget {
     /**

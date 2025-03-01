@@ -22,10 +22,11 @@ public interface ICollidable {
 
 	void onCollision(ICollidable other);
 
+	boolean isInCollision();
+
+	// Visitor pattern methods
 	void collideWith(Object other);
 
 	void collideWithBoundary();
-
-	boolean isInCollision();
 
 }
