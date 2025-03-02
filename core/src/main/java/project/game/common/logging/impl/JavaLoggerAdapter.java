@@ -1,14 +1,16 @@
-package project.game.common.logging;
+package project.game.common.logging.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.common.api.ILogger;
+import project.game.common.logging.api.ILogger;
 
 /**
  * Adapter for Java's built-in Logger to our ILogger interface.
+ * Implements the Adapter pattern to adapt Java's Logger to our ILogger
+ * interface.
  */
 public class JavaLoggerAdapter implements ILogger {
     private final Logger logger;
@@ -79,5 +81,12 @@ public class JavaLoggerAdapter implements ILogger {
      */
     Logger getUnderlyingLogger() {
         return logger;
+    }
+
+    /**
+     * Clears the logger cache. Useful for testing and preventing memory leaks.
+     */
+    public static void clearCache() {
+        loggerCache.clear();
     }
 }

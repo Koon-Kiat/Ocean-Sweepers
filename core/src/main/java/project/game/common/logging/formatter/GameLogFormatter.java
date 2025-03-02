@@ -1,4 +1,4 @@
-package project.game.common.logging;
+package project.game.common.logging.formatter;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

@@ -1,6 +1,8 @@
-package project.game.common.logging;
+package project.game.common.logging.config;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 
 /**
@@ -9,8 +11,8 @@ import java.util.logging.Level;
  * configuration settings without any logging logic.
  */
 public class LoggerConfig {
-    // Use default values that are more generic
-    private String logDirectory = "src/main/java/project/game/log";
+    // Default to root/logs directory for consistent log storage
+    private String logDirectory = "logs";
     private String logFilePrefix = "GameLog";
     private String logFileExtension = ".log";
     private String dateTimeFormat = "yyyy-MM-dd_HH-mm-ss";
@@ -36,7 +38,7 @@ public class LoggerConfig {
      * @param maxLogFiles   maximum number of log files to keep
      */
     public LoggerConfig(String logDirectory, String logFilePrefix, int maxLogFiles) {
-        this.logDirectory = logDirectory;
+        setLogDirectory(logDirectory); // Use setter to ensure proper path handling
         this.logFilePrefix = logFilePrefix;
         this.maxLogFiles = maxLogFiles;
     }
@@ -60,7 +62,18 @@ public class LoggerConfig {
     }
 
     public LoggerConfig setLogDirectory(String logDirectory) {
-        this.logDirectory = logDirectory;
+        // Ensure we're not using relative paths that could lead to duplicates
+        if (logDirectory == null || logDirectory.isEmpty()) {
+            this.logDirectory = "logs";
+        } else {
+            File dir = new File(logDirectory);
+            // If it's a relative path, make it relative to the project root
+            if (!dir.isAbsolute() && !logDirectory.startsWith("logs")) {
+                this.logDirectory = "logs" + File.separator + logDirectory;
+            } else {
+                this.logDirectory = logDirectory;
+            }
+        }
         return this;
     }
 
@@ -78,7 +91,15 @@ public class LoggerConfig {
     }
 
     public LoggerConfig setLogFileExtension(String logFileExtension) {
-        this.logFileExtension = logFileExtension;
+        if (logFileExtension == null || logFileExtension.isEmpty()) {
+            this.logFileExtension = ".log";
+        } else {
+            if (!logFileExtension.startsWith(".")) {
+                this.logFileExtension = "." + logFileExtension;
+            } else {
+                this.logFileExtension = logFileExtension;
+            }
+        }
         return this;
     }
 
@@ -152,6 +173,16 @@ public class LoggerConfig {
      */
     public SimpleDateFormat createDateFormat() {
         return new SimpleDateFormat(dateTimeFormat);
+    }
+
+    /**
+     * Generates a safe file name for the log file.
+     * 
+     * @return a file name that is safe for all operating systems
+     */
+    public String generateLogFileName() {
+        String timestamp = createDateFormat().format(new Date());
+        return String.format("%s_%s%s", logFilePrefix, timestamp, logFileExtension);
     }
 
     /**

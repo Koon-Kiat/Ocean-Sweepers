@@ -1,4 +1,4 @@
-package project.game.common.api;
+package project.game.common.logging.api;
 
 import java.util.logging.Level;
 
