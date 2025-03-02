@@ -47,11 +47,8 @@ public class MovementUtils {
         try {
             float adjustedSpeed = speed / (float) Math.sqrt(2);
 
-            // Using debug level for calculation results
-            LOGGER.debug("Calculated diagonal speed: %f (from base speed: %f)", adjustedSpeed, speed);
-
-            // Track the calculation as a metric
-            LOGGER.metric("diagonalSpeedCalculation", adjustedSpeed);
+            // Move detailed calculation logging to TRACE level
+            LOGGER.trace("Calculated diagonal speed: {0} (from base speed: {1})", adjustedSpeed, speed);
 
             return adjustedSpeed;
         } catch (Exception e) {
@@ -74,8 +71,7 @@ public class MovementUtils {
         boolean isValid = speed >= 0 && speed <= 1000;
 
         if (!isValid) {
-            // Using the warn level for non-critical issues
-            LOGGER.warn("Speed value outside of recommended range: %f", speed);
+            LOGGER.warn("Speed value outside of recommended range: {0}", speed);
         }
 
         return isValid;

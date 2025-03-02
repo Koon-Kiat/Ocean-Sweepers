@@ -23,13 +23,13 @@ public class Main extends ApplicationAdapter {
 
         LogInitializer.builder()
                 .withDevMode()
-                .withLogPrefix("MyGame")
+                .withLogPrefix("GameLog") // Changed to match the standard prefix
                 .withLogDirectory("logs")
                 .withMaxLogFiles(5)
                 .initialize();
 
         LOGGER.info("Application starting up");
-        LOGGER.debug("Java version: %s", System.getProperty("java.version"));
+        LOGGER.debug("Java version: {0}", System.getProperty("java.version"));
 
         // Find the config file
         String configFile = ProjectPaths.findConfigFile("default-config.json");
@@ -38,7 +38,7 @@ public class Main extends ApplicationAdapter {
             throw new RuntimeException("Missing required configuration file");
         }
 
-        LOGGER.info("Loading game constants from: %s", configFile);
+        LOGGER.info("Loading game constants from: {0}", configFile);
 
         try {
             GameConstantsFactory.initialize(configFile);
@@ -58,9 +58,9 @@ public class Main extends ApplicationAdapter {
         SceneFactory sceneFactory = new SceneFactory(sceneManager, sharedInputManager);
         sceneFactory.createAndRegisterScenes();
 
-        LOGGER.info("Available scenes: %s", sceneManager.getSceneList());
+        LOGGER.info("Available scenes: {0}", sceneManager.getSceneList());
         sceneManager.setScene("menu");
-        LOGGER.info("Current scene: %s", sceneManager.getCurrentScene());
+        LOGGER.info("Current scene: {0}", sceneManager.getCurrentScene());
     }
 
     @Override
@@ -72,13 +72,13 @@ public class Main extends ApplicationAdapter {
 
         // Only log this at TRACE level to avoid performance impact
         if (LOGGER.getLevel() == LogLevel.TRACE) {
-            LOGGER.trace("Frame rendered, delta: %f", deltaTime);
+            LOGGER.trace("Frame rendered, delta: {0}", deltaTime);
         }
     }
 
     @Override
     public void resize(int width, int height) {
-        LOGGER.debug("Resizing window to %d×%d", width, height);
+        LOGGER.debug("Resizing window to {0}×{1}", width, height);
         sceneManager.resize(width, height);
     }
 
