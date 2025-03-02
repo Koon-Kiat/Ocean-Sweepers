@@ -1,13 +1,10 @@
 package project.game.context.movement;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.core.Direction;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -22,7 +19,7 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  */
 public class ZigZagMovementBehavior implements IMovementBehavior {
 
-    private static final ILogger LOGGER = LogManager.getLogger(ZigZagMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(ZigZagMovementBehavior.class);
     private final float speed;
     private final float amplitude;
     private final float frequency;
@@ -31,25 +28,24 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     public ZigZagMovementBehavior(float speed, float amplitude, float frequency) {
         if (speed < 0) {
             if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING,
-                        "Negative speed provided in ZigZagMovementBehavior: {0}. Using absolute value.", speed);
+                LOGGER.warn("Negative speed provided in ZigZagMovementBehavior: {0}. Using absolute value.", speed);
                 speed = Math.abs(speed);
             } else {
                 String errorMessage = "Illegal negative parameter in ZigZagMovementBehavior constructor: speed="
                         + speed;
-                LOGGER.log(Level.SEVERE, errorMessage);
+                LOGGER.error(errorMessage);
                 throw new MovementException(errorMessage);
             }
         }
         if (frequency < 0) {
             if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING,
-                        "Negative frequency provided in ZigZagMovementBehavior: {0}. Using absolute value.", frequency);
+                LOGGER.warn("Negative frequency provided in ZigZagMovementBehavior: {0}. Using absolute value.",
+                        frequency);
                 frequency = Math.abs(frequency);
             } else {
                 String errorMessage = "Illegal negative parameter in ZigZagMovementBehavior constructor: frequency="
                         + frequency;
-                LOGGER.log(Level.SEVERE, errorMessage);
+                LOGGER.error(errorMessage);
                 throw new MovementException(errorMessage);
             }
         }
@@ -78,11 +74,10 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             entity.setX(entity.getX() + deltaMovement.x);
             entity.setY(entity.getY() + deltaMovement.y);
         } catch (IllegalArgumentException | NullPointerException e) {
-            LOGGER.log(Level.SEVERE, "Exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.error("Exception in ZigZagMovementBehavior.applyMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected exception in ZigZagMovementBehavior.updatePosition: " + e.getMessage(),
-                    e);
+            LOGGER.error("Unexpected exception in ZigZagMovementBehavior.applyMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
         }
     }

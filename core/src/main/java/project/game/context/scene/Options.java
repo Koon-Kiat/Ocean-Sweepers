@@ -1,7 +1,5 @@
 package project.game.context.scene;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -14,8 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
@@ -23,7 +20,7 @@ import project.game.engine.scene.SceneManager;
 @SuppressWarnings("unused")
 public class Options extends Scene {
 
-    private static final ILogger LOGGER = LogManager.getLogger(Options.class);
+    private static final GameLogger LOGGER = new GameLogger(Options.class);
     private Skin skin;
     private Window popupMenu;
     private Window rebindMenu;
@@ -44,7 +41,7 @@ public class Options extends Scene {
      */
     @Override
     public void create() {
-        LOGGER.log(Level.INFO, "Options inputManager instance: {0}", System.identityHashCode(inputManager));
+        LOGGER.info("Options inputManager instance: {0}", System.identityHashCode(inputManager));
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         popupMenu = new Window("Options", skin);
@@ -59,20 +56,20 @@ public class Options extends Scene {
 
         // Log touch events on the popup menu.
         inputManager.addWindowTouchDownListener(popupMenu, (event, x, y, pointer, button) -> {
-            LOGGER.log(Level.INFO, "Popup menu touched at ({0}, {1})", new Object[] { x, y });
+            LOGGER.info("Popup menu touched at ({0}, {1})", new Object[] { x, y });
         });
 
         TextButton rebindButton = new TextButton("Rebind Keys", skin);
         mainMenuButton = new TextButton("Main Menu", skin);
 
         inputManager.addButtonClickListener(rebindButton, () -> {
-            LOGGER.log(Level.INFO, "Rebind keys selected");
+            LOGGER.info("Rebind keys selected");
             popupMenu.setVisible(false);
             rebindMenu.setVisible(true);
         });
 
         inputManager.addButtonClickListener(mainMenuButton, () -> {
-            LOGGER.log(Level.INFO, "Return to main menu selected");
+            LOGGER.info("Return to main menu selected");
             popupMenu.setVisible(false);
         });
 
@@ -97,7 +94,7 @@ public class Options extends Scene {
         rebindMenu.setKeepWithinStage(true);
 
         inputManager.addButtonClickListener(rebindMenu, () -> {
-            LOGGER.log(Level.INFO, "Window clicked!");
+            LOGGER.info("Window clicked!");
         });
 
         // Debug log for popup menu touch event
@@ -161,7 +158,7 @@ public class Options extends Scene {
 
             if (upKeyString.isEmpty() || downKeyString.isEmpty() ||
                     leftKeyString.isEmpty() || rightKeyString.isEmpty()) {
-                LOGGER.log(Level.WARNING, "No keys set");
+                LOGGER.warn("No keys set");
                 return;
             }
             inputManager.promptForKeyBindings(upKeyString, downKeyString, leftKeyString, rightKeyString);

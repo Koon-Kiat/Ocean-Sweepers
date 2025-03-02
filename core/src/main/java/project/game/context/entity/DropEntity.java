@@ -1,7 +1,5 @@
 package project.game.context.entity;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -12,8 +10,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
@@ -24,7 +21,7 @@ import project.game.engine.entitysystem.movement.NPCMovementManager;
 
 public class DropEntity extends CollidableEntity implements IRenderable {
 
-	private static final ILogger LOGGER = LogManager.getLogger(Main.class);
+	private static final GameLogger LOGGER = new GameLogger(Main.class);
 	private final NPCMovementManager movementManager;
 	private final String texturePath;
 	private boolean collisionActive = false;
@@ -107,7 +104,7 @@ public class DropEntity extends CollidableEntity implements IRenderable {
 
 	@Override
 	public void onCollision(ICollidable other) {
-		LOGGER.log(Level.INFO, "{0} collided with {1}",
+		LOGGER.info("{0} collided with {1}",
 				new Object[] { getEntity().getClass().getSimpleName(),
 						other == null ? "boundary" : other.getClass().getSimpleName() });
 		setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());

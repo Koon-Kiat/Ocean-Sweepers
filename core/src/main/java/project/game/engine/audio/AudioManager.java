@@ -2,7 +2,6 @@ package project.game.engine.audio;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
@@ -18,8 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 
 /**
  * AudioManager is a singleton class that manages the audio settings and
@@ -28,7 +26,7 @@ import project.game.common.logging.LogManager;
  * It uses LibGDX's audio classes to load and play music and sound effects.
  */
 public class AudioManager {
-    private static final ILogger LOGGER = LogManager.getLogger(AudioManager.class);
+    private static final GameLogger LOGGER = new GameLogger(AudioManager.class);
     private float setsoundVolume = 0.2f;
     private float setmusicVolume = 0.1f;
     private boolean isSoundEnabled = true;
@@ -85,7 +83,7 @@ public class AudioManager {
             // Remove the file extension from the track name
             String trackName = track.replace(".mp3", "");
             if (!Gdx.files.internal(track).exists()) {
-                LOGGER.log(Level.WARNING, "Failed to Load Music: {0}", track);
+                LOGGER.warn("Failed to Load Music: {0}", track);
                 continue;
             }
 
@@ -93,9 +91,9 @@ public class AudioManager {
             Music music = Gdx.audio.newMusic(Gdx.files.internal(track));
 
             if (music == null) {
-                LOGGER.log(Level.WARNING, "Failed to Load Music: {0}", track);
+                LOGGER.warn("Failed to Load Music: {0}", track);
             } else {
-                LOGGER.log(Level.INFO, "Loaded Music: {0}", track);
+                LOGGER.info("Loaded Music: {0}", track);
                 music.setLooping(true);
                 music.setVolume(setmusicVolume);
                 musicTrack.put(trackName, music);
@@ -114,9 +112,9 @@ public class AudioManager {
             Sound sound = Gdx.audio.newSound(Gdx.files.internal(soundNames[i]));
 
             if (sound == null) {
-                LOGGER.log(Level.WARNING, "Failed to Load Sound Effect: {0}", soundNames[i]);
+                LOGGER.warn("Failed to Load Sound Effect: {0}", soundNames[i]);
             } else {
-                LOGGER.log(Level.INFO, "Loaded Sound Effect: {0}", soundNames[i]);
+                LOGGER.info("Loaded Sound Effect: {0}", soundNames[i]);
                 soundEffects.put(keys[i], sound);
             }
         }
@@ -132,7 +130,7 @@ public class AudioManager {
         Preferences prefs = Gdx.app.getPreferences("AudioSettings");
         prefs.putBoolean("isSoundEnabled", isSoundEnabled);
         prefs.flush();
-        LOGGER.log(Level.INFO, "Sound Effects Enabled: {0} | Volume: {1}",
+        LOGGER.info("Sound Effects Enabled: {0} | Volume: {1}",
                 new Object[] { isSoundEnabled, setsoundVolume });
     }
 
@@ -172,7 +170,7 @@ public class AudioManager {
         for (Music music : musicTrack.values()) {
             music.setVolume(setmusicVolume);
         }
-        LOGGER.log(Level.INFO, "Updated Music Volume: {0}", musicvolume);
+        LOGGER.info("Updated Music Volume: {0}", musicvolume);
     }
 
     public void setLooping(boolean isLooping) {
@@ -199,7 +197,7 @@ public class AudioManager {
             hideVolumeControls();
             Gdx.input.setInputProcessor(null);
         }
-        LOGGER.log(Level.INFO, "Audio Paused: {0}", isPaused);
+        LOGGER.info("Audio Paused: {0}", isPaused);
     }
 
     public void hideVolumeControls() {
@@ -230,7 +228,7 @@ public class AudioManager {
             public void changed(ChangeEvent event, Actor actor) {
                 boolean isChecked = soundToggle.isChecked();
                 toggleSoundEffects(isChecked);
-                LOGGER.log(Level.INFO, "Sound Effects Enabled: {0}", isChecked);
+                LOGGER.info("Sound Effects Enabled: {0}", isChecked);
             }
         });
 

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
@@ -14,12 +13,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 
 public class CustomAssetManager implements Disposable {
 
-    private static final ILogger LOGGER = LogManager.getLogger(CustomAssetManager.class);
+    private static final GameLogger LOGGER = new GameLogger(CustomAssetManager.class);
     private static CustomAssetManager instance;
     private final AssetManager asset_Manager;
 
@@ -47,9 +45,9 @@ public class CustomAssetManager implements Disposable {
         if (!asset_Manager.isLoaded(filePath, type)) {
             try {
                 asset_Manager.load(filePath, type);
-                LOGGER.log(Level.INFO, "Loading asset: {0}", filePath);
+                LOGGER.info("Loading asset: {0}", filePath);
             } catch (GdxRuntimeException e) {
-                LOGGER.log(Level.SEVERE, "Failed to load asset: {0} | Error: {1}",
+                LOGGER.fatal("Failed to load asset: {0} | Error: {1}",
                         new Object[] { filePath, e.getMessage() });
                 return;
             }
@@ -99,7 +97,7 @@ public class CustomAssetManager implements Disposable {
      */
     public void loadAndFinish() {
         asset_Manager.finishLoading();
-        LOGGER.log(Level.INFO, "All assets finished loading.");
+        LOGGER.info("All assets finished loading.");
     }
 
     /**
@@ -124,12 +122,12 @@ public class CustomAssetManager implements Disposable {
             } else {
                 if (asset_Manager.isLoaded(filePath)) {
                     asset_Manager.unload(filePath);
-                    LOGGER.log(Level.INFO, "Unloaded asset: {0}", filePath);
+                    LOGGER.info("Unloaded asset: {0}", filePath);
                 }
                 assetReferenceCount.remove(filePath);
             }
         } else {
-            LOGGER.log(Level.SEVERE, "Attempted to unload non-existent asset: {0}", filePath);
+            LOGGER.info("Attempted to unload non-existent asset: {0}", filePath);
         }
     }
 
@@ -169,7 +167,7 @@ public class CustomAssetManager implements Disposable {
         assetReferenceCount.clear();
         assetGroups.clear();
         asset_Manager.dispose();
-        LOGGER.log(Level.INFO, "All assets disposed.");
+        LOGGER.info("All assets disposed.");
     }
 
     /**

@@ -1,14 +1,12 @@
 package project.game;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.GameLogFormatter;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
+import project.game.common.logging.LogInitializer;
+import project.game.common.logging.LogLevel;
 import project.game.common.util.ProjectPaths;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.io.SceneIOManager;
@@ -17,36 +15,52 @@ import project.game.engine.scene.SceneManager;
 
 public class Main extends ApplicationAdapter {
 
-    static {
-        new LogManager.Builder()
-                .logFilePrefix("GameLog")
-                .dateTimeFormat("yyyy-MM-dd_HH-mm-ss")
-                .fileLogLevel(Level.ALL)
-                .consoleLogLevel(Level.INFO)
-                .maxLogFiles(5)
-                .formatter(GameLogFormatter.class.getName())
-                .initialize();
-    }
-
-    private static final ILogger LOGGER = LogManager.getLogger(Main.class);
+    private static final GameLogger LOGGER = new GameLogger(Main.class);
     private SceneManager sceneManager;
 
     @Override
     public void create() {
-        String configPath = ProjectPaths.getResourcePath("core/src/main/java/project/game/config/default-config.json");
-        GameConstantsFactory.initialize(configPath);
+
+        LogInitializer.builder()
+                .withDevMode()
+                .withLogPrefix("MyGame")
+                .withLogDirectory("logs")
+                .withMaxLogFiles(5)
+                .initialize();
+
+        LOGGER.info("Application starting up");
+        LOGGER.debug("Java version: %s", System.getProperty("java.version"));
+
+        // Find the config file
+        String configFile = ProjectPaths.findConfigFile("default-config.json");
+        if (configFile == null) {
+            LOGGER.error("Could not find default-config.json in any config locations");
+            throw new RuntimeException("Missing required configuration file");
+        }
+
+        LOGGER.info("Loading game constants from: %s", configFile);
+
+        try {
+            GameConstantsFactory.initialize(configFile);
+            LOGGER.info("Game constants loaded successfully");
+        } catch (Exception e) {
+            LOGGER.error("Failed to load game constants", e);
+            throw new RuntimeException("Failed to initialize game constants", e);
+        }
 
         // Scene Manager setup
+        LOGGER.debug("Creating scene manager");
         sceneManager = new SceneManager();
         SceneIOManager sharedInputManager = sceneManager.getInputManager();
 
         // Initializing and registering scenes now done in Scene Factory
+        LOGGER.info("Initializing scene factory");
         SceneFactory sceneFactory = new SceneFactory(sceneManager, sharedInputManager);
         sceneFactory.createAndRegisterScenes();
 
-        LOGGER.log(Level.INFO, "Available scenes: {0}", sceneManager.getSceneList());
+        LOGGER.info("Available scenes: %s", sceneManager.getSceneList());
         sceneManager.setScene("menu");
-        LOGGER.log(Level.INFO, "Current scene: {0}", sceneManager.getCurrentScene());
+        LOGGER.info("Current scene: %s", sceneManager.getCurrentScene());
     }
 
     @Override
@@ -55,10 +69,25 @@ public class Main extends ApplicationAdapter {
 
         float deltaTime = Gdx.graphics.getDeltaTime();
         sceneManager.render(deltaTime);
+
+        // Only log this at TRACE level to avoid performance impact
+        if (LOGGER.getLevel() == LogLevel.TRACE) {
+            LOGGER.trace("Frame rendered, delta: %f", deltaTime);
+        }
     }
 
     @Override
     public void resize(int width, int height) {
+        LOGGER.debug("Resizing window to %d×%d", width, height);
         sceneManager.resize(width, height);
+    }
+
+    @Override
+    public void dispose() {
+        LOGGER.info("Application shutting down");
+        sceneManager.dispose();
+
+        // Ensure logging system is properly shut down
+        LogInitializer.shutdown();
     }
 }

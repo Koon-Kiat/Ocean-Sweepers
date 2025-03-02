@@ -1,11 +1,9 @@
 package project.game.context.factory;
 
 import java.util.List;
-import java.util.logging.Level;
 
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.context.movement.RandomisedMovementBehavior;
@@ -19,7 +17,7 @@ import project.game.engine.api.movement.IPositionable;
  * Dependency Inversion Principle.
  */
 public class MovementBehaviorFactory {
-    private static final ILogger LOGGER = LogManager.getLogger(MovementBehaviorFactory.class);
+    private static final GameLogger LOGGER = new GameLogger(MovementBehaviorFactory.class);
 
     /**
      * Creates a constant movement behavior.
@@ -31,7 +29,7 @@ public class MovementBehaviorFactory {
         try {
             return new ConstantMovementBehavior(speed);
         } catch (MovementException e) {
-            LOGGER.log(Level.SEVERE, "Error creating ConstantMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating ConstantMovementBehavior: " + e.getMessage(), e);
             throw e;
         }
     }
@@ -48,7 +46,7 @@ public class MovementBehaviorFactory {
         try {
             return new ZigZagMovementBehavior(speed, amplitude, frequency);
         } catch (MovementException e) {
-            LOGGER.log(Level.SEVERE, "Error creating ZigZagMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating ZigZagMovementBehavior: " + e.getMessage(), e);
             throw e;
         }
     }
@@ -63,13 +61,13 @@ public class MovementBehaviorFactory {
     public static IMovementBehavior createFollowMovement(IPositionable target, float speed) {
         if (target == null) {
             String errorMsg = "Target is null in createFollowMovement.";
-            LOGGER.log(Level.SEVERE, errorMsg);
+            LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
             return new FollowMovementBehavior(target, speed);
         } catch (MovementException e) {
-            LOGGER.log(Level.SEVERE, "Error creating FollowMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating FollowMovementBehavior: " + e.getMessage(), e);
             throw e;
         }
     }
@@ -87,13 +85,13 @@ public class MovementBehaviorFactory {
             float maxDuration) {
         if (behaviorPool == null) {
             String errorMsg = "Behavior pool cannot be null in createRandomisedMovement.";
-            LOGGER.log(Level.SEVERE, errorMsg);
+            LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
             return new RandomisedMovementBehavior(behaviorPool, minDuration, maxDuration);
         } catch (MovementException e) {
-            LOGGER.log(Level.SEVERE, "Error creating RandomisedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating RandomisedMovementBehavior: " + e.getMessage(), e);
             throw e;
         }
     }

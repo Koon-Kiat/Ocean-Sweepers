@@ -2,13 +2,11 @@ package project.game.context.movement;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.math.MathUtils;
 
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -23,7 +21,7 @@ import project.game.engine.entitysystem.movement.MovementManager;
  */
 public class RandomisedMovementBehavior implements IMovementBehavior {
 
-    private static final ILogger LOGGER = LogManager.getLogger(RandomisedMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(RandomisedMovementBehavior.class);
     private final List<IMovementBehavior> behaviorPool;
     private final float minDuration;
     private final float maxDuration;
@@ -36,9 +34,9 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
     public RandomisedMovementBehavior(List<IMovementBehavior> behaviorPool, float minDuration, float maxDuration) {
         if (behaviorPool == null || behaviorPool.isEmpty()) {
             String errorMessage = "Invalid behavior pool provided for RandomisedMovementBehavior.";
-            LOGGER.log(Level.SEVERE, errorMessage);
+            LOGGER.error(errorMessage);
             if (MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING, "{0} Using fallback pool with ConstantMovementBehavior.", errorMessage);
+                LOGGER.warn("{0} Using fallback pool with ConstantMovementBehavior.", errorMessage);
                 this.behaviorPool = new ArrayList<>();
                 this.behaviorPool
                         .add(new ConstantMovementBehavior(GameConstantsFactory.getConstants().DEFAULT_SPEED()));
@@ -52,17 +50,17 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
         if (minDuration <= 0 || maxDuration <= 0) {
             String errorMessage = "Invalid duration range: minDuration=" + minDuration + ", maxDuration=" + maxDuration;
             if (MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING, "{0} Using fallback values: minDuration=1.0f, maxDuration=2.0f.",
+                LOGGER.warn("{0} Using fallback values: minDuration=1.0f, maxDuration=2.0f.",
                         errorMessage);
                 this.minDuration = 1.0f;
                 this.maxDuration = 2.0f;
             } else {
-                LOGGER.log(Level.SEVERE, errorMessage);
+                LOGGER.error(errorMessage);
                 throw new MovementException(errorMessage);
             }
         } else if (minDuration > maxDuration) {
             if (MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING,
+                LOGGER.warn(
                         "Invalid duration range: minDuration ({0}) is greater than maxDuration ({1}). Swapping values.",
                         new Object[] { minDuration, maxDuration });
                 this.minDuration = maxDuration;
@@ -70,7 +68,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
             } else {
                 String errorMessage = "Invalid duration range: minDuration (" + minDuration
                         + ") is greater than maxDuration (" + maxDuration + ")";
-                LOGGER.log(Level.SEVERE, errorMessage);
+                LOGGER.error(errorMessage);
                 throw new MovementException(errorMessage);
             }
         } else {
@@ -92,13 +90,13 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
                 currentBehavior.applyMovementBehavior(entity, deltaTime);
             }
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.SEVERE, "Invalid argument in RandomisedMovementBehavior", e);
+            LOGGER.error("Invalid argument in RandomisedMovementBehavior", e);
             throw new MovementException("Invalid argument in RandomisedMovementBehavior", e);
         } catch (NullPointerException e) {
-            LOGGER.log(Level.SEVERE, "Null reference in RandomisedMovementBehavior", e);
+            LOGGER.error("Null reference in RandomisedMovementBehavior", e);
             throw new MovementException("Null reference in RandomisedMovementBehavior", e);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error in RandomisedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.error("Unexpected error in RandomisedMovementBehavior: " + e.getMessage(), e);
             if (!MovementManager.LENIENT_MODE) {
                 throw new MovementException("Unexpected error in RandomisedMovementBehavior", e);
             }

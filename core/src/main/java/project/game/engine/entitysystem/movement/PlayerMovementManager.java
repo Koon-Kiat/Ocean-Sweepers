@@ -1,10 +1,7 @@
 package project.game.engine.entitysystem.movement;
 
-import java.util.logging.Level;
-
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.builder.PlayerMovementBuilder;
 
 /**
@@ -16,7 +13,7 @@ import project.game.context.builder.PlayerMovementBuilder;
  */
 public class PlayerMovementManager extends MovementManager {
 
-    private static final ILogger LOGGER = LogManager.getLogger(PlayerMovementManager.class);
+    private static final GameLogger LOGGER = new GameLogger(PlayerMovementManager.class);
     private final PlayerMovementBuilder builder;
 
     /**
@@ -33,7 +30,7 @@ public class PlayerMovementManager extends MovementManager {
     private static PlayerMovementBuilder checkBuilder(PlayerMovementBuilder builder) {
         if (builder == null) {
             String errorMessage = "PlayerMovementBuilder cannot be null.";
-            LOGGER.log(Level.SEVERE, errorMessage);
+            LOGGER.fatal(errorMessage);
             throw new MovementException(errorMessage);
         }
         return builder;

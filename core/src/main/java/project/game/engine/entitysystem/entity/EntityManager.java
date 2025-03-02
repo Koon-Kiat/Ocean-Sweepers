@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
 
@@ -18,7 +16,7 @@ import project.game.engine.api.render.IRenderable;
  */
 public class EntityManager {
 
-	private static final ILogger LOGGER = LogManager.getLogger(EntityManager.class);
+	private static final GameLogger LOGGER = new GameLogger(EntityManager.class);
 	private final List<IRenderable> renderables;
 	private final List<Entity> entityList;
 	private final Set<String> entityIDs;
@@ -36,7 +34,7 @@ public class EntityManager {
 		if (renderable instanceof Entity) {
 			Entity entity = (Entity) renderable;
 			if (entityIDs.contains(entity.getID())) {
-				LOGGER.log(Level.WARNING, "Duplicate ID: {0}", entity.getID());
+				LOGGER.warn("Duplicate ID: {0}", entity.getID());
 				return false;
 			}
 			entityIDs.add(entity.getID());
@@ -47,7 +45,7 @@ public class EntityManager {
 
 	public boolean addEntity(Entity entity) {
 		if (entityIDs.contains(entity.getID())) {
-			LOGGER.log(Level.WARNING, "Duplicate ID: {0}", entity.getID());
+			LOGGER.warn("Duplicate ID: {0}", entity.getID());
 			return false;
 		}
 		entityIDs.add(entity.getID());

@@ -2,15 +2,13 @@ package project.game.engine.io;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.core.Direction;
 
 /**
@@ -20,7 +18,7 @@ import project.game.context.core.Direction;
  */
 public class SceneIOManager extends IOManager {
 
-    private static final ILogger LOGGER = LogManager.getLogger(SceneIOManager.class);
+    private static final GameLogger LOGGER = new GameLogger(SceneIOManager.class);
 
     // Map holding key codes mapped to their in-game Direction
     private final Map<Integer, Direction> keyBindings;
@@ -76,7 +74,7 @@ public class SceneIOManager extends IOManager {
                 try {
                     return Input.Keys.valueOf(keyString);
                 } catch (IllegalArgumentException e) {
-                    LOGGER.log(Level.WARNING, "Invalid key string: {0}", keyString);
+                    LOGGER.warn("Invalid key string: {0}", keyString);
                     return Input.Keys.UNKNOWN;
                 }
         }

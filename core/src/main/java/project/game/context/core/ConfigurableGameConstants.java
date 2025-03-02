@@ -2,10 +2,8 @@ package project.game.context.core;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 
 /**
  * A configurable implementation of game constants that uses the Strategy
@@ -13,7 +11,8 @@ import project.game.common.logging.LogManager;
  * Uses the ConstantsRegistry for dynamic constant management.
  */
 public class ConfigurableGameConstants implements IGameConstants {
-    private static final ILogger LOGGER = LogManager.getLogger(ConfigurableGameConstants.class);
+
+    private static final GameLogger LOGGER = new GameLogger(ConfigurableGameConstants.class);
     private static ConfigurableGameConstants INSTANCE;
 
     private String currentProfile = "default";
@@ -28,7 +27,7 @@ public class ConfigurableGameConstants implements IGameConstants {
             INSTANCE = new ConfigurableGameConstants();
             boolean loaded = GameConfigurationLoader.loadConfiguration(configFile, "default");
             if (!loaded) {
-                LOGGER.log(Level.SEVERE, "Failed to load default configuration from: {0}", configFile);
+                LOGGER.fatal("Failed to load default configuration from: {0}", configFile);
                 throw new IllegalStateException("Failed to load default configuration");
             }
         }

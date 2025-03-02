@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -12,15 +11,14 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 
 /**
  * Utility class for loading game configurations from JSON files.
  * Uses LibGDX's JSON parsing capabilities to load configuration profiles.
  */
 public class GameConfigurationLoader {
-    private static final ILogger LOGGER = LogManager.getLogger(GameConfigurationLoader.class);
+    private static final GameLogger LOGGER = new GameLogger(GameConfigurationLoader.class);
 
     /**
      * Load a configuration profile from a JSON file.
@@ -45,7 +43,7 @@ public class GameConfigurationLoader {
             if (javaFile.exists()) {
                 // Use Java file directly when in development
                 file = new FileHandle(javaFile);
-                LOGGER.log(Level.INFO, "Loading configuration from development path: {0}", javaFile.getAbsolutePath());
+                LOGGER.info("Loading configuration from development path: {0}", javaFile.getAbsolutePath());
             } else if (Gdx.files != null) {
                 // Try LibGDX file handling for runtime
                 file = Gdx.files.internal(configFile);
@@ -54,18 +52,18 @@ public class GameConfigurationLoader {
                     if (!file.exists()) {
                         file = Gdx.files.local(configFile);
                         if (!file.exists()) {
-                            LOGGER.log(Level.SEVERE, "Configuration file not found at any path: {0}", configFile);
+                            LOGGER.fatal("Configuration file not found at any path: {0}", configFile);
                             return false;
                         }
                     }
                 }
-                LOGGER.log(Level.INFO, "Loading configuration from runtime path: {0}", file.path());
+                LOGGER.info("Loading configuration from runtime path: {0}", file.path());
             } else {
-                LOGGER.log(Level.SEVERE, "Unable to load configuration file: {0}", configFile);
+                LOGGER.fatal("Unable to load configuration file: {0}", configFile);
                 return false;
             }
 
-            LOGGER.log(Level.INFO, "Loading configuration from: {0}", file.path());
+            LOGGER.info("Loading configuration from: {0}", file.path());
 
             JsonReader reader = new JsonReader();
             JsonValue root = reader.parse(file);
@@ -87,12 +85,12 @@ public class GameConfigurationLoader {
                     ConstantDefinition def = validationMap.get(key);
 
                     if (def == null) {
-                        LOGGER.log(Level.WARNING, "Unknown constant in config file: {0}", key);
+                        LOGGER.warn("Unknown constant in config file: {0}", key);
                         continue;
                     }
 
                     if (def.getType() != Float.class) {
-                        LOGGER.log(Level.WARNING, "Type mismatch for constant {0}. Expected Float", key);
+                        LOGGER.warn("Type mismatch for constant {0}. Expected Float", key);
                         continue;
                     }
 
@@ -108,12 +106,12 @@ public class GameConfigurationLoader {
                     ConstantDefinition def = validationMap.get(key);
 
                     if (def == null) {
-                        LOGGER.log(Level.WARNING, "Unknown constant in config file: {0}", key);
+                        LOGGER.warn("Unknown constant in config file: {0}", key);
                         continue;
                     }
 
                     if (def.getType() != Long.class) {
-                        LOGGER.log(Level.WARNING, "Type mismatch for constant {0}. Expected Long", key);
+                        LOGGER.warn("Type mismatch for constant {0}. Expected Long", key);
                         continue;
                     }
 
@@ -125,16 +123,16 @@ public class GameConfigurationLoader {
             for (String key : ConstantsRegistry.getAllKeys()) {
                 if (!constants.hasValue(profileName, key)) {
                     ConstantDefinition def = ConstantsRegistry.get(key);
-                    LOGGER.log(Level.WARNING, "Missing constant {0} in profile {1}. Using default value: {2}",
+                    LOGGER.warn("Missing constant {0} in profile {1}. Using default value: {2}",
                             new Object[] { key, profileName, def.getDefaultValue() });
                     constants.setValue(key, def.getDefaultValue());
                 }
             }
 
-            LOGGER.log(Level.INFO, "Successfully loaded configuration profile: {0}", profileName);
+            LOGGER.info("Successfully loaded configuration profile: {0}", profileName);
             return true;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error loading configuration: " + e.getMessage(), e);
+            LOGGER.fatal("Error loading configuration: " + e.getMessage(), e);
             return false;
         }
     }
@@ -174,10 +172,10 @@ public class GameConfigurationLoader {
             FileHandle file = Gdx.files.local(configFile);
             file.writeString(jsonString, false);
 
-            LOGGER.log(Level.INFO, "Successfully saved configuration to: {0}", configFile);
+            LOGGER.info("Successfully saved configuration to: {0}", configFile);
             return true;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error saving configuration: " + e.getMessage(), e);
+            LOGGER.fatal("Error saving configuration: " + e.getMessage(), e);
             return false;
         }
     }

@@ -2,10 +2,8 @@ package project.game.engine.scene;
 
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.scene.GameOverScene;
 import project.game.context.scene.GameScene;
 import project.game.context.scene.MainMenuScene;
@@ -18,7 +16,7 @@ import project.game.engine.io.SceneIOManager;
 @SuppressWarnings("unused")
 public class SceneFactory {
 
-    private static final ILogger LOGGER = LogManager.getLogger(SceneFactory.class);
+    private static final GameLogger LOGGER = new GameLogger(SceneFactory.class);
     private final SceneManager sceneManager;
     private final SceneIOManager inputManager;
     private final Map<String, Supplier<Scene>> sceneCreators;
@@ -48,7 +46,7 @@ public class SceneFactory {
         sceneCreators.forEach((name, creator) -> {
             Scene scene = creator.get();
             sceneManager.addScene(name, scene);
-            LOGGER.log(Level.INFO, "Registered scene: {0}", name);
+            LOGGER.info("Registered scene: " + name);
         });
     }
 }

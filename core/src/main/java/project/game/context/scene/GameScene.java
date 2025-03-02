@@ -2,7 +2,6 @@ package project.game.context.scene;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -21,8 +20,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
+import project.game.common.logging.LogLevel;
+import project.game.common.logging.context.ContextualLoggerFactory;
+import project.game.common.logging.context.LogMessageContext;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
 import project.game.context.core.Direction;
@@ -50,7 +51,9 @@ import project.game.engine.scene.SceneManager;
 
 @SuppressWarnings({ "unused", "FieldMayBeFinal" })
 public class GameScene extends Scene {
-    private static final ILogger LOGGER = LogManager.getLogger(GameScene.class);
+    // Using the new GameLogger instead of ILogger directly
+    private static final GameLogger LOGGER = new GameLogger(GameScene.class);
+
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
@@ -89,7 +92,9 @@ public class GameScene extends Scene {
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         constants = GameConstantsFactory.getConstants();
-        LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
+
+        // Using GameLogger's info method instead of log with Level.INFO
+        LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         initPopUpMenu();
         displayMessage();
@@ -103,19 +108,26 @@ public class GameScene extends Scene {
                 dropImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
                 bucketImage = CustomAssetManager.getInstance().getAsset("bucket.png", Texture.class);
             } else {
-                LOGGER.log(Level.WARNING, "Some assets not loaded yet!");
+                LOGGER.warn("Some assets not loaded yet!");
             }
-            LOGGER.log(Level.INFO, "Loaded droplet.png successfully.");
-            LOGGER.log(Level.INFO, "Loaded bucket.png successfully.");
+            LOGGER.info("Loaded droplet.png successfully.");
+            LOGGER.info("Loaded bucket.png successfully.");
             if (dropImage == null) {
-                LOGGER.log(Level.SEVERE, "dropImage is null after loading!");
+                LOGGER.error("dropImage is null after loading!");
             }
             if (bucketImage == null) {
-                LOGGER.log(Level.SEVERE, "bucketImage is null after loading!");
+                LOGGER.error("bucketImage is null after loading!");
             }
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to load assets: {0}", e.getMessage());
+            // Using contextual logging for error reporting with additional context
+            LogMessageContext errorContext = ContextualLoggerFactory.createContext("SceneInitialization")
+                    .with("sceneType", "GameScene")
+                    .with("worldInitialized", world != null)
+                    .build();
+
+            LOGGER.getContextualLogger().log(LogLevel.ERROR.getJavaLevel(), errorContext,
+                    "Failed to initialize scene components", e);
         }
 
         entityManager = new EntityManager();
@@ -138,6 +150,10 @@ public class GameScene extends Scene {
         // Set lenient mode for movement manager
         MovementManager.setLenientMode(true);
 
+        // Using the game-event style logging for significant events
+        LOGGER.gameEvent("EntityCreation", "Creating player entity at position (%f, %f)",
+                constants.BUCKET_START_X(), constants.BUCKET_START_Y());
+
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
                 .setSpeed(constants.PLAYER_SPEED())
@@ -151,6 +167,9 @@ public class GameScene extends Scene {
         behaviorPool.add(
                 new ZigZagMovementBehavior(constants.NPC_SPEED(), constants.AMPLITUDE(), constants.FREQUENCY()));
         behaviorPool.add(new FollowMovementBehavior(playerMovementManager, constants.NPC_SPEED()));
+
+        // Using debug level for detailed configuration information
+        LOGGER.debug("Configured NPC movement behaviors: [%s]", behaviorPool.size());
 
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
@@ -193,6 +212,8 @@ public class GameScene extends Scene {
         audioManager = new AudioManager(stage);
         audioManager.playMusic("BackgroundMusic");
 
+        // Log completion of initialization
+        LOGGER.info("GameScene initialization complete");
     }
 
     @Override
@@ -205,6 +226,7 @@ public class GameScene extends Scene {
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(inputMultiplexer);
+        LOGGER.debug("GameScene shown");
     }
 
     @Override
@@ -214,7 +236,7 @@ public class GameScene extends Scene {
         try {
             collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(), constants.PIXELS_TO_METERS());
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception during game update: {0}", e.getMessage());
+            LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
 
         // Draw entities
@@ -243,8 +265,14 @@ public class GameScene extends Scene {
             if (audioManager != null) {
                 audioManager.playSoundEffect("drophit");
             } else {
-                LOGGER.log(Level.SEVERE, "AudioManager is null!");
+                LOGGER.error("AudioManager is null!");
             }
+        }
+
+        // We could add trace logging here, but for performance reasons
+        // we'd only enable it when debugging specific issues
+        if (LOGGER.getLevel() == LogLevel.TRACE) {
+            LOGGER.trace("GameScene rendered with delta: %f", deltaTime);
         }
     }
 
@@ -254,6 +282,7 @@ public class GameScene extends Scene {
         dropImage.dispose();
         bucketImage.dispose();
         debugRenderer.dispose();
+        LOGGER.info("GameScene disposed");
     }
 
     /**
@@ -286,7 +315,7 @@ public class GameScene extends Scene {
     private void input() {
         for (Integer key : inputManager.getKeyBindings().keySet()) {
             if (inputManager.isKeyJustPressed(key)) {
-                LOGGER.log(Level.INFO, "Direction Key pressed: {0}", Input.Keys.toString(key));
+                LOGGER.info("Direction Key pressed: {0}", Input.Keys.toString(key));
                 audioManager.playSoundEffect("keybuttons");
             }
         }
@@ -324,13 +353,13 @@ public class GameScene extends Scene {
             if (isMenuOpen) {
                 isPaused = true;
                 inputMultiplexer.setProcessors(stage, inputManager);
-                LOGGER.log(Level.INFO, "InputProcessor set to stage");
+                LOGGER.info("InputProcessor set to stage");
             } else {
                 isPaused = false;
                 inputMultiplexer.removeProcessor(stage);
                 inputMultiplexer.addProcessor(inputManager);
                 stage.setKeyboardFocus(null);
-                LOGGER.log(Level.INFO, "InputProcessor set to inputManager");
+                LOGGER.info("InputProcessor set to inputManager");
             }
         }
     }
@@ -339,6 +368,7 @@ public class GameScene extends Scene {
      * Displays an on-screen message with key binding instructions.
      */
     private void displayMessage() {
+        LOGGER.info("Displaying welcome message");
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
         style.background = null;
@@ -379,7 +409,7 @@ public class GameScene extends Scene {
         options.getPopupMenu().setVisible(false);
         inputMultiplexer.removeProcessor(stage);
         inputMultiplexer.addProcessor(inputManager);
-        LOGGER.log(Level.INFO, "Popup closed and game unpaused");
+        LOGGER.debug("Popup menu closed");
     }
 
 }

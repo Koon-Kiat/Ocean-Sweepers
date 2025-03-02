@@ -1,12 +1,9 @@
 package project.game.context.movement;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.common.util.MovementUtils;
 import project.game.context.core.Direction;
 import project.game.engine.api.movement.IStoppableMovementBehavior;
@@ -18,7 +15,7 @@ import project.game.engine.entitysystem.movement.MovementManager;
  */
 public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
 
-    private static final ILogger LOGGER = LogManager.getLogger(AcceleratedMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(AcceleratedMovementBehavior.class);
     private final float acceleration;
     private final float deceleration;
     private final float maxSpeed;
@@ -32,12 +29,12 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
         if (acceleration < 0 || deceleration < 0 || maxSpeed < 0) {
             String errorMessage = "Illegal negative values provided: acceleration=" + acceleration +
                     ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
-            LOGGER.log(Level.SEVERE, errorMessage);
+            LOGGER.fatal(errorMessage);
             if (MovementManager.LENIENT_MODE) {
                 this.acceleration = Math.abs(acceleration);
                 this.deceleration = Math.abs(deceleration);
                 this.maxSpeed = Math.abs(maxSpeed);
-                LOGGER.log(Level.WARNING, "LENIENT_MODE enabled: Using absolute values for parameters.");
+                LOGGER.warn("LENIENT_MODE enabled: Using absolute values for parameters.");
             } else {
                 throw new MovementException(errorMessage);
             }
@@ -107,7 +104,7 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
                     break;
                 default:
                     String errorMessage = "Unknown movement direction: " + entity.getDirection();
-                    LOGGER.log(Level.SEVERE, errorMessage);
+                    LOGGER.fatal(errorMessage);
                     throw new MovementException(errorMessage);
             }
 
@@ -116,14 +113,14 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
             entity.setX(newX);
             entity.setY(newY);
         } catch (MovementException e) {
-            LOGGER.log(Level.SEVERE, "Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.fatal("Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
             if (MovementManager.LENIENT_MODE) {
                 entity.setDirection(Direction.NONE);
             } else {
                 throw e;
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error in AcceleratedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Unexpected error in AcceleratedMovementBehavior: " + e.getMessage(), e);
             if (MovementManager.LENIENT_MODE) {
                 entity.setDirection(Direction.NONE);
             } else {

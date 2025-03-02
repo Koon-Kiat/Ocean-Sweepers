@@ -1,10 +1,7 @@
 package project.game.context.builder;
 
-import java.util.logging.Level;
-
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.core.Direction;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;
@@ -18,7 +15,7 @@ import project.game.engine.entitysystem.entity.Entity;
  */
 public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<T>> {
 
-    protected static final ILogger LOGGER = LogManager.getLogger(AbstractMovementBuilder.class);
+    protected static final GameLogger LOGGER = new GameLogger(AbstractMovementBuilder.class);
     protected Entity entity;
     protected float speed;
     protected Direction direction = Direction.NONE;
@@ -45,7 +42,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
     public T setSpeed(float speed) {
         if (speed < 0) {
             String errorMessage = "Negative speed provided: " + speed;
-            LOGGER.log(Level.SEVERE, errorMessage);
+            LOGGER.fatal(errorMessage);
             if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
                 this.speed = GameConstantsFactory.getConstants().DEFAULT_SPEED();
             } else {
@@ -63,7 +60,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
 
     public T setDirection(Direction direction) {
         if (direction == null) {
-            LOGGER.log(Level.WARNING, "Null direction provided. Defaulting to Direction.NONE.");
+            LOGGER.warn("Null direction provided. Defaulting to Direction.NONE.");
             this.direction = Direction.NONE;
         } else {
             this.direction = direction;

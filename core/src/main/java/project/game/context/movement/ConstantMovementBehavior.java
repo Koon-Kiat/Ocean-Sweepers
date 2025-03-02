@@ -1,12 +1,9 @@
 package project.game.context.movement;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.common.util.MovementUtils;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -20,18 +17,17 @@ import project.game.engine.entitysystem.movement.MovementManager;
  */
 public class ConstantMovementBehavior implements IMovementBehavior {
 
-    private static final ILogger LOGGER = LogManager.getLogger(ConstantMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(ConstantMovementBehavior.class);
     private final float speed;
 
     public ConstantMovementBehavior(float speed) {
         if (speed < 0) {
             if (MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING,
-                        "Negative speed provided in ConstantMovementBehavior: {0}. Using absolute value.", speed);
+                LOGGER.warn("Negative speed provided in ConstantMovementBehavior: {0}. Using absolute value.", speed);
                 speed = Math.abs(speed);
             } else {
                 String errorMessage = "Negative speed provided in ConstantMovementBehavior: " + speed;
-                LOGGER.log(Level.SEVERE, errorMessage);
+                LOGGER.error(errorMessage);
                 throw new MovementException(errorMessage);
             }
         }
@@ -76,18 +72,16 @@ public class ConstantMovementBehavior implements IMovementBehavior {
                 default:
                     String errorMessage = "Unknown direction in ConstantMovementBehavior.updatePosition: "
                             + entity.getDirection();
-                    LOGGER.log(Level.SEVERE, errorMessage);
+                    LOGGER.error(errorMessage);
                     throw new MovementException(errorMessage);
             }
             entity.setX(entity.getX() + deltaMovement.x);
             entity.setY(entity.getY() + deltaMovement.y);
         } catch (MovementException e) {
-            LOGGER.log(Level.SEVERE, "Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(),
-                    e);
+            LOGGER.error("Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE,
-                    "Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.fatal("Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
             throw new MovementException("Error updating position in ConstantMovementBehavior", e);
         }
     }

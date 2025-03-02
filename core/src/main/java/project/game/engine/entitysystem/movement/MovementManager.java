@@ -2,11 +2,9 @@ package project.game.engine.entitysystem.movement;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.context.core.Direction;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IMovementManager;
@@ -21,7 +19,7 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  */
 public abstract class MovementManager extends MovableEntity implements IMovementManager {
 
-    private static final ILogger LOGGER = LogManager.getLogger(MovementManager.class);
+    private static final GameLogger LOGGER = new GameLogger(MovementManager.class);
     private IMovementBehavior movementBehavior;
     public static boolean LENIENT_MODE = false;
 
@@ -34,7 +32,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         float correctedSpeed = speed;
         if (speed < 0) {
             if (LENIENT_MODE) {
-                LOGGER.log(Level.WARNING, "Negative speed provided ({0}). Using absolute value.", speed);
+                LOGGER.warn("Negative speed provided ({0}). Using absolute value.", speed);
                 correctedSpeed = Math.abs(speed);
             } else {
                 throw new MovementException("Speed cannot be negative: " + speed);
@@ -43,8 +41,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         super.setSpeed(correctedSpeed);
         if (behavior == null) {
             if (LENIENT_MODE) {
-                LOGGER.log(Level.WARNING,
-                        "Movement behavior is null. Defaulting to ConstantMovementBehavior with speed 1.0.");
+                LOGGER.warn("Movement behavior is null. Defaulting to ConstantMovementBehavior with speed 1.0.");
                 behavior = project.game.context.factory.MovementBehaviorFactory.createDefaultMovement();
             } else {
                 throw new MovementException("Movement behavior cannot be null");
@@ -56,7 +53,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
 
     public static void setLenientMode(boolean mode) {
         LENIENT_MODE = mode;
-        LOGGER.log(Level.INFO, "Lenient mode set to: {0}", mode);
+        LOGGER.info("Lenient mode set to: {0}", mode);
     }
 
     public IMovementBehavior getMovementBehavior() {
@@ -66,7 +63,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
     public void setMovementBehavior(IMovementBehavior movementBehavior) {
         if (movementBehavior == null) {
             String msg = "Movement behavior cannot be null.";
-            LOGGER.log(Level.SEVERE, msg);
+            LOGGER.fatal(msg);
             throw new MovementException(msg);
         }
         this.movementBehavior = movementBehavior;
@@ -74,7 +71,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
 
     public void applyMovementUpdate(float dt) {
         if (movementBehavior == null) {
-            LOGGER.log(Level.SEVERE, "Cannot update position: movement behavior is not set.");
+            LOGGER.fatal("Cannot update position: movement behavior is not set.");
             return;
         }
 
@@ -82,7 +79,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
             movementBehavior.applyMovementBehavior(this, dt);
         } catch (Exception e) {
             String errorMessage = "Error during movement behavior update: " + e.getMessage();
-            LOGGER.log(Level.SEVERE, errorMessage, e);
+            LOGGER.fatal(errorMessage, e);
             setDirection(Direction.NONE);
         }
     }
@@ -93,7 +90,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         try {
             applyMovementUpdate(dt);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating movement: " + e.getMessage(), e);
+            LOGGER.fatal("Error updating movement: " + e.getMessage(), e);
         }
     }
 

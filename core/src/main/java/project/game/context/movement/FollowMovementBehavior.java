@@ -1,12 +1,9 @@
 package project.game.context.movement;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.api.ILogger;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IPositionable;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -20,7 +17,7 @@ import project.game.engine.entitysystem.movement.MovementManager;
  */
 public class FollowMovementBehavior implements IMovementBehavior {
 
-    private static final ILogger LOGGER = LogManager.getLogger(FollowMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(FollowMovementBehavior.class);
     private final IPositionable target;
     private final float speed;
 
@@ -31,19 +28,18 @@ public class FollowMovementBehavior implements IMovementBehavior {
     public FollowMovementBehavior(IPositionable target, float speed) {
         if (target == null) {
             String errorMessage = "Target cannot be null in FollowMovementBehavior.";
-            LOGGER.log(Level.SEVERE, errorMessage);
+            LOGGER.error(errorMessage);
             throw new MovementException(errorMessage);
         } else {
             this.target = target;
         }
         if (speed < 0) {
             if (MovementManager.LENIENT_MODE) {
-                LOGGER.log(Level.WARNING,
-                        "Negative speed provided in FollowMovementBehavior: {0}. Using absolute value.", speed);
+                LOGGER.warn("Negative speed provided in FollowMovementBehavior: {0}. Using absolute value.", speed);
                 this.speed = Math.abs(speed);
             } else {
                 String errorMessage = "Negative speed provided in FollowMovementBehavior: " + speed;
-                LOGGER.log(Level.SEVERE, errorMessage);
+                LOGGER.error(errorMessage);
                 throw new MovementException(errorMessage);
             }
         } else {
@@ -62,10 +58,10 @@ public class FollowMovementBehavior implements IMovementBehavior {
             entity.setX(newX);
             entity.setY(newY);
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.SEVERE, "Illegal argument in FollowMovementBehavior: " + e.getMessage(), e);
+            LOGGER.error("Illegal argument in FollowMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Invalid argument in FollowMovementBehavior", e);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error in FollowMovementBehavior: " + e.getMessage(), e);
+            LOGGER.error("Unexpected error in FollowMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error updating position in FollowMovementBehavior", e);
         }
     }

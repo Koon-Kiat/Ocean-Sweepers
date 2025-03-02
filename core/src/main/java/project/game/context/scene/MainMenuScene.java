@@ -1,7 +1,5 @@
 package project.game.context.scene;
 
-import java.util.logging.Level;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -10,8 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-import project.game.common.api.ILogger;
-import project.game.common.logging.LogManager;
+import project.game.common.logging.GameLogger;
 import project.game.engine.audio.AudioManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.Scene;
@@ -19,7 +16,7 @@ import project.game.engine.scene.SceneManager;
 
 public class MainMenuScene extends Scene {
 
-    private static final ILogger LOGGER = LogManager.getLogger(MainMenuScene.class);
+    private static final GameLogger LOGGER = new GameLogger(MainMenuScene.class);
     private Skin skin;
     private TextButton playButton, exitButton, optionsButton;
     private GameScene gameScene;
@@ -57,20 +54,20 @@ public class MainMenuScene extends Scene {
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
             audioManager.playSoundEffect("selection");
-            LOGGER.log(Level.INFO, "Start Game Clicked!");
+            LOGGER.info("Start Game Clicked!");
             sceneManager.setScene("game");
         });
 
         inputManager.addButtonClickListener(optionsButton, () -> {
             audioManager.playSoundEffect("selection");
-            LOGGER.log(Level.INFO, "Options Clicked!");
+            LOGGER.info("Options Clicked!");
             sceneManager.setScene("options");
 
         });
 
         inputManager.addButtonClickListener(exitButton, () -> {
             audioManager.playSoundEffect("selection");
-            LOGGER.log(Level.INFO, "Exit Clicked!");
+            LOGGER.info("Exit Clicked!");
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
