@@ -10,10 +10,10 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import project.game.common.logging.adapter.JavaLoggerAdapter;
 import project.game.common.logging.api.ILogger;
 import project.game.common.logging.config.LoggerConfig;
-import project.game.common.logging.formatter.GameLogFormatter;
-import project.game.common.logging.impl.JavaLoggerAdapter;
+import project.game.common.logging.util.GameLogFormatter;
 import project.game.common.util.ProjectPaths;
 
 /**
@@ -167,7 +167,6 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
     }
 
     private Formatter createFormatter() {
-        // Always use GameLogFormatter as our standard formatter
         return new GameLogFormatter();
     }
 

@@ -3,6 +3,7 @@ package project.game.common.logging.core;
 import java.util.logging.Level;
 
 import project.game.common.logging.api.ILogger;
+import project.game.common.logging.util.LogLevelUtils;
 
 /**
  * Game-specific logger that provides convenient methods for game logging.
@@ -28,72 +29,94 @@ public class GameLogger {
         this.logger = LogManager.getLogger("project.game." + component);
     }
 
-    public void trace(String message) {
-        logger.log(LogLevel.TRACE.getJavaLevel(), message);
-    }
-
-    public void trace(String format, Object... args) {
-        logger.log(LogLevel.TRACE.getJavaLevel(), format, args);
-    }
-
-    public void debug(String message) {
-        logger.log(LogLevel.DEBUG.getJavaLevel(), message);
-    }
-
-    public void debug(String format, Object... args) {
-        logger.log(LogLevel.DEBUG.getJavaLevel(), format, args);
-    }
-
-    public void info(String message) {
-        logger.log(LogLevel.INFO.getJavaLevel(), message);
-    }
-
-    public void info(String format, Object... args) {
-        logger.log(LogLevel.INFO.getJavaLevel(), format, args);
-    }
-
-    public void warn(String message) {
-        logger.log(LogLevel.WARN.getJavaLevel(), message);
-    }
-
-    public void warn(String format, Object... args) {
-        logger.log(LogLevel.WARN.getJavaLevel(), format, args);
-    }
-
-    public void error(String message) {
-        logger.log(LogLevel.ERROR.getJavaLevel(), message);
-    }
-
-    public void error(String format, Object... args) {
-        logger.log(LogLevel.ERROR.getJavaLevel(), format, args);
-    }
-
-    public void error(String message, Throwable e) {
-        logger.log(LogLevel.ERROR.getJavaLevel(), message, e);
-    }
-
-    public void fatal(String message) {
-        logger.log(LogLevel.FATAL.getJavaLevel(), message);
-    }
-
-    public void fatal(String format, Object... args) {
-        logger.log(LogLevel.FATAL.getJavaLevel(), format, args);
-    }
-
-    public void fatal(String message, Throwable e) {
-        logger.log(LogLevel.FATAL.getJavaLevel(), message, e);
-    }
-
-    public void log(LogLevel level, String message) {
+    /**
+     * Generic logging method that handles the common logging patterns
+     */
+    private void logWithLevel(LogLevel level, String message) {
         logger.log(level.getJavaLevel(), message);
     }
 
-    public void log(LogLevel level, String format, Object... args) {
+    private void logWithLevel(LogLevel level, String format, Object... args) {
         logger.log(level.getJavaLevel(), format, args);
     }
 
+    private void logWithLevel(LogLevel level, String message, Throwable t) {
+        logger.log(level.getJavaLevel(), message, t);
+    }
+
+    // Trace methods
+    public void trace(String message) {
+        logWithLevel(LogLevel.TRACE, message);
+    }
+
+    public void trace(String format, Object... args) {
+        logWithLevel(LogLevel.TRACE, format, args);
+    }
+
+    // Debug methods
+    public void debug(String message) {
+        logWithLevel(LogLevel.DEBUG, message);
+    }
+
+    public void debug(String format, Object... args) {
+        logWithLevel(LogLevel.DEBUG, format, args);
+    }
+
+    // Info methods
+    public void info(String message) {
+        logWithLevel(LogLevel.INFO, message);
+    }
+
+    public void info(String format, Object... args) {
+        logWithLevel(LogLevel.INFO, format, args);
+    }
+
+    // Warn methods
+    public void warn(String message) {
+        logWithLevel(LogLevel.WARN, message);
+    }
+
+    public void warn(String format, Object... args) {
+        logWithLevel(LogLevel.WARN, format, args);
+    }
+
+    // Error methods
+    public void error(String message) {
+        logWithLevel(LogLevel.ERROR, message);
+    }
+
+    public void error(String format, Object... args) {
+        logWithLevel(LogLevel.ERROR, format, args);
+    }
+
+    public void error(String message, Throwable e) {
+        logWithLevel(LogLevel.ERROR, message, e);
+    }
+
+    // Fatal methods
+    public void fatal(String message) {
+        logWithLevel(LogLevel.FATAL, message);
+    }
+
+    public void fatal(String format, Object... args) {
+        logWithLevel(LogLevel.FATAL, format, args);
+    }
+
+    public void fatal(String message, Throwable e) {
+        logWithLevel(LogLevel.FATAL, message, e);
+    }
+
+    // Generic logging methods
+    public void log(LogLevel level, String message) {
+        logWithLevel(level, message);
+    }
+
+    public void log(LogLevel level, String format, Object... args) {
+        logWithLevel(level, format, args);
+    }
+
     public void log(LogLevel level, String message, Throwable e) {
-        logger.log(level.getJavaLevel(), message, e);
+        logWithLevel(level, message, e);
     }
 
     public void setLevel(LogLevel level) {
@@ -102,6 +125,6 @@ public class GameLogger {
 
     public LogLevel getLevel() {
         Level level = logger.getLevel();
-        return LogLevel.fromJavaLevel(level);
+        return LogLevelUtils.fromJavaLevel(level);
     }
 }

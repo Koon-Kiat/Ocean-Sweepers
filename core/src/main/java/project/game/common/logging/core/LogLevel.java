@@ -69,47 +69,4 @@ public enum LogLevel {
     public String getName() {
         return name;
     }
-
-    /**
-     * Converts a Java logging level to a LogLevel.
-     * 
-     * @param level the Java logging level
-     * @return the corresponding LogLevel, or INFO if level is null
-     */
-    public static LogLevel fromJavaLevel(Level level) {
-        // Handle null level by defaulting to INFO
-        if (level == null) {
-            return INFO;
-        }
-
-        int levelValue = level.intValue();
-        if (levelValue <= Level.FINEST.intValue()) {
-            return TRACE;
-        } else if (levelValue <= Level.FINE.intValue()) {
-            return DEBUG;
-        } else if (levelValue <= Level.INFO.intValue()) {
-            return INFO;
-        } else if (levelValue <= Level.WARNING.intValue()) {
-            return WARN;
-        } else if (levelValue <= Level.SEVERE.intValue()) {
-            return ERROR;
-        } else {
-            return FATAL;
-        }
-    }
-
-    /**
-     * Gets a LogLevel by its name (case-insensitive).
-     * 
-     * @param name the level name
-     * @return the corresponding LogLevel or null if not found
-     */
-    public static LogLevel getByName(String name) {
-        for (LogLevel level : values()) {
-            if (level.name.equalsIgnoreCase(name)) {
-                return level;
-            }
-        }
-        return null;
-    }
 }

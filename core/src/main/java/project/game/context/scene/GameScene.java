@@ -20,10 +20,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
-import project.game.common.logging.context.LogMessageContext;
 import project.game.common.logging.core.GameLogger;
 import project.game.common.logging.core.LogLevel;
-import project.game.common.logging.factory.ContextualLoggerFactory;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
 import project.game.context.core.Direction;
@@ -120,14 +118,7 @@ public class GameScene extends Scene {
             }
 
         } catch (Exception e) {
-            // Using contextual logging for error reporting with additional context
-            LogMessageContext errorContext = ContextualLoggerFactory.createContext("SceneInitialization")
-                    .with("sceneType", "GameScene")
-                    .with("worldInitialized", world != null)
-                    .build();
-
-            LOGGER.getContextualLogger().log(LogLevel.ERROR.getJavaLevel(), errorContext,
-                    "Failed to initialize scene components", e);
+            LOGGER.error("Exception loading assets: {0}", e.getMessage());
         }
 
         entityManager = new EntityManager();
@@ -149,10 +140,6 @@ public class GameScene extends Scene {
 
         // Set lenient mode for movement manager
         MovementManager.setLenientMode(true);
-
-        // Using the game-event style logging for significant events
-        LOGGER.gameEvent("EntityCreation", "Creating player entity at position (%f, %f)",
-                constants.BUCKET_START_X(), constants.BUCKET_START_Y());
 
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)

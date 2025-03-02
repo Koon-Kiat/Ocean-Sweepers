@@ -1,4 +1,4 @@
-package project.game.common.logging.impl;
+package project.game.common.logging.adapter;
 
 import java.util.HashMap;
 import java.util.Map;
