@@ -21,7 +21,6 @@ public class LoggerConfig {
     private int maxLogFiles = 10;
     private boolean useConsoleLogging = true;
     private boolean useFileLogging = true;
-    private String loggerFormatter = null;
 
     /**
      * Creates a default LoggerConfig instance.
@@ -157,15 +156,6 @@ public class LoggerConfig {
         return this;
     }
 
-    public String getLoggerFormatter() {
-        return loggerFormatter;
-    }
-
-    public LoggerConfig setLoggerFormatter(String loggerFormatter) {
-        this.loggerFormatter = loggerFormatter;
-        return this;
-    }
-
     /**
      * Creates a new SimpleDateFormat with the configured date-time format.
      *
@@ -201,7 +191,6 @@ public class LoggerConfig {
         copy.maxLogFiles = this.maxLogFiles;
         copy.useConsoleLogging = this.useConsoleLogging;
         copy.useFileLogging = this.useFileLogging;
-        copy.loggerFormatter = this.loggerFormatter;
         return copy;
     }
 }

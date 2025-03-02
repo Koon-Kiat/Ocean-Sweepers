@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.logging.Level;
 
 import project.game.common.logging.config.LoggerConfig;
-import project.game.common.logging.formatter.GameLogFormatter;
 
 /**
  * Utility class for initializing the logging system with game-specific
@@ -165,11 +164,8 @@ public final class LogInitializer {
             // Use a safe date format that works on all OS
             config.setDateTimeFormat("yyyy-MM-dd_HH-mm-ss");
 
-            // Keep 10 log files
+            // Keep 10 log files by default
             config.setMaxLogFiles(10);
-
-            // Use the game log formatter
-            config.setLoggerFormatter(GameLogFormatter.class.getName());
 
             return this;
         }

@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import project.game.common.logging.api.AbstractLoggerFactory;
 import project.game.common.logging.api.ILogger;
-import project.game.common.logging.api.ProjectPathStrategy;
+import project.game.common.util.ProjectPaths;
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.formatter.GameLogFormatter;
 
@@ -32,23 +32,6 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
      */
     public JavaLoggerFactory(LoggerConfig config) {
         super(config);
-        this.pathStrategy = new DefaultProjectPathStrategy();
-        try {
-            configureLogging();
-        } catch (Exception e) {
-            handleConfigurationError(e);
-        }
-    }
-
-    /**
-     * Creates a new JavaLoggerFactory with the specified configuration and path
-     * strategy.
-     * 
-     * @param config       the logger configuration
-     * @param pathStrategy the project path strategy
-     */
-    public JavaLoggerFactory(LoggerConfig config, ProjectPathStrategy pathStrategy) {
-        super(config, pathStrategy);
         try {
             configureLogging();
         } catch (Exception e) {
@@ -111,8 +94,8 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
         // Setup root logger adapter
         rootLoggerAdapter = JavaLoggerAdapter.getLoggerInstance("");
 
-        // Get project root directory
-        String projectPath = pathStrategy.getProjectRootPath();
+        // Get project root directory using ProjectPaths utility
+        String projectPath = ProjectPaths.getProjectRoot();
 
         if (config.isFileLoggingEnabled()) {
             setupFileLogging(projectPath);
@@ -184,19 +167,7 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
     }
 
     private Formatter createFormatter() {
-        if (config.getLoggerFormatter() != null) {
-            try {
-                Class<?> formatterClass = Class.forName(config.getLoggerFormatter());
-                return (Formatter) formatterClass.getDeclaredConstructor().newInstance();
-            } catch (ClassNotFoundException e) {
-                System.err.println("[WARN] Formatter class not found: " + e.getMessage());
-            } catch (InstantiationException | IllegalAccessException e) {
-                System.err.println("[WARN] Could not instantiate formatter: " + e.getMessage());
-            } catch (ReflectiveOperationException e) {
-                System.err.println("[WARN] Reflection error while instantiating formatter: " + e.getMessage());
-            }
-        }
-        // Default to our GameLogFormatter instead of Java's SimpleFormatter
+        // Always use GameLogFormatter as our standard formatter
         return new GameLogFormatter();
     }
 

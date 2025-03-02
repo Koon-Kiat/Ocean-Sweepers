@@ -9,7 +9,6 @@ import project.game.common.logging.config.LoggerConfig;
 public abstract class AbstractLoggerFactory implements LoggerFactory {
 
     protected LoggerConfig config;
-    protected ProjectPathStrategy pathStrategy;
 
     /**
      * Creates a new AbstractLoggerFactory with the specified configuration.
@@ -18,18 +17,6 @@ public abstract class AbstractLoggerFactory implements LoggerFactory {
      */
     public AbstractLoggerFactory(LoggerConfig config) {
         this.config = config;
-    }
-
-    /**
-     * Creates a new AbstractLoggerFactory with the specified configuration and path
-     * strategy.
-     * 
-     * @param config       the logger configuration
-     * @param pathStrategy the path strategy
-     */
-    public AbstractLoggerFactory(LoggerConfig config, ProjectPathStrategy pathStrategy) {
-        this.config = config;
-        this.pathStrategy = pathStrategy;
     }
 
     @Override
@@ -55,23 +42,5 @@ public abstract class AbstractLoggerFactory implements LoggerFactory {
      */
     public LoggerConfig getConfig() {
         return config;
-    }
-
-    /**
-     * Sets the path strategy for this factory.
-     * 
-     * @param pathStrategy the path strategy to use
-     */
-    public void setPathStrategy(ProjectPathStrategy pathStrategy) {
-        this.pathStrategy = pathStrategy;
-    }
-
-    /**
-     * Gets the current path strategy.
-     * 
-     * @return the current path strategy
-     */
-    public ProjectPathStrategy getPathStrategy() {
-        return pathStrategy;
     }
 }

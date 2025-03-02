@@ -3,11 +3,8 @@ package project.game.common.logging.builder;
 import java.util.logging.Level;
 
 import project.game.common.logging.api.ILogger;
-import project.game.common.logging.api.ProjectPathStrategy;
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.core.LogManager;
-import project.game.common.logging.impl.DefaultProjectPathStrategy;
-import project.game.common.logging.impl.JavaLoggerFactory;
 
 /**
  * Builder class for configuring and creating loggers using a fluent API.
@@ -15,7 +12,6 @@ import project.game.common.logging.impl.JavaLoggerFactory;
  */
 public class LoggerBuilder {
     private final LoggerConfig config;
-    private ProjectPathStrategy pathStrategy;
     private String name;
     private Class<?> clazz;
 
@@ -24,7 +20,6 @@ public class LoggerBuilder {
      */
     public LoggerBuilder() {
         this.config = new LoggerConfig();
-        this.pathStrategy = new DefaultProjectPathStrategy();
     }
 
     /**
@@ -46,17 +41,6 @@ public class LoggerBuilder {
      */
     public LoggerBuilder withClass(Class<?> clazz) {
         this.clazz = clazz;
-        return this;
-    }
-
-    /**
-     * Sets the path strategy.
-     * 
-     * @param pathStrategy the strategy for determining project paths
-     * @return this builder instance
-     */
-    public LoggerBuilder withPathStrategy(ProjectPathStrategy pathStrategy) {
-        this.pathStrategy = pathStrategy;
         return this;
     }
 
@@ -138,17 +122,6 @@ public class LoggerBuilder {
     }
 
     /**
-     * Sets the formatter class name.
-     * 
-     * @param formatterClassName the name of the formatter class
-     * @return this builder instance
-     */
-    public LoggerBuilder withFormatter(String formatterClassName) {
-        config.setLoggerFormatter(formatterClassName);
-        return this;
-    }
-
-    /**
      * Sets the date format pattern.
      * 
      * @param pattern the date format pattern
@@ -202,11 +175,6 @@ public class LoggerBuilder {
     }
 
     private void ensureInitialized() {
-        // Use a custom factory if path strategy was specified
-        if (pathStrategy != null && !(pathStrategy instanceof DefaultProjectPathStrategy)) {
-            LogManager.setFactory(new JavaLoggerFactory(config, pathStrategy));
-        } else {
-            LogManager.initialize(config);
-        }
+        LogManager.initialize(config);
     }
 }
