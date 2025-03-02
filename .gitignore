@@ -156,6 +156,7 @@ Thumbs.db
 /.kotlin/
 /assets/assets.txt
 /core/src/main/java/project/game/log/*
+*.log
 
 ## Special cases:
 
