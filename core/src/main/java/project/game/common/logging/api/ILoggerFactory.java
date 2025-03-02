@@ -6,7 +6,7 @@ import project.game.common.logging.config.LoggerConfig;
  * Factory interface for creating loggers.
  * Follows the Factory Method pattern for creating logger instances.
  */
-public interface LoggerFactory {
+public interface ILoggerFactory {
     /**
      * Gets a logger for the specified name.
      *

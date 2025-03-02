@@ -20,10 +20,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
-import project.game.common.logging.context.ContextualLoggerFactory;
 import project.game.common.logging.context.LogMessageContext;
 import project.game.common.logging.core.GameLogger;
 import project.game.common.logging.core.LogLevel;
+import project.game.common.logging.factory.ContextualLoggerFactory;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
 import project.game.context.core.Direction;

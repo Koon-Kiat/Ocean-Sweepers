@@ -51,7 +51,7 @@ public final class LogInitializer {
      * Builder for configuring the logging system with sensible defaults for games.
      */
     public static class Builder {
-        private LoggerConfig config = new LoggerConfig();
+        private final LoggerConfig config = new LoggerConfig();
 
         /**
          * Sets the log file prefix.

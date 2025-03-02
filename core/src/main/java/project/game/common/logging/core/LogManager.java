@@ -1,10 +1,10 @@
 package project.game.common.logging.core;
 
 import project.game.common.logging.api.ILogger;
-import project.game.common.logging.api.LoggerFactory;
+import project.game.common.logging.api.ILoggerFactory;
 import project.game.common.logging.builder.LoggerBuilder;
 import project.game.common.logging.config.LoggerConfig;
-import project.game.common.logging.impl.JavaLoggerFactory;
+import project.game.common.logging.factory.JavaLoggerFactory;
 
 /**
  * Central management class for the logging system.
@@ -12,7 +12,7 @@ import project.game.common.logging.impl.JavaLoggerFactory;
  * points.
  */
 public final class LogManager {
-    private static LoggerFactory factory;
+    private static ILoggerFactory factory;
 
     // Private constructor to prevent instantiation
     private LogManager() {
@@ -87,7 +87,7 @@ public final class LogManager {
      * 
      * @param customFactory the custom factory to use
      */
-    public static synchronized void setFactory(LoggerFactory customFactory) {
+    public static synchronized void setFactory(ILoggerFactory customFactory) {
         factory = customFactory;
     }
 

@@ -1,12 +1,14 @@
-package project.game.common.logging.api;
+package project.game.common.logging.factory;
 
+import project.game.common.logging.api.ILogger;
+import project.game.common.logging.api.ILoggerFactory;
 import project.game.common.logging.config.LoggerConfig;
 
 /**
  * Abstract base class for logger factories.
  * Implements common functionality and enforces the Template Method pattern.
  */
-public abstract class AbstractLoggerFactory implements LoggerFactory {
+public abstract class AbstractLoggerFactory implements ILoggerFactory {
 
     protected LoggerConfig config;
 

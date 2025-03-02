@@ -1,4 +1,4 @@
-package project.game.common.logging.impl;
+package project.game.common.logging.factory;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,11 +10,11 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import project.game.common.logging.api.AbstractLoggerFactory;
 import project.game.common.logging.api.ILogger;
-import project.game.common.util.ProjectPaths;
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.formatter.GameLogFormatter;
+import project.game.common.logging.impl.JavaLoggerAdapter;
+import project.game.common.util.ProjectPaths;
 
 /**
  * Implementation of LoggerFactory that uses Java's built-in logging.
