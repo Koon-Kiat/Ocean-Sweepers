@@ -1,7 +1,7 @@
 package project.game.context.factory;
 
-import project.game.context.core.ConfigurableGameConstants;
-import project.game.context.core.IGameConstants;
+import project.game.context.api.constant.IGameConstants;
+import project.game.context.constant.ConfigurableGameConstants;
 
 /**
  * Factory class for creating game constants implementations.

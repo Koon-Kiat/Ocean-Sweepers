@@ -1,4 +1,4 @@
-package project.game.context.core;
+package project.game.engine.constant;
 
 /**
  * Defines a game constant and its metadata.
