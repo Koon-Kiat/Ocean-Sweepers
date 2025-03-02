@@ -17,7 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 
 /**
  * AudioManager is a singleton class that manages the audio settings and

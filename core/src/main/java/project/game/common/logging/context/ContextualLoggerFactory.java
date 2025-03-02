@@ -1,8 +1,8 @@
 package project.game.common.logging.context;
 
-import project.game.common.logging.LogManager;
 import project.game.common.logging.api.ContextualLogger;
 import project.game.common.logging.api.ILogger;
+import project.game.common.logging.core.LogManager;
 import project.game.common.logging.impl.ContextualLoggerImpl;
 
 /**

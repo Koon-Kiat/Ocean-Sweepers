@@ -2,10 +2,10 @@ package project.game.common.logging.builder;
 
 import java.util.logging.Level;
 
-import project.game.common.logging.LogManager;
 import project.game.common.logging.api.ILogger;
 import project.game.common.logging.api.ProjectPathStrategy;
 import project.game.common.logging.config.LoggerConfig;
+import project.game.common.logging.core.LogManager;
 import project.game.common.logging.impl.DefaultProjectPathStrategy;
 import project.game.common.logging.impl.JavaLoggerFactory;
 

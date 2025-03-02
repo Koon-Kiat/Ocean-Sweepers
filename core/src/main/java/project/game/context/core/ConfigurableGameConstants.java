@@ -3,7 +3,7 @@ package project.game.context.core;
 import java.util.HashMap;
 import java.util.Map;
 
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 
 /**
  * A configurable implementation of game constants that uses the Strategy

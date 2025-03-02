@@ -1,4 +1,4 @@
-package project.game.common.logging;
+package project.game.common.logging.core;
 
 import project.game.common.logging.api.ILogger;
 import project.game.common.logging.api.LoggerFactory;

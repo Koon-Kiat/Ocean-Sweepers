@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.context.core.Direction;
 
 /**

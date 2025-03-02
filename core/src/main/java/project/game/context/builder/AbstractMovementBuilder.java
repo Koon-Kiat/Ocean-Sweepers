@@ -1,7 +1,7 @@
 package project.game.context.builder;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.context.core.Direction;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;

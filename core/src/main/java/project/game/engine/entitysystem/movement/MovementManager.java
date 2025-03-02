@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.context.core.Direction;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IMovementManager;

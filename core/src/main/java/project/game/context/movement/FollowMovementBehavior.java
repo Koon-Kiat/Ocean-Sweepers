@@ -3,7 +3,7 @@ package project.game.context.movement;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IPositionable;
 import project.game.engine.entitysystem.entity.MovableEntity;

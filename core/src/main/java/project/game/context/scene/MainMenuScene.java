@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.engine.audio.AudioManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.Scene;

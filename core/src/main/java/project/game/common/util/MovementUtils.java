@@ -1,10 +1,10 @@
 package project.game.common.util;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.GameLogger;
-import project.game.common.logging.LogLevel;
 import project.game.common.logging.context.ContextualLoggerFactory;
 import project.game.common.logging.context.LogMessageContext;
+import project.game.common.logging.core.GameLogger;
+import project.game.common.logging.core.LogLevel;
 
 /**
  * Calculates the adjusted speed for an entity moving diagonally to maintain

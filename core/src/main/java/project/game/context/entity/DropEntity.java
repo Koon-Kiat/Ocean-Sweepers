@@ -10,7 +10,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;

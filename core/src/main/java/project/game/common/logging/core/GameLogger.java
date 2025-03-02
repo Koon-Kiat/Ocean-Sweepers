@@ -1,4 +1,4 @@
-package project.game.common.logging;
+package project.game.common.logging.core;
 
 import project.game.common.logging.api.ContextualLogger;
 import project.game.common.logging.context.ContextualLoggerFactory;

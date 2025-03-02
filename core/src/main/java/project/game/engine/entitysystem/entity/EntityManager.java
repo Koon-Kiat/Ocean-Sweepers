@@ -7,7 +7,7 @@ import java.util.Set;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
 

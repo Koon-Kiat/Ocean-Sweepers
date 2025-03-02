@@ -4,9 +4,9 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.common.logging.GameLogger;
-import project.game.common.logging.LogInitializer;
-import project.game.common.logging.LogLevel;
+import project.game.common.logging.core.GameLogger;
+import project.game.common.logging.core.LogInitializer;
+import project.game.common.logging.core.LogLevel;
 import project.game.common.util.ProjectPaths;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.io.SceneIOManager;

@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 
 /**
  * Utility class for loading game configurations from JSON files.

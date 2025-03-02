@@ -6,7 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.math.MathUtils;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;

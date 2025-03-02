@@ -3,7 +3,7 @@ package project.game.engine.scene;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.context.scene.GameOverScene;
 import project.game.context.scene.GameScene;
 import project.game.context.scene.MainMenuScene;

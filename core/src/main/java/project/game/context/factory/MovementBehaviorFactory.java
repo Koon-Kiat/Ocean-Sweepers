@@ -3,7 +3,7 @@ package project.game.context.factory;
 import java.util.List;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.GameLogger;
+import project.game.common.logging.core.GameLogger;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.context.movement.RandomisedMovementBehavior;

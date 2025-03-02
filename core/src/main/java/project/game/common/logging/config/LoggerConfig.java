@@ -38,7 +38,7 @@ public class LoggerConfig {
      * @param maxLogFiles   maximum number of log files to keep
      */
     public LoggerConfig(String logDirectory, String logFilePrefix, int maxLogFiles) {
-        setLogDirectory(logDirectory); // Use setter to ensure proper path handling
+        setLogDirectory(logDirectory);
         this.logFilePrefix = logFilePrefix;
         this.maxLogFiles = maxLogFiles;
     }
