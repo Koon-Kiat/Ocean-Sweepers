@@ -1,7 +1,5 @@
 package project.game.engine.api.logging;
 
-import project.game.common.logging.core.LogLevel;
-
 /**
  * Interface for loggers.
  * Provides methods for logging messages at different levels.

@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.common.logging.util.LogInitializer;
 import project.game.common.logging.util.LogPaths;
 import project.game.common.util.ProjectPaths;
 import project.game.context.factory.GameConstantsFactory;
@@ -15,16 +14,11 @@ import project.game.engine.scene.SceneManager;
 
 public class Main extends ApplicationAdapter {
 
-    private static GameLogger LOGGER;
+    private static final GameLogger LOGGER = new GameLogger(Main.class);
     private SceneManager sceneManager;
 
     @Override
     public void create() {
-        LogInitializer.builder()
-                .withGameDefaults()
-                .initialize();
-
-        LOGGER = new GameLogger(Main.class);
         LOGGER.info("Application starting up");
         LOGGER.debug("Java version: {0}", System.getProperty("java.version"));
         LOGGER.debug("Using log directory: {0}", LogPaths.getGlobalLogDirectory());
@@ -81,8 +75,5 @@ public class Main extends ApplicationAdapter {
     public void dispose() {
         LOGGER.info("Application shutting down");
         sceneManager.dispose();
-
-        // Ensure logging system is properly shut down
-        LogInitializer.shutdown();
     }
 }

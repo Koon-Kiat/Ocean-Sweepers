@@ -1,61 +1,64 @@
 package project.game.engine.logging;
 
-import project.game.common.logging.core.LogLevel;
+import java.text.MessageFormat;
+
 import project.game.engine.api.logging.ILogger;
-import project.game.engine.api.logging.ILoggerEvent;
-import project.game.engine.api.logging.ILoggerEventFactory;
-import project.game.engine.api.logging.ILoggerHandler;
+import project.game.engine.api.logging.LogLevel;
 
 /**
- * Abstract base implementation of ILogger that provides common functionality.
- * This class uses the Template Method pattern to allow subclasses to focus on
- * the specific logging mechanism.
+ * Abstract base logger that implements core logging functionality.
+ * Game-specific loggers can extend this class to add custom behavior.
  */
 public abstract class AbstractLogger implements ILogger {
-    private final String name;
-    protected final ILoggerEventFactory eventFactory;
-    private LogLevel level = LogLevel.INFO;
-    private ILoggerHandler firstHandler;
+    protected final String name;
+    protected LogLevel level;
 
-    /**
-     * Creates a new AbstractLogger.
-     *
-     * @param name the logger name
-     */
-    protected AbstractLogger(String name, ILoggerEventFactory eventFactory) {
+    protected AbstractLogger(String name, LogLevel initialLevel) {
         this.name = name;
-        this.eventFactory = eventFactory;
+        this.level = initialLevel;
     }
 
     @Override
-    public void log(LogLevel level, String message) {
-        if (!isEnabled(level)) {
-            return;
-        }
+    public void setLevel(LogLevel level) {
+        this.level = level;
+    }
 
-        ILoggerEvent event = createLogEvent(level, message, null);
-        log(event);
+    @Override
+    public LogLevel getLevel() {
+        return level;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean isEnabled(LogLevel level) {
+        return this.level.compareSeverity(level) <= 0;
+    }
+
+    // Implement the basic logging methods
+    @Override
+    public void log(LogLevel level, String message) {
+        if (isEnabled(level)) {
+            doLog(level, message, null);
+        }
     }
 
     @Override
     public void log(LogLevel level, String message, Throwable thrown) {
-        if (!isEnabled(level)) {
-            return;
+        if (isEnabled(level)) {
+            doLog(level, message, thrown);
         }
-
-        ILoggerEvent event = createLogEvent(level, message, thrown);
-        log(event);
     }
 
     @Override
     public void log(LogLevel level, String format, Object... args) {
-        if (!isEnabled(level)) {
-            return;
+        if (isEnabled(level)) {
+            String message = MessageFormat.format(format, args);
+            doLog(level, message, null);
         }
-
-        String message = formatMessage(format, args);
-        ILoggerEvent event = createLogEvent(level, message, null);
-        log(event);
     }
 
     @Override
@@ -128,158 +131,12 @@ public abstract class AbstractLogger implements ILogger {
         log(LogLevel.FATAL, message, thrown);
     }
 
-    @Override
-    public void log(ILoggerEvent event) {
-        if (!isEnabled(event.getLevel())) {
-            return;
-        }
-
-        dispatchLogEvent(event);
-    }
+    // Abstract methods that concrete implementations must provide
+    protected abstract void doLog(LogLevel level, String message, Throwable thrown);
 
     @Override
-    public boolean isEnabled(LogLevel level) {
-        return level.getSeverity() >= this.level.getSeverity();
-    }
+    public abstract ILogger getLogger(String name);
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public LogLevel getLevel() {
-        return level;
-    }
-
-    @Override
-    public void setLevel(LogLevel level) {
-        if (level == null) {
-            throw new IllegalArgumentException("Log level cannot be null");
-        }
-        this.level = level;
-    }
-
-    /**
-     * Adds a handler to this logger.
-     *
-     * @param handler the handler to add
-     */
-    public void addHandler(ILoggerHandler handler) {
-        if (handler == null) {
-            return;
-        }
-
-        if (firstHandler == null) {
-            firstHandler = handler;
-        } else {
-            ILoggerHandler lastHandler = firstHandler;
-            while (lastHandler.getNext() != null) {
-                lastHandler = lastHandler.getNext();
-            }
-            lastHandler.setNext(handler);
-        }
-    }
-
-    /**
-     * Removes a handler from this logger.
-     *
-     * @param handler the handler to remove
-     * @return true if the handler was removed, false if it wasn't found
-     */
-    public boolean removeHandler(ILoggerHandler handler) {
-        if (handler == null || firstHandler == null) {
-            return false;
-        }
-
-        if (firstHandler == handler) {
-            firstHandler = firstHandler.getNext();
-            handler.setNext(null);
-            return true;
-        }
-
-        ILoggerHandler current = firstHandler;
-        while (current.getNext() != null) {
-            if (current.getNext() == handler) {
-                current.setNext(handler.getNext());
-                handler.setNext(null);
-                return true;
-            }
-            current = current.getNext();
-        }
-
-        return false;
-    }
-
-    /**
-     * Clears all handlers from this logger.
-     */
-    public void clearHandlers() {
-        // Close all handlers first
-        ILoggerHandler current = firstHandler;
-        while (current != null) {
-            current.close();
-            current = current.getNext();
-        }
-
-        firstHandler = null;
-    }
-
-    /**
-     * Gets the first handler in the chain.
-     * 
-     * @return the first handler, or null if none
-     */
-    public ILoggerHandler getFirstHandler() {
-        return firstHandler;
-    }
-
-    @Override
-    public void flush() {
-        ILoggerHandler current = firstHandler;
-        while (current != null) {
-            current.flush();
-            current = current.getNext();
-        }
-    }
-
-    /**
-     * Formats a message with the specified arguments.
-     * This is a template method that can be overridden by subclasses.
-     *
-     * @param format the format string
-     * @param args   the format arguments
-     * @return the formatted message
-     */
-    protected String formatMessage(String format, Object... args) {
-        try {
-            return String.format(format, args);
-        } catch (Exception e) {
-            return format + " [Error formatting message: " + e.getMessage() + "]";
-        }
-    }
-
-    /**
-     * Dispatches a log event to the handlers.
-     * This is a template method that can be overridden by subclasses.
-     *
-     * @param event the log event to dispatch
-     */
-    protected void dispatchLogEvent(ILoggerEvent event) {
-        if (firstHandler != null) {
-            firstHandler.handle(event);
-        }
-    }
-
-    /**
-     * Creates a log event with the specified parameters.
-     * This is a template method that can be overridden by subclasses.
-     *
-     * @param level     the log level
-     * @param message   the log message
-     * @param throwable the throwable (may be null)
-     * @return the log event
-     */
-    protected abstract ILoggerEvent createLogEvent(LogLevel level, String message, Throwable throwable);
-
+    public abstract void flush();
 }

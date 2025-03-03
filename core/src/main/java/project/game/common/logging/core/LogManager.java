@@ -1,178 +1,102 @@
 package project.game.common.logging.core;
 
-import project.game.common.logging.config.LoggerConfig;
-import project.game.common.logging.factory.SimpleLoggerFactory;
-import project.game.engine.api.logging.ILogger;
-import project.game.engine.api.logging.ILoggerFactory;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import project.game.engine.api.logging.ILogManager;
 
 /**
- * Central management class for the logging system.
- * This class acts as a facade to the logging system, providing simple access
- * points.
+ * Base implementation of ILogManager.
+ * This class handles log file management and rotation.
  */
-public final class LogManager {
-    private static LoggerConfig currentConfig;
-    private static ILoggerFactory factory;
-    private static boolean initialized = false;
-    private static boolean initializing = false;
-    private static final Object LOCK = new Object();
+public class LogManager implements ILogManager {
+    private static volatile LogManager instance;
+    private final String logDirectory;
+    private int maxLogFiles;
+    private File currentLogFile;
 
-    // Private constructor to prevent instantiation
-    private LogManager() {
-        // Utility class, no instantiation
+    protected LogManager(String logDirectory, int maxLogFiles) {
+        this.logDirectory = logDirectory;
+        this.maxLogFiles = maxLogFiles;
+        initializeLogManager();
     }
 
-    /**
-     * Initializes the logging system with default configuration.
-     */
-    public static void initialize() {
-        if (!initialized) {
-            initialize(new LoggerConfig().validate());
+    private void initializeLogManager() {
+        cleanupOldLogs();
+    }
+
+    public static synchronized LogManager createInstance(String logDirectory, int maxLogFiles) {
+        if (instance == null) {
+            instance = new LogManager(logDirectory, maxLogFiles);
+        }
+        return instance;
+    }
+
+    @Override
+    public synchronized File getCurrentLogFile() {
+        return currentLogFile;
+    }
+
+    @Override
+    public synchronized void setCurrentLogFile(File logFile) {
+        this.currentLogFile = logFile;
+    }
+
+    @Override
+    public String getLogDirectory() {
+        return logDirectory;
+    }
+
+    @Override
+    public int getMaxLogFiles() {
+        return maxLogFiles;
+    }
+
+    @Override
+    public void setMaxLogFiles(int maxFiles) {
+        if (maxFiles > 0) {
+            this.maxLogFiles = maxFiles;
+            cleanupOldLogs();
         }
     }
 
-    /**
-     * Initializes the logging system with the provided configuration.
-     * 
-     * @param config the logger configuration
-     */
-    public static void initialize(LoggerConfig config) {
-        if (config == null) {
-            throw new IllegalArgumentException("Config cannot be null");
+    @Override
+    public final void cleanupOldLogs() {
+        File dir = new File(logDirectory);
+        if (!dir.exists() || !dir.isDirectory()) {
+            return;
         }
 
-        synchronized (LOCK) {
-            // If already initialized with the same config, skip
-            if (initialized && currentConfig == config) {
-                return;
-            }
+        File[] logFiles = dir.listFiles(this::isValidLogFile);
+        if (logFiles == null || logFiles.length <= maxLogFiles) {
+            return;
+        }
 
-            // Prevent recursive initialization
-            if (initializing) {
-                return;
-            }
+        // Sort by last modified time
+        Arrays.sort(logFiles, Comparator.comparingLong(File::lastModified));
 
+        // Delete oldest files until we're at the limit
+        for (int i = 0; i < logFiles.length - maxLogFiles; i++) {
             try {
-                initializing = true;
-
-                // Shutdown existing factory if any
-                if (factory != null) {
-                    factory.shutdown();
-                    factory = null;
-                }
-
-                // Validate and apply new configuration
-                currentConfig = config.validate();
-                factory = new SimpleLoggerFactory(currentConfig);
-                initialized = true;
-
-            } finally {
-                initializing = false;
+                Files.delete(logFiles[i].toPath());
+            } catch (IOException e) {
+                // Log error through standard error since logger might not be initialized
+                System.err.println("Failed to delete old log file: " + e.getMessage());
             }
         }
     }
 
     /**
-     * Gets a logger for the specified name.
+     * Template method that can be overridden by subclasses to customize log file
+     * filtering.
      * 
-     * @param name the logger name
-     * @return the logger instance
+     * @param file the file to check
+     * @return true if this is a valid log file that should be included in rotation
      */
-    public static ILogger getLogger(String name) {
-        ensureInitialized();
-        return factory.getLogger(name);
-    }
-
-    /**
-     * Gets a logger for the specified class.
-     * 
-     * @param clazz the class
-     * @return the logger instance
-     */
-    public static ILogger getLogger(Class<?> clazz) {
-        return getLogger(clazz.getName());
-    }
-
-    /**
-     * Gets the root logger.
-     * 
-     * @return the root logger
-     */
-    public static ILogger getRootLogger() {
-        ensureInitialized();
-        return factory.getRootLogger();
-    }
-
-    /**
-     * Reconfigures the logging system with new settings.
-     * 
-     * @param config the new configuration
-     */
-    public static void reconfigure(LoggerConfig config) {
-        ensureInitialized();
-        synchronized (LOCK) {
-            currentConfig = config.validate();
-            factory.reconfigure(currentConfig);
-        }
-    }
-
-    /**
-     * Sets a different logger factory implementation.
-     *
-     * @param newFactory the factory to use
-     */
-    public static void setLoggerFactory(ILoggerFactory newFactory) {
-        if (newFactory == null) {
-            throw new IllegalArgumentException("Logger factory cannot be null");
-        }
-
-        synchronized (LOCK) {
-            // Shutdown the current factory
-            if (factory != null) {
-                factory.shutdown();
-            }
-
-            factory = newFactory;
-
-            // Initialize the factory with current config if already initialized
-            if (initialized && currentConfig != null) {
-                currentConfig = currentConfig.validate();
-                factory.reconfigure(currentConfig);
-            }
-        }
-    }
-
-    /**
-     * Gets the current configuration.
-     * 
-     * @return the current configuration
-     */
-    public static LoggerConfig getConfiguration() {
-        ensureInitialized();
-        return currentConfig;
-    }
-
-    /**
-     * Shuts down the logging system, closing all handlers.
-     * Should be called on application exit.
-     */
-    public static void shutdown() {
-        synchronized (LOCK) {
-            if (initialized && factory != null) {
-                factory.shutdown();
-                factory = null;
-                initialized = false;
-                currentConfig = null;
-            }
-        }
-    }
-
-    /**
-     * Ensures that the logging system is initialized.
-     */
-    private static void ensureInitialized() {
-        if (!initialized) {
-            initialize();
-        }
+    protected boolean isValidLogFile(File file) {
+        return file.isFile() && file.getName().endsWith(".log");
     }
 }
