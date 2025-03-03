@@ -3,7 +3,7 @@ package project.game.engine.api.movement;
 import java.util.Map;
 import java.util.Set;
 
-import project.game.context.core.Direction;
+import project.game.context.api.Direction;
 
 /**
  * Interface for movement managers.

@@ -21,10 +21,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.common.logging.core.GameLogger;
+import project.game.context.api.Direction;
 import project.game.context.api.constant.IGameConstants;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
-import project.game.context.core.Direction;
 import project.game.context.entity.BucketEntity;
 import project.game.context.entity.DropEntity;
 import project.game.context.entity.NonMovableDroplet;

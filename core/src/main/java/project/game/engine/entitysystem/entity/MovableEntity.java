@@ -1,6 +1,6 @@
 package project.game.engine.entitysystem.entity;
 
-import project.game.context.core.Direction;
+import project.game.context.api.Direction;
 import project.game.engine.api.movement.IPositionable;
 
 /**

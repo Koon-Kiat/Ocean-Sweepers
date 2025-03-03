@@ -3,7 +3,7 @@ package project.game.context.builder;
 import java.util.List;
 
 import project.game.common.exception.MovementException;
-import project.game.context.core.Direction;
+import project.game.context.api.Direction;
 import project.game.context.factory.MovementBehaviorFactory;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.engine.api.movement.IMovementBehavior;
