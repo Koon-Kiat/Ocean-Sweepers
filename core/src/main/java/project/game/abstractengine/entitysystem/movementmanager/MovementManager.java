@@ -10,7 +10,6 @@ import project.game.abstractengine.entitysystem.entitymanager.Entity;
 import project.game.abstractengine.entitysystem.entitymanager.MovableEntity;
 import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.abstractengine.interfaces.IMovementManager;
-import project.game.constants.GameConstants;
 import project.game.exceptions.MovementException;
 
 /**
@@ -45,7 +44,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
             if (LENIENT_MODE) {
                 LOGGER.log(Level.WARNING,
                         "Movement behavior is null. Defaulting to ConstantMovementBehavior with speed 1.0.");
-                behavior = new project.game.defaultmovements.ConstantMovementBehavior(GameConstants.DEFAULT_SPEED);
+                behavior = project.game.factory.MovementBehaviorFactory.createDefaultMovement();
             } else {
                 throw new MovementException("Movement behavior cannot be null");
             }

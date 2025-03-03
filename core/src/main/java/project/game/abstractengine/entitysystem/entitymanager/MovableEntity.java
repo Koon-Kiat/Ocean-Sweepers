@@ -1,12 +1,13 @@
 package project.game.abstractengine.entitysystem.entitymanager;
 
 import project.game.Direction;
+import project.game.abstractengine.interfaces.IPositionable;
 
 /**
  * MovableEntity is an abstract class that extends Entity and provides the
  * necessary methods and fields for entities that can move.
  */
-public abstract class MovableEntity extends Entity {
+public abstract class MovableEntity extends Entity implements IPositionable {
 
 	private final Entity entity;
 	private float speed;
@@ -41,7 +42,8 @@ public abstract class MovableEntity extends Entity {
 			this.direction = Direction.NONE;
 		}
 		this.direction = direction;
-
 	}
 
+	// These methods are inherited from Entity and already satisfy the IPositionable
+	// interface
 }
