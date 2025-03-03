@@ -7,10 +7,15 @@ import project.game.common.logging.core.GameLogger;
 import project.game.context.movement.AcceleratedMovementBehavior;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
+import project.game.context.movement.InterceptorMovementBehavior;
+import project.game.context.movement.OrbitalMovementBehavior;
 import project.game.context.movement.RandomisedMovementBehavior;
+import project.game.context.movement.SpiralApproachBehavior;
+import project.game.context.movement.SpringFollowBehavior;
 import project.game.context.movement.ZigZagMovementBehavior;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IPositionable;
+import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Factory class for creating movement behaviors.
@@ -125,5 +130,64 @@ public class MovementBehaviorFactory {
      */
     public static IMovementBehavior createDefaultMovement() {
         return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
+    }
+
+    /**
+     * Creates an OrbitalMovementBehavior.
+     */
+    public static IMovementBehavior createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
+            float eccentricity, boolean lenientMode) {
+        try {
+            return new OrbitalMovementBehavior(target, orbitRadius, rotationSpeed, eccentricity, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create OrbitalMovementBehavior: " + e.getMessage());
+            throw new MovementException("Failed to create OrbitalMovementBehavior", e);
+        }
+    }
+
+    /**
+     * Creates a SpringFollowBehavior.
+     */
+    public static IMovementBehavior createSpringFollowMovement(IPositionable target, float springConstant,
+            float damping,
+            boolean lenientMode) {
+        try {
+            return new SpringFollowBehavior(target, springConstant, damping, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create SpringFollowBehavior: " + e.getMessage());
+            throw new MovementException("Failed to create SpringFollowBehavior", e);
+        }
+    }
+
+    /**
+     * Creates an InterceptorMovementBehavior.
+     */
+    public static IMovementBehavior createInterceptorMovement(MovableEntity target, float speed, boolean lenientMode) {
+        try {
+            return new InterceptorMovementBehavior(target, speed, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create InterceptorMovementBehavior: " + e.getMessage());
+            throw new MovementException("Failed to create InterceptorMovementBehavior", e);
+        }
+    }
+
+    /**
+     * Creates a SpiralApproachBehavior.
+     */
+    public static IMovementBehavior createSpiralApproachMovement(IPositionable target, float speed,
+            float spiralTightness,
+            float approachSpeed, boolean lenientMode) {
+        try {
+            return new SpiralApproachBehavior(target, speed, spiralTightness, approachSpeed, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create SpiralApproachBehavior: " + e.getMessage());
+            throw new MovementException("Failed to create SpiralApproachBehavior", e);
+        }
+    }
+
+    // Private constructor to prevent instantiation
+    private MovementBehaviorFactory() {
+        throw new UnsupportedOperationException(
+                "MovementBehaviorFactory is a utility class and cannot be instantiated.");
     }
 }
