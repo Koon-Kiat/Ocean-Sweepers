@@ -8,7 +8,6 @@ import project.game.context.factory.MovementBehaviorFactory;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IPositionable;
-import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.entitysystem.movement.NPCMovementManager;
 
 /**
@@ -23,8 +22,14 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withConstantMovement() {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed);
+            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed, this.lenientMode);
         } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating ConstantMovementBehavior in lenient mode: " + e.getMessage()
+                        + ". Using default movement.");
+                this.movementBehavior = MovementBehaviorFactory.createDefaultMovement();
+                return this;
+            }
             LOGGER.fatal("Error in ConstantMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in ConstantMovementBehavior: " + e.getMessage(), e);
         }
@@ -33,8 +38,13 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createZigZagMovement(this.speed, amplitude, frequency);
+            this.movementBehavior = MovementBehaviorFactory.createZigZagMovement(this.speed, amplitude, frequency, this.lenientMode);
         } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating ZigZagMovementBehavior in lenient mode: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
             LOGGER.fatal("Error in ZigZagMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in ZigZagMovementBehavior: " + e.getMessage(), e);
         }
@@ -44,12 +54,21 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     public NPCMovementBuilder withFollowMovement(IPositionable target) {
         if (target == null) {
             String errorMsg = "Target is null in withFollowMovement.";
+            if (this.lenientMode) {
+                LOGGER.warn(errorMsg + " Using constant movement fallback.");
+                return withConstantMovement();
+            }
             LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
-            this.movementBehavior = MovementBehaviorFactory.createFollowMovement(target, this.speed);
+            this.movementBehavior = MovementBehaviorFactory.createFollowMovement(target, this.speed, this.lenientMode);
         } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error in FollowMovementBehavior in lenient mode: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
             LOGGER.fatal("Error in FollowMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in FollowMovementBehavior: " + e.getMessage(), e);
         }
@@ -58,25 +77,25 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withRandomisedMovement(List<IMovementBehavior> behaviorPool, float minDuration,
             float maxDuration) {
-        if (behaviorPool == null) {
-            String errorMsg = "Behavior pool cannot be null in withRandomisedMovement.";
+        if (behaviorPool == null || behaviorPool.isEmpty()) {
+            String errorMsg = behaviorPool == null ? "Behavior pool cannot be null in withRandomisedMovement."
+                    : "Behavior pool cannot be empty in withRandomisedMovement.";
+            if (this.lenientMode) {
+                LOGGER.warn(errorMsg + " Using constant movement fallback.");
+                return withConstantMovement();
+            }
             LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
-        if (behaviorPool.isEmpty()) {
-            if (MovementManager.LENIENT_MODE) {
-                LOGGER.warn(
-                        "Behavior pool is empty in withRandomisedMovement. Delegating to RandomisedMovementBehavior fallback.");
-            } else {
-                String errorMsg = "Behavior pool cannot be empty in withRandomisedMovement.";
-                LOGGER.fatal(errorMsg);
-                throw new MovementException(errorMsg);
-            }
-        }
         try {
             this.movementBehavior = MovementBehaviorFactory.createRandomisedMovement(behaviorPool, minDuration,
-                    maxDuration);
+                    maxDuration, this.lenientMode);
         } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error in RandomisedMovementBehavior in lenient mode: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
             LOGGER.fatal("Error in RandomisedMovementBehavior: " + e.getMessage(), e);
             throw new MovementException("Error in RandomisedMovementBehavior: " + e.getMessage(), e);
         }
@@ -100,7 +119,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
                 LOGGER.warn("No direction specified. Defaulting to Direction.NONE.");
             }
             if (!(this.movementBehavior instanceof FollowMovementBehavior) && this.direction == Direction.NONE) {
-                if (MovementManager.LENIENT_MODE) {
+                if (lenientMode) {
                     LOGGER.warn("{0} cannot be used with Direction.NONE. Defaulting direction to UP.",
                             this.movementBehavior.getClass().getSimpleName());
                     this.direction = Direction.UP;
@@ -126,7 +145,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     @Override
     protected void validateBuildRequirements() {
         if (speed < 0) {
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Negative speed ({0}) found in NPCMovementBuilder. Using absolute value.",
                         new Object[] { speed });
                 speed = Math.abs(speed);

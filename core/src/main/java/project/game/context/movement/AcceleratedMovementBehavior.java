@@ -8,7 +8,6 @@ import project.game.common.util.MovementUtils;
 import project.game.context.api.Direction;
 import project.game.engine.api.movement.IStoppableMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
-import project.game.engine.entitysystem.movement.MovementManager;
 
 /**
  * Provides accelerated movement for movable entities.
@@ -19,18 +18,20 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
     private final float acceleration;
     private final float deceleration;
     private final float maxSpeed;
+    private final boolean lenientMode;
     private float currentSpeed;
 
     /**
      * Constructs an AcceleratedMovementBehavior with specified parameters.
      * Terminates the program if any provided parameter is negative.
      */
-    public AcceleratedMovementBehavior(float acceleration, float deceleration, float maxSpeed) {
+    public AcceleratedMovementBehavior(float acceleration, float deceleration, float maxSpeed, boolean lenientMode) {
+        this.lenientMode = lenientMode;
         if (acceleration < 0 || deceleration < 0 || maxSpeed < 0) {
             String errorMessage = "Illegal negative values provided: acceleration=" + acceleration +
                     ", deceleration=" + deceleration + ", maxSpeed=" + maxSpeed;
             LOGGER.fatal(errorMessage);
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 this.acceleration = Math.abs(acceleration);
                 this.deceleration = Math.abs(deceleration);
                 this.maxSpeed = Math.abs(maxSpeed);
@@ -114,14 +115,14 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
             entity.setY(newY);
         } catch (MovementException e) {
             LOGGER.fatal("Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 entity.setDirection(Direction.NONE);
             } else {
                 throw e;
             }
         } catch (Exception e) {
             LOGGER.fatal("Unexpected error in AcceleratedMovementBehavior: " + e.getMessage(), e);
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 entity.setDirection(Direction.NONE);
             } else {
                 throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);

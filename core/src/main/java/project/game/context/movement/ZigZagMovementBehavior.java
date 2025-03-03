@@ -24,10 +24,12 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     private final float amplitude;
     private final float frequency;
     private float elapsedTime;
+    private final boolean lenientMode;
 
-    public ZigZagMovementBehavior(float speed, float amplitude, float frequency) {
+    public ZigZagMovementBehavior(float speed, float amplitude, float frequency, boolean lenientMode) {
+        this.lenientMode = lenientMode;
         if (speed < 0) {
-            if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Negative speed provided in ZigZagMovementBehavior: {0}. Using absolute value.", speed);
                 speed = Math.abs(speed);
             } else {
@@ -38,7 +40,7 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             }
         }
         if (frequency < 0) {
-            if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Negative frequency provided in ZigZagMovementBehavior: {0}. Using absolute value.",
                         frequency);
                 frequency = Math.abs(frequency);

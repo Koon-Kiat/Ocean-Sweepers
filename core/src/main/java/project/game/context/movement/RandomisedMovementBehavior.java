@@ -10,7 +10,6 @@ import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
-import project.game.engine.entitysystem.movement.MovementManager;
 
 /**
  * Provides randomised movement for movable entities.
@@ -27,19 +26,23 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
     private final float maxDuration;
     private IMovementBehavior currentBehavior;
     private float remainingTime;
+    private final boolean lenientMode;
 
     /**
      * Constructs a RandomisedMovementBehavior with the specified parameters.
      */
-    public RandomisedMovementBehavior(List<IMovementBehavior> behaviorPool, float minDuration, float maxDuration) {
+    public RandomisedMovementBehavior(List<IMovementBehavior> behaviorPool, float minDuration, float maxDuration,
+            boolean lenientMode) {
+        this.lenientMode = lenientMode;
         if (behaviorPool == null || behaviorPool.isEmpty()) {
             String errorMessage = "Invalid behavior pool provided for RandomisedMovementBehavior.";
             LOGGER.error(errorMessage);
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("{0} Using fallback pool with ConstantMovementBehavior.", errorMessage);
                 this.behaviorPool = new ArrayList<>();
                 this.behaviorPool
-                        .add(new ConstantMovementBehavior(GameConstantsFactory.getConstants().DEFAULT_SPEED()));
+                        .add(new ConstantMovementBehavior(GameConstantsFactory.getConstants().DEFAULT_SPEED(),
+                                lenientMode));
             } else {
                 throw new MovementException(errorMessage);
             }
@@ -49,7 +52,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
         // Validate durations in a single block.
         if (minDuration <= 0 || maxDuration <= 0) {
             String errorMessage = "Invalid duration range: minDuration=" + minDuration + ", maxDuration=" + maxDuration;
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("{0} Using fallback values: minDuration=1.0f, maxDuration=2.0f.",
                         errorMessage);
                 this.minDuration = 1.0f;
@@ -59,7 +62,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
                 throw new MovementException(errorMessage);
             }
         } else if (minDuration > maxDuration) {
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn(
                         "Invalid duration range: minDuration ({0}) is greater than maxDuration ({1}). Swapping values.",
                         new Object[] { minDuration, maxDuration });
@@ -97,7 +100,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
             throw new MovementException("Null reference in RandomisedMovementBehavior", e);
         } catch (Exception e) {
             LOGGER.error("Unexpected error in RandomisedMovementBehavior: " + e.getMessage(), e);
-            if (!MovementManager.LENIENT_MODE) {
+            if (!lenientMode) {
                 throw new MovementException("Unexpected error in RandomisedMovementBehavior", e);
             }
         }

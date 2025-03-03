@@ -7,7 +7,6 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IPositionable;
 import project.game.engine.entitysystem.entity.MovableEntity;
-import project.game.engine.entitysystem.movement.MovementManager;
 
 /**
  * Provides follow movement for movable entities.
@@ -20,12 +19,14 @@ public class FollowMovementBehavior implements IMovementBehavior {
     private static final GameLogger LOGGER = new GameLogger(FollowMovementBehavior.class);
     private final IPositionable target;
     private final float speed;
+    private final boolean lenientMode;  
 
     /**
      * Constructs a FollowMovementBehavior with the specified parameters.
      * Terminates the program if any provided parameter is negative or null.
      */
-    public FollowMovementBehavior(IPositionable target, float speed) {
+    public FollowMovementBehavior(IPositionable target, float speed, boolean lenientMode) {
+        this.lenientMode = lenientMode;
         if (target == null) {
             String errorMessage = "Target cannot be null in FollowMovementBehavior.";
             LOGGER.error(errorMessage);
@@ -34,7 +35,7 @@ public class FollowMovementBehavior implements IMovementBehavior {
             this.target = target;
         }
         if (speed < 0) {
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Negative speed provided in FollowMovementBehavior: {0}. Using absolute value.", speed);
                 this.speed = Math.abs(speed);
             } else {

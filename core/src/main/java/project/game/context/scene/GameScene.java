@@ -39,18 +39,16 @@ import project.game.engine.entitysystem.collision.BoundaryFactory;
 import project.game.engine.entitysystem.collision.CollisionManager;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.EntityManager;
-import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.entitysystem.movement.NPCMovementManager;
 import project.game.engine.entitysystem.movement.PlayerMovementManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
 
-@SuppressWarnings({ "unused", "FieldMayBeFinal" })
+@SuppressWarnings("unused")
 public class GameScene extends Scene {
-    // Using the new GameLogger instead of ILogger directly
-    private static final GameLogger LOGGER = new GameLogger(GameScene.class);
 
+    private static final GameLogger LOGGER = new GameLogger(GameScene.class);
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
@@ -89,8 +87,6 @@ public class GameScene extends Scene {
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         constants = GameConstantsFactory.getConstants();
-
-        // Using GameLogger's info method instead of log with Level.INFO
         LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         initPopUpMenu();
@@ -137,31 +133,29 @@ public class GameScene extends Scene {
                 true);
         Entity genericNonMovableDroplet = new Entity(100f, 200f, 50f, 50f, false);
 
-        // Set lenient mode for movement manager
-        MovementManager.setLenientMode(true);
-
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
                 .setSpeed(constants.PLAYER_SPEED())
                 .setDirection(Direction.NONE)
+                .setLenientMode(true)
                 .withConstantMovement()
                 .build();
 
         // Add behavior to the pool for Random Movement
         behaviorPool = new ArrayList<>();
-        behaviorPool.add(new ConstantMovementBehavior(constants.NPC_SPEED()));
+        behaviorPool.add(new ConstantMovementBehavior(constants.NPC_SPEED(), true));
         behaviorPool.add(
-                new ZigZagMovementBehavior(constants.NPC_SPEED(), constants.AMPLITUDE(), constants.FREQUENCY()));
-        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, constants.NPC_SPEED()));
+                new ZigZagMovementBehavior(constants.NPC_SPEED(), constants.AMPLITUDE(), constants.FREQUENCY(), true));
+        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, constants.NPC_SPEED(), true));
 
-        // Using debug level for detailed configuration information
-        LOGGER.debug("Configured NPC movement behaviors: [%s]", behaviorPool.size());
+        LOGGER.info("Configured NPC movement behaviors: {0}", behaviorPool.size());
 
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
                 .setSpeed(constants.NPC_SPEED())
                 .withFollowMovement(playerMovementManager)
                 .setDirection(Direction.NONE)
+                .setLenientMode(true) // Enable lenient mode for more forgiving NPC movement
                 .build();
 
         // Initialize entities

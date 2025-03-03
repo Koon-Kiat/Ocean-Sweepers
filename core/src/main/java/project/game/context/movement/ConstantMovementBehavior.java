@@ -7,7 +7,6 @@ import project.game.common.logging.core.GameLogger;
 import project.game.common.util.MovementUtils;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
-import project.game.engine.entitysystem.movement.MovementManager;
 
 /**
  * Provides constant movement for movable entities.
@@ -19,10 +18,12 @@ public class ConstantMovementBehavior implements IMovementBehavior {
 
     private static final GameLogger LOGGER = new GameLogger(ConstantMovementBehavior.class);
     private final float speed;
+    private final boolean lenientMode;
 
-    public ConstantMovementBehavior(float speed) {
+    public ConstantMovementBehavior(float speed, boolean lenientMode) {
+        this.lenientMode = lenientMode;
         if (speed < 0) {
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Negative speed provided in ConstantMovementBehavior: {0}. Using absolute value.", speed);
                 speed = Math.abs(speed);
             } else {

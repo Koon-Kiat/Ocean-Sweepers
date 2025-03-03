@@ -4,6 +4,7 @@ import java.util.List;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
+import project.game.context.movement.AcceleratedMovementBehavior;
 import project.game.context.movement.ConstantMovementBehavior;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.context.movement.RandomisedMovementBehavior;
@@ -25,9 +26,9 @@ public class MovementBehaviorFactory {
      * @param speed The speed of the movement.
      * @return A new ConstantMovementBehavior instance.
      */
-    public static IMovementBehavior createConstantMovement(float speed) {
+    public static IMovementBehavior createConstantMovement(float speed, boolean lenientMode) {
         try {
-            return new ConstantMovementBehavior(speed);
+            return new ConstantMovementBehavior(speed, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating ConstantMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -35,16 +36,37 @@ public class MovementBehaviorFactory {
     }
 
     /**
+     * Creates an accelerated movement behavior.
+     * 
+     * @param acceleration The acceleration of the movement.
+     * @param deceleration The deceleration of the movement.
+     * @param speed        The speed of the movement.
+     * @param lenientMode  Whether to enable lenient mode.
+     * @return A new AcceleratedMovementBehavior instance.
+     */
+    public static IMovementBehavior createAcceleratedMovement(float acceleration, float deceleration, float speed,
+            boolean lenientMode) {
+        try {
+            return new AcceleratedMovementBehavior(acceleration, deceleration, speed, lenientMode);
+        } catch (MovementException e) {
+            LOGGER.fatal("Error creating AcceleratedMovementBehavior: " + e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
      * Creates a zig-zag movement behavior.
      * 
-     * @param speed     The speed of the movement.
-     * @param amplitude The amplitude of the zigzag pattern.
-     * @param frequency The frequency of the zigzag pattern.
+     * @param speed       The speed of the movement.
+     * @param amplitude   The amplitude of the zigzag pattern.
+     * @param frequency   The frequency of the zigzag pattern.
+     * @param lenientMode Whether to enable lenient mode.
      * @return A new ZigZagMovementBehavior instance.
      */
-    public static IMovementBehavior createZigZagMovement(float speed, float amplitude, float frequency) {
+    public static IMovementBehavior createZigZagMovement(float speed, float amplitude, float frequency,
+            boolean lenientMode) {
         try {
-            return new ZigZagMovementBehavior(speed, amplitude, frequency);
+            return new ZigZagMovementBehavior(speed, amplitude, frequency, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating ZigZagMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -58,14 +80,14 @@ public class MovementBehaviorFactory {
      * @param speed  The speed of the movement.
      * @return A new FollowMovementBehavior instance.
      */
-    public static IMovementBehavior createFollowMovement(IPositionable target, float speed) {
+    public static IMovementBehavior createFollowMovement(IPositionable target, float speed, boolean lenientMode) {
         if (target == null) {
             String errorMsg = "Target is null in createFollowMovement.";
             LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
-            return new FollowMovementBehavior(target, speed);
+            return new FollowMovementBehavior(target, speed, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating FollowMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -82,14 +104,14 @@ public class MovementBehaviorFactory {
      */
     public static IMovementBehavior createRandomisedMovement(List<IMovementBehavior> behaviorPool,
             float minDuration,
-            float maxDuration) {
+            float maxDuration, boolean lenientMode) {
         if (behaviorPool == null) {
             String errorMsg = "Behavior pool cannot be null in createRandomisedMovement.";
             LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
-            return new RandomisedMovementBehavior(behaviorPool, minDuration, maxDuration);
+            return new RandomisedMovementBehavior(behaviorPool, minDuration, maxDuration, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating RandomisedMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -102,6 +124,6 @@ public class MovementBehaviorFactory {
      * @return A new ConstantMovementBehavior with default speed.
      */
     public static IMovementBehavior createDefaultMovement() {
-        return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED());
+        return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
     }
 }

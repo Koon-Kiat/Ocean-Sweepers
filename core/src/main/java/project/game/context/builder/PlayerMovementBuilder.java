@@ -2,7 +2,6 @@ package project.game.context.builder;
 
 import project.game.common.exception.MovementException;
 import project.game.context.factory.MovementBehaviorFactory;
-import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.entitysystem.movement.PlayerMovementManager;
 
 /**
@@ -27,25 +26,34 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
                 .withAcceleratedMovement(DEFAULT_ACCELERATION, DEFAULT_DECELERATION);
     }
 
-    public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
+    public PlayerMovementBuilder withConstantMovement() {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed);
-            // Note: This seems to be using a ConstantMovementBehavior but should probably
-            // use
-            // an accelerated movement behavior - you might want to add that to your factory
-        } catch (MovementException e) {
-            LOGGER.fatal("Error in movement behavior creation: " + e.getMessage(), e);
-            throw new MovementException("Error in movement behavior creation: " + e.getMessage(), e);
+            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed, this.lenientMode);
+        } catch (Exception e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Failed to create ConstantMovementBehavior in lenient mode: " + e.getMessage()
+                        + ". Using default movement.");
+                this.movementBehavior = MovementBehaviorFactory.createDefaultMovement();
+                return this;
+            }
+            LOGGER.fatal("Failed to create ConstantMovementBehavior", e);
+            throw new MovementException("Failed to create ConstantMovementBehavior", e);
         }
         return this;
     }
 
-    public PlayerMovementBuilder withConstantMovement() {
+    public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed);
-        } catch (Exception e) {
-            LOGGER.fatal("Failed to create ConstantMovementBehavior", e);
-            throw new MovementException("Failed to create ConstantMovementBehavior", e);
+            this.movementBehavior = MovementBehaviorFactory.createAcceleratedMovement(acceleration, deceleration,
+                    this.speed, this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating AcceleratedMovementBehavior in lenient mode: " + e.getMessage()
+                        + ". Using ConstantMovement fallback.");
+                return withConstantMovement();
+            }
+            LOGGER.fatal("Error in movement behavior creation: " + e.getMessage(), e);
+            throw new MovementException("Error in movement behavior creation: " + e.getMessage(), e);
         }
         return this;
     }
@@ -77,7 +85,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
     @Override
     protected void validateBuildRequirements() {
         if (speed < 0) {
-            if (MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Negative speed found in PlayerMovementBuilder ({0}). Using absolute value.",
                         new Object[] { speed });
                 speed = Math.abs(speed);

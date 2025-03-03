@@ -21,17 +21,18 @@ public abstract class MovementManager extends MovableEntity implements IMovement
 
     private static final GameLogger LOGGER = new GameLogger(MovementManager.class);
     private IMovementBehavior movementBehavior;
-    public static boolean LENIENT_MODE = false;
+    private final boolean lenientMode;
 
     /**
      * Constructs a MovementManager with the specified parameters.
      */
-    public MovementManager(Entity entity, float speed, Direction direction, IMovementBehavior behavior) {
+    public MovementManager(Entity entity, float speed, Direction direction, IMovementBehavior behavior,
+            boolean lenientMode) {
         super(entity, speed);
-        // Use lenient mode to set defaults instead of throwing an exception.
+        this.lenientMode = lenientMode;
         float correctedSpeed = speed;
         if (speed < 0) {
-            if (LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Negative speed provided ({0}). Using absolute value.", speed);
                 correctedSpeed = Math.abs(speed);
             } else {
@@ -40,7 +41,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         }
         super.setSpeed(correctedSpeed);
         if (behavior == null) {
-            if (LENIENT_MODE) {
+            if (lenientMode) {
                 LOGGER.warn("Movement behavior is null. Defaulting to ConstantMovementBehavior with speed 1.0.");
                 behavior = project.game.context.factory.MovementBehaviorFactory.createDefaultMovement();
             } else {
@@ -49,11 +50,6 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         }
         setDirection((direction != null) ? direction : Direction.NONE);
         this.movementBehavior = behavior;
-    }
-
-    public static void setLenientMode(boolean mode) {
-        LENIENT_MODE = mode;
-        LOGGER.info("Lenient mode set to: {0}", mode);
     }
 
     public IMovementBehavior getMovementBehavior() {
@@ -159,4 +155,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         setDirection(newDirection);
     }
 
+    public boolean isLenientMode() {
+        return lenientMode;
+    }
 }

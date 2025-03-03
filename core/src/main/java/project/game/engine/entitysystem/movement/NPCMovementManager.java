@@ -23,7 +23,8 @@ public class NPCMovementManager extends MovementManager {
         super(checkBuilder(builder).getEntity(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getDirection(),
-                checkBuilder(builder).getMovementBehavior());
+                checkBuilder(builder).getMovementBehavior(),
+                checkBuilder(builder).isLenientMode());
         this.builder = builder;
     }
 

@@ -20,6 +20,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
     protected float speed;
     protected Direction direction = Direction.NONE;
     protected IMovementBehavior movementBehavior;
+    protected boolean lenientMode = false; // default to false for stricter validation
 
     @SuppressWarnings("unchecked")
     protected T self() {
@@ -43,7 +44,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
         if (speed < 0) {
             String errorMessage = "Negative speed provided: " + speed;
             LOGGER.fatal(errorMessage);
-            if (project.game.engine.entitysystem.movement.MovementManager.LENIENT_MODE) {
+            if (lenientMode) {
                 this.speed = GameConstantsFactory.getConstants().DEFAULT_SPEED();
             } else {
                 throw new MovementException("Speed must be non-negative.");
@@ -70,6 +71,15 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
 
     public IMovementBehavior getMovementBehavior() {
         return movementBehavior;
+    }
+
+    public boolean isLenientMode() {
+        return lenientMode;
+    }
+
+    public T setLenientMode(boolean lenientMode) {
+        this.lenientMode = lenientMode;
+        return self();
     }
 
     protected abstract void validateBuildRequirements();
