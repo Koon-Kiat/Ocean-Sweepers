@@ -88,16 +88,21 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
             remainingTime -= deltaTime;
             if (remainingTime <= 0) {
                 pickRandomBehavior();
+                remainingTime = MathUtils.random(minDuration, maxDuration);
             }
             if (currentBehavior != null) {
                 currentBehavior.applyMovementBehavior(entity, deltaTime);
             }
         } catch (IllegalArgumentException e) {
             LOGGER.error("Invalid argument in RandomisedMovementBehavior", e);
-            throw new MovementException("Invalid argument in RandomisedMovementBehavior", e);
+            if (!lenientMode) {
+                throw new MovementException("Invalid argument in RandomisedMovementBehavior", e);
+            }
         } catch (NullPointerException e) {
             LOGGER.error("Null reference in RandomisedMovementBehavior", e);
-            throw new MovementException("Null reference in RandomisedMovementBehavior", e);
+            if (!lenientMode) {
+                throw new MovementException("Null reference in RandomisedMovementBehavior", e);
+            }
         } catch (Exception e) {
             LOGGER.error("Unexpected error in RandomisedMovementBehavior: " + e.getMessage(), e);
             if (!lenientMode) {
@@ -108,6 +113,5 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
 
     private void pickRandomBehavior() {
         currentBehavior = behaviorPool.get(MathUtils.random(behaviorPool.size() - 1));
-        remainingTime = MathUtils.random(minDuration, maxDuration);
     }
 }

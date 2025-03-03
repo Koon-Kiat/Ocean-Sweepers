@@ -21,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.context.api.Direction;
 import project.game.context.api.constant.IGameConstants;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
@@ -136,7 +135,7 @@ public class GameScene extends Scene {
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(genericBucketEntity)
                 .setSpeed(constants.PLAYER_SPEED())
-                .setDirection(Direction.NONE)
+                .setInitialVelocity(0, 0)
                 .setLenientMode(true)
                 .withConstantMovement()
                 .build();
@@ -154,7 +153,7 @@ public class GameScene extends Scene {
                 .withEntity(genericDropEntity)
                 .setSpeed(constants.NPC_SPEED())
                 .withFollowMovement(playerMovementManager)
-                .setDirection(Direction.NONE)
+                .setInitialVelocity(0, 0)
                 .setLenientMode(true) // Enable lenient mode for more forgiving NPC movement
                 .build();
 

@@ -17,12 +17,12 @@ public class PlayerMovementManager extends MovementManager {
     private final PlayerMovementBuilder builder;
 
     /**
-     * Private constructor to enforce the use of the Builder.
+     * Constructor using the Builder pattern.
      */
     public PlayerMovementManager(PlayerMovementBuilder builder) {
         super(checkBuilder(builder).getEntity(),
                 checkBuilder(builder).getSpeed(),
-                checkBuilder(builder).getDirection(),
+                checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementBehavior(),
                 checkBuilder(builder).isLenientMode());
         this.builder = builder;

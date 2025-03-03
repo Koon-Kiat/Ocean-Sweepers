@@ -17,12 +17,12 @@ public class NPCMovementManager extends MovementManager {
     private final NPCMovementBuilder builder;
 
     /**
-     * Private constructor to enforce the use of the Builder.
+     * Constructor using the Builder pattern.
      */
     public NPCMovementManager(NPCMovementBuilder builder) {
         super(checkBuilder(builder).getEntity(),
                 checkBuilder(builder).getSpeed(),
-                checkBuilder(builder).getDirection(),
+                checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementBehavior(),
                 checkBuilder(builder).isLenientMode());
         this.builder = builder;

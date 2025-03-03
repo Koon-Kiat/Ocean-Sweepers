@@ -93,7 +93,7 @@ public class CollisionManager implements ContactListener {
 
     public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
-            entry.getValue().updateDirection(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+            entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
             entry.getValue().updateMovement();
         }
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {

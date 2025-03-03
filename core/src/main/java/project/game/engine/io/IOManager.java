@@ -13,9 +13,9 @@ import com.badlogic.gdx.math.Vector2;
  */
 public class IOManager extends InputAdapter {
 
-    private Vector2 mousePosition;
+    private final Vector2 mousePosition;
+    private final Set<Integer> pressedKeys;
     private boolean isMouseClicked;
-    private Set<Integer> pressedKeys;
 
     public IOManager() {
         this.mousePosition = new Vector2();

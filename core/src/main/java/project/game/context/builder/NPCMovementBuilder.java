@@ -2,8 +2,9 @@ package project.game.context.builder;
 
 import java.util.List;
 
+import com.badlogic.gdx.math.Vector2;
+
 import project.game.common.exception.MovementException;
-import project.game.context.api.Direction;
 import project.game.context.factory.MovementBehaviorFactory;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.engine.api.movement.IMovementBehavior;
@@ -12,6 +13,7 @@ import project.game.engine.entitysystem.movement.NPCMovementManager;
 
 /**
  * Builder class for creating NPCMovementManager objects.
+ * Updated to use Vector2 instead of Direction.
  */
 public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuilder> {
 
@@ -38,7 +40,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createZigZagMovement(this.speed, amplitude, frequency, this.lenientMode);
+            this.movementBehavior = MovementBehaviorFactory.createZigZagMovement(this.speed, amplitude, frequency,
+                    this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
                 LOGGER.warn("Error creating ZigZagMovementBehavior in lenient mode: " + e.getMessage()
@@ -114,22 +117,22 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
                 LOGGER.warn("No movement behavior specified. Defaulting to ConstantMovementBehavior.");
                 withConstantMovement();
             }
-            if (this.direction == null) {
-                this.direction = Direction.NONE;
-                LOGGER.warn("No direction specified. Defaulting to Direction.NONE.");
-            }
-            if (!(this.movementBehavior instanceof FollowMovementBehavior) && this.direction == Direction.NONE) {
+
+            // Use initialVelocity instead of direction
+            if (initialVelocity.len2() < 0.0001f
+                    && !(this.movementBehavior instanceof FollowMovementBehavior)) {
                 if (lenientMode) {
-                    LOGGER.warn("{0} cannot be used with Direction.NONE. Defaulting direction to UP.",
+                    LOGGER.warn("{0} needs an initial velocity. Setting default up direction.",
                             this.movementBehavior.getClass().getSimpleName());
-                    this.direction = Direction.UP;
+                    this.initialVelocity = new Vector2(0, 1); // Default to moving up
                 } else {
                     String errorMessage = "Invalid configuration: " + this.movementBehavior.getClass().getSimpleName()
-                            + " cannot be used with Direction.NONE";
+                            + " needs a non-zero initial velocity";
                     LOGGER.fatal(errorMessage);
                     throw new MovementException(errorMessage);
                 }
             }
+
             return new NPCMovementManager(this);
         } catch (MovementException e) {
             LOGGER.fatal("Failed to build NPCMovementManager: " + e.getMessage(), e);

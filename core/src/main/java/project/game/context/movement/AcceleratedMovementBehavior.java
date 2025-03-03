@@ -4,8 +4,6 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.common.util.MovementUtils;
-import project.game.context.api.Direction;
 import project.game.engine.api.movement.IStoppableMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
 
@@ -53,7 +51,12 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
             // Clamp delta to prevent excessively large updates.
             deltaTime = Math.min(deltaTime, 1 / 30f);
 
-            if (entity.getDirection() != Direction.NONE) {
+            // Get current velocity
+            Vector2 velocity = entity.getVelocity();
+            boolean isMoving = velocity.len2() > 0.0001f;
+
+            // Update current speed based on acceleration/deceleration
+            if (isMoving) {
                 currentSpeed += acceleration * deltaTime;
                 if (currentSpeed > maxSpeed) {
                     currentSpeed = maxSpeed;
@@ -65,65 +68,30 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
                 }
             }
 
-            Vector2 deltaMovement = new Vector2();
-            float diagonalSpeed;
+            // If we're moving, apply movement
+            if (isMoving && currentSpeed > 0) {
+                // Create a normalized copy of the velocity vector
+                Vector2 normalizedVelocity = new Vector2(velocity).nor();
 
-            switch (entity.getDirection()) {
-                case UP:
-                    deltaMovement.y += currentSpeed * deltaTime;
-                    break;
-                case DOWN:
-                    deltaMovement.y -= currentSpeed * deltaTime;
-                    break;
-                case LEFT:
-                    deltaMovement.x -= currentSpeed * deltaTime;
-                    break;
-                case RIGHT:
-                    deltaMovement.x += currentSpeed * deltaTime;
-                    break;
-                case UP_LEFT:
-                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x -= diagonalSpeed * deltaTime;
-                    deltaMovement.y += diagonalSpeed * deltaTime;
-                    break;
-                case UP_RIGHT:
-                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x += diagonalSpeed * deltaTime;
-                    deltaMovement.y += diagonalSpeed * deltaTime;
-                    break;
-                case DOWN_LEFT:
-                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x -= diagonalSpeed * deltaTime;
-                    deltaMovement.y -= diagonalSpeed * deltaTime;
-                    break;
-                case DOWN_RIGHT:
-                    diagonalSpeed = MovementUtils.calculateDiagonalSpeed(currentSpeed);
-                    deltaMovement.x += diagonalSpeed * deltaTime;
-                    deltaMovement.y -= diagonalSpeed * deltaTime;
-                    break;
-                case NONE:
-                    break;
-                default:
-                    String errorMessage = "Unknown movement direction: " + entity.getDirection();
-                    LOGGER.fatal(errorMessage);
-                    throw new MovementException(errorMessage);
+                // Scale by current speed and deltaTime
+                Vector2 movement = normalizedVelocity.scl(currentSpeed * deltaTime);
+
+                // Apply movement
+                entity.setX(entity.getX() + movement.x);
+                entity.setY(entity.getY() + movement.y);
             }
 
-            float newX = entity.getX() + deltaMovement.x;
-            float newY = entity.getY() + deltaMovement.y;
-            entity.setX(newX);
-            entity.setY(newY);
         } catch (MovementException e) {
             LOGGER.fatal("Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
             if (lenientMode) {
-                entity.setDirection(Direction.NONE);
+                entity.setVelocity(0, 0);
             } else {
                 throw e;
             }
         } catch (Exception e) {
             LOGGER.fatal("Unexpected error in AcceleratedMovementBehavior: " + e.getMessage(), e);
             if (lenientMode) {
-                entity.setDirection(Direction.NONE);
+                entity.setVelocity(0, 0);
             } else {
                 throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
             }
@@ -133,10 +101,11 @@ public class AcceleratedMovementBehavior implements IStoppableMovementBehavior {
     @Override
     public void stopMovement(MovableEntity entity, float deltaTime) {
         currentSpeed = 0;
-        entity.setDirection(Direction.NONE);
+        entity.setVelocity(0, 0);
     }
 
     @Override
     public void resumeMovement(MovableEntity entity, float deltaTime) {
+        // No special resume behavior needed - entity's velocity will be set elsewhere
     }
 }

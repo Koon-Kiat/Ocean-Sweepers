@@ -1,6 +1,7 @@
 package project.game.engine.entitysystem.entity;
 
-import project.game.context.api.Direction;
+import com.badlogic.gdx.math.Vector2;
+
 import project.game.engine.api.movement.IPositionable;
 
 /**
@@ -11,12 +12,13 @@ public abstract class MovableEntity extends Entity implements IPositionable {
 
 	private final Entity entity;
 	private float speed;
-	private Direction direction;
+	private Vector2 velocity;
 
 	public MovableEntity(Entity entity, float speed) {
 		super(entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight(), entity.isActive());
 		this.entity = entity;
 		this.speed = speed;
+		this.velocity = new Vector2(0, 0);
 	}
 
 	public Entity getEntity() {
@@ -31,14 +33,26 @@ public abstract class MovableEntity extends Entity implements IPositionable {
 		this.speed = speed;
 	}
 
-	public Direction getDirection() {
-		return direction;
+	public Vector2 getVelocity() {
+		return velocity;
 	}
 
-	public void setDirection(Direction direction) {
-		if (direction == null) {
-			this.direction = Direction.NONE;
+	public void setVelocity(Vector2 velocity) {
+		if (velocity == null) {
+			this.velocity = new Vector2(0, 0);
+			return;
 		}
-		this.direction = direction;
+		this.velocity = velocity;
+	}
+
+	public void setVelocity(float x, float y) {
+		this.velocity.x = x;
+		this.velocity.y = y;
+	}
+
+	public void normalizeVelocity() {
+		if (velocity.len() > 0) {
+			velocity.nor().scl(speed);
+		}
 	}
 }

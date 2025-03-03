@@ -53,11 +53,20 @@ public class FollowMovementBehavior implements IMovementBehavior {
         try {
             Vector2 targetPos = new Vector2(target.getX(), target.getY());
             Vector2 currentPos = new Vector2(entity.getX(), entity.getY());
-            Vector2 direction = targetPos.sub(currentPos).nor();
-            float newX = entity.getX() + direction.x * speed * deltaTime;
-            float newY = entity.getY() + direction.y * speed * deltaTime;
-            entity.setX(newX);
-            entity.setY(newY);
+            Vector2 direction = new Vector2(targetPos).sub(currentPos);
+
+            // If we're already very close to the target, don't move
+            if (direction.len2() < 0.0001f) {
+                return;
+            }
+
+            // Normalize and scale by speed and deltaTime
+            direction.nor().scl(speed * deltaTime);
+
+            // Apply movement
+            entity.setX(entity.getX() + direction.x);
+            entity.setY(entity.getY() + direction.y);
+
         } catch (IllegalArgumentException e) {
             LOGGER.error("Illegal argument in FollowMovementBehavior: " + e.getMessage(), e);
             if (!lenientMode) {

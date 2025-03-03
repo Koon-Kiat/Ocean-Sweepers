@@ -6,6 +6,7 @@ import project.game.engine.entitysystem.movement.PlayerMovementManager;
 
 /**
  * Builder class for creating PlayerMovementManager objects.
+ * Updated to use Vector2 for movement instead of Direction.
  */
 public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovementBuilder> {
 
@@ -17,12 +18,14 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
     public static PlayerMovementBuilder createDefaultPlayer() {
         return new PlayerMovementBuilder()
                 .setSpeed(DEFAULT_SPEED)
+                .setInitialVelocity(0, 0)
                 .withConstantMovement();
     }
 
     public static PlayerMovementBuilder createAcceleratingPlayer() {
         return new PlayerMovementBuilder()
                 .setSpeed(DEFAULT_SPEED)
+                .setInitialVelocity(0, 0)
                 .withAcceleratedMovement(DEFAULT_ACCELERATION, DEFAULT_DECELERATION);
     }
 

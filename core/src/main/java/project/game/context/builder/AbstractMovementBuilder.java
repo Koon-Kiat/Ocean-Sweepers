@@ -1,8 +1,9 @@
 package project.game.context.builder;
 
+import com.badlogic.gdx.math.Vector2;
+
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.api.Direction;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.Entity;
@@ -11,14 +12,14 @@ import project.game.engine.entitysystem.entity.Entity;
  * Base builder class for movement builders.
  * 
  * It provides fluent method chaining for setting an entity, speed, and
- * direction, and ensures that parameters are validated.
+ * initial velocity, and ensures that parameters are validated.
  */
 public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<T>> {
 
     protected static final GameLogger LOGGER = new GameLogger(AbstractMovementBuilder.class);
     protected Entity entity;
     protected float speed;
-    protected Direction direction = Direction.NONE;
+    protected Vector2 initialVelocity = new Vector2(0, 0);
     protected IMovementBehavior movementBehavior;
     protected boolean lenientMode = false; // default to false for stricter validation
 
@@ -55,17 +56,22 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
         return self();
     }
 
-    public Direction getDirection() {
-        return direction;
+    public Vector2 getInitialVelocity() {
+        return initialVelocity;
     }
 
-    public T setDirection(Direction direction) {
-        if (direction == null) {
-            LOGGER.warn("Null direction provided. Defaulting to Direction.NONE.");
-            this.direction = Direction.NONE;
+    public T setInitialVelocity(Vector2 initialVelocity) {
+        if (initialVelocity == null) {
+            LOGGER.warn("Null velocity provided. Defaulting to zero velocity.");
+            this.initialVelocity = new Vector2(0, 0);
         } else {
-            this.direction = direction;
+            this.initialVelocity = initialVelocity;
         }
+        return self();
+    }
+
+    public T setInitialVelocity(float x, float y) {
+        this.initialVelocity = new Vector2(x, y);
         return self();
     }
 

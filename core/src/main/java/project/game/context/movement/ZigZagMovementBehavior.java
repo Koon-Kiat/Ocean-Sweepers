@@ -5,7 +5,6 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.api.Direction;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
 
@@ -15,7 +14,6 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  * The entity moves in a zig-zag pattern at a constant speed. The amplitude and
  * frequency of the oscillation are provided in the constructor. The entity
  * moves in the primary direction and oscillates in the perpendicular direction.
- * 
  */
 public class ZigZagMovementBehavior implements IMovementBehavior {
 
@@ -61,20 +59,32 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
             elapsedTime += deltaTime;
-            Vector2 deltaMovement = new Vector2();
-            Direction primaryDirection = entity.getDirection();
-            Vector2 primaryVector = getPrimaryVector(primaryDirection);
-            Vector2 perpVector = getPerpendicularVector(primaryDirection);
 
-            // Forward movement.
-            deltaMovement.add(primaryVector.scl(speed * deltaTime));
+            // Get current velocity to determine primary direction
+            Vector2 velocity = entity.getVelocity();
 
-            // Zig-zag oscillation.
-            float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime) * deltaTime;
+            // If velocity is too small, we can't determine a direction for zigzag
+            if (velocity.len2() < 0.0001f) {
+                return;
+            }
 
-            deltaMovement.add(perpVector.scl(oscillation));
-            entity.setX(entity.getX() + deltaMovement.x);
-            entity.setY(entity.getY() + deltaMovement.y);
+            // Create a normalized copy of the primary direction
+            Vector2 primaryDirection = new Vector2(velocity).nor();
+
+            // Calculate perpendicular vector (rotate 90 degrees)
+            Vector2 perpVector = new Vector2(-primaryDirection.y, primaryDirection.x);
+
+            // Forward movement
+            Vector2 movementDelta = new Vector2(primaryDirection).scl(speed * deltaTime);
+
+            // Add zigzag oscillation
+            float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime);
+            movementDelta.add(new Vector2(perpVector).scl(oscillation * deltaTime));
+
+            // Apply movement
+            entity.setX(entity.getX() + movementDelta.x);
+            entity.setY(entity.getY() + movementDelta.y);
+
         } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.error("Exception in ZigZagMovementBehavior.applyMovementBehavior: " + e.getMessage(), e);
             if (!lenientMode) {
@@ -86,34 +96,5 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
                 throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
             }
         }
-    }
-
-    private Vector2 getPrimaryVector(Direction direction) {
-        switch (direction) {
-            case UP:
-                return new Vector2(0, 1);
-            case DOWN:
-                return new Vector2(0, -1);
-            case LEFT:
-                return new Vector2(-1, 0);
-            case RIGHT:
-                return new Vector2(1, 0);
-            case UP_LEFT:
-                return new Vector2(-MathUtils.sinDeg(45), MathUtils.cosDeg(45)).nor();
-            case UP_RIGHT:
-                return new Vector2(MathUtils.sinDeg(45), MathUtils.cosDeg(45)).nor();
-            case DOWN_LEFT:
-                return new Vector2(-MathUtils.sinDeg(45), -MathUtils.cosDeg(45)).nor();
-            case DOWN_RIGHT:
-                return new Vector2(MathUtils.sinDeg(45), -MathUtils.cosDeg(45)).nor();
-            case NONE:
-            default:
-                return new Vector2(0, 0);
-        }
-    }
-
-    private Vector2 getPerpendicularVector(Direction direction) {
-        Vector2 primary = getPrimaryVector(direction);
-        return new Vector2(-primary.y, primary.x).nor();
     }
 }

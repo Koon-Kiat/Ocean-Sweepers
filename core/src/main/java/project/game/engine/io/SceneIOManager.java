@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.context.api.Direction;
 
 /**
  * SceneIOManager handles input events (keyboard and mouse) for the game.
@@ -20,8 +20,8 @@ public class SceneIOManager extends IOManager {
 
     private static final GameLogger LOGGER = new GameLogger(SceneIOManager.class);
 
-    // Map holding key codes mapped to their in-game Direction
-    private final Map<Integer, Direction> keyBindings;
+    // Map holding key codes mapped to their movement vectors
+    private final Map<Integer, Vector2> keyBindings;
 
     // Constructor: initialize default key bindings
     public SceneIOManager() {
@@ -32,10 +32,11 @@ public class SceneIOManager extends IOManager {
 
     // Set up initial key bindings using WASD
     private void initializedefaultKeyBindings() {
-        keyBindings.put(Input.Keys.W, Direction.UP);
-        keyBindings.put(Input.Keys.S, Direction.DOWN);
-        keyBindings.put(Input.Keys.A, Direction.LEFT);
-        keyBindings.put(Input.Keys.D, Direction.RIGHT);
+        // Cardinal directions (WASD only)
+        keyBindings.put(Input.Keys.W, new Vector2(0, 1)); // Up
+        keyBindings.put(Input.Keys.S, new Vector2(0, -1)); // Down
+        keyBindings.put(Input.Keys.A, new Vector2(-1, 0)); // Left
+        keyBindings.put(Input.Keys.D, new Vector2(1, 0)); // Right
     }
 
     // Update keyBindings based on new strings provided (e.g., during key rebind)
@@ -49,10 +50,10 @@ public class SceneIOManager extends IOManager {
         int leftKey = getKeycodeFromString(leftKeyString);
         int rightKey = getKeycodeFromString(rightKeyString);
 
-        keyBindings.put(upKey, Direction.UP);
-        keyBindings.put(downKey, Direction.DOWN);
-        keyBindings.put(leftKey, Direction.LEFT);
-        keyBindings.put(rightKey, Direction.RIGHT);
+        keyBindings.put(upKey, new Vector2(0, 1)); // Up
+        keyBindings.put(downKey, new Vector2(0, -1)); // Down
+        keyBindings.put(leftKey, new Vector2(-1, 0)); // Left
+        keyBindings.put(rightKey, new Vector2(1, 0)); // Right
     }
 
     // Convert a key string (e.g., "W", "UP") to a LibGDX input key code
@@ -81,7 +82,7 @@ public class SceneIOManager extends IOManager {
     }
 
     // Getter for keyBindings map (for use by other systems)
-    public Map<Integer, Direction> getKeyBindings() {
+    public Map<Integer, Vector2> getKeyBindings() {
         return keyBindings;
     }
 

@@ -3,9 +3,10 @@ package project.game.engine.entitysystem.movement;
 import java.util.Map;
 import java.util.Set;
 
+import com.badlogic.gdx.math.Vector2;
+
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.api.Direction;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IMovementManager;
 import project.game.engine.entitysystem.entity.Entity;
@@ -26,10 +27,11 @@ public abstract class MovementManager extends MovableEntity implements IMovement
     /**
      * Constructs a MovementManager with the specified parameters.
      */
-    public MovementManager(Entity entity, float speed, Direction direction, IMovementBehavior behavior,
+    public MovementManager(Entity entity, float speed, Vector2 initialVelocity, IMovementBehavior behavior,
             boolean lenientMode) {
         super(entity, speed);
         this.lenientMode = lenientMode;
+
         float correctedSpeed = speed;
         if (speed < 0) {
             if (lenientMode) {
@@ -40,15 +42,19 @@ public abstract class MovementManager extends MovableEntity implements IMovement
             }
         }
         super.setSpeed(correctedSpeed);
+
         if (behavior == null) {
             if (lenientMode) {
-                LOGGER.warn("Movement behavior is null. Defaulting to ConstantMovementBehavior with speed 1.0.");
+                LOGGER.warn("Movement behavior is null. Defaulting to VectorMovementBehavior.");
                 behavior = project.game.context.factory.MovementBehaviorFactory.createDefaultMovement();
             } else {
                 throw new MovementException("Movement behavior cannot be null");
             }
         }
-        setDirection((direction != null) ? direction : Direction.NONE);
+
+        if (initialVelocity != null) {
+            setVelocity(initialVelocity);
+        }
         this.movementBehavior = behavior;
     }
 
@@ -76,7 +82,7 @@ public abstract class MovementManager extends MovableEntity implements IMovement
         } catch (Exception e) {
             String errorMessage = "Error during movement behavior update: " + e.getMessage();
             LOGGER.fatal(errorMessage, e);
-            setDirection(Direction.NONE);
+            setVelocity(0, 0);
         }
     }
 
@@ -91,68 +97,24 @@ public abstract class MovementManager extends MovableEntity implements IMovement
     }
 
     @Override
-    public void updateDirection(Set<Integer> pressedKeys, Map<Integer, Direction> keyBindings) {
+    public void updateVelocity(Set<Integer> pressedKeys, Map<Integer, Vector2> keyBindings) {
+        Vector2 resultVelocity = new Vector2(0, 0);
 
-        boolean up = false;
-        boolean down = false;
-        boolean left = false;
-        boolean right = false;
-
-        // Iterate over pressed keys and set flags based on the provided bindings
+        // Accumulate velocity from all pressed keys
         for (Integer key : pressedKeys) {
-            Direction mapped = keyBindings.get(key);
-            if (mapped != null) {
-                switch (mapped) {
-                    case UP:
-                        up = true;
-                        break;
-                    case DOWN:
-                        down = true;
-                        break;
-                    case LEFT:
-                        left = true;
-                        break;
-                    case RIGHT:
-                        right = true;
-                        break;
-                    default:
-                        break;
-                }
+            Vector2 vec = keyBindings.get(key);
+            if (vec != null) {
+                resultVelocity.add(vec);
             }
         }
 
-        // Handle vertical direction
-        if (up && down) {
-            up = false;
-            down = false;
+        // Normalize and apply speed if we have movement
+        if (resultVelocity.len2() > 0.0001f) {
+            // This ensures diagonal movement doesn't go faster than cardinal movement
+            resultVelocity.nor().scl(getSpeed());
         }
 
-        // Handle horizontal direction
-        if (left && right) {
-            left = false;
-            right = false;
-        }
-
-        Direction newDirection = Direction.NONE;
-
-        if (up && right) {
-            newDirection = Direction.UP_RIGHT;
-        } else if (up && left) {
-            newDirection = Direction.UP_LEFT;
-        } else if (down && right) {
-            newDirection = Direction.DOWN_RIGHT;
-        } else if (down && left) {
-            newDirection = Direction.DOWN_LEFT;
-        } else if (up) {
-            newDirection = Direction.UP;
-        } else if (down) {
-            newDirection = Direction.DOWN;
-        } else if (left) {
-            newDirection = Direction.LEFT;
-        } else if (right) {
-            newDirection = Direction.RIGHT;
-        }
-        setDirection(newDirection);
+        setVelocity(resultVelocity);
     }
 
     public boolean isLenientMode() {

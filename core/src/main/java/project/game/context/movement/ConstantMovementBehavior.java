@@ -4,14 +4,13 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.common.util.MovementUtils;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Provides constant movement for movable entities.
  * 
- * The entity moves in a single direction at a constant speed.
+ * The entity moves based on its velocity vector at a constant speed.
  * The speed is provided in the constructor.
  */
 public class ConstantMovementBehavior implements IMovementBehavior {
@@ -38,49 +37,21 @@ public class ConstantMovementBehavior implements IMovementBehavior {
     @Override
     public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
         try {
-            Vector2 deltaMovement = new Vector2();
-            switch (entity.getDirection()) {
-                case UP:
-                    deltaMovement.y += speed * deltaTime;
-                    break;
-                case DOWN:
-                    deltaMovement.y -= speed * deltaTime;
-                    break;
-                case LEFT:
-                    deltaMovement.x -= speed * deltaTime;
-                    break;
-                case RIGHT:
-                    deltaMovement.x += speed * deltaTime;
-                    break;
-                case UP_LEFT:
-                    deltaMovement.x -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    deltaMovement.y += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    break;
-                case UP_RIGHT:
-                    deltaMovement.x += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    deltaMovement.y += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    break;
-                case DOWN_LEFT:
-                    deltaMovement.x -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    deltaMovement.y -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    break;
-                case DOWN_RIGHT:
-                    deltaMovement.x += MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    deltaMovement.y -= MovementUtils.calculateDiagonalSpeed(speed) * deltaTime;
-                    break;
-                case NONE:
-                    break;
-                default:
-                    String errorMessage = "Unknown direction in ConstantMovementBehavior.updatePosition: "
-                            + entity.getDirection();
-                    LOGGER.error(errorMessage);
-                    if (!lenientMode) {
-                        throw new MovementException(errorMessage);
-                    }
-                    return;
+            // Get current velocity
+            Vector2 velocity = entity.getVelocity();
+
+            // If velocity is zero, nothing to do
+            if (velocity.len2() < 0.0001f) {
+                return;
             }
-            entity.setX(entity.getX() + deltaMovement.x);
-            entity.setY(entity.getY() + deltaMovement.y);
+
+            // Normalize and scale by speed and deltaTime
+            Vector2 movement = new Vector2(velocity).nor().scl(speed * deltaTime);
+
+            // Apply movement
+            entity.setX(entity.getX() + movement.x);
+            entity.setY(entity.getY() + movement.y);
+
         } catch (MovementException e) {
             LOGGER.error("Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
             if (!lenientMode) {

@@ -3,7 +3,7 @@ package project.game.engine.api.movement;
 import java.util.Map;
 import java.util.Set;
 
-import project.game.context.api.Direction;
+import com.badlogic.gdx.math.Vector2;
 
 /**
  * Interface for movement managers.
@@ -14,6 +14,6 @@ public interface IMovementManager extends IPositionable {
 
     void updateMovement();
 
-    void updateDirection(Set<Integer> pressedKey, Map<Integer, Direction> keyBindings);
+    void updateVelocity(Set<Integer> pressedKeys, Map<Integer, Vector2> keyBindings);
 
 }
