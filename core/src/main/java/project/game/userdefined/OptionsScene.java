@@ -20,13 +20,14 @@ public class OptionsScene extends Scene {
     private final TextButton returnButton;
 
     public OptionsScene(SceneManager sceneManager, SceneIOManager inputManager) {
-        super(sceneManager, inputManager);
+        super(inputManager);
         this.sceneManager = sceneManager;
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
         // Audio management can use this table
         tableScene = new Table();
+        inputManager = new SceneIOManager();
 
         // Create the "Return" button for scene navigation
         returnButton = new TextButton("Return", skin);

@@ -21,55 +21,69 @@ public class SceneIOManager extends IOManager {
 
     private static final Logger LOGGER = Logger.getLogger(SceneIOManager.class.getName());
 
-    // Optional manager for movement key bindings
-    private KeyBindingsManager keyBindingsManager;
+    // Map holding key codes mapped to their in-game Direction
+    private Map<Integer, Direction> keyBindings;
 
-    // Constructor: initialize without movement controls
+    // Constructor: initialize default key bindings
     public SceneIOManager() {
         super();
-        // No keyBindingsManager by default
+        this.keyBindings = new HashMap<>();
+        initializedefaultKeyBindings();
     }
 
-    // Constructor: initialize with movement controls
-    public SceneIOManager(boolean withMovementControls) {
-        super();
-        if (withMovementControls) {
-            enableMovementControls();
-        }
+    // Set up initial key bindings using WASD
+    private void initializedefaultKeyBindings() {
+        keyBindings.put(Input.Keys.W, Direction.UP);
+        keyBindings.put(Input.Keys.S, Direction.DOWN);
+        keyBindings.put(Input.Keys.A, Direction.LEFT);
+        keyBindings.put(Input.Keys.D, Direction.RIGHT);
     }
 
-    // Enable movement controls for scenes that need them
-    public void enableMovementControls() {
-        if (keyBindingsManager == null) {
-            keyBindingsManager = new KeyBindingsManager();
-        }
-    }
-
-    // Disable movement controls for scenes that don't need them
-    public void disableMovementControls() {
-        keyBindingsManager = null;
-    }
-
-    // Update key bindings (forwards to KeyBindingsManager if available)
+    // Update keyBindings based on new strings provided (e.g., during key rebind)
     public void promptForKeyBindings(String upKeyString, String downKeyString, String leftKeyString,
             String rightKeyString) {
-        if (keyBindingsManager != null) {
-            keyBindingsManager.updateKeyBindings(upKeyString, downKeyString, leftKeyString, rightKeyString);
-        } else {
-            LOGGER.log(Level.WARNING, "Attempted to update key bindings but movement controls are disabled");
+        keyBindings.clear();
+
+        // Convert the key strings to key codes
+        int upKey = getKeycodeFromString(upKeyString);
+        int downKey = getKeycodeFromString(downKeyString);
+        int leftKey = getKeycodeFromString(leftKeyString);
+        int rightKey = getKeycodeFromString(rightKeyString);
+
+        keyBindings.put(upKey, Direction.UP);
+        keyBindings.put(downKey, Direction.DOWN);
+        keyBindings.put(leftKey, Direction.LEFT);
+        keyBindings.put(rightKey, Direction.RIGHT);
+    }
+
+    // Convert a key string (e.g., "W", "UP") to a LibGDX input key code
+    private int getKeycodeFromString(String keyString) {
+        // Ensure key string is uppercase
+        keyString = keyString.toUpperCase();
+
+        // Handle arrow keys explicitly
+        switch (keyString) {
+            case "UP":
+                return Input.Keys.UP;
+            case "DOWN":
+                return Input.Keys.DOWN;
+            case "LEFT":
+                return Input.Keys.LEFT;
+            case "RIGHT":
+                return Input.Keys.RIGHT;
+            default:
+                try {
+                    return Input.Keys.valueOf(keyString);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.log(Level.WARNING, "Invalid key string: {0}", keyString);
+                    return Input.Keys.UNKNOWN;
+                }
         }
     }
 
-    // Get key bindings map (may return empty map if disabled)
+    // Getter for keyBindings map (for use by other systems)
     public Map<Integer, Direction> getKeyBindings() {
-        return keyBindingsManager != null ? keyBindingsManager.getKeyBindings() : new HashMap<>();
-    }
-
-    // Reset key bindings to defaults
-    public void resetKeyBindingsToDefault() {
-        if (keyBindingsManager != null) {
-            keyBindingsManager.initializeDefaultKeyBindings();
-        }
+        return keyBindings;
     }
 
     // Attach a click listener to an Actor that calls the provided callback on

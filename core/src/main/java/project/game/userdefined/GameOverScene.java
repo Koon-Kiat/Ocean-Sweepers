@@ -18,7 +18,8 @@ public class GameOverScene extends Scene {
     private BitmapFont font;
 
     public GameOverScene(SceneManager sceneManager, SceneIOManager inputManager) {
-        super(sceneManager, inputManager);
+        super(inputManager);
+        this.sceneManager = sceneManager;
     }
 
     /**

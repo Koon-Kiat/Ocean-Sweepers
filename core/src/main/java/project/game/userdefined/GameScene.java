@@ -75,7 +75,8 @@ public class GameScene extends Scene {
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
-        super(sceneManager, inputManager);
+        super(inputManager);
+        this.sceneManager = sceneManager;
     }
 
     @Override
@@ -84,7 +85,6 @@ public class GameScene extends Scene {
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        inputManager.enableMovementControls();
         LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         initPopUpMenu();

@@ -46,7 +46,7 @@ public class SceneManager {
     }
 
     public Scene getScene(String name) {
-        return scenes.get(name);
+        return currentScene;
     }
 
     public void render(float delta) {
