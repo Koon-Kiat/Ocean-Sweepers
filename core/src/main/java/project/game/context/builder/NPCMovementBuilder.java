@@ -9,8 +9,8 @@ import project.game.context.factory.MovementBehaviorFactory;
 import project.game.context.movement.FollowMovementBehavior;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.api.movement.IPositionable;
-import project.game.engine.entitysystem.movement.NPCMovementManager;
 import project.game.engine.entitysystem.entity.MovableEntity;
+import project.game.engine.entitysystem.movement.NPCMovementManager;
 
 /**
  * Builder class for creating NPCMovementManager objects.
@@ -109,7 +109,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     public NPCMovementBuilder withOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
             float eccentricity) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createOrbitalMovement(target, orbitRadius, rotationSpeed, eccentricity,
+            this.movementBehavior = MovementBehaviorFactory.createOrbitalMovement(target, orbitRadius, rotationSpeed,
+                    eccentricity,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -124,7 +125,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withSpringFollow(IPositionable target, float springConstant, float damping) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createSpringFollowMovement(target, springConstant, damping, this.lenientMode);
+            this.movementBehavior = MovementBehaviorFactory.createSpringFollowMovement(target, springConstant, damping,
+                    this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
                 LOGGER.warn("Error creating SpringFollowBehavior: " + e.getMessage()
@@ -138,7 +140,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withInterceptorMovement(MovableEntity target) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createInterceptorMovement(target, this.speed, this.lenientMode);
+            this.movementBehavior = MovementBehaviorFactory.createInterceptorMovement(target, this.speed,
+                    this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
                 LOGGER.warn("Error creating InterceptorMovementBehavior: " + e.getMessage()
@@ -152,7 +155,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withSpiralApproach(IPositionable target, float spiralTightness, float approachSpeed) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createSpiralApproachMovement(target, this.speed, spiralTightness, approachSpeed,
+            this.movementBehavior = MovementBehaviorFactory.createSpiralApproachMovement(target, this.speed,
+                    spiralTightness, approachSpeed,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
