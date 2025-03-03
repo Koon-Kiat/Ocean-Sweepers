@@ -27,8 +27,7 @@ public class MainMenuScene extends Scene {
     private AudioManager audioManager;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
-        super(inputManager);
-        this.sceneManager = sceneManager;
+        super(sceneManager, inputManager);
     }
 
     /**

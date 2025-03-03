@@ -33,8 +33,7 @@ public class Options extends Scene {
     private TextButton mainMenuButton;
 
     public Options(SceneManager sceneManager, GameScene gameScene, SceneIOManager inputManager) {
-        super(inputManager);
-        this.sceneManager = sceneManager;
+        super(sceneManager, inputManager);
         this.gameScene = gameScene;
     }
 

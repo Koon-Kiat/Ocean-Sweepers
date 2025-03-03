@@ -16,10 +16,10 @@ public abstract class Scene implements Screen {
     protected SceneIOManager inputManager;
     protected SceneManager sceneManager;
 
-    public Scene(SceneIOManager inputManager) {
+    public Scene(SceneManager sceneManager, SceneIOManager inputManager) {
+        this.sceneManager = sceneManager;
         this.inputManager = inputManager;
         this.stage = new Stage(new ScreenViewport());
-        this.sceneManager = new SceneManager();
         initialize();
     }
 
