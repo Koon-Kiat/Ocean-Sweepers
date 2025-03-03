@@ -152,9 +152,9 @@ public class GameScene extends Scene {
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(genericDropEntity)
                 .setSpeed(constants.NPC_SPEED())
-                .withFollowMovement(playerMovementManager)
+                .withOrbitalMovement(playerMovementManager, 100f, 2f, 0f) // Circle around player
                 .setInitialVelocity(0, 0)
-                .setLenientMode(true) // Enable lenient mode for more forgiving NPC movement
+                .setLenientMode(true)
                 .build();
 
         // Initialize entities
