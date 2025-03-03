@@ -6,7 +6,7 @@ import project.game.common.logging.core.LogLevel;
  * Interface for log events.
  * Log events contain all information related to a single logging operation.
  */
-public interface ILogEvent {
+public interface ILoggerEvent {
 
     /**
      * Gets the log level.

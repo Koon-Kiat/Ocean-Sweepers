@@ -1,12 +1,12 @@
 package project.game.common.logging.core;
 
-import project.game.engine.api.logging.ILogEvent;
+import project.game.engine.api.logging.ILoggerEvent;
 
 /**
  * Implementation of ILogEvent that stores log event information.
  * Provides a builder for easy creation of log events.
  */
-public class LogEvent implements ILogEvent {
+public class LogEvent implements ILoggerEvent {
     private final LogLevel level;
     private final String message;
     private final Throwable throwable;

@@ -5,7 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.common.logging.core.LogInitializer;
+import project.game.common.logging.util.LogInitializer;
 import project.game.common.logging.util.LogPaths;
 import project.game.common.util.ProjectPaths;
 import project.game.context.factory.GameConstantsFactory;
@@ -15,19 +15,16 @@ import project.game.engine.scene.SceneManager;
 
 public class Main extends ApplicationAdapter {
 
-    private static final GameLogger LOGGER = new GameLogger(Main.class);
+    private static GameLogger LOGGER;
     private SceneManager sceneManager;
 
     @Override
     public void create() {
-        // Initialize logging with proper configuration
-        // Path resolution now happens inside the logging system using LogPaths
         LogInitializer.builder()
-                .withDevMode()
-                .withLogPrefix("GameLog")
-                .withMaxLogFiles(5)
+                .withGameDefaults()
                 .initialize();
 
+        LOGGER = new GameLogger(Main.class);
         LOGGER.info("Application starting up");
         LOGGER.debug("Java version: {0}", System.getProperty("java.version"));
         LOGGER.debug("Using log directory: {0}", LogPaths.getGlobalLogDirectory());

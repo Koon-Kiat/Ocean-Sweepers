@@ -1,39 +1,25 @@
 package project.game.engine.logging;
 
-import project.game.engine.api.logging.ILogEvent;
-import project.game.engine.api.logging.ILogHandler;
+import project.game.engine.api.logging.ILoggerEvent;
+import project.game.engine.api.logging.ILoggerHandler;
 
 /**
  * Abstract base implementation of ILogHandler.
  * Provides common functionality for log handlers.
  */
-public abstract class AbstractLogHandler implements ILogHandler {
+public abstract class AbstractLogHandler implements ILoggerHandler {
     private boolean enabled = true;
-    private ILogHandler nextHandler = null;
+    private ILoggerHandler nextHandler = null;
 
-    /**
-     * Handles a log event if this handler is enabled.
-     *
-     * @param event the log event to handle
-     * @return true if the event was handled and should not be passed to
-     *         subsequent handlers; false otherwise
-     */
     @Override
-    public final boolean handle(ILogEvent event) {
+    public final boolean handle(ILoggerEvent event) {
         if (!enabled || event == null) {
             return false;
         }
         return doHandle(event);
     }
 
-    /**
-     * Template method to be implemented by concrete handlers.
-     *
-     * @param event the log event to handle
-     * @return true if the event was handled and should not be passed to
-     *         subsequent handlers; false otherwise
-     */
-    protected abstract boolean doHandle(ILogEvent event);
+    protected abstract boolean doHandle(ILoggerEvent event);
 
     @Override
     public boolean isEnabled() {
@@ -46,12 +32,12 @@ public abstract class AbstractLogHandler implements ILogHandler {
     }
 
     @Override
-    public ILogHandler getNext() {
+    public ILoggerHandler getNext() {
         return nextHandler;
     }
 
     @Override
-    public void setNext(ILogHandler next) {
+    public void setNext(ILoggerHandler next) {
         this.nextHandler = next;
     }
 

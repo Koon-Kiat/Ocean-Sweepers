@@ -5,158 +5,107 @@ import java.util.logging.Level;
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.core.LogManager;
 import project.game.engine.api.logging.ILogger;
+import project.game.engine.logging.AbstractConfigBuilder;
 
 /**
- * Builder class for configuring and creating loggers using a fluent API.
- * Follows the Builder pattern to allow step-by-step configuration.
+ * Builder for configuring and creating generic loggers using a fluent API.
  */
-public class LoggerBuilder {
-    private final LoggerConfig config;
+public class LoggerBuilder extends AbstractConfigBuilder<LoggerBuilder, LoggerConfig> {
     private String name;
     private Class<?> clazz;
+    private boolean isInitialized = false;
 
-    /**
-     * Creates a new LoggerBuilder with default configuration.
-     */
     public LoggerBuilder() {
-        this.config = new LoggerConfig();
+        super(new LoggerConfig());
+    }
+
+    @Override
+    public LoggerBuilder withLogDirectory(String directory) {
+        config.setLogDirectory(directory);
+        return self();
+    }
+
+    @Override
+    public LoggerBuilder withLogPrefix(String prefix) {
+        config.setLogFilePrefix(prefix);
+        return self();
+    }
+
+    @Override
+    public LoggerBuilder withDateFormat(String pattern) {
+        config.setDateTimeFormat(pattern);
+        return self();
+    }
+
+    @Override
+    public LoggerBuilder withMaxLogFiles(int maxFiles) {
+        config.setMaxLogFiles(maxFiles);
+        return self();
+    }
+
+    @Override
+    public LoggerBuilder withConsoleLevel(Level level) {
+        config.setConsoleLogLevel(level);
+        return self();
+    }
+
+    @Override
+    public LoggerBuilder withFileLevel(Level level) {
+        config.setFileLogLevel(level);
+        return self();
+    }
+
+    @Override
+    public LoggerBuilder withConsoleLogging(boolean enabled) {
+        config.setUseConsoleLogging(enabled);
+        return self();
+    }
+
+    @Override
+    public LoggerBuilder withFileLogging(boolean enabled) {
+        config.setUseFileLogging(enabled);
+        return self();
     }
 
     /**
      * Sets the logger name.
-     * 
-     * @param name the name for the logger
-     * @return this builder instance
      */
     public LoggerBuilder withName(String name) {
         this.name = name;
-        return this;
+        return self();
     }
 
     /**
      * Sets the logger class.
-     * 
-     * @param clazz the class for the logger
-     * @return this builder instance
      */
     public LoggerBuilder withClass(Class<?> clazz) {
         this.clazz = clazz;
-        return this;
+        return self();
     }
 
-    /**
-     * Sets the log directory.
-     * 
-     * @param directory the log directory
-     * @return this builder instance
-     */
-    public LoggerBuilder withLogDirectory(String directory) {
-        config.setLogDirectory(directory);
-        return this;
+    @Override
+    public LoggerConfig build() {
+        return config;
     }
 
-    /**
-     * Sets the log file prefix.
-     * 
-     * @param prefix the log file prefix
-     * @return this builder instance
-     */
-    public LoggerBuilder withLogFilePrefix(String prefix) {
-        config.setLogFilePrefix(prefix);
-        return this;
-    }
-
-    /**
-     * Sets the file logging level.
-     * 
-     * @param level the level for file logging
-     * @return this builder instance
-     */
-    public LoggerBuilder withFileLevel(Level level) {
-        config.setFileLogLevel(level);
-        return this;
-    }
-
-    /**
-     * Sets the console logging level.
-     * 
-     * @param level the level for console logging
-     * @return this builder instance
-     */
-    public LoggerBuilder withConsoleLevel(Level level) {
-        config.setConsoleLogLevel(level);
-        return this;
-    }
-
-    /**
-     * Enables or disables file logging.
-     * 
-     * @param enabled true to enable file logging
-     * @return this builder instance
-     */
-    public LoggerBuilder withFileLogging(boolean enabled) {
-        config.setUseFileLogging(enabled);
-        return this;
-    }
-
-    /**
-     * Enables or disables console logging.
-     * 
-     * @param enabled true to enable console logging
-     * @return this builder instance
-     */
-    public LoggerBuilder withConsoleLogging(boolean enabled) {
-        config.setUseConsoleLogging(enabled);
-        return this;
-    }
-
-    /**
-     * Sets the maximum number of log files to keep.
-     * 
-     * @param maxFiles the maximum number of log files
-     * @return this builder instance
-     */
-    public LoggerBuilder withMaxLogFiles(int maxFiles) {
-        config.setMaxLogFiles(maxFiles);
-        return this;
-    }
-
-    /**
-     * Sets the date format pattern.
-     * 
-     * @param pattern the date format pattern
-     * @return this builder instance
-     */
-    public LoggerBuilder withDateFormat(String pattern) {
-        config.setDateTimeFormat(pattern);
-        return this;
-    }
-
-    /**
-     * Builds and initializes the logging system with the configured settings.
-     * 
-     * @return the configured LogManager
-     */
-    public LogManager initialize() {
-        LogManager.initialize(config);
-        return null; // Return null since LogManager is a static utility class
+    @Override
+    public void initialize() {
+        if (!isInitialized) {
+            LogManager.initialize(config);
+            isInitialized = true;
+        }
     }
 
     /**
      * Builds and returns a logger with the configured settings.
-     * 
-     * @return the configured logger
      */
-    public ILogger build() {
-        // If name and class are both null or both set, prioritize the class
+    public ILogger buildLogger() {
         if (clazz != null) {
             return getLogger(clazz);
         } else if (name != null) {
             return getLogger(name);
-        } else {
-            // No name or class specified, return the root logger
-            return getRootLogger();
         }
+        return getRootLogger();
     }
 
     private ILogger getLogger(String name) {
@@ -175,6 +124,8 @@ public class LoggerBuilder {
     }
 
     private void ensureInitialized() {
-        LogManager.initialize(config);
+        if (!isInitialized) {
+            initialize();
+        }
     }
 }

@@ -38,7 +38,7 @@ public interface ILogger {
      * 
      * @param event the log event to log
      */
-    void log(ILogEvent event);
+    void log(ILoggerEvent event);
 
     /**
      * Logs a message at TRACE level.

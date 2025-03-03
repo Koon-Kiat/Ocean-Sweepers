@@ -1,7 +1,8 @@
-package project.game.common.logging.core;
+package project.game.common.logging.util;
 
 import project.game.common.logging.builder.GameLoggerConfigBuilder;
 import project.game.common.logging.config.LoggerConfig;
+import project.game.common.logging.core.LogManager;
 
 /**
  * Utility class for initializing the logging system with game-specific
@@ -26,18 +27,13 @@ public final class LogInitializer {
     private static LoggerConfig createDefaultConfig() {
         return new GameLoggerConfigBuilder()
                 .withGameDefaults()
-                .build()
-                .validate();
+                .build();
     }
 
     /**
      * Initializes the logging system with the specified configuration.
-     * 
-     * @param config the logger configuration to use
      */
     public static void initialize(LoggerConfig config) {
-        // Validate the configuration before initializing
-        config.validate();
         LogManager.initialize(config);
     }
 
@@ -47,8 +43,8 @@ public final class LogInitializer {
      */
     public static void initializeForDevelopment() {
         GameLoggerConfigBuilder builder = new GameLoggerConfigBuilder();
-        builder.withDevMode();
-        initialize(builder.build().validate());
+        builder.forDevelopment();
+        initialize(builder.build());
     }
 
     /**
@@ -57,14 +53,12 @@ public final class LogInitializer {
      */
     public static void initializeForProduction() {
         GameLoggerConfigBuilder builder = new GameLoggerConfigBuilder();
-        builder.withProdMode();
-        initialize(builder.build().validate());
+        builder.forProduction();
+        initialize(builder.build());
     }
 
     /**
      * Creates a builder for configuring the game logging system.
-     * 
-     * @return a new game logger config builder
      */
     public static GameLoggerConfigBuilder builder() {
         return new GameLoggerConfigBuilder();

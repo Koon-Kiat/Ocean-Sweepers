@@ -1,20 +1,20 @@
 package project.game.common.logging.config;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 
 import project.game.common.logging.core.LogLevel;
 import project.game.common.logging.util.LogPaths;
+import project.game.engine.api.logging.ILoggerConfig;
 
 /**
  * Configuration settings for the logging system.
  * Following the Single Responsibility Principle, this class only handles
  * configuration settings without any logging logic.
  */
-public class LoggerConfig {
-    private String logDirectory = "logs"; // Default, will be overridden by LogPaths
+public class LoggerConfig implements ILoggerConfig {
+    private String logDirectory = "logs";
     private String logFilePrefix = "GameLog";
     private String logFileExtension = ".log";
     private String dateTimeFormat = "yyyy-MM-dd HH:mm:ss.SSS";
@@ -25,27 +25,15 @@ public class LoggerConfig {
     private boolean useFileLogging = true;
     private boolean useAsyncLogging = false;
     private int asyncQueueSize = 1000;
-    private int maxFileSizeInKb = 10240; // 10MB
+    private int maxFileSizeInKb = 10240;
     private boolean useColoredConsole = true;
     private boolean includeThreadName = true;
     private boolean dailyRollover = true;
     private String logFormat = "[%1$tF %1$tT] [%2$-5s] [%3$s] %4$s";
 
-    /**
-     * Creates a LoggerConfig with default settings.
-     */
     public LoggerConfig() {
-        // Override default log directory with our global path
-        this.logDirectory = LogPaths.getGlobalLogDirectory();
     }
 
-    /**
-     * Creates a LoggerConfig with specified directory and file settings.
-     * 
-     * @param logDirectory  the directory for log files
-     * @param logFilePrefix the prefix for log file names
-     * @param maxLogFiles   the maximum number of log files to keep
-     */
     public LoggerConfig(String logDirectory, String logFilePrefix, int maxLogFiles) {
         // Always use global log directory regardless of the input parameter
         this.logDirectory = LogPaths.getGlobalLogDirectory();
@@ -53,12 +41,6 @@ public class LoggerConfig {
         this.maxLogFiles = maxLogFiles;
     }
 
-    /**
-     * Creates a LoggerConfig with specified logging levels.
-     * 
-     * @param fileLogLevel    logging level for file output
-     * @param consoleLogLevel logging level for console output
-     */
     public LoggerConfig(Level fileLogLevel, Level consoleLogLevel) {
         // Use global log directory and set levels
         this.logDirectory = LogPaths.getGlobalLogDirectory();
@@ -66,12 +48,6 @@ public class LoggerConfig {
         this.consoleLogLevel = consoleLogLevel;
     }
 
-    /**
-     * Creates a LoggerConfig with specified logging levels.
-     * 
-     * @param fileLogLevel    logging level for file output
-     * @param consoleLogLevel logging level for console output
-     */
     public LoggerConfig(LogLevel fileLogLevel, LogLevel consoleLogLevel) {
         // Use global log directory and set levels
         this.logDirectory = LogPaths.getGlobalLogDirectory();
@@ -79,9 +55,7 @@ public class LoggerConfig {
         this.consoleLogLevel = consoleLogLevel.getJavaLevel();
     }
 
-    // Getters and setters follow the Open/Closed principle by allowing
-    // extension of behavior without modifying the class
-
+    @Override
     public String getLogDirectory() {
         // Always return global log directory
         return LogPaths.getGlobalLogDirectory();
@@ -93,6 +67,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public String getLogFilePrefix() {
         return logFilePrefix;
     }
@@ -104,6 +79,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public String getLogFileExtension() {
         return logFileExtension;
     }
@@ -121,6 +97,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public String getDateTimeFormat() {
         return dateTimeFormat;
     }
@@ -130,8 +107,9 @@ public class LoggerConfig {
         return this;
     }
 
-    public Level getFileLogLevel() {
-        return fileLogLevel;
+    @Override
+    public LogLevel getFileLogLevel() {
+        return LogLevel.fromJavaLevel(fileLogLevel);
     }
 
     public LoggerConfig setFileLogLevel(Level fileLogLevel) {
@@ -146,8 +124,9 @@ public class LoggerConfig {
         return this;
     }
 
-    public Level getConsoleLogLevel() {
-        return consoleLogLevel;
+    @Override
+    public LogLevel getConsoleLogLevel() {
+        return LogLevel.fromJavaLevel(consoleLogLevel);
     }
 
     public LoggerConfig setConsoleLogLevel(Level consoleLogLevel) {
@@ -162,6 +141,12 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
+    public LogLevel getLogLevelForLogger(String loggerName) {
+        return null;
+    }
+
+    @Override
     public int getMaxLogFiles() {
         return maxLogFiles;
     }
@@ -173,6 +158,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public boolean isConsoleLoggingEnabled() {
         return useConsoleLogging;
     }
@@ -182,6 +168,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public boolean isFileLoggingEnabled() {
         return useFileLogging;
     }
@@ -191,6 +178,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public boolean isAsyncLoggingEnabled() {
         return useAsyncLogging;
     }
@@ -200,6 +188,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public int getAsyncQueueSize() {
         return asyncQueueSize;
     }
@@ -211,6 +200,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public int getMaxFileSizeInKb() {
         return maxFileSizeInKb;
     }
@@ -222,6 +212,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public boolean isColoredConsoleEnabled() {
         return useColoredConsole;
     }
@@ -231,6 +222,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public boolean isIncludeThreadName() {
         return includeThreadName;
     }
@@ -240,6 +232,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public boolean isDailyRolloverEnabled() {
         return dailyRollover;
     }
@@ -249,6 +242,7 @@ public class LoggerConfig {
         return this;
     }
 
+    @Override
     public String getLogFormat() {
         return logFormat;
     }
@@ -260,33 +254,17 @@ public class LoggerConfig {
         return this;
     }
 
-    /**
-     * Generates a log file name based on the current configuration.
-     * The format is logFilePrefix_timestamp.logFileExtension
-     * 
-     * @return the full log file name
-     */
+    @Override
     public String generateLogFileName() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
         String timestamp = dateFormat.format(new Date());
         return logFilePrefix + "_" + timestamp + logFileExtension;
     }
 
-    /**
-     * Validates and normalizes the configuration settings.
-     * This ensures that all settings are valid and compatible.
-     * 
-     * @return this config instance with validated settings
-     */
+    @Override
     public LoggerConfig validate() {
         // Force log directory to global path
         this.logDirectory = LogPaths.getGlobalLogDirectory();
-
-        // Ensure log directory exists
-        File dir = new File(logDirectory);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
 
         // Ensure file extension starts with a dot
         if (logFileExtension != null && !logFileExtension.startsWith(".")) {
@@ -301,14 +279,9 @@ public class LoggerConfig {
         return this;
     }
 
-    /**
-     * Creates a copy of this configuration.
-     *
-     * @return a new LoggerConfig with the same settings
-     */
+    @Override
     public LoggerConfig copy() {
         LoggerConfig copy = new LoggerConfig();
-        // Force log directory to global path
         copy.logDirectory = LogPaths.getGlobalLogDirectory();
         copy.logFilePrefix = this.logFilePrefix;
         copy.logFileExtension = this.logFileExtension;
@@ -328,16 +301,10 @@ public class LoggerConfig {
         return copy;
     }
 
-    /**
-     * Creates a LoggerConfig with development-oriented settings.
-     * This includes more verbose logging levels and colored console output.
-     * 
-     * @return a new pre-configured LoggerConfig for development
-     */
     public static LoggerConfig forDevelopment() {
         return new LoggerConfig()
-                .setConsoleLogLevel(Level.FINE) // DEBUG
-                .setFileLogLevel(Level.FINEST) // TRACE
+                .setConsoleLogLevel(Level.FINE)
+                .setFileLogLevel(Level.FINEST)
                 .setUseConsoleLogging(true)
                 .setUseFileLogging(true)
                 .setUseColoredConsole(true)
@@ -345,21 +312,15 @@ public class LoggerConfig {
                 .setMaxLogFiles(10);
     }
 
-    /**
-     * Creates a LoggerConfig with production-oriented settings.
-     * This includes less verbose logging and optimized performance.
-     * 
-     * @return a new pre-configured LoggerConfig for production
-     */
     public static LoggerConfig forProduction() {
         return new LoggerConfig()
-                .setConsoleLogLevel(Level.WARNING) // WARN
-                .setFileLogLevel(Level.INFO) // INFO
+                .setConsoleLogLevel(Level.WARNING)
+                .setFileLogLevel(Level.INFO)
                 .setUseConsoleLogging(true)
                 .setUseFileLogging(true)
                 .setUseColoredConsole(false)
                 .setIncludeThreadName(false)
                 .setMaxLogFiles(5)
-                .setUseAsyncLogging(true); // Use async for better performance
+                .setUseAsyncLogging(true);
     }
 }

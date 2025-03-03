@@ -1,7 +1,5 @@
 package project.game.engine.api.logging;
 
-import project.game.common.logging.config.LoggerConfig;
-
 /**
  * Factory interface for creating loggers.
  * Follows the Factory Method pattern for creating logger instances.
@@ -35,7 +33,7 @@ public interface ILoggerFactory {
      *
      * @param config the new configuration
      */
-    void reconfigure(LoggerConfig config);
+    void reconfigure(ILoggerConfig config);
 
     /**
      * Shuts down the logging system.

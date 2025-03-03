@@ -6,7 +6,7 @@ package project.game.engine.api.logging;
  * writing them to a file or console, sending them to a network, etc.
  * This follows the Chain of Responsibility pattern.
  */
-public interface ILogHandler {
+public interface ILoggerHandler {
     /**
      * Handles a log event.
      *
@@ -14,21 +14,21 @@ public interface ILogHandler {
      * @return true if the event was handled and should not be passed to other
      *         handlers
      */
-    boolean handle(ILogEvent event);
+    boolean handle(ILoggerEvent event);
 
     /**
      * Gets the next handler in the chain.
      *
      * @return the next handler, or null if none
      */
-    ILogHandler getNext();
+    ILoggerHandler getNext();
 
     /**
      * Sets the next handler in the chain.
      *
      * @param next the next handler
      */
-    void setNext(ILogHandler next);
+    void setNext(ILoggerHandler next);
 
     /**
      * Closes this handler, releasing any resources.

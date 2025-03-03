@@ -1,10 +1,10 @@
 package project.game.engine.logging;
 
-import project.game.common.logging.core.LogEvent;
 import project.game.common.logging.core.LogLevel;
-import project.game.engine.api.logging.ILogEvent;
-import project.game.engine.api.logging.ILogHandler;
 import project.game.engine.api.logging.ILogger;
+import project.game.engine.api.logging.ILoggerEvent;
+import project.game.engine.api.logging.ILoggerEventFactory;
+import project.game.engine.api.logging.ILoggerHandler;
 
 /**
  * Abstract base implementation of ILogger that provides common functionality.
@@ -13,16 +13,18 @@ import project.game.engine.api.logging.ILogger;
  */
 public abstract class AbstractLogger implements ILogger {
     private final String name;
+    protected final ILoggerEventFactory eventFactory;
     private LogLevel level = LogLevel.INFO;
-    private ILogHandler firstHandler;
+    private ILoggerHandler firstHandler;
 
     /**
      * Creates a new AbstractLogger.
      *
      * @param name the logger name
      */
-    protected AbstractLogger(String name) {
+    protected AbstractLogger(String name, ILoggerEventFactory eventFactory) {
         this.name = name;
+        this.eventFactory = eventFactory;
     }
 
     @Override
@@ -31,7 +33,7 @@ public abstract class AbstractLogger implements ILogger {
             return;
         }
 
-        ILogEvent event = createLogEvent(level, message, null);
+        ILoggerEvent event = createLogEvent(level, message, null);
         log(event);
     }
 
@@ -41,7 +43,7 @@ public abstract class AbstractLogger implements ILogger {
             return;
         }
 
-        ILogEvent event = createLogEvent(level, message, thrown);
+        ILoggerEvent event = createLogEvent(level, message, thrown);
         log(event);
     }
 
@@ -52,7 +54,7 @@ public abstract class AbstractLogger implements ILogger {
         }
 
         String message = formatMessage(format, args);
-        ILogEvent event = createLogEvent(level, message, null);
+        ILoggerEvent event = createLogEvent(level, message, null);
         log(event);
     }
 
@@ -127,7 +129,7 @@ public abstract class AbstractLogger implements ILogger {
     }
 
     @Override
-    public void log(ILogEvent event) {
+    public void log(ILoggerEvent event) {
         if (!isEnabled(event.getLevel())) {
             return;
         }
@@ -163,7 +165,7 @@ public abstract class AbstractLogger implements ILogger {
      *
      * @param handler the handler to add
      */
-    public void addHandler(ILogHandler handler) {
+    public void addHandler(ILoggerHandler handler) {
         if (handler == null) {
             return;
         }
@@ -171,7 +173,7 @@ public abstract class AbstractLogger implements ILogger {
         if (firstHandler == null) {
             firstHandler = handler;
         } else {
-            ILogHandler lastHandler = firstHandler;
+            ILoggerHandler lastHandler = firstHandler;
             while (lastHandler.getNext() != null) {
                 lastHandler = lastHandler.getNext();
             }
@@ -185,7 +187,7 @@ public abstract class AbstractLogger implements ILogger {
      * @param handler the handler to remove
      * @return true if the handler was removed, false if it wasn't found
      */
-    public boolean removeHandler(ILogHandler handler) {
+    public boolean removeHandler(ILoggerHandler handler) {
         if (handler == null || firstHandler == null) {
             return false;
         }
@@ -196,7 +198,7 @@ public abstract class AbstractLogger implements ILogger {
             return true;
         }
 
-        ILogHandler current = firstHandler;
+        ILoggerHandler current = firstHandler;
         while (current.getNext() != null) {
             if (current.getNext() == handler) {
                 current.setNext(handler.getNext());
@@ -214,7 +216,7 @@ public abstract class AbstractLogger implements ILogger {
      */
     public void clearHandlers() {
         // Close all handlers first
-        ILogHandler current = firstHandler;
+        ILoggerHandler current = firstHandler;
         while (current != null) {
             current.close();
             current = current.getNext();
@@ -228,37 +230,17 @@ public abstract class AbstractLogger implements ILogger {
      * 
      * @return the first handler, or null if none
      */
-    public ILogHandler getFirstHandler() {
+    public ILoggerHandler getFirstHandler() {
         return firstHandler;
     }
 
     @Override
     public void flush() {
-        ILogHandler current = firstHandler;
+        ILoggerHandler current = firstHandler;
         while (current != null) {
             current.flush();
             current = current.getNext();
         }
-    }
-
-    /**
-     * Creates a log event with the specified parameters.
-     * This is a template method that can be overridden by subclasses.
-     *
-     * @param level     the log level
-     * @param message   the log message
-     * @param throwable the throwable (may be null)
-     * @return the log event
-     */
-    protected ILogEvent createLogEvent(LogLevel level, String message, Throwable throwable) {
-        return LogEvent.builder()
-                .level(level)
-                .message(message)
-                .throwable(throwable)
-                .loggerName(getName())
-                .timestamp(System.currentTimeMillis())
-                .threadName(Thread.currentThread().getName())
-                .build();
     }
 
     /**
@@ -283,9 +265,21 @@ public abstract class AbstractLogger implements ILogger {
      *
      * @param event the log event to dispatch
      */
-    protected void dispatchLogEvent(ILogEvent event) {
+    protected void dispatchLogEvent(ILoggerEvent event) {
         if (firstHandler != null) {
             firstHandler.handle(event);
         }
     }
+
+    /**
+     * Creates a log event with the specified parameters.
+     * This is a template method that can be overridden by subclasses.
+     *
+     * @param level     the log level
+     * @param message   the log message
+     * @param throwable the throwable (may be null)
+     * @return the log event
+     */
+    protected abstract ILoggerEvent createLogEvent(LogLevel level, String message, Throwable throwable);
+
 }
