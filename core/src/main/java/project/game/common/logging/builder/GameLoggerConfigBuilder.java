@@ -1,10 +1,12 @@
 package project.game.common.logging.builder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.core.LogManager;
+import project.game.common.logging.util.LogPaths;
 
 /**
  * Builder for configuring the game logging system with sensible defaults.
@@ -13,13 +15,26 @@ import project.game.common.logging.core.LogManager;
 public class GameLoggerConfigBuilder {
     private final LoggerConfig config = new LoggerConfig();
 
+    /**
+     * Creates a new GameLoggerConfigBuilder with default settings.
+     */
+    public GameLoggerConfigBuilder() {
+        // Clean up any logs in invalid locations immediately
+        LogPaths.cleanupInvalidLogs();
+    }
+
     public GameLoggerConfigBuilder withLogPrefix(String prefix) {
         config.setLogFilePrefix(prefix);
         return this;
     }
 
     public GameLoggerConfigBuilder withLogDirectory(String directory) {
-        config.setLogDirectory(directory);
+        // OVERRIDE: Always use our global log directory, ignoring the provided path
+        // This ensures logs are always in the same location regardless of where the app
+        // is launched
+        String globalLogDir = LogPaths.getGlobalLogDirectory();
+        config.setLogDirectory(globalLogDir);
+        System.out.println("[INFO] Setting log directory to global path: " + globalLogDir);
         return this;
     }
 
@@ -56,16 +71,21 @@ public class GameLoggerConfigBuilder {
     public GameLoggerConfigBuilder withGameDefaults() {
         // Use a game-specific log file prefix
         config.setLogFilePrefix("GameLog");
-        // Store logs in the root/logs directory
-        config.setLogDirectory("logs");
+
+        // ALWAYS use the global log directory
+        config.setLogDirectory(LogPaths.getGlobalLogDirectory());
+
         // Use INFO level for console and file logging
         config.setConsoleLogLevel(Level.INFO);
         config.setFileLogLevel(Level.FINE);
+
         // Enable both console and file logging
         config.setUseConsoleLogging(true);
         config.setUseFileLogging(true);
+
         // Use a safe date format that works on all OS
         config.setDateTimeFormat("yyyy-MM-dd_HH-mm-ss");
+
         // Keep 10 log files by default
         config.setMaxLogFiles(10);
         return this;
@@ -90,15 +110,26 @@ public class GameLoggerConfigBuilder {
     }
 
     public void initialize() {
-        // Ensure the logs directory exists
-        File logsDir = new File(config.getLogDirectory());
-        if (!logsDir.exists()) {
-            logsDir.mkdirs();
+        // Force the use of the global log directory
+        config.setLogDirectory(LogPaths.getGlobalLogDirectory());
+
+        // Ensure log directory exists
+        try {
+            File logsDir = new File(config.getLogDirectory());
+            if (!logsDir.exists() && !logsDir.mkdirs()) {
+                throw new IOException("Failed to create log directory: " + logsDir.getAbsolutePath());
+            }
+            System.out.println("[INFO] Using log directory: " + logsDir.getAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Warning: " + e.getMessage());
         }
+
         LogManager.initialize(config);
     }
 
     public LoggerConfig build() {
+        // Force the use of the global log directory
+        config.setLogDirectory(LogPaths.getGlobalLogDirectory());
         return config;
     }
 }

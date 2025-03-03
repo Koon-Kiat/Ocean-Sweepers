@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import project.game.common.logging.util.LogPaths;
 
 /**
  * Utility class for finding project paths and resources.
@@ -16,29 +17,13 @@ public final class ProjectPaths {
 
     /**
      * Gets the absolute path to the project's root directory.
+     * Uses LogPaths for a consistent implementation.
      * 
      * @return the path to the project root
      */
     public static String getProjectRoot() {
-        // Start from the current working directory
-        File currentDir = new File("").getAbsoluteFile();
-
-        // Check if this is already the project root (contains build.gradle)
-        if (isProjectRoot(currentDir)) {
-            return currentDir.getAbsolutePath();
-        }
-
-        // Walk up the directory tree looking for the project root
-        File dir = currentDir;
-        while (dir != null) {
-            if (isProjectRoot(dir)) {
-                return dir.getAbsolutePath();
-            }
-            dir = dir.getParentFile();
-        }
-
-        // If we can't find the project root, return the current directory
-        return currentDir.getAbsolutePath();
+        // Use LogPaths for consistent path handling
+        return LogPaths.getProjectRoot();
     }
 
     /**
@@ -138,20 +123,42 @@ public final class ProjectPaths {
     }
 
     /**
-     * Checks if the given directory is the project root.
+     * Gets the path to a config file, searching in multiple possible locations.
+     * This overload allows specifying a specific project root.
      * 
-     * @param dir the directory to check
-     * @return true if it appears to be the project root
+     * @param configFileName the name of the config file
+     * @param projectRoot    the project root directory to use for searching
+     * @return the absolute path to the config file, or null if not found
      */
-    private static boolean isProjectRoot(File dir) {
-        if (dir == null || !dir.isDirectory()) {
-            return false;
+    public static String findConfigFile(String configFileName, String projectRoot) {
+        // Try the standard config path locations with the specified root
+        String[] possiblePaths = {
+                "core/src/main/resources/config",
+                "core/assets/config",
+                "assets/config",
+                "config",
+                "core/src/main/java/project/game/config"
+        };
+
+        for (String path : possiblePaths) {
+            File configFile = new File(new File(projectRoot, path), configFileName);
+            if (configFile.exists()) {
+                return configFile.getAbsolutePath();
+            }
         }
 
-        // Check for common build files that would indicate a project root
-        return new File(dir, "build.gradle").exists() ||
-                new File(dir, "pom.xml").exists() ||
-                new File(dir, "settings.gradle").exists() ||
-                (new File(dir, "core").isDirectory() && new File(dir, "lwjgl3").isDirectory());
+        // If not found in expected locations, try as a resource file
+        try {
+            if (Gdx.files != null) {
+                FileHandle internal = Gdx.files.internal("config/" + configFileName);
+                if (internal.exists()) {
+                    return internal.path();
+                }
+            }
+        } catch (Exception e) {
+            // Gdx might not be initialized, just continue
+        }
+
+        return null;
     }
 }

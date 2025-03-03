@@ -2,9 +2,9 @@ package project.game.common.logging.builder;
 
 import java.util.logging.Level;
 
-import project.game.common.logging.api.ILogger;
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.core.LogManager;
+import project.game.engine.api.logging.ILogger;
 
 /**
  * Builder class for configuring and creating loggers using a fluent API.

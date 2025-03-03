@@ -1,18 +1,21 @@
-package project.game.common.logging.api;
+package project.game.common.logging.factory;
 
 import project.game.common.logging.config.LoggerConfig;
+import project.game.engine.api.logging.ILogger;
+import project.game.engine.api.logging.ILoggerFactory;
 
 /**
  * Factory interface for creating loggers.
- * Follows the Factory Method pattern for creating logger instances.
+ * This abstraction allows for different logger implementations.
  */
-public interface ILoggerFactory {
+public interface LoggerFactory extends ILoggerFactory {
     /**
      * Gets a logger for the specified name.
      *
      * @param name the logger name
      * @return the logger instance
      */
+    @Override
     ILogger getLogger(String name);
 
     /**
@@ -21,6 +24,7 @@ public interface ILoggerFactory {
      * @param clazz the class
      * @return the logger instance
      */
+    @Override
     ILogger getLogger(Class<?> clazz);
 
     /**
@@ -28,6 +32,7 @@ public interface ILoggerFactory {
      *
      * @return the root logger
      */
+    @Override
     ILogger getRootLogger();
 
     /**
@@ -35,10 +40,12 @@ public interface ILoggerFactory {
      *
      * @param config the new configuration
      */
+    @Override
     void reconfigure(LoggerConfig config);
 
     /**
      * Shuts down the logging system.
      */
+    @Override
     void shutdown();
 }

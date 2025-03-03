@@ -6,7 +6,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.common.logging.core.LogInitializer;
-import project.game.common.logging.core.LogLevel;
+import project.game.common.logging.util.LogPaths;
 import project.game.common.util.ProjectPaths;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.io.SceneIOManager;
@@ -20,19 +20,22 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-
+        // Initialize logging with proper configuration
+        // Path resolution now happens inside the logging system using LogPaths
         LogInitializer.builder()
                 .withDevMode()
-                .withLogPrefix("GameLog") // Changed to match the standard prefix
-                .withLogDirectory("logs")
+                .withLogPrefix("GameLog")
                 .withMaxLogFiles(5)
                 .initialize();
 
         LOGGER.info("Application starting up");
         LOGGER.debug("Java version: {0}", System.getProperty("java.version"));
+        LOGGER.debug("Using log directory: {0}", LogPaths.getGlobalLogDirectory());
 
-        // Find the config file
-        String configFile = ProjectPaths.findConfigFile("default-config.json");
+        // Find the config file - using LogPaths for consistent path resolution
+        String projectRoot = LogPaths.getProjectRoot();
+        String configFile = ProjectPaths.findConfigFile("default-config.json", projectRoot);
+
         if (configFile == null) {
             LOGGER.error("Could not find default-config.json in any config locations");
             throw new RuntimeException("Missing required configuration file");
@@ -69,11 +72,6 @@ public class Main extends ApplicationAdapter {
 
         float deltaTime = Gdx.graphics.getDeltaTime();
         sceneManager.render(deltaTime);
-
-        // Only log this at TRACE level to avoid performance impact
-        if (LOGGER.getLevel() == LogLevel.TRACE) {
-            LOGGER.trace("Frame rendered, delta: {0}", deltaTime);
-        }
     }
 
     @Override

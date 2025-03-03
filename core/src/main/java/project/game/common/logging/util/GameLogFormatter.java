@@ -1,98 +1,88 @@
 package project.game.common.logging.util;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
- * A custom formatter for log messages that provides a more structured format.
- * The format is: [timestamp] [level] [logger] message (exception if present)
+ * Custom formatter for Java logger that formats log messages
+ * according to the game's requirements.
  */
 public class GameLogFormatter extends Formatter {
-
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String DEFAULT_FORMAT = "[%1$tF %1$tT] [%2$-5s] [%3$s] %4$s";
     private final SimpleDateFormat dateFormat;
-    private boolean showThreadName = false;
 
     /**
-     * Creates a GameLogFormatter with default date format.
+     * Creates a new GameLogFormatter with the default date format.
      */
     public GameLogFormatter() {
-        this("yyyy-MM-dd HH:mm:ss.SSS");
-    }
-
-    /**
-     * Creates a GameLogFormatter with specified date format.
-     * 
-     * @param dateFormatPattern the pattern for formatting dates
-     */
-    public GameLogFormatter(String dateFormatPattern) {
-        dateFormat = new SimpleDateFormat(dateFormatPattern);
-    }
-
-    /**
-     * Configures whether to include thread name in log messages.
-     * 
-     * @param showThreadName true to show thread names
-     */
-    public void setShowThreadName(boolean showThreadName) {
-        this.showThreadName = showThreadName;
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     }
 
     @Override
     public String format(LogRecord record) {
-        StringBuilder sb = new StringBuilder();
+        Date timestamp = new Date(record.getMillis());
+        String level = record.getLevel().getName();
+        String loggerName = shortenLoggerName(record.getLoggerName());
+        String message = record.getMessage();
 
-        // Format timestamp
-        sb.append('[');
-        sb.append(dateFormat.format(new Date(record.getMillis())));
-        sb.append("] ");
+        // Format the message
+        String formattedMessage = String.format(DEFAULT_FORMAT,
+                timestamp, level, loggerName, message);
 
-        // Format log level
-        sb.append('[');
-        sb.append(record.getLevel().getName());
-        sb.append("] ");
-
-        // Format logger name (shortened)
-        sb.append('[');
-        String loggerName = record.getLoggerName();
-        if (loggerName != null) {
-            int lastDot = loggerName.lastIndexOf('.');
-            if (lastDot > 0 && lastDot < loggerName.length() - 1) {
-                loggerName = loggerName.substring(lastDot + 1);
-            }
-        } else {
-            loggerName = "root";
-        }
-        sb.append(loggerName);
-        sb.append("] ");
-
-        // Add thread name if enabled
-        if (showThreadName) {
-            sb.append('[');
-            sb.append(Thread.currentThread().getName());
-            sb.append("] ");
+        // Add stack trace if there's a thrown exception
+        Throwable thrown = record.getThrown();
+        if (thrown != null) {
+            StringBuilder sb = new StringBuilder(formattedMessage);
+            sb.append('\n');
+            appendStackTraceAsString(sb, thrown);
+            return sb.toString();
         }
 
-        // Add message
-        sb.append(formatMessage(record));
+        return formattedMessage + "\n";
+    }
 
-        // Add exception if present
-        if (record.getThrown() != null) {
-            sb.append(LINE_SEPARATOR);
-            try (StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw)) {
-                record.getThrown().printStackTrace(pw);
-                sb.append(sw.toString());
-            } catch (Exception ex) {
-                sb.append("Failed to print stack trace: ").append(ex.getMessage());
-            }
+    /**
+     * Shortens a logger name for display, keeping only the class name.
+     *
+     * @param loggerName the full logger name
+     * @return the shortened logger name
+     */
+    private String shortenLoggerName(String loggerName) {
+        if (loggerName == null || loggerName.isEmpty()) {
+            return "root";
         }
 
-        sb.append(LINE_SEPARATOR);
-        return sb.toString();
+        int lastDot = loggerName.lastIndexOf('.');
+        return lastDot > 0 && lastDot < loggerName.length() - 1
+                ? loggerName.substring(lastDot + 1)
+                : loggerName;
+    }
+
+    /**
+     * Appends a stack trace to a StringBuilder.
+     * 
+     * @param sb     the StringBuilder to append to
+     * @param thrown the Throwable to get the stack trace from
+     */
+    private void appendStackTraceAsString(StringBuilder sb, Throwable thrown) {
+        sb.append(thrown.getClass().getName());
+        sb.append(": ");
+        sb.append(thrown.getMessage());
+        sb.append('\n');
+
+        for (StackTraceElement element : thrown.getStackTrace()) {
+            sb.append("\tat ");
+            sb.append(element.toString());
+            sb.append('\n');
+        }
+
+        // Handle cause if present
+        Throwable cause = thrown.getCause();
+        if (cause != null) {
+            sb.append("Caused by: ");
+            appendStackTraceAsString(sb, cause);
+        }
     }
 }

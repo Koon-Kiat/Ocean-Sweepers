@@ -11,16 +11,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import project.game.common.logging.adapter.JavaLoggerAdapter;
-import project.game.common.logging.api.ILogger;
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.util.GameLogFormatter;
-import project.game.common.util.ProjectPaths;
+import project.game.common.logging.util.LogPaths;
+import project.game.engine.api.logging.ILogger;
+import project.game.engine.api.logging.ILoggerFactory;
+import project.game.engine.logging.AbstractLoggerFactory;
 
 /**
- * Implementation of LoggerFactory that uses Java's built-in logging.
+ * Implementation of ILoggerFactory that uses Java's built-in logging.
  * This class handles the actual configuration of loggers and handlers.
  */
-public class JavaLoggerFactory extends AbstractLoggerFactory {
+public class JavaLoggerFactory extends AbstractLoggerFactory implements ILoggerFactory {
     private static final Logger ROOT_LOGGER = Logger.getLogger("");
     private FileHandler fileHandler;
     private JavaLoggerAdapter rootLoggerAdapter;
@@ -33,6 +35,8 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
     public JavaLoggerFactory(LoggerConfig config) {
         super(config);
         try {
+            // First clean up any logs in invalid locations
+            LogPaths.cleanupInvalidLogs();
             configureLogging();
         } catch (Exception e) {
             handleConfigurationError(e);
@@ -87,18 +91,13 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
 
     private void configureLogging() throws Exception {
         // Clean up existing handlers
-        for (java.util.logging.Handler h : ROOT_LOGGER.getHandlers()) {
-            ROOT_LOGGER.removeHandler(h);
-        }
+        closeExistingHandlers();
 
         // Setup root logger adapter
         rootLoggerAdapter = JavaLoggerAdapter.getLoggerInstance("");
 
-        // Get project root directory using ProjectPaths utility
-        String projectPath = ProjectPaths.getProjectRoot();
-
         if (config.isFileLoggingEnabled()) {
-            setupFileLogging(projectPath);
+            setupFileLogging();
         }
 
         if (config.isConsoleLoggingEnabled()) {
@@ -110,25 +109,51 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
         Level rootLevel = getLowerLevel(config.getConsoleLogLevel(), config.getFileLogLevel());
         ROOT_LOGGER.setLevel(rootLevel);
 
-        // Centralize logging
+        // Configure package-specific logging levels
+        configurePackageLevels();
+
+        // Centralize logging for game package
         Logger.getLogger("project.game").setLevel(rootLevel);
     }
 
-    private void setupFileLogging(String projectPath) throws IOException {
-        // Create logs directory
-        File logDir = new File(projectPath, config.getLogDirectory());
-        if (!logDir.exists()) {
-            logDir.mkdirs();
+    /**
+     * Configures logging levels for specific packages to control verbosity
+     */
+    private void configurePackageLevels() {
+        // Raise level for window/UI related logging
+        Logger.getLogger("com.badlogic.gdx").setLevel(Level.WARNING);
+
+        // Suppress built-in factory debug messages
+        Logger.getLogger("serialization").setLevel(Level.INFO);
+
+        // Set level for window resize messages
+        Logger.getLogger("project.game.Main").setLevel(Level.INFO);
+    }
+
+    private void setupFileLogging() throws IOException {
+        // Always use the global log directory path
+        String logDirPath = LogPaths.getGlobalLogDirectory();
+        File logDir = new File(logDirPath).getAbsoluteFile();
+
+        // Double check we're getting proper absolute path
+        if (!logDir.isAbsolute()) {
+            throw new IOException("Log directory must be absolute: " + logDirPath);
         }
 
-        // Rotate log files if necessary
+        if (!logDir.exists()) {
+            if (!logDir.mkdirs()) {
+                throw new IOException("Failed to create log directory: " + logDir.getAbsolutePath());
+            }
+        }
+
+        // Rotate log files if necessary before creating a new one
         rotateLogFiles(logDir);
 
         // Create the log file with safe file name
         String logFileName = config.generateLogFileName();
         String logFilePath = new File(logDir, logFileName).getAbsolutePath();
 
-        // Create file handler
+        // Create file handler with absolute path
         fileHandler = new FileHandler(logFilePath);
         fileHandler.setLevel(config.getFileLogLevel());
 
@@ -155,13 +180,42 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
         ROOT_LOGGER.addHandler(consoleHandler);
     }
 
+    /**
+     * Fixed: Properly enforces the maxLogFiles setting by maintaining exactly
+     * the specified number of files, including the new one to be created.
+     */
     private void rotateLogFiles(File logDir) {
-        File[] logFiles = logDir.listFiles((dir, name) -> name.endsWith(config.getLogFileExtension()));
-        if (logFiles != null && logFiles.length > config.getMaxLogFiles()) {
-            Arrays.sort(logFiles, Comparator.comparingLong(File::lastModified));
-            int filesToDelete = logFiles.length - config.getMaxLogFiles();
+        // Get all existing log files
+        File[] logFiles = logDir.listFiles((dir, name) -> name.startsWith(config.getLogFilePrefix())
+                && name.endsWith(config.getLogFileExtension()));
+
+        // If we have no configuration for max files or no files exist, return
+        int maxFiles = config.getMaxLogFiles();
+        if (maxFiles <= 0 || logFiles == null) {
+            return;
+        }
+
+        // Sort files by last modified time (oldest first)
+        Arrays.sort(logFiles, Comparator.comparingLong(File::lastModified));
+
+        // Calculate how many files to delete
+        // To keep exactly maxFiles total after creating a new one:
+        // If we have 5 files now and maxFiles is 5, we need to delete 1 old file
+        // to make room for 1 new file (4 old + 1 new = 5 total)
+        int filesToDelete = Math.max(0, logFiles.length - (maxFiles - 1));
+
+        if (filesToDelete > 0) {
+            System.out.println("[INFO] Current log count: " + logFiles.length +
+                    ", max allowed: " + maxFiles + ", deleting " + filesToDelete +
+                    " oldest log(s) before creating new one");
+
+            // Delete the oldest files
             for (int i = 0; i < filesToDelete; i++) {
-                logFiles[i].delete();
+                if (!logFiles[i].delete()) {
+                    System.err.println("[WARN] Failed to delete old log file: " + logFiles[i].getAbsolutePath());
+                } else {
+                    System.out.println("[INFO] Deleted old log file: " + logFiles[i].getName());
+                }
             }
         }
     }
@@ -171,6 +225,10 @@ public class JavaLoggerFactory extends AbstractLoggerFactory {
     }
 
     private Level getLowerLevel(Level a, Level b) {
+        if (a == null)
+            return b;
+        if (b == null)
+            return a;
         return a.intValue() < b.intValue() ? a : b;
     }
 }

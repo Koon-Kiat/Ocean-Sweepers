@@ -27,7 +27,9 @@ public final class LogLevelUtils {
         }
 
         int levelValue = level.intValue();
-        if (levelValue <= Level.FINEST.intValue()) {
+        if (levelValue >= Level.OFF.intValue()) {
+            return LogLevel.OFF;
+        } else if (levelValue <= Level.FINEST.intValue()) {
             return LogLevel.TRACE;
         } else if (levelValue <= Level.FINE.intValue()) {
             return LogLevel.DEBUG;
@@ -38,22 +40,47 @@ public final class LogLevelUtils {
         } else if (levelValue <= Level.SEVERE.intValue()) {
             return LogLevel.ERROR;
         } else {
-            return LogLevel.FATAL;
+            return LogLevel.INFO; // Default
         }
     }
 
     /**
-     * Gets a LogLevel by its name (case-insensitive).
+     * Converts a string level name to a LogLevel.
      * 
-     * @param name the level name
-     * @return the corresponding LogLevel or null if not found
+     * @param levelName the level name (case insensitive)
+     * @return the corresponding LogLevel, or INFO if not found
      */
-    public static LogLevel getByName(String name) {
-        for (LogLevel level : LogLevel.values()) {
-            if (level.getName().equalsIgnoreCase(name)) {
-                return level;
-            }
+    public static LogLevel fromString(String levelName) {
+        if (levelName == null || levelName.isEmpty()) {
+            return LogLevel.INFO;
         }
-        return null;
+
+        try {
+            // First try to match our LogLevel names
+            LogLevel result = LogLevel.fromName(levelName);
+            if (result != null) {
+                return result;
+            }
+
+            // Then try Java level names
+            Level javaLevel = Level.parse(levelName);
+            return fromJavaLevel(javaLevel);
+        } catch (IllegalArgumentException e) {
+            // If all fails, return INFO
+            return LogLevel.INFO;
+        }
+    }
+
+    /**
+     * Checks if the source level is sufficient to log at the target level.
+     * For example, if source is INFO and target is DEBUG, the result is false,
+     * but if source is DEBUG and target is INFO, the result is true.
+     * 
+     * @param sourceLevel the source level
+     * @param targetLevel the target level
+     * @return true if the source level is sufficient
+     */
+    public static boolean isLoggable(LogLevel sourceLevel, LogLevel targetLevel) {
+        return sourceLevel.getSeverity() <= targetLevel.getSeverity();
     }
 }

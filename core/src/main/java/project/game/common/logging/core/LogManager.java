@@ -1,10 +1,9 @@
 package project.game.common.logging.core;
 
-import project.game.common.logging.api.ILogger;
-import project.game.common.logging.api.ILoggerFactory;
-import project.game.common.logging.builder.LoggerBuilder;
 import project.game.common.logging.config.LoggerConfig;
 import project.game.common.logging.factory.JavaLoggerFactory;
+import project.game.engine.api.logging.ILogger;
+import project.game.engine.api.logging.ILoggerFactory;
 
 /**
  * Central management class for the logging system.
@@ -12,7 +11,9 @@ import project.game.common.logging.factory.JavaLoggerFactory;
  * points.
  */
 public final class LogManager {
+    private static LoggerConfig currentConfig;
     private static ILoggerFactory factory;
+    private static boolean initialized = false;
 
     // Private constructor to prevent instantiation
     private LogManager() {
@@ -23,8 +24,8 @@ public final class LogManager {
      * Initializes the logging system with default configuration.
      */
     public static synchronized void initialize() {
-        if (factory == null) {
-            factory = new JavaLoggerFactory(new LoggerConfig());
+        if (!initialized) {
+            initialize(new LoggerConfig().validate());
         }
     }
 
@@ -34,11 +35,13 @@ public final class LogManager {
      * @param config the logger configuration
      */
     public static synchronized void initialize(LoggerConfig config) {
-        if (factory == null) {
-            factory = new JavaLoggerFactory(config);
-        } else {
-            factory.reconfigure(config);
-        }
+        // Validate configuration before using it
+        currentConfig = config.validate();
+
+        // Create the factory based on the configuration
+        factory = new JavaLoggerFactory(currentConfig);
+
+        initialized = true;
     }
 
     /**
@@ -79,40 +82,61 @@ public final class LogManager {
      */
     public static void reconfigure(LoggerConfig config) {
         ensureInitialized();
-        factory.reconfigure(config);
+        currentConfig = config.validate();
+        factory.reconfigure(currentConfig);
     }
 
     /**
-     * Sets a custom logger factory implementation.
-     * 
-     * @param customFactory the custom factory to use
+     * Sets a different logger factory implementation.
+     *
+     * @param newFactory the factory to use
      */
-    public static synchronized void setFactory(ILoggerFactory customFactory) {
-        factory = customFactory;
+    public static synchronized void setLoggerFactory(ILoggerFactory newFactory) {
+        if (newFactory == null) {
+            throw new IllegalArgumentException("Logger factory cannot be null");
+        }
+
+        // Shutdown the current factory
+        if (factory != null) {
+            factory.shutdown();
+        }
+
+        factory = newFactory;
+
+        // Initialize the factory with current config if already initialized
+        if (initialized && currentConfig != null) {
+            currentConfig = currentConfig.validate();
+            factory.reconfigure(currentConfig);
+        }
     }
 
     /**
-     * Creates a new logger builder for fluent configuration.
+     * Gets the current configuration.
      * 
-     * @return a new logger builder instance
+     * @return the current configuration
      */
-    public static LoggerBuilder builder() {
-        return new LoggerBuilder();
+    public static LoggerConfig getConfiguration() {
+        ensureInitialized();
+        return currentConfig;
     }
 
     /**
      * Shuts down the logging system, closing all handlers.
      * Should be called on application exit.
      */
-    public static void shutdown() {
-        if (factory != null) {
+    public static synchronized void shutdown() {
+        if (initialized && factory != null) {
             factory.shutdown();
             factory = null;
+            initialized = false;
         }
     }
 
+    /**
+     * Ensures that the logging system is initialized.
+     */
     private static void ensureInitialized() {
-        if (factory == null) {
+        if (!initialized) {
             initialize();
         }
     }

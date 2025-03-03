@@ -17,7 +17,17 @@ public final class LogInitializer {
      * Initializes the logging system with default settings.
      */
     public static void initialize() {
-        initialize(new LoggerConfig());
+        initialize(createDefaultConfig());
+    }
+
+    /**
+     * Creates a default configuration with validated paths.
+     */
+    private static LoggerConfig createDefaultConfig() {
+        return new GameLoggerConfigBuilder()
+                .withGameDefaults()
+                .build()
+                .validate();
     }
 
     /**
@@ -26,7 +36,29 @@ public final class LogInitializer {
      * @param config the logger configuration to use
      */
     public static void initialize(LoggerConfig config) {
+        // Validate the configuration before initializing
+        config.validate();
         LogManager.initialize(config);
+    }
+
+    /**
+     * Creates a development environment configuration and initializes the logging
+     * system.
+     */
+    public static void initializeForDevelopment() {
+        GameLoggerConfigBuilder builder = new GameLoggerConfigBuilder();
+        builder.withDevMode();
+        initialize(builder.build().validate());
+    }
+
+    /**
+     * Creates a production environment configuration and initializes the logging
+     * system.
+     */
+    public static void initializeForProduction() {
+        GameLoggerConfigBuilder builder = new GameLoggerConfigBuilder();
+        builder.withProdMode();
+        initialize(builder.build().validate());
     }
 
     /**

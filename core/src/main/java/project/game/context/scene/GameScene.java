@@ -21,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.common.logging.core.LogLevel;
 import project.game.context.api.constant.IGameConstants;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
@@ -256,11 +255,6 @@ public class GameScene extends Scene {
             }
         }
 
-        // We could add trace logging here, but for performance reasons
-        // we'd only enable it when debugging specific issues
-        if (LOGGER.getLevel() == LogLevel.TRACE) {
-            LOGGER.trace("GameScene rendered with delta: %f", deltaTime);
-        }
     }
 
     @Override

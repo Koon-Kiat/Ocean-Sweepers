@@ -1,12 +1,11 @@
 package project.game.common.logging.core;
 
-import java.util.logging.Level;
-
-import project.game.common.logging.api.ILogger;
-import project.game.common.logging.util.LogLevelUtils;
+import project.game.engine.api.logging.ILogger;
 
 /**
  * Game-specific logger that provides convenient methods for game logging.
+ * This class serves as a high-level wrapper around the underlying logging
+ * system.
  */
 public class GameLogger {
     private final ILogger logger;
@@ -26,22 +25,31 @@ public class GameLogger {
      * @param component the component name
      */
     public GameLogger(String component) {
-        this.logger = LogManager.getLogger("project.game." + component);
+        this.logger = LogManager.getLogger(component);
+    }
+
+    /**
+     * Gets the underlying logger.
+     * 
+     * @return the underlying ILogger
+     */
+    public ILogger getUnderlyingLogger() {
+        return logger;
     }
 
     /**
      * Generic logging method that handles the common logging patterns
      */
     private void logWithLevel(LogLevel level, String message) {
-        logger.log(level.getJavaLevel(), message);
+        logger.log(level, message);
     }
 
     private void logWithLevel(LogLevel level, String format, Object... args) {
-        logger.log(level.getJavaLevel(), format, args);
+        logger.log(level, format, args);
     }
 
     private void logWithLevel(LogLevel level, String message, Throwable t) {
-        logger.log(level.getJavaLevel(), message, t);
+        logger.log(level, message, t);
     }
 
     // Trace methods
@@ -106,25 +114,57 @@ public class GameLogger {
         logWithLevel(LogLevel.FATAL, message, e);
     }
 
-    // Generic logging methods
-    public void log(LogLevel level, String message) {
-        logWithLevel(level, message);
+    /**
+     * Checks if trace logging is enabled.
+     * 
+     * @return true if trace is enabled
+     */
+    public boolean isTraceEnabled() {
+        return logger.isEnabled(LogLevel.TRACE);
     }
 
-    public void log(LogLevel level, String format, Object... args) {
-        logWithLevel(level, format, args);
+    /**
+     * Checks if debug logging is enabled.
+     * 
+     * @return true if debug is enabled
+     */
+    public boolean isDebugEnabled() {
+        return logger.isEnabled(LogLevel.DEBUG);
     }
 
-    public void log(LogLevel level, String message, Throwable e) {
-        logWithLevel(level, message, e);
+    /**
+     * Checks if info logging is enabled.
+     * 
+     * @return true if info is enabled
+     */
+    public boolean isInfoEnabled() {
+        return logger.isEnabled(LogLevel.INFO);
     }
 
-    public void setLevel(LogLevel level) {
-        logger.setLevel(level.getJavaLevel());
+    /**
+     * Checks if warn logging is enabled.
+     * 
+     * @return true if warn is enabled
+     */
+    public boolean isWarnEnabled() {
+        return logger.isEnabled(LogLevel.WARN);
     }
 
-    public LogLevel getLevel() {
-        Level level = logger.getLevel();
-        return LogLevelUtils.fromJavaLevel(level);
+    /**
+     * Checks if error logging is enabled.
+     * 
+     * @return true if error is enabled
+     */
+    public boolean isErrorEnabled() {
+        return logger.isEnabled(LogLevel.ERROR);
+    }
+
+    /**
+     * Checks if fatal logging is enabled.
+     * 
+     * @return true if fatal is enabled
+     */
+    public boolean isFatalEnabled() {
+        return logger.isEnabled(LogLevel.FATAL);
     }
 }
