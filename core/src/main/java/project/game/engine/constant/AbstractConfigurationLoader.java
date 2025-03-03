@@ -3,66 +3,24 @@ package project.game.engine.constant;
 import java.util.HashMap;
 import java.util.Map;
 
+import project.game.engine.api.constant.IConfigurationLoader;
+
 /**
  * Abstract base class for configuration loading.
- * Provides core functionality for loading and saving configurations,
- * while allowing specific implementations to define how to handle file I/O.
+ * Provides template methods for loading and saving configurations.
  */
-public abstract class AbstractConfigurationLoader {
+public abstract class AbstractConfigurationLoader implements IConfigurationLoader {
 
-    /**
-     * Load configuration from a source.
-     * 
-     * @param source      The source identifier (could be a file path, URL, etc.)
-     * @param profileName The name of the profile to load into
-     * @return true if loading was successful, false otherwise
-     */
-    protected boolean loadConfiguration(String source, String profileName, AbstractConfigurableConstants constants) {
+    @Override
+    public boolean loadConfiguration(String source, String profileName, AbstractConfigurableConstants constants) {
         try {
-            // Create the profile
             constants.createProfile(profileName);
-
-            // Get configuration data
             Map<String, Object> configData = readConfigurationData(source);
             if (configData == null) {
                 return false;
             }
 
-            // Validate against registry before loading
-            Map<String, ConstantDefinition> validationMap = new HashMap<>();
-            for (String key : AbstractConstantsRegistry.getAllKeys()) {
-                validationMap.put(key, AbstractConstantsRegistry.get(key));
-            }
-
-            // Process all values
-            for (Map.Entry<String, Object> entry : configData.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-
-                ConstantDefinition def = validationMap.get(key);
-                if (def == null) {
-                    handleWarning("Unknown constant in config: " + key);
-                    continue;
-                }
-
-                if (!isValueTypeValid(value, def.getType())) {
-                    handleWarning("Type mismatch for constant " + key + ". Expected " + def.getType().getSimpleName());
-                    continue;
-                }
-
-                constants.setValue(key, value);
-            }
-
-            // Verify all required constants are present
-            for (String key : AbstractConstantsRegistry.getAllKeys()) {
-                if (!constants.hasValue(profileName, key)) {
-                    ConstantDefinition def = AbstractConstantsRegistry.get(key);
-                    handleWarning("Missing constant " + key + " in profile " + profileName +
-                            ". Using default value: " + def.getDefaultValue());
-                    constants.setValue(key, def.getDefaultValue());
-                }
-            }
-
+            validateAndLoadConfig(configData, profileName, constants);
             return true;
 
         } catch (Exception e) {
@@ -71,58 +29,64 @@ public abstract class AbstractConfigurationLoader {
         }
     }
 
-    /**
-     * Save configuration to a destination.
-     * 
-     * @param destination The destination identifier (could be a file path, URL,
-     *                    etc.)
-     * @return true if saving was successful, false otherwise
-     */
-    protected boolean saveConfiguration(String destination, AbstractConfigurableConstants constants) {
+    @Override
+    public boolean saveConfiguration(String destination, AbstractConfigurableConstants constants) {
         try {
-            Map<String, Object> configData = new HashMap<>();
-
-            // Collect all current values
-            for (String key : AbstractConstantsRegistry.getAllKeys()) {
-                Object value = constants.getRawValue(key);
-                configData.put(key, value);
-            }
-
-            // Write the configuration data
+            Map<String, Object> configData = collectConfigurationData(constants);
             return writeConfigurationData(destination, configData);
-
         } catch (Exception e) {
             handleError("Error saving configuration", e);
             return false;
         }
     }
 
-    /**
-     * Read configuration data from the source.
-     * Implementations should define how to read from their specific source.
-     */
-    protected abstract Map<String, Object> readConfigurationData(String source) throws Exception;
+    protected void validateAndLoadConfig(Map<String, Object> configData, String profileName,
+            AbstractConfigurableConstants constants) {
+        Map<String, ConstantDefinition> validationMap = new HashMap<>();
+        for (String key : constants.registry.getAllKeys()) {
+            validationMap.put(key, constants.registry.get(key));
+        }
 
-    /**
-     * Write configuration data to the destination.
-     * Implementations should define how to write to their specific destination.
-     */
-    protected abstract boolean writeConfigurationData(String destination, Map<String, Object> data) throws Exception;
+        for (Map.Entry<String, Object> entry : configData.entrySet()) {
+            validateAndSetValue(entry.getKey(), entry.getValue(), validationMap, profileName, constants);
+        }
 
-    /**
-     * Handle warning messages. Implementations can define their logging strategy.
-     */
-    protected abstract void handleWarning(String message);
+        // Set default values for missing constants
+        for (String key : constants.registry.getAllKeys()) {
+            if (!constants.hasValue(profileName, key)) {
+                ConstantDefinition def = constants.registry.get(key);
+                handleWarning("Missing constant " + key + " in profile " + profileName +
+                        ". Using default value: " + def.getDefaultValue());
+                constants.setValue(key, def.getDefaultValue());
+            }
+        }
+    }
 
-    /**
-     * Handle error messages. Implementations can define their error handling
-     * strategy.
-     */
-    protected abstract void handleError(String message, Exception e);
+    protected void validateAndSetValue(String key, Object value, Map<String, ConstantDefinition> validationMap,
+            String profileName, AbstractConfigurableConstants constants) {
+        ConstantDefinition def = validationMap.get(key);
+        if (def == null) {
+            handleWarning("Unknown constant in config: " + key);
+            return;
+        }
 
-    /**
-     * Validate if a value matches the expected type
-     */
+        if (!isValueTypeValid(value, def.getType())) {
+            handleWarning("Type mismatch for constant " + key + ". Expected " + def.getType().getSimpleName());
+            return;
+        }
+
+        constants.setValue(key, value);
+    }
+
+    protected Map<String, Object> collectConfigurationData(AbstractConfigurableConstants constants) {
+        Map<String, Object> configData = new HashMap<>();
+        for (String key : constants.registry.getAllKeys()) {
+            Object value = constants.getRawValue(key);
+            configData.put(key, value);
+        }
+        return configData;
+    }
+
     protected boolean isValueTypeValid(Object value, Class<?> expectedType) {
         if (value == null) {
             return false;
@@ -146,4 +110,15 @@ public abstract class AbstractConfigurationLoader {
 
         return expectedType.isInstance(value);
     }
+
+    /**
+     * Handle warning messages. Implementations can define their logging strategy.
+     */
+    protected abstract void handleWarning(String message);
+
+    /**
+     * Handle error messages. Implementations can define their error handling
+     * strategy.
+     */
+    protected abstract void handleError(String message, Exception e);
 }

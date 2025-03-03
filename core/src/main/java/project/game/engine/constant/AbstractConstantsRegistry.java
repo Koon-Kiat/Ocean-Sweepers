@@ -5,42 +5,46 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import project.game.engine.api.constant.IConstantsRegistry;
+
 /**
- * Abstract registry for constants that allows dynamic registration of new
- * constants.
- * This provides a base layer that can be extended for different projects.
+ * Base implementation of the constants registry.
  */
-public abstract class AbstractConstantsRegistry {
-    protected static final Map<String, ConstantDefinition> constants = new HashMap<>();
+public class AbstractConstantsRegistry implements IConstantsRegistry {
+    private final Map<String, ConstantDefinition> registry = new HashMap<>();
 
-    protected static void register(ConstantDefinition definition) {
-        constants.put(definition.getKey(), definition);
+    @Override
+    public void register(String key, ConstantDefinition definition) {
+        if (registry.containsKey(key)) {
+            throw new IllegalArgumentException("Constant already registered: " + key);
+        }
+        registry.put(key, definition);
     }
 
-    public static ConstantDefinition get(String key) {
-        return constants.get(key);
+    @Override
+    public ConstantDefinition get(String key) {
+        return registry.get(key);
     }
 
-    public static Set<String> getKeysByCategory(String category) {
-        return constants.values().stream()
+    @Override
+    public Set<String> getKeysByCategory(String category) {
+        return registry.values().stream()
                 .filter(def -> def.getCategory().equals(category))
                 .map(ConstantDefinition::getKey)
                 .collect(Collectors.toSet());
     }
 
-    public static Set<String> getAllKeys() {
-        return constants.keySet();
+    @Override
+    public Set<String> getAllKeys() {
+        return registry.keySet();
     }
 
-    /**
-     * Add a new constant at runtime
-     * 
-     * @param key          The constant key
-     * @param category     The category it belongs to
-     * @param type         The data type
-     * @param defaultValue The default value
-     */
-    public static void addConstant(String key, String category, Class<?> type, Object defaultValue) {
-        register(new ConstantDefinition(key, category, type, defaultValue));
+    @Override
+    public boolean containsKey(String key) {
+        return registry.containsKey(key);
+    }
+
+    public void addConstant(String key, String category, Class<?> type, Object defaultValue) {
+        register(key, new ConstantDefinition(key, category, type, defaultValue));
     }
 }

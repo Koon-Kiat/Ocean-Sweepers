@@ -1,116 +1,65 @@
 package project.game.engine.constant;
 
-import java.util.HashMap;
-import java.util.Map;
+import project.game.context.constant.DefaultProfileManager;
+import project.game.engine.api.constant.IConstantsRegistry;
+import project.game.engine.api.constant.IProfileManager;
 
 /**
- * An abstract base class for configurable constants that uses the Strategy
- * pattern.
- * Projects can extend this class to implement their specific constants.
+ * An abstract base class for configurable constants that provides profile-based
+ * configuration management.
  */
 public abstract class AbstractConfigurableConstants {
-    private String currentProfile = "default";
-    private final Map<String, Map<String, Object>> profiles = new HashMap<>();
+    protected final IProfileManager profileManager;
+    protected final IConstantsRegistry registry;
 
-    protected AbstractConfigurableConstants() {
-        // Protected constructor - initialization must happen through init()
+    protected AbstractConfigurableConstants(IConstantsRegistry registry) {
+        this.registry = registry;
+        this.profileManager = new DefaultProfileManager(registry);
     }
 
     public void createProfile(String profileName) {
-        if (!profiles.containsKey(profileName)) {
-            profiles.put(profileName, new HashMap<>());
-
-            // Initialize with default values from registry
-            Map<String, Object> profileValues = profiles.get(profileName);
-            for (String key : AbstractConstantsRegistry.getAllKeys()) {
-                ConstantDefinition def = AbstractConstantsRegistry.get(key);
-                profileValues.put(key, def.getDefaultValue());
-            }
-        }
+        profileManager.createProfile(profileName);
     }
 
     public boolean setProfile(String profileName) {
-        if (profiles.containsKey(profileName)) {
-            currentProfile = profileName;
-            return true;
-        }
-        return false;
+        return profileManager.setProfile(profileName);
     }
 
     public void setValue(String key, Object value) {
-        ConstantDefinition def = AbstractConstantsRegistry.get(key);
-        if (def == null) {
-            throw new IllegalArgumentException("Unknown constant key: " + key);
-        }
-        if (!def.getType().isInstance(value)) {
-            throw new IllegalArgumentException("Invalid type for constant " + key +
-                    ". Expected " + def.getType().getSimpleName() +
-                    " but got " + value.getClass().getSimpleName());
-        }
-        profiles.get(currentProfile).put(key, value);
-    }
-
-    protected Object getValue(String key) {
-        Map<String, Object> currentValues = profiles.get(currentProfile);
-        if (currentValues.containsKey(key)) {
-            return currentValues.get(key);
-        } else if (!currentProfile.equals("default") && profiles.get("default").containsKey(key)) {
-            return profiles.get("default").get(key);
-        }
-        ConstantDefinition def = AbstractConstantsRegistry.get(key);
-        if (def != null) {
-            return def.getDefaultValue();
-        }
-        throw new IllegalArgumentException("Constant key not found: " + key);
+        profileManager.setValue(key, value);
     }
 
     public boolean hasValue(String profileName, String key) {
-        Map<String, Object> profileValues = profiles.get(profileName);
-        return profileValues != null && profileValues.containsKey(key);
+        return profileManager.hasValue(profileName, key);
     }
 
     public Object getRawValue(String key) {
-        return getValue(key);
+        return profileManager.getRawValue(key);
     }
 
-    // Helper methods for type conversion
-    protected float getFloatValue(String key) {
-        Object value = getValue(key);
-        if (value instanceof Number) {
-            return ((Number) value).floatValue();
-        }
-        throw new IllegalArgumentException("Constant " + key + " is not a number");
+    protected Float getFloatValue(String key) {
+        return profileManager.getFloatValue(key);
     }
 
-    protected long getLongValue(String key) {
-        Object value = getValue(key);
-        if (value instanceof Number) {
-            return ((Number) value).longValue();
-        }
-        throw new IllegalArgumentException("Constant " + key + " is not a number");
+    protected Integer getIntValue(String key) {
+        return profileManager.getIntValue(key);
     }
 
-    protected int getIntValue(String key) {
-        Object value = getValue(key);
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        throw new IllegalArgumentException("Constant " + key + " is not a number");
+    protected Long getLongValue(String key) {
+        return profileManager.getLongValue(key);
     }
 
-    protected boolean getBooleanValue(String key) {
-        Object value = getValue(key);
-        if (value instanceof Boolean) {
-            return (Boolean) value;
-        }
-        throw new IllegalArgumentException("Constant " + key + " is not a boolean");
+    protected Boolean getBooleanValue(String key) {
+        return profileManager.getBooleanValue(key);
     }
 
     protected String getStringValue(String key) {
-        Object value = getValue(key);
-        if (value instanceof String) {
-            return (String) value;
-        }
-        throw new IllegalArgumentException("Constant " + key + " is not a string");
+        return profileManager.getStringValue(key);
     }
+
+    /**
+     * Abstract method to initialize configuration from a source.
+     * Implementation should handle loading configuration from a specific source.
+     */
+    protected abstract void initializeConfiguration(String configSource);
 }

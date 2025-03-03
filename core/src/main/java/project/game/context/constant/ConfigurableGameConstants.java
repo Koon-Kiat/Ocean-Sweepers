@@ -6,27 +6,30 @@ import project.game.engine.constant.AbstractConfigurableConstants;
 
 /**
  * Game-specific implementation of configurable constants.
- * Extends the abstract base class and implements the game interface.
  */
 public class ConfigurableGameConstants extends AbstractConfigurableConstants implements IGameConstants {
     private static final GameLogger LOGGER = new GameLogger(ConfigurableGameConstants.class);
     private static ConfigurableGameConstants instance;
 
     private ConfigurableGameConstants() {
-        // Initialize with default registry
-        ConstantsRegistry.getInstance(); // Ensure registry is initialized
-        createProfile("default"); // Create the default profile with registry values
+        // Initialize with game-specific registry
+        super(ConstantsRegistry.getInstance());
+    }
+
+    @Override
+    protected void initializeConfiguration(String configSource) {
+        try {
+            GameConfigurationLoader.getInstance().loadConfiguration(configSource, "default", this);
+        } catch (Exception e) {
+            LOGGER.fatal("Failed to initialize configuration from: " + configSource, e);
+            throw new RuntimeException("Failed to initialize configuration", e);
+        }
     }
 
     public static synchronized ConfigurableGameConstants init(String configFile) {
         if (instance == null) {
             instance = new ConfigurableGameConstants();
-            try {
-                GameConfigurationLoader.getInstance().loadProfile(configFile, "default");
-            } catch (Exception e) {
-                LOGGER.fatal("Failed to initialize ConfigurableGameConstants", e);
-                throw new RuntimeException("Failed to initialize ConfigurableGameConstants", e);
-            }
+            instance.initializeConfiguration(configFile);
         }
         return instance;
     }
