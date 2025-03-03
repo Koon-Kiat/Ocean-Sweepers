@@ -77,10 +77,14 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             entity.setY(entity.getY() + deltaMovement.y);
         } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.error("Exception in ZigZagMovementBehavior.applyMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
+            if (!lenientMode) {
+                throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
+            }
         } catch (Exception e) {
             LOGGER.error("Unexpected exception in ZigZagMovementBehavior.applyMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
+            if (!lenientMode) {
+                throw new MovementException("Error updating position in ZigZagMovementBehavior", e);
+            }
         }
     }
 

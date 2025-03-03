@@ -74,16 +74,24 @@ public class ConstantMovementBehavior implements IMovementBehavior {
                     String errorMessage = "Unknown direction in ConstantMovementBehavior.updatePosition: "
                             + entity.getDirection();
                     LOGGER.error(errorMessage);
-                    throw new MovementException(errorMessage);
+                    if (!lenientMode) {
+                        throw new MovementException(errorMessage);
+                    }
+                    return;
             }
             entity.setX(entity.getX() + deltaMovement.x);
             entity.setY(entity.getY() + deltaMovement.y);
         } catch (MovementException e) {
             LOGGER.error("Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw e;
+            if (!lenientMode) {
+                throw e;
+            }
         } catch (Exception e) {
-            LOGGER.fatal("Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);
-            throw new MovementException("Error updating position in ConstantMovementBehavior", e);
+            String errorMessage = "Unexpected exception in ConstantMovementBehavior.updatePosition: " + e.getMessage();
+            LOGGER.fatal(errorMessage, e);
+            if (!lenientMode) {
+                throw new MovementException("Error updating position in ConstantMovementBehavior", e);
+            }
         }
     }
 }

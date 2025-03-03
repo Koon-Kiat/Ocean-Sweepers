@@ -19,7 +19,7 @@ public class FollowMovementBehavior implements IMovementBehavior {
     private static final GameLogger LOGGER = new GameLogger(FollowMovementBehavior.class);
     private final IPositionable target;
     private final float speed;
-    private final boolean lenientMode;  
+    private final boolean lenientMode;
 
     /**
      * Constructs a FollowMovementBehavior with the specified parameters.
@@ -60,10 +60,14 @@ public class FollowMovementBehavior implements IMovementBehavior {
             entity.setY(newY);
         } catch (IllegalArgumentException e) {
             LOGGER.error("Illegal argument in FollowMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Invalid argument in FollowMovementBehavior", e);
+            if (!lenientMode) {
+                throw new MovementException("Invalid argument in FollowMovementBehavior", e);
+            }
         } catch (Exception e) {
             LOGGER.error("Unexpected error in FollowMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error updating position in FollowMovementBehavior", e);
+            if (!lenientMode) {
+                throw new MovementException("Error updating position in FollowMovementBehavior", e);
+            }
         }
     }
 }
