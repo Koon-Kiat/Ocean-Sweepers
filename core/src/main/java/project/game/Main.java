@@ -8,8 +8,8 @@ import project.game.common.logging.core.GameLogger;
 import project.game.common.logging.util.LogPaths;
 import project.game.common.util.ProjectPaths;
 import project.game.context.factory.GameConstantsFactory;
+import project.game.context.factory.SceneFactory;
 import project.game.engine.io.SceneIOManager;
-import project.game.engine.scene.SceneFactory;
 import project.game.engine.scene.SceneManager;
 
 public class Main extends ApplicationAdapter {

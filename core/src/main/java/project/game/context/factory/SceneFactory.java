@@ -1,4 +1,4 @@
-package project.game.engine.scene;
+package project.game.context.factory;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -10,6 +10,7 @@ import project.game.context.scene.MainMenuScene;
 import project.game.context.scene.OptionsScene;
 import project.game.engine.api.scene.IScene;
 import project.game.engine.io.SceneIOManager;
+import project.game.engine.scene.SceneManager;
 
 /**
  * Factory class for creating and registering scenes.
