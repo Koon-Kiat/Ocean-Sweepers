@@ -3,6 +3,7 @@ package project.game.engine.scene;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import project.game.engine.io.SceneIOManager;
 
@@ -10,16 +11,18 @@ import project.game.engine.io.SceneIOManager;
  * Manages the scenes in the game.
  */
 public class SceneManager {
-    private final Map<String, Scene> scenes;
+    private final Map<String, IScene> scenes;
+    private final Stack<IScene> sceneHistory;
     private final SceneIOManager baseInputManager;
-    private Scene currentScene;
+    private IScene currentScene;
 
     public SceneManager() {
         baseInputManager = new SceneIOManager();
         this.scenes = new HashMap<>();
+        this.sceneHistory = new Stack<>();
     }
 
-    public void addScene(String name, Scene scene) {
+    public void addScene(String name, IScene scene) {
         scenes.put(name, scene);
     }
 
@@ -30,10 +33,19 @@ public class SceneManager {
 
         if (currentScene != null) {
             currentScene.hide();
+            sceneHistory.push(currentScene);
         }
 
         currentScene = scenes.get(name);
         currentScene.show();
+    }
+
+    public void returnToPreviousScene() {
+        if (!sceneHistory.isEmpty()) {
+            currentScene.hide();
+            currentScene = sceneHistory.pop();
+            currentScene.show();
+        }
     }
 
     public void removeScene(String name) {
@@ -41,11 +53,11 @@ public class SceneManager {
             throw new IllegalArgumentException("Scene '" + name + "' does not exist!");
         }
 
-        Scene scene = scenes.remove(name);
+        IScene scene = scenes.remove(name);
         scene.dispose();
     }
 
-    public Scene getScene(String name) {
+    public IScene getScene(String name) {
         return currentScene;
     }
 
@@ -62,7 +74,7 @@ public class SceneManager {
     }
 
     public void dispose() {
-        for (Scene scene : scenes.values()) {
+        for (IScene scene : scenes.values()) {
             scene.dispose();
         }
         scenes.clear();
@@ -72,7 +84,7 @@ public class SceneManager {
         return scenes.keySet();
     }
 
-    public Scene getCurrentScene() {
+    public IScene getCurrentScene() {
         return currentScene;
     }
 

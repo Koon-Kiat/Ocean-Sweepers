@@ -25,8 +25,7 @@ public class MainMenuScene extends Scene {
     private AudioManager audioManager;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
-        super(inputManager);
-        this.sceneManager = sceneManager;
+        super(sceneManager, inputManager);
     }
 
     /**
@@ -36,8 +35,10 @@ public class MainMenuScene extends Scene {
     @Override
     public void create() {
         this.camera = new OrthographicCamera();
-        this.viewport = new FitViewport(stage.getHeight(), stage.getWidth(), camera);
-        stage.setViewport(viewport);
+        // this.viewport = new FitViewport(stage.getHeight(), stage.getWidth(), camera);
+        // stage.setViewport(viewport);
+        this.viewport = new FitViewport(sceneUIManager.getStage().getHeight(), sceneUIManager.getStage().getWidth(), camera);
+        sceneUIManager.getStage().setViewport(viewport);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         playButton = new TextButton("PLAY", skin);
@@ -49,7 +50,7 @@ public class MainMenuScene extends Scene {
         exitButton = new TextButton("EXIT", skin);
 
         // Initialize AudioManager for sound effects and music.
-        audioManager = new AudioManager(stage);
+        audioManager = new AudioManager(sceneUIManager.getStage());
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
@@ -85,7 +86,10 @@ public class MainMenuScene extends Scene {
         table.row();
         table.add(exitButton);
 
-        stage.addActor(table);
+        sceneUIManager.getStage().addActor(table);
+
+        LOGGER.log(Level.INFO, "Main Menu Scene sceneManager instance: {0}", System.identityHashCode(sceneManager));
+
 
     }
 
@@ -96,19 +100,19 @@ public class MainMenuScene extends Scene {
     @Override
     public void render(float delta) {
         super.render(delta);
-        Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(sceneUIManager.getStage());
     }
 
     @Override
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
         viewport.setWorldSize(width, height);
-        stage.getViewport().update(width, height, true);
+        sceneUIManager.getStage().getViewport().update(width, height, true);
     }
 
     @Override
     public void dispose() {
-        stage.dispose();
+        sceneUIManager.getStage().dispose();
         skin.dispose();
     }
 }

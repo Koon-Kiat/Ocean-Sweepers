@@ -18,8 +18,7 @@ public class GameOverScene extends Scene {
     private BitmapFont font;
 
     public GameOverScene(SceneManager sceneManager, SceneIOManager inputManager) {
-        super(inputManager);
-        this.sceneManager = sceneManager;
+        super(sceneManager, inputManager);
     }
 
     /**
@@ -38,8 +37,13 @@ public class GameOverScene extends Scene {
         retryButton.setSize(200, 60);
         retryButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f);
         inputManager.addButtonClickListener(retryButton, () -> {
+            // First get the game scene by name and reset it
+            IScene gameScene = sceneManager.getScene("game");
+            if (gameScene != null) {
+                gameScene.resetScene();
+            }
+            // Then switch to the game scene
             sceneManager.setScene("game");
-            sceneManager.getScene(null).resetScene();
         });
 
         TextButton exitButton = new TextButton("Exit", skin);
@@ -51,10 +55,10 @@ public class GameOverScene extends Scene {
 
         Table table = new Table();
         table.setFillParent(true);
-        stage.addActor(table);
+        sceneUIManager.getStage().addActor(table);
 
-        stage.addActor(retryButton);
-        stage.addActor(exitButton);
+        sceneUIManager.getStage().addActor(retryButton);
+        sceneUIManager.getStage().addActor(exitButton);
 
     }
 
@@ -66,14 +70,14 @@ public class GameOverScene extends Scene {
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         super.render(delta);
-        Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(sceneUIManager.getStage());
 
         batch.begin();
         font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
                 false);
         batch.end();
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
     }
 
     /**
@@ -81,12 +85,12 @@ public class GameOverScene extends Scene {
      */
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        sceneUIManager.getStage().getViewport().update(width, height, true);
     }
 
     @Override
     public void dispose() {
-        stage.dispose();
+        sceneUIManager.getStage().dispose();
         batch.dispose();
         font.dispose();
     }
