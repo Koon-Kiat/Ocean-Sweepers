@@ -37,8 +37,13 @@ public class GameOverScene extends Scene {
         retryButton.setSize(200, 60);
         retryButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f);
         inputManager.addButtonClickListener(retryButton, () -> {
+            // First get the game scene by name and reset it
+            Scene gameScene = sceneManager.getScene("game");
+            if (gameScene != null) {
+                gameScene.resetScene();
+            }
+            // Then switch to the game scene
             sceneManager.setScene("game");
-            sceneManager.getScene(null).resetScene();
         });
 
         TextButton exitButton = new TextButton("Exit", skin);
