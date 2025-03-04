@@ -37,7 +37,8 @@ public class MainMenuScene extends Scene {
         this.camera = new OrthographicCamera();
         // this.viewport = new FitViewport(stage.getHeight(), stage.getWidth(), camera);
         // stage.setViewport(viewport);
-        this.viewport = new FitViewport(sceneUIManager.getStage().getHeight(), sceneUIManager.getStage().getWidth(), camera);
+        this.viewport = new FitViewport(sceneUIManager.getStage().getHeight(), sceneUIManager.getStage().getWidth(),
+                camera);
         sceneUIManager.getStage().setViewport(viewport);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
@@ -88,8 +89,7 @@ public class MainMenuScene extends Scene {
 
         sceneUIManager.getStage().addActor(table);
 
-        LOGGER.log(Level.INFO, "Main Menu Scene sceneManager instance: {0}", System.identityHashCode(sceneManager));
-
+        LOGGER.info("Main Menu Scene sceneManager instance: {0}", System.identityHashCode(sceneManager));
 
     }
 

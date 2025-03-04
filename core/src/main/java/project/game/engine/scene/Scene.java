@@ -5,13 +5,14 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import project.game.engine.api.scene.IScene;
 import project.game.engine.io.SceneIOManager;
 
 /**
  * Abstract class for creating scenes in the game.
  */
 public abstract class Scene implements Screen, IScene {
-    //protected Stage stage;
+    // protected Stage stage;
     protected SceneUIManager sceneUIManager;
     protected SceneIOManager inputManager;
     protected SceneManager sceneManager;
@@ -19,7 +20,7 @@ public abstract class Scene implements Screen, IScene {
     public Scene(SceneManager sceneManager, SceneIOManager inputManager) {
         this.sceneManager = sceneManager;
         this.inputManager = inputManager;
-        this.sceneUIManager = new SceneUIManager(new ScreenViewport()); // new instance for each concrete scene
+        this.sceneUIManager = new SceneUIManager(new ScreenViewport());
         initialize();
     }
 
@@ -30,8 +31,6 @@ public abstract class Scene implements Screen, IScene {
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        //stage.act(delta);
-        //stage.draw();
         sceneUIManager.update(delta);
         sceneUIManager.render();
     }
@@ -65,10 +64,10 @@ public abstract class Scene implements Screen, IScene {
 
     @Override
     public void resize(int width, int height) {
-        //stage.getViewport().update(width, height, true);
         sceneUIManager.resize(width, height);
     }
 
+    @Override
     public void resetScene() {
         create();
     }

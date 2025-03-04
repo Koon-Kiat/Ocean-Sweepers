@@ -1,4 +1,4 @@
-package project.game.abstractengine.iomanager;
+package project.game.engine.io;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,8 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.badlogic.gdx.Input;
-
-import project.game.Direction;
+import com.badlogic.gdx.math.Vector2;
 
 /**
  * Manages keyboard bindings for directional movement controls.
@@ -15,25 +14,25 @@ import project.game.Direction;
  * to opt-in to movement controls only when needed.
  */
 public class KeyBindingsManager {
+
     private static final Logger LOGGER = Logger.getLogger(KeyBindingsManager.class.getName());
-    
-    // Map holding key codes mapped to their in-game Direction
-    private Map<Integer, Direction> keyBindings;
-    
+    private final Map<Integer, Vector2> keyBindings;
+
     public KeyBindingsManager() {
         this.keyBindings = new HashMap<>();
         initializeDefaultKeyBindings();
     }
-    
+
     // Set up initial key bindings using WASD
-    public void initializeDefaultKeyBindings() {
+    public final void initializeDefaultKeyBindings() {
         keyBindings.clear();
-        keyBindings.put(Input.Keys.W, Direction.UP);
-        keyBindings.put(Input.Keys.S, Direction.DOWN);
-        keyBindings.put(Input.Keys.A, Direction.LEFT);
-        keyBindings.put(Input.Keys.D, Direction.RIGHT);
+        // Cardinal directions (WASD only)
+        keyBindings.put(Input.Keys.W, new Vector2(0, 1)); // Up
+        keyBindings.put(Input.Keys.S, new Vector2(0, -1)); // Down
+        keyBindings.put(Input.Keys.A, new Vector2(-1, 0)); // Left
+        keyBindings.put(Input.Keys.D, new Vector2(1, 0)); // Right
     }
-    
+
     // Update keyBindings based on new strings provided (e.g., during key rebind)
     public void updateKeyBindings(String upKeyString, String downKeyString, String leftKeyString,
             String rightKeyString) {
@@ -45,12 +44,12 @@ public class KeyBindingsManager {
         int leftKey = getKeycodeFromString(leftKeyString);
         int rightKey = getKeycodeFromString(rightKeyString);
 
-        keyBindings.put(upKey, Direction.UP);
-        keyBindings.put(downKey, Direction.DOWN);
-        keyBindings.put(leftKey, Direction.LEFT);
-        keyBindings.put(rightKey, Direction.RIGHT);
+        keyBindings.put(upKey, new Vector2(0, 1)); // Up
+        keyBindings.put(downKey, new Vector2(0, -1)); // Down
+        keyBindings.put(leftKey, new Vector2(-1, 0)); // Left
+        keyBindings.put(rightKey, new Vector2(1, 0)); // Right
     }
-    
+
     // Convert a key string (e.g., "W", "UP") to a LibGDX input key code
     private int getKeycodeFromString(String keyString) {
         // Ensure key string is uppercase
@@ -75,9 +74,9 @@ public class KeyBindingsManager {
                 }
         }
     }
-    
+
     // Getter for keyBindings map (for use by other systems)
-    public Map<Integer, Direction> getKeyBindings() {
+    public Map<Integer, Vector2> getKeyBindings() {
         return keyBindings;
     }
 }

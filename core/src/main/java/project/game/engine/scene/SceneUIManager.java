@@ -1,10 +1,10 @@
-package project.game.abstractengine.scenemanager;
+package project.game.engine.scene;
 
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class SceneUIManager {
-    private Stage stage;
+    private final Stage stage;
 
     public SceneUIManager(Viewport viewport) {
         this.stage = new Stage(viewport);
@@ -28,5 +28,5 @@ public class SceneUIManager {
 
     public void dispose() {
         stage.dispose();
-    } 
+    }
 }

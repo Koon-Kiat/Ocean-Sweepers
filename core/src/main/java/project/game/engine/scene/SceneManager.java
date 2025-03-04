@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import project.game.engine.api.scene.IScene;
 import project.game.engine.io.SceneIOManager;
 
 /**

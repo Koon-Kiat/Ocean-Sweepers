@@ -3,7 +3,6 @@ package project.game.engine.io;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -21,7 +20,7 @@ public class SceneIOManager extends IOManager {
     private static final GameLogger LOGGER = new GameLogger(SceneIOManager.class);
 
     // Map holding key codes mapped to their movement vectors
-    private final Map<Integer, Vector2> keyBindings;
+    private KeyBindingsManager keyBindingsManager;
 
     // Constructor: initialize without movement controls
     public SceneIOManager() {
@@ -38,7 +37,7 @@ public class SceneIOManager extends IOManager {
     }
 
     // Enable movement controls for scenes that need them
-    public void enableMovementControls() {
+    public final void enableMovementControls() {
         if (keyBindingsManager == null) {
             keyBindingsManager = new KeyBindingsManager();
         }
@@ -55,7 +54,7 @@ public class SceneIOManager extends IOManager {
         if (keyBindingsManager != null) {
             keyBindingsManager.updateKeyBindings(upKeyString, downKeyString, leftKeyString, rightKeyString);
         } else {
-            LOGGER.log(Level.WARNING, "Attempted to update key bindings but movement controls are disabled");
+            LOGGER.warn("Attempted to update key bindings but movement controls are disabled");
         }
     }
 

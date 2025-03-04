@@ -8,6 +8,7 @@ import project.game.context.scene.GameOverScene;
 import project.game.context.scene.GameScene;
 import project.game.context.scene.MainMenuScene;
 import project.game.context.scene.OptionsScene;
+import project.game.engine.api.scene.IScene;
 import project.game.engine.io.SceneIOManager;
 
 /**
