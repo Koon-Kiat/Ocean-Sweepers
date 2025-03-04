@@ -24,13 +24,12 @@ import project.game.common.logging.core.GameLogger;
 import project.game.context.api.constant.IGameConstants;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
-import project.game.context.entity.BucketEntity;
-import project.game.context.entity.DropEntity;
-import project.game.context.entity.NonMovableDroplet;
+import project.game.context.entity.Boat;
+import project.game.context.entity.Monster;
+import project.game.context.entity.Rock;
+import project.game.context.entity.Trash;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.context.movement.ConstantMovementBehavior;
-import project.game.context.movement.FollowMovementBehavior;
-import project.game.context.movement.ZigZagMovementBehavior;
 import project.game.engine.api.movement.IMovementBehavior;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.audio.AudioManager;
@@ -52,10 +51,14 @@ public class GameScene extends Scene {
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
     private SpriteBatch batch;
-    private Texture dropImage;
-    private Texture bucketImage;
-    private DropEntity drop;
-    private BucketEntity bucket;
+    private Texture rockImage;
+    private Texture boatImage;
+    private Texture trashImage;
+    private Texture monsterImage;
+    private Rock rock;
+    private Boat boat;
+    private Trash trash;
+    private Monster monster;
     private Window popupMenu;
     private Skin skin;
     private Table table;
@@ -70,7 +73,7 @@ public class GameScene extends Scene {
     private InputMultiplexer inputMultiplexer;
     private Options options;
     private AudioManager audioManager;
-    private NonMovableDroplet nonMovableDroplet;
+    private Trash nonMovableTrash;
     private IGameConstants constants;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
@@ -94,21 +97,33 @@ public class GameScene extends Scene {
         try {
             CustomAssetManager.getInstance().loadTextureAssets("droplet.png");
             CustomAssetManager.getInstance().loadTextureAssets("bucket.png");
+            CustomAssetManager.getInstance().loadTextureAssets("rock.png");
+            CustomAssetManager.getInstance().loadTextureAssets("monster.png");
             CustomAssetManager.getInstance().update();
             CustomAssetManager.getInstance().getasset_Manager().finishLoading();
             if (CustomAssetManager.getInstance().isLoaded()) {
-                dropImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
-                bucketImage = CustomAssetManager.getInstance().getAsset("bucket.png", Texture.class);
+                boatImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
+                trashImage = CustomAssetManager.getInstance().getAsset("bucket.png", Texture.class);
+                rockImage = CustomAssetManager.getInstance().getAsset("rock.png", Texture.class);
+                monsterImage = CustomAssetManager.getInstance().getAsset("monster.png", Texture.class);
             } else {
                 LOGGER.warn("Some assets not loaded yet!");
             }
             LOGGER.info("Loaded droplet.png successfully.");
             LOGGER.info("Loaded bucket.png successfully.");
-            if (dropImage == null) {
-                LOGGER.error("dropImage is null after loading!");
+            LOGGER.info("Loaded rock.png successfully.");
+            LOGGER.info("Loaded monster.png successfully.");
+            if (boatImage == null) {
+                LOGGER.error("boatImage is null after loading!");
             }
-            if (bucketImage == null) {
-                LOGGER.error("bucketImage is null after loading!");
+            if (trashImage == null) {
+                LOGGER.error("trashImage is null after loading!");
+            }
+            if (rockImage == null) {
+                LOGGER.error("rockImage is null after loading!");
+            }
+            if (monsterImage == null) {
+                LOGGER.error("monsterImage is null after loading!");
             }
 
         } catch (Exception e) {
@@ -117,23 +132,25 @@ public class GameScene extends Scene {
 
         entityManager = new EntityManager();
 
-        // Create entities
-        Entity genericDropEntity = new Entity(
-                constants.DROP_START_X(),
-                constants.DROP_START_Y(),
-                constants.DROP_WIDTH(),
-                constants.DROP_HEIGHT(),
-                true);
-        Entity genericBucketEntity = new Entity(
+        Entity boatEntity = new Entity(
                 constants.BUCKET_START_X(),
                 constants.BUCKET_START_Y(),
                 constants.BUCKET_WIDTH(),
                 constants.BUCKET_HEIGHT(),
                 true);
-        Entity genericNonMovableDroplet = new Entity(100f, 200f, 50f, 50f, false);
+
+        Entity trashEntity = new Entity(
+                constants.DROP_START_X(),
+                constants.DROP_START_Y(),
+                constants.DROP_WIDTH(),
+                constants.DROP_HEIGHT(),
+                true);
+
+        Entity rockEntity = new Entity(100f, 200f, 50f, 50f, true);
+        Entity monsterEntity = new Entity(100, 100, 70f, 70f, true);
 
         playerMovementManager = new PlayerMovementBuilder()
-                .withEntity(genericBucketEntity)
+                .withEntity(boatEntity)
                 .setSpeed(constants.PLAYER_SPEED())
                 .setInitialVelocity(0, 0)
                 .setLenientMode(true)
@@ -143,33 +160,32 @@ public class GameScene extends Scene {
         // Add behavior to the pool for Random Movement
         behaviorPool = new ArrayList<>();
         behaviorPool.add(new ConstantMovementBehavior(constants.NPC_SPEED(), true));
-        behaviorPool.add(
-                new ZigZagMovementBehavior(constants.NPC_SPEED(), constants.AMPLITUDE(), constants.FREQUENCY(), true));
-        behaviorPool.add(new FollowMovementBehavior(playerMovementManager, constants.NPC_SPEED(), true));
-
         LOGGER.info("Configured NPC movement behaviors: {0}", behaviorPool.size());
 
         npcMovementManager = new NPCMovementBuilder()
-                .withEntity(genericDropEntity)
+                .withEntity(monsterEntity)
                 .setSpeed(constants.NPC_SPEED())
-                .withOrbitalMovement(playerMovementManager, 100f, 2f, 0f) // Circle around player
+                .withInterceptorMovement(playerMovementManager)
                 .setInitialVelocity(0, 0)
                 .setLenientMode(true)
                 .build();
 
         // Initialize entities
-        bucket = new BucketEntity(genericBucketEntity, world, playerMovementManager, "bucket.png");
-        drop = new DropEntity(genericDropEntity, world, npcMovementManager, "droplet.png");
-        nonMovableDroplet = new NonMovableDroplet(genericNonMovableDroplet, "droplet.png");
+        boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
+        trash = new Trash(trashEntity, "droplet.png");
+        rock = new Rock(rockEntity, world, "rock.png");
+        monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
 
         // Initialize bodies
-        bucket.initBody(world);
-        drop.initBody(world);
+        boat.initBody(world);
+        rock.initBody(world);
+        monster.initBody(world);
 
         // Add entities to the entity manager
-        entityManager.addRenderableEntity(bucket);
-        entityManager.addRenderableEntity(drop);
-        entityManager.addRenderableEntity(nonMovableDroplet);
+        entityManager.addRenderableEntity(boat);
+        entityManager.addRenderableEntity(trash);
+        entityManager.addRenderableEntity(rock);
+        entityManager.addRenderableEntity(monster);
 
         camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
         camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
@@ -180,8 +196,9 @@ public class GameScene extends Scene {
         collisionManager.init();
 
         // Add entities to the collision manager
-        collisionManager.addEntity(drop, npcMovementManager);
-        collisionManager.addEntity(bucket, playerMovementManager);
+        collisionManager.addEntity(boat, playerMovementManager);
+        collisionManager.addEntity(rock, null);
+        collisionManager.addEntity(monster, npcMovementManager);
 
         // Create boundaries
         BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
@@ -231,9 +248,11 @@ public class GameScene extends Scene {
         debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
         debugRenderer.render(world, debugMatrix);
 
-        // Step the physics simulation forward at a rate of 60hz
-        float timeStep = 1 / 60f;
-        world.step(timeStep, 6, 2);
+        // Step the physics simulation forward with fixed timestep and more iterations
+        float timeStep = 1 / 300f; // Increased physics update rate
+        int velocityIterations = 8; // Increased from 6
+        int positionIterations = 3;
+        world.step(timeStep, velocityIterations, positionIterations);
 
         // Process collisions
         collisionManager.processCollisions();
@@ -247,14 +266,14 @@ public class GameScene extends Scene {
                 LOGGER.error("AudioManager is null!");
             }
         }
-
     }
 
     @Override
     public void dispose() {
         batch.dispose();
-        dropImage.dispose();
-        bucketImage.dispose();
+        boatImage.dispose();
+        trashImage.dispose();
+        rockImage.dispose();
         debugRenderer.dispose();
         LOGGER.info("GameScene disposed");
     }
