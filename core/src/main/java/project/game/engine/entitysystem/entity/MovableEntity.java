@@ -55,4 +55,8 @@ public abstract class MovableEntity extends Entity implements IPositionable {
 			velocity.nor().scl(speed);
 		}
 	}
+
+	public void clearVelocity() {
+		velocity.set(0, 0);
+	}
 }
