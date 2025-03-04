@@ -18,10 +18,10 @@
         "DROP_HEIGHT": 50.0,
         "GAME_WIDTH": 1920.0,
         "GAME_HEIGHT": 1080.0,
-        "MONSTER_BASE_IMPULSE": 50.0,
-        "ROCK_BASE_IMPULSE": 50.0
+        "MONSTER_BASE_IMPULSE": 200.0,
+        "ROCK_BASE_IMPULSE": 250.0
     },
     "longs": {
-        "COLLISION_ACTIVE_DURATION": 1000
+        "COLLISION_ACTIVE_DURATION": 500
     }
 }
