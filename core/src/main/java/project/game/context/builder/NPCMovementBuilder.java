@@ -6,9 +6,11 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.context.factory.MovementBehaviorFactory;
-import project.game.context.movement.FollowMovementBehavior;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.context.movement.FollowMovementStrategy;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
+import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
 import project.game.engine.entitysystem.movement.NPCMovementManager;
 
@@ -79,7 +81,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    public NPCMovementBuilder withRandomisedMovement(List<IMovementBehavior> behaviorPool, float minDuration,
+    public NPCMovementBuilder withRandomisedMovement(List<IMovementStrategy> behaviorPool, float minDuration,
             float maxDuration) {
         if (behaviorPool == null || behaviorPool.isEmpty()) {
             String errorMsg = behaviorPool == null ? "Behavior pool cannot be null in withRandomisedMovement."
@@ -138,9 +140,9 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    public NPCMovementBuilder withInterceptorMovement(MovableEntity target) {
+    public NPCMovementBuilder withInterceptorMovement(IMovable movable) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createInterceptorMovement(target, this.speed,
+            this.movementBehavior = MovementBehaviorFactory.createInterceptorMovement(movable, this.speed,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -169,10 +171,30 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
+    @Override
+    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
+        if (entity == null) {
+            String errorMsg = "Cannot create MovableEntity: Entity is null";
+            LOGGER.fatal(errorMsg);
+            throw new MovementException(errorMsg);
+        }
+
+        return new NPCMovableEntity(entity, speed);
+    }
+
+    /**
+     * Concrete implementation of MovableEntity for NPC entities
+     */
+    private static class NPCMovableEntity extends MovableEntity {
+        public NPCMovableEntity(Entity entity, float speed) {
+            super(entity, speed);
+        }
+    }
+
     public NPCMovementManager build() {
         try {
             validateBuildRequirements();
-            if (this.entity == null) {
+            if (this.entity == null && this.movableEntity == null) {
                 String errorMsg = "Entity must not be null for NPCMovementBuilder.";
                 LOGGER.fatal(errorMsg);
                 throw new MovementException(errorMsg);
@@ -184,7 +206,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
             // Use initialVelocity instead of direction
             if (initialVelocity.len2() < 0.0001f
-                    && !(this.movementBehavior instanceof FollowMovementBehavior)) {
+                    && !(this.movementBehavior instanceof FollowMovementStrategy)) {
                 if (lenientMode) {
                     LOGGER.warn("{0} needs an initial velocity. Setting default up direction.",
                             this.movementBehavior.getClass().getSimpleName());

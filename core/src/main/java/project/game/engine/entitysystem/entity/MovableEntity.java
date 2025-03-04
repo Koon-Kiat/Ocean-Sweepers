@@ -2,13 +2,13 @@ package project.game.engine.entitysystem.entity;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.engine.api.movement.IPositionable;
+import project.game.engine.api.movement.IMovable;
 
 /**
  * MovableEntity is an abstract class that extends Entity and provides the
  * necessary methods and fields for entities that can move.
  */
-public abstract class MovableEntity extends Entity implements IPositionable {
+public abstract class MovableEntity extends Entity implements IMovable {
 
 	private final Entity entity;
 	private float speed;
@@ -25,18 +25,22 @@ public abstract class MovableEntity extends Entity implements IPositionable {
 		return entity;
 	}
 
+	@Override
 	public float getSpeed() {
 		return this.speed;
 	}
 
+	@Override
 	public void setSpeed(float speed) {
 		this.speed = speed;
 	}
 
+	@Override
 	public Vector2 getVelocity() {
-		return velocity;
+		return new Vector2(velocity);
 	}
 
+	@Override
 	public void setVelocity(Vector2 velocity) {
 		if (velocity == null) {
 			this.velocity = new Vector2(0, 0);
@@ -45,17 +49,20 @@ public abstract class MovableEntity extends Entity implements IPositionable {
 		this.velocity = velocity;
 	}
 
+	@Override
 	public void setVelocity(float x, float y) {
 		this.velocity.x = x;
 		this.velocity.y = y;
 	}
 
+	@Override
 	public void normalizeVelocity() {
 		if (velocity.len() > 0) {
 			velocity.nor().scl(speed);
 		}
 	}
 
+	@Override
 	public void clearVelocity() {
 		velocity.set(0, 0);
 	}

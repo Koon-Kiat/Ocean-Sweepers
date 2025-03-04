@@ -5,8 +5,9 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Base builder class for movement builders.
@@ -17,11 +18,12 @@ import project.game.engine.entitysystem.entity.Entity;
 public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<T>> {
 
     protected static final GameLogger LOGGER = new GameLogger(AbstractMovementBuilder.class);
+    protected MovableEntity movableEntity;
     protected Entity entity;
     protected float speed;
     protected Vector2 initialVelocity = new Vector2(0, 0);
-    protected IMovementBehavior movementBehavior;
-    protected boolean lenientMode = false; // default to false for stricter validation
+    protected IMovementStrategy movementBehavior;
+    protected boolean lenientMode = false;
 
     @SuppressWarnings("unchecked")
     protected T self() {
@@ -34,6 +36,29 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
 
     public T withEntity(Entity entity) {
         this.entity = entity;
+        return self();
+    }
+
+    public MovableEntity getMovableEntity() {
+        if (movableEntity != null) {
+            return movableEntity;
+        } else if (entity != null) {
+            // You need to implement this method in concrete builder classes
+            return createMovableEntityFromEntity(entity, speed);
+        } else {
+            String errorMessage = "No entity provided.";
+            LOGGER.fatal(errorMessage);
+            if (lenientMode) {
+                LOGGER.warn("No entity provided in lenient mode. This will likely cause issues later.");
+                return null;
+            } else {
+                throw new MovementException(errorMessage);
+            }
+        }
+    }
+
+    public T withMovableEntity(MovableEntity movableEntity) {
+        this.movableEntity = movableEntity;
         return self();
     }
 
@@ -75,7 +100,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
         return self();
     }
 
-    public IMovementBehavior getMovementBehavior() {
+    public IMovementStrategy getMovementBehavior() {
         return movementBehavior;
     }
 
@@ -89,4 +114,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
     }
 
     protected abstract void validateBuildRequirements();
+
+    protected abstract MovableEntity createMovableEntityFromEntity(Entity entity, float speed);
+
 }

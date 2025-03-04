@@ -5,17 +5,17 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
-import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Makes an entity orbit around a target entity.
  * The orbit can be circular or elliptical, and the rotation speed is
  * configurable.
  */
-public class OrbitalMovementBehavior implements IMovementBehavior {
-    private static final GameLogger LOGGER = new GameLogger(OrbitalMovementBehavior.class);
+public class OrbitalMovementStrategy implements IMovementStrategy {
+    private static final GameLogger LOGGER = new GameLogger(OrbitalMovementStrategy.class);
 
     private final IPositionable target;
     private final float orbitRadius;
@@ -24,7 +24,7 @@ public class OrbitalMovementBehavior implements IMovementBehavior {
     private float currentAngle = 0;
     private final float eccentricity; // 0 = circle, >0 = ellipse
 
-    public OrbitalMovementBehavior(IPositionable target, float orbitRadius, float rotationSpeed, float eccentricity,
+    public OrbitalMovementStrategy(IPositionable target, float orbitRadius, float rotationSpeed, float eccentricity,
             boolean lenientMode) {
         this.lenientMode = lenientMode;
 
@@ -56,7 +56,7 @@ public class OrbitalMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
+    public void move(IMovable movable, float deltaTime) {
         try {
             // Update the current angle
             currentAngle += rotationSpeed * deltaTime;
@@ -73,8 +73,8 @@ public class OrbitalMovementBehavior implements IMovementBehavior {
             float orbitY = currentRadius * MathUtils.sin(currentAngle);
 
             // Set the entity's position relative to the target
-            entity.setX(target.getX() + orbitX);
-            entity.setY(target.getY() + orbitY);
+            movable.setX(target.getX() + orbitX);
+            movable.setY(target.getY() + orbitY);
 
             // Calculate and set velocity for proper facing direction
             float nextAngle = currentAngle + rotationSpeed * deltaTime;
@@ -83,7 +83,7 @@ public class OrbitalMovementBehavior implements IMovementBehavior {
 
             Vector2 velocity = new Vector2(nextX - orbitX, nextY - orbitY);
             velocity.nor().scl(Math.abs(rotationSpeed) * currentRadius);
-            entity.setVelocity(velocity);
+            movable.setVelocity(velocity);
 
         } catch (Exception e) {
             String errorMessage = "Error in OrbitalMovementBehavior: " + e.getMessage();

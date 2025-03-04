@@ -4,18 +4,18 @@ import java.util.List;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.movement.AcceleratedMovementBehavior;
-import project.game.context.movement.ConstantMovementBehavior;
-import project.game.context.movement.FollowMovementBehavior;
-import project.game.context.movement.InterceptorMovementBehavior;
-import project.game.context.movement.OrbitalMovementBehavior;
-import project.game.context.movement.RandomisedMovementBehavior;
-import project.game.context.movement.SpiralApproachBehavior;
-import project.game.context.movement.SpringFollowBehavior;
-import project.game.context.movement.ZigZagMovementBehavior;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.context.movement.AcceleratedMovementStrategy;
+import project.game.context.movement.ConstantMovementStrategy;
+import project.game.context.movement.FollowMovementStrategy;
+import project.game.context.movement.InterceptorMovementStrategy;
+import project.game.context.movement.OrbitalMovementStrategy;
+import project.game.context.movement.RandomisedMovementStrategy;
+import project.game.context.movement.SpiralApproachStrategy;
+import project.game.context.movement.SpringFollowStrategy;
+import project.game.context.movement.ZigZagMovemenStrategy;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
-import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Factory class for creating movement behaviors.
@@ -31,9 +31,9 @@ public class MovementBehaviorFactory {
      * @param speed The speed of the movement.
      * @return A new ConstantMovementBehavior instance.
      */
-    public static IMovementBehavior createConstantMovement(float speed, boolean lenientMode) {
+    public static IMovementStrategy createConstantMovement(float speed, boolean lenientMode) {
         try {
-            return new ConstantMovementBehavior(speed, lenientMode);
+            return new ConstantMovementStrategy(speed, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating ConstantMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -49,10 +49,10 @@ public class MovementBehaviorFactory {
      * @param lenientMode  Whether to enable lenient mode.
      * @return A new AcceleratedMovementBehavior instance.
      */
-    public static IMovementBehavior createAcceleratedMovement(float acceleration, float deceleration, float speed,
+    public static IMovementStrategy createAcceleratedMovement(float acceleration, float deceleration, float speed,
             boolean lenientMode) {
         try {
-            return new AcceleratedMovementBehavior(acceleration, deceleration, speed, lenientMode);
+            return new AcceleratedMovementStrategy(acceleration, deceleration, speed, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating AcceleratedMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -68,10 +68,10 @@ public class MovementBehaviorFactory {
      * @param lenientMode Whether to enable lenient mode.
      * @return A new ZigZagMovementBehavior instance.
      */
-    public static IMovementBehavior createZigZagMovement(float speed, float amplitude, float frequency,
+    public static IMovementStrategy createZigZagMovement(float speed, float amplitude, float frequency,
             boolean lenientMode) {
         try {
-            return new ZigZagMovementBehavior(speed, amplitude, frequency, lenientMode);
+            return new ZigZagMovemenStrategy(speed, amplitude, frequency, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating ZigZagMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -85,14 +85,14 @@ public class MovementBehaviorFactory {
      * @param speed  The speed of the movement.
      * @return A new FollowMovementBehavior instance.
      */
-    public static IMovementBehavior createFollowMovement(IPositionable target, float speed, boolean lenientMode) {
+    public static IMovementStrategy createFollowMovement(IPositionable target, float speed, boolean lenientMode) {
         if (target == null) {
             String errorMsg = "Target is null in createFollowMovement.";
             LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
-            return new FollowMovementBehavior(target, speed, lenientMode);
+            return new FollowMovementStrategy(target, speed, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating FollowMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -107,7 +107,7 @@ public class MovementBehaviorFactory {
      * @param maxDuration  The maximum duration for each behavior.
      * @return A new RandomisedMovementBehavior instance.
      */
-    public static IMovementBehavior createRandomisedMovement(List<IMovementBehavior> behaviorPool,
+    public static IMovementStrategy createRandomisedMovement(List<IMovementStrategy> behaviorPool,
             float minDuration,
             float maxDuration, boolean lenientMode) {
         if (behaviorPool == null) {
@@ -116,7 +116,7 @@ public class MovementBehaviorFactory {
             throw new MovementException(errorMsg);
         }
         try {
-            return new RandomisedMovementBehavior(behaviorPool, minDuration, maxDuration, lenientMode);
+            return new RandomisedMovementStrategy(behaviorPool, minDuration, maxDuration, lenientMode);
         } catch (MovementException e) {
             LOGGER.fatal("Error creating RandomisedMovementBehavior: " + e.getMessage(), e);
             throw e;
@@ -128,17 +128,17 @@ public class MovementBehaviorFactory {
      * 
      * @return A new ConstantMovementBehavior with default speed.
      */
-    public static IMovementBehavior createDefaultMovement() {
+    public static IMovementStrategy createDefaultMovement() {
         return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
     }
 
     /**
      * Creates an OrbitalMovementBehavior.
      */
-    public static IMovementBehavior createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
+    public static IMovementStrategy createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
             float eccentricity, boolean lenientMode) {
         try {
-            return new OrbitalMovementBehavior(target, orbitRadius, rotationSpeed, eccentricity, lenientMode);
+            return new OrbitalMovementStrategy(target, orbitRadius, rotationSpeed, eccentricity, lenientMode);
         } catch (Exception e) {
             LOGGER.error("Failed to create OrbitalMovementBehavior: " + e.getMessage());
             throw new MovementException("Failed to create OrbitalMovementBehavior", e);
@@ -148,11 +148,11 @@ public class MovementBehaviorFactory {
     /**
      * Creates a SpringFollowBehavior.
      */
-    public static IMovementBehavior createSpringFollowMovement(IPositionable target, float springConstant,
+    public static IMovementStrategy createSpringFollowMovement(IPositionable target, float springConstant,
             float damping,
             boolean lenientMode) {
         try {
-            return new SpringFollowBehavior(target, springConstant, damping, lenientMode);
+            return new SpringFollowStrategy(target, springConstant, damping, lenientMode);
         } catch (Exception e) {
             LOGGER.error("Failed to create SpringFollowBehavior: " + e.getMessage());
             throw new MovementException("Failed to create SpringFollowBehavior", e);
@@ -162,9 +162,9 @@ public class MovementBehaviorFactory {
     /**
      * Creates an InterceptorMovementBehavior.
      */
-    public static IMovementBehavior createInterceptorMovement(MovableEntity target, float speed, boolean lenientMode) {
+    public static IMovementStrategy createInterceptorMovement(IMovable movable, float speed, boolean lenientMode) {
         try {
-            return new InterceptorMovementBehavior(target, speed, lenientMode);
+            return new InterceptorMovementStrategy(movable, speed, lenientMode);
         } catch (Exception e) {
             LOGGER.error("Failed to create InterceptorMovementBehavior: " + e.getMessage());
             throw new MovementException("Failed to create InterceptorMovementBehavior", e);
@@ -174,11 +174,11 @@ public class MovementBehaviorFactory {
     /**
      * Creates a SpiralApproachBehavior.
      */
-    public static IMovementBehavior createSpiralApproachMovement(IPositionable target, float speed,
+    public static IMovementStrategy createSpiralApproachMovement(IPositionable target, float speed,
             float spiralTightness,
             float approachSpeed, boolean lenientMode) {
         try {
-            return new SpiralApproachBehavior(target, speed, spiralTightness, approachSpeed, lenientMode);
+            return new SpiralApproachStrategy(target, speed, spiralTightness, approachSpeed, lenientMode);
         } catch (Exception e) {
             LOGGER.error("Failed to create SpiralApproachBehavior: " + e.getMessage());
             throw new MovementException("Failed to create SpiralApproachBehavior", e);

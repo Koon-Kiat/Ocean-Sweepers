@@ -50,7 +50,7 @@ public class Boat extends CollidableEntity implements IRenderable {
 
 	@Override
 	public boolean isActive() {
-		return movementManager.isActive();
+		return super.getEntity().isActive();
 	}
 
 	@Override

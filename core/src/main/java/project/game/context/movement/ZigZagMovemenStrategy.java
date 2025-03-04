@@ -5,8 +5,8 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovementBehavior;
-import project.game.engine.entitysystem.entity.MovableEntity;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 
 /**
  * Provides zig-zag movement for movable entities.
@@ -15,16 +15,16 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  * frequency of the oscillation are provided in the constructor. The entity
  * moves in the primary direction and oscillates in the perpendicular direction.
  */
-public class ZigZagMovementBehavior implements IMovementBehavior {
+public class ZigZagMovemenStrategy implements IMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(ZigZagMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(ZigZagMovemenStrategy.class);
     private final float speed;
     private final float amplitude;
     private final float frequency;
     private float elapsedTime;
     private final boolean lenientMode;
 
-    public ZigZagMovementBehavior(float speed, float amplitude, float frequency, boolean lenientMode) {
+    public ZigZagMovemenStrategy(float speed, float amplitude, float frequency, boolean lenientMode) {
         this.lenientMode = lenientMode;
         if (speed < 0) {
             if (lenientMode) {
@@ -56,12 +56,12 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
+    public void move(IMovable movable, float deltaTime) {
         try {
             elapsedTime += deltaTime;
 
             // Get current velocity to determine primary direction
-            Vector2 velocity = entity.getVelocity();
+            Vector2 velocity = movable.getVelocity();
 
             // If velocity is too small, we can't determine a direction for zigzag
             if (velocity.len2() < 0.0001f) {
@@ -82,8 +82,8 @@ public class ZigZagMovementBehavior implements IMovementBehavior {
             movementDelta.add(new Vector2(perpVector).scl(oscillation * deltaTime));
 
             // Apply movement
-            entity.setX(entity.getX() + movementDelta.x);
-            entity.setY(entity.getY() + movementDelta.y);
+            movable.setX(movable.getX() + movementDelta.x);
+            movable.setY(movable.getY() + movementDelta.y);
 
         } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.error("Exception in ZigZagMovementBehavior.applyMovementBehavior: " + e.getMessage(), e);

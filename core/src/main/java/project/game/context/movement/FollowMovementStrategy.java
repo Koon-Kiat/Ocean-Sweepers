@@ -9,9 +9,9 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
-import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Provides follow movement for movable entities with smooth path following.
@@ -19,9 +19,9 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  * The entity moves towards the target entity along a smooth curved path.
  * The path is recalculated when the target moves significantly.
  */
-public class FollowMovementBehavior implements IMovementBehavior {
+public class FollowMovementStrategy implements IMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(FollowMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(FollowMovementStrategy.class);
     private final IPositionable target;
     private final float speed;
     private final boolean lenientMode;
@@ -41,7 +41,7 @@ public class FollowMovementBehavior implements IMovementBehavior {
      * Constructs a FollowMovementBehavior with the specified parameters.
      * Terminates the program if any provided parameter is negative or null.
      */
-    public FollowMovementBehavior(IPositionable target, float speed, boolean lenientMode) {
+    public FollowMovementStrategy(IPositionable target, float speed, boolean lenientMode) {
         this.lenientMode = lenientMode;
         if (target == null) {
             String errorMessage = "Target cannot be null in FollowMovementBehavior.";
@@ -69,9 +69,9 @@ public class FollowMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
+    public void move(IMovable movable, float deltaTime) {
         try {
-            Vector2 currentPosition = new Vector2(entity.getX(), entity.getY());
+            Vector2 currentPosition = new Vector2(movable.getX(), movable.getY());
             Vector2 targetPosition = new Vector2(target.getX(), target.getY());
 
             // Check if target has moved enough to recalculate path
@@ -87,11 +87,11 @@ public class FollowMovementBehavior implements IMovementBehavior {
                 // Instead of slowing down, maintain speed when close to target
                 // This ensures continuous movement when reaching the target
                 Vector2 direction = new Vector2(targetPosition).sub(currentPosition).nor();
-                entity.setX(entity.getX() + direction.x * speed * deltaTime);
-                entity.setY(entity.getY() + direction.y * speed * deltaTime);
+                movable.setX(movable.getX() + direction.x * speed * deltaTime);
+                movable.setY(movable.getY() + direction.y * speed * deltaTime);
 
                 // Make sure to always update the velocity for animations
-                entity.setVelocity(direction.x * speed, direction.y * speed);
+                movable.setVelocity(direction.x * speed, direction.y * speed);
                 return;
             }
 
@@ -129,22 +129,22 @@ public class FollowMovementBehavior implements IMovementBehavior {
                     float moveY = currentPoint.y + (nextPoint.y - currentPoint.y) * segmentProgress;
 
                     // Calculate direction and move
-                    Vector2 direction = new Vector2(moveX - entity.getX(), moveY - entity.getY());
+                    Vector2 direction = new Vector2(moveX - movable.getX(), moveY - movable.getY());
                     float length = direction.len();
                     if (length > 0.0001f) {
                         direction.nor();
                         // Fixed: Always use full speed rather than slowing down when close
                         float moveSpeed = speed * deltaTime;
-                        entity.setX(entity.getX() + direction.x * moveSpeed);
-                        entity.setY(entity.getY() + direction.y * moveSpeed);
+                        movable.setX(movable.getX() + direction.x * moveSpeed);
+                        movable.setY(movable.getY() + direction.y * moveSpeed);
 
                         // Update entity's velocity direction (for animations)
-                        entity.setVelocity(direction.x * speed, direction.y * speed);
+                        movable.setVelocity(direction.x * speed, direction.y * speed);
                     }
                 }
             } else {
                 // Fallback direct movement if path calculation failed
-                directMovement(entity, targetPosition, deltaTime);
+                directMovement(movable, targetPosition, deltaTime);
             }
         } catch (IllegalArgumentException e) {
             LOGGER.error("Illegal argument in FollowMovementBehavior: " + e.getMessage(), e);
@@ -215,8 +215,8 @@ public class FollowMovementBehavior implements IMovementBehavior {
     /**
      * Direct movement toward target (fallback if path calculation fails)
      */
-    private void directMovement(MovableEntity entity, Vector2 targetPos, float deltaTime) {
-        Vector2 currentPos = new Vector2(entity.getX(), entity.getY());
+    private void directMovement(IMovable movable, Vector2 targetPos, float deltaTime) {
+        Vector2 currentPos = new Vector2(movable.getX(), movable.getY());
         Vector2 direction = new Vector2(targetPos).sub(currentPos);
 
         // If we're already very close to the target, don't move
@@ -228,10 +228,10 @@ public class FollowMovementBehavior implements IMovementBehavior {
         direction.nor().scl(speed * deltaTime);
 
         // Apply movement
-        entity.setX(entity.getX() + direction.x);
-        entity.setY(entity.getY() + direction.y);
+        movable.setX(movable.getX() + direction.x);
+        movable.setY(movable.getY() + direction.y);
 
         // Update entity's velocity for animations
-        entity.setVelocity(direction.x / deltaTime, direction.y / deltaTime);
+        movable.setVelocity(direction.x / deltaTime, direction.y / deltaTime);
     }
 }

@@ -8,8 +8,8 @@ import com.badlogic.gdx.math.MathUtils;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
-import project.game.engine.api.movement.IMovementBehavior;
-import project.game.engine.entitysystem.entity.MovableEntity;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 
 /**
  * Provides randomised movement for movable entities.
@@ -18,20 +18,20 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  * duration.
  * The behavior pool is provided in the constructor.
  */
-public class RandomisedMovementBehavior implements IMovementBehavior {
+public class RandomisedMovementStrategy implements IMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(RandomisedMovementBehavior.class);
-    private final List<IMovementBehavior> behaviorPool;
+    private static final GameLogger LOGGER = new GameLogger(RandomisedMovementStrategy.class);
+    private final List<IMovementStrategy> behaviorPool;
     private final float minDuration;
     private final float maxDuration;
-    private IMovementBehavior currentBehavior;
+    private IMovementStrategy currentBehavior;
     private float remainingTime;
     private final boolean lenientMode;
 
     /**
      * Constructs a RandomisedMovementBehavior with the specified parameters.
      */
-    public RandomisedMovementBehavior(List<IMovementBehavior> behaviorPool, float minDuration, float maxDuration,
+    public RandomisedMovementStrategy(List<IMovementStrategy> behaviorPool, float minDuration, float maxDuration,
             boolean lenientMode) {
         this.lenientMode = lenientMode;
         if (behaviorPool == null || behaviorPool.isEmpty()) {
@@ -41,7 +41,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
                 LOGGER.warn("{0} Using fallback pool with ConstantMovementBehavior.", errorMessage);
                 this.behaviorPool = new ArrayList<>();
                 this.behaviorPool
-                        .add(new ConstantMovementBehavior(GameConstantsFactory.getConstants().DEFAULT_SPEED(),
+                        .add(new ConstantMovementStrategy(GameConstantsFactory.getConstants().DEFAULT_SPEED(),
                                 lenientMode));
             } else {
                 throw new MovementException(errorMessage);
@@ -83,7 +83,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
+    public void move(IMovable movable, float deltaTime) {
         try {
             remainingTime -= deltaTime;
             if (remainingTime <= 0) {
@@ -91,7 +91,7 @@ public class RandomisedMovementBehavior implements IMovementBehavior {
                 remainingTime = MathUtils.random(minDuration, maxDuration);
             }
             if (currentBehavior != null) {
-                currentBehavior.applyMovementBehavior(entity, deltaTime);
+                currentBehavior.move(movable, deltaTime);
             }
         } catch (IllegalArgumentException e) {
             LOGGER.error("Invalid argument in RandomisedMovementBehavior", e);

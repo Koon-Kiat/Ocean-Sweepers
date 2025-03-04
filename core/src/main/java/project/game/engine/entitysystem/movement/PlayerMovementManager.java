@@ -20,7 +20,7 @@ public class PlayerMovementManager extends MovementManager {
      * Constructor using the Builder pattern.
      */
     public PlayerMovementManager(PlayerMovementBuilder builder) {
-        super(checkBuilder(builder).getEntity(),
+        super(checkBuilder(builder).getMovableEntity(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementBehavior(),

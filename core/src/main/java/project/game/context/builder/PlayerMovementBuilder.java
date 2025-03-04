@@ -2,6 +2,8 @@ package project.game.context.builder;
 
 import project.game.common.exception.MovementException;
 import project.game.context.factory.MovementBehaviorFactory;
+import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.MovableEntity;
 import project.game.engine.entitysystem.movement.PlayerMovementManager;
 
 /**
@@ -61,10 +63,30 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
         return this;
     }
 
+    @Override
+    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
+        if (entity == null) {
+            String errorMsg = "Cannot create MovableEntity: Entity is null";
+            LOGGER.fatal(errorMsg);
+            throw new MovementException(errorMsg);
+        }
+
+        return new PlayerMovableEntity(entity, speed);
+    }
+
+    /**
+     * Concrete implementation of MovableEntity for player entities
+     */
+    private static class PlayerMovableEntity extends MovableEntity {
+        public PlayerMovableEntity(Entity entity, float speed) {
+            super(entity, speed);
+        }
+    }
+
     public PlayerMovementManager build() {
         validateBuildRequirements();
         try {
-            if (this.entity == null) {
+            if (this.entity == null && this.movableEntity == null) {
                 String errorMsg = "Entity must not be null for PlayerMovementBuilder.";
                 LOGGER.fatal(errorMsg);
                 throw new MovementException(errorMsg);

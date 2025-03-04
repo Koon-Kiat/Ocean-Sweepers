@@ -5,16 +5,16 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
-import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Makes an entity approach its target in a spiral pattern.
  * The spiral tightens as the entity gets closer to the target.
  */
-public class SpiralApproachBehavior implements IMovementBehavior {
-    private static final GameLogger LOGGER = new GameLogger(SpiralApproachBehavior.class);
+public class SpiralApproachStrategy implements IMovementStrategy {
+    private static final GameLogger LOGGER = new GameLogger(SpiralApproachStrategy.class);
 
     private final IPositionable target;
     private final float speed;
@@ -23,7 +23,7 @@ public class SpiralApproachBehavior implements IMovementBehavior {
     private final boolean lenientMode;
     private float currentAngle = 0;
 
-    public SpiralApproachBehavior(IPositionable target, float speed, float spiralTightness, float approachSpeed,
+    public SpiralApproachStrategy(IPositionable target, float speed, float spiralTightness, float approachSpeed,
             boolean lenientMode) {
         this.lenientMode = lenientMode;
 
@@ -52,10 +52,10 @@ public class SpiralApproachBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
+    public void move(IMovable movable, float deltaTime) {
         try {
             // Calculate vector to target
-            Vector2 toTarget = new Vector2(target.getX() - entity.getX(), target.getY() - entity.getY());
+            Vector2 toTarget = new Vector2(target.getX() - movable.getX(), target.getY() - movable.getY());
             float distanceToTarget = toTarget.len();
 
             // Update angle based on distance (spiral gets tighter as we get closer)
@@ -74,17 +74,17 @@ public class SpiralApproachBehavior implements IMovementBehavior {
             Vector2 approachVector = new Vector2(toTarget).nor().scl(approachSpeed * deltaTime);
 
             // Combine spiral and approach movements
-            Vector2 newPosition = new Vector2(entity.getX(), entity.getY());
+            Vector2 newPosition = new Vector2(movable.getX(), movable.getY());
             newPosition.add(approachVector);
-            newPosition.add(offsetX - entity.getX(), offsetY - entity.getY());
+            newPosition.add(offsetX - movable.getX(), offsetY - movable.getY());
 
             // Calculate velocity for proper facing
-            Vector2 velocity = new Vector2(newPosition).sub(entity.getX(), entity.getY());
-            entity.setVelocity(velocity.scl(1f / deltaTime));
+            Vector2 velocity = new Vector2(newPosition).sub(movable.getX(), movable.getY());
+            movable.setVelocity(velocity.scl(1f / deltaTime));
 
             // Update position
-            entity.setX(newPosition.x);
-            entity.setY(newPosition.y);
+            movable.setX(newPosition.x);
+            movable.setY(newPosition.y);
 
         } catch (Exception e) {
             String errorMessage = "Error in SpiralApproachBehavior: " + e.getMessage();

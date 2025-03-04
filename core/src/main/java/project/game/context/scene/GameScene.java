@@ -29,8 +29,8 @@ import project.game.context.entity.Monster;
 import project.game.context.entity.Rock;
 import project.game.context.entity.Trash;
 import project.game.context.factory.GameConstantsFactory;
-import project.game.context.movement.ConstantMovementBehavior;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.context.movement.ConstantMovementStrategy;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.audio.AudioManager;
 import project.game.engine.entitysystem.collision.BoundaryFactory;
@@ -75,7 +75,7 @@ public class GameScene extends Scene {
     private AudioManager audioManager;
     private Trash nonMovableTrash;
     private IGameConstants constants;
-    List<IMovementBehavior> behaviorPool = new ArrayList<>();
+    List<IMovementStrategy> behaviorPool = new ArrayList<>();
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
@@ -159,7 +159,7 @@ public class GameScene extends Scene {
 
         // Add behavior to the pool for Random Movement
         behaviorPool = new ArrayList<>();
-        behaviorPool.add(new ConstantMovementBehavior(constants.NPC_SPEED(), true));
+        behaviorPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
         LOGGER.info("Configured NPC movement behaviors: {0}", behaviorPool.size());
 
         npcMovementManager = new NPCMovementBuilder()
@@ -370,7 +370,7 @@ public class GameScene extends Scene {
         textField.setWidth(300);
         textField.setHeight(40);
         textField.setPosition(sceneUIManager.getStage().getWidth() / 2f - textField.getWidth() / 2f,
-        sceneUIManager.getStage().getHeight() - textField.getHeight());
+                sceneUIManager.getStage().getHeight() - textField.getHeight());
         textField.setMessageText(
                 "Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
         textField.setDisabled(true);

@@ -53,7 +53,7 @@ public class Monster extends CollidableEntity implements IRenderable {
 
     @Override
     public boolean isActive() {
-        return movementManager.isActive();
+        return super.getEntity().isActive();
     }
 
     @Override

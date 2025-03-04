@@ -4,8 +4,8 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovementBehavior;
-import project.game.engine.entitysystem.entity.MovableEntity;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 
 /**
  * Provides constant movement for movable entities.
@@ -13,13 +13,13 @@ import project.game.engine.entitysystem.entity.MovableEntity;
  * The entity moves based on its velocity vector at a constant speed.
  * The speed is provided in the constructor.
  */
-public class ConstantMovementBehavior implements IMovementBehavior {
+public class ConstantMovementStrategy implements IMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(ConstantMovementBehavior.class);
+    private static final GameLogger LOGGER = new GameLogger(ConstantMovementStrategy.class);
     private final float speed;
     private final boolean lenientMode;
 
-    public ConstantMovementBehavior(float speed, boolean lenientMode) {
+    public ConstantMovementStrategy(float speed, boolean lenientMode) {
         this.lenientMode = lenientMode;
         if (speed < 0) {
             if (lenientMode) {
@@ -35,10 +35,10 @@ public class ConstantMovementBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
+    public void move(IMovable movable, float deltaTime) {
         try {
             // Get current velocity
-            Vector2 velocity = entity.getVelocity();
+            Vector2 velocity = movable.getVelocity();
 
             // If velocity is zero, nothing to do
             if (velocity.len2() < 0.0001f) {
@@ -49,8 +49,8 @@ public class ConstantMovementBehavior implements IMovementBehavior {
             Vector2 movement = new Vector2(velocity).nor().scl(speed * deltaTime);
 
             // Apply movement
-            entity.setX(entity.getX() + movement.x);
-            entity.setY(entity.getY() + movement.y);
+            movable.setX(movable.getX() + movement.x);
+            movable.setY(movable.getY() + movement.y);
 
         } catch (MovementException e) {
             LOGGER.error("Illegal argument in ConstantMovementBehavior.updatePosition: " + e.getMessage(), e);

@@ -4,17 +4,17 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovementBehavior;
+import project.game.engine.api.movement.IMovable;
+import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
-import project.game.engine.entitysystem.entity.MovableEntity;
 
 /**
  * Implements spring-like following behavior between entities.
  * The follower is connected to the target by an imaginary spring,
  * creating elastic movement with oscillation and damping.
  */
-public class SpringFollowBehavior implements IMovementBehavior {
-    private static final GameLogger LOGGER = new GameLogger(SpringFollowBehavior.class);
+public class SpringFollowStrategy implements IMovementStrategy {
+    private static final GameLogger LOGGER = new GameLogger(SpringFollowStrategy.class);
 
     private final IPositionable target;
     private final float springConstant; // Higher = stiffer spring
@@ -22,7 +22,7 @@ public class SpringFollowBehavior implements IMovementBehavior {
     private final boolean lenientMode;
     private final Vector2 velocity;
 
-    public SpringFollowBehavior(IPositionable target, float springConstant, float damping, boolean lenientMode) {
+    public SpringFollowStrategy(IPositionable target, float springConstant, float damping, boolean lenientMode) {
         this.lenientMode = lenientMode;
 
         if (target == null) {
@@ -64,10 +64,10 @@ public class SpringFollowBehavior implements IMovementBehavior {
     }
 
     @Override
-    public void applyMovementBehavior(MovableEntity entity, float deltaTime) {
+    public void move(IMovable movable, float deltaTime) {
         try {
             // Calculate spring force based on distance to target (Hooke's Law)
-            Vector2 toTarget = new Vector2(target.getX() - entity.getX(), target.getY() - entity.getY());
+            Vector2 toTarget = new Vector2(target.getX() - movable.getX(), target.getY() - movable.getY());
             Vector2 springForce = new Vector2(toTarget).scl(springConstant);
 
             // Apply damping force based on current velocity
@@ -80,11 +80,11 @@ public class SpringFollowBehavior implements IMovementBehavior {
             velocity.add(totalForce.x * deltaTime, totalForce.y * deltaTime);
 
             // Update position
-            entity.setX(entity.getX() + velocity.x * deltaTime);
-            entity.setY(entity.getY() + velocity.y * deltaTime);
+            movable.setX(movable.getX() + velocity.x * deltaTime);
+            movable.setY(movable.getY() + velocity.y * deltaTime);
 
-            // Update entity's velocity for animations
-            entity.setVelocity(velocity);
+            // Update movable's velocity for animations
+            movable.setVelocity(velocity);
 
         } catch (Exception e) {
             String errorMessage = "Error in SpringFollowBehavior: " + e.getMessage();
