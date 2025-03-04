@@ -84,11 +84,6 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
     }
 
     @Override
-    public float IMPULSE_STRENGTH() {
-        return getFloatValue("IMPULSE_STRENGTH");
-    }
-
-    @Override
     public long COLLISION_ACTIVE_DURATION() {
         return getLongValue("COLLISION_ACTIVE_DURATION");
     }
@@ -143,5 +138,16 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
     @Override
     public float DROP_HEIGHT() {
         return getFloatValue("DROP_HEIGHT");
+    }
+
+    // Collision Constants
+    @Override
+    public float MONSTER_BASE_IMPULSE() {
+        return getFloatValue("MONSTER_BASE_IMPULSE");
+    }
+
+    @Override
+    public float ROCK_BASE_IMPULSE() {
+        return getFloatValue("ROCK_BASE_IMPULSE");
     }
 }

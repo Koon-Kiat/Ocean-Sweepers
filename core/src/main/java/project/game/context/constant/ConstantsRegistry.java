@@ -14,6 +14,7 @@ public class ConstantsRegistry extends AbstractConstantsRegistry {
     public static final String CATEGORY_PHYSICS = "physics";
     public static final String CATEGORY_SCREEN = "screen";
     public static final String CATEGORY_ENTITY = "entity";
+    public static final String CATEGORY_COLLISION = "collision";
 
     private static final ConstantsRegistry INSTANCE = new ConstantsRegistry();
 
@@ -63,11 +64,16 @@ public class ConstantsRegistry extends AbstractConstantsRegistry {
         def = new ConstantDefinition("PIXELS_TO_METERS", CATEGORY_PHYSICS, Float.class, 32.0f);
         register(def.getKey(), def);
 
-        def = new ConstantDefinition("IMPULSE_STRENGTH", CATEGORY_PHYSICS, Float.class, 5.0f);
-        register(def.getKey(), def);
-
         def = new ConstantDefinition("COLLISION_ACTIVE_DURATION", CATEGORY_PHYSICS, Long.class, 1000L);
         register(def.getKey(), def);
+
+        // Entity-specific impulse strength constants
+        def = new ConstantDefinition("MONSTER_BASE_IMPULSE", CATEGORY_COLLISION, Float.class, 1.0f);
+        register(def.getKey(), def);
+
+        def = new ConstantDefinition("ROCK_BASE_IMPULSE", CATEGORY_COLLISION, Float.class, 2.0f);
+        register(def.getKey(), def);
+
     }
 
     private void registerScreenConstants() {
