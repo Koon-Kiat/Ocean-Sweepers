@@ -34,7 +34,7 @@ public class CollisionPairTracker implements ICollisionPairHandler {
      * @param clazz     The class to register the converter for
      * @param converter Function to convert from the class to ICollidable
      */
-    public <T> void registerConverter(Class<T> clazz, Function<T, ICollidable> converter) {
+    public final <T> void registerConverter(Class<T> clazz, Function<T, ICollidable> converter) {
         @SuppressWarnings("unchecked")
         Function<Object, ICollidable> castedConverter = obj -> converter.apply((T) obj);
         converters.put(clazz, castedConverter);
