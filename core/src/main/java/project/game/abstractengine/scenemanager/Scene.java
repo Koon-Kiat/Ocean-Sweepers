@@ -20,9 +20,6 @@ public abstract class Scene implements Screen, IScene {
         this.sceneManager = sceneManager;
         this.inputManager = inputManager;
         this.sceneUIManager = new SceneUIManager(new ScreenViewport()); // new instance for each concrete scene
-        //this.stage = new Stage(new ScreenViewport());
-        this.sceneManager = sceneManager; // LMAO HAHAHAHA
-        //this.sceneManager = new SceneManager();
         initialize();
     }
 
