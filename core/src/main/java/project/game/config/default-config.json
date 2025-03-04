@@ -8,17 +8,18 @@
         "MIN_DURATION": 1.0,
         "MAX_DURATION": 3.0,
         "PIXELS_TO_METERS": 32.0,
-        "IMPULSE_STRENGTH": 5.0,
         "BUCKET_START_X": 400.0,
         "BUCKET_START_Y": 400.0,
         "BUCKET_WIDTH": 50.0,
         "BUCKET_HEIGHT": 50.0,
-        "DROP_START_X": 0.0,
-        "DROP_START_Y": 0.0,
+        "DROP_START_X": 30.0,
+        "DROP_START_Y": 30.0,
         "DROP_WIDTH": 50.0,
         "DROP_HEIGHT": 50.0,
         "GAME_WIDTH": 1920.0,
-        "GAME_HEIGHT": 1080.0
+        "GAME_HEIGHT": 1080.0,
+        "MONSTER_BASE_IMPULSE": 50.0,
+        "ROCK_BASE_IMPULSE": 50.0
     },
     "longs": {
         "COLLISION_ACTIVE_DURATION": 1000
