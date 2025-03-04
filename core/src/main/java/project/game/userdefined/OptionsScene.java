@@ -21,7 +21,7 @@ public class OptionsScene extends Scene {
 
     public OptionsScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
-        this.sceneManager = sceneManager;
+        //this.sceneManager = sceneManager;
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
@@ -35,7 +35,7 @@ public class OptionsScene extends Scene {
         tableScene.add(returnButton).padBottom(10);
         tableScene.row();
 
-        stage.addActor(tableScene);
+        sceneUIManager.getStage().addActor(tableScene);
 
         inputManager.addButtonClickListener(returnButton, () -> {
             sceneManager.setScene("menu");

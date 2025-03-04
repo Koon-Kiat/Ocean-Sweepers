@@ -20,7 +20,7 @@ public class SceneFactory {
     private static final Logger LOGGER = Logger.getLogger(SceneFactory.class.getName());
     private final SceneManager sceneManager;
     private final SceneIOManager inputManager;
-    private final Map<String, Supplier<Scene>> sceneCreators;
+    private final Map<String, Supplier<IScene>> sceneCreators;
 
     public SceneFactory(SceneManager sceneManager, SceneIOManager inputManager) {
         this.sceneManager = sceneManager;
@@ -45,7 +45,7 @@ public class SceneFactory {
          * Create and register each scene in the game.
          */
         sceneCreators.forEach((name, creator) -> {
-            Scene scene = creator.get();
+            IScene scene = creator.get();
             sceneManager.addScene(name, scene);
             LOGGER.log(Level.INFO, "Registered scene: {0}", name);
         });
