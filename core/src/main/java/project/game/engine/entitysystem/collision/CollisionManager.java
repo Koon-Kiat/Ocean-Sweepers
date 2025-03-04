@@ -12,7 +12,9 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
+import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollisionPairHandler;
 import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.io.SceneIOManager;
 
@@ -22,6 +24,7 @@ import project.game.engine.io.SceneIOManager;
  */
 public class CollisionManager implements ContactListener {
 
+    private static final GameLogger LOGGER = new GameLogger(CollisionManager.class);
     private final World world;
     private final List<Runnable> collisionQueue;
     private final SceneIOManager inputManager;
@@ -31,15 +34,40 @@ public class CollisionManager implements ContactListener {
     private final Map<ICollidable, MovementManager> entityMap;
     private boolean collided = false;
 
+    // Use the visitor-based collision pair tracking
+    private final ICollisionPairHandler collisionPairTracker;
+
+    // Configurable properties
+    private float collisionMovementStrength;
+    private float movementThreshold;
+    private long defaultCollisionDuration;
+
     public CollisionManager(World world, SceneIOManager inputManager) {
         this.world = world;
         this.inputManager = inputManager;
         this.collisionQueue = new ArrayList<>();
         this.entityMap = new HashMap<>();
         this.collisionResolver = new CollisionResolver();
+        this.collisionPairTracker = new CollisionPairTracker();
 
         // Register boundary by default
         collisionResolver.registerBoundary();
+    }
+
+    /**
+     * Configure collision-related parameters
+     * 
+     * @param collisionMovementStrength Strength multiplier for movement during
+     *                                  collision
+     * @param movementThreshold         Minimum threshold for movement vector to
+     *                                  apply velocity
+     * @param defaultCollisionDuration  Default duration for collision state in
+     *                                  milliseconds
+     */
+    public void configure(float collisionMovementStrength, float movementThreshold, long defaultCollisionDuration) {
+        this.collisionMovementStrength = collisionMovementStrength;
+        this.movementThreshold = movementThreshold;
+        this.defaultCollisionDuration = defaultCollisionDuration;
     }
 
     public void init() {
@@ -61,6 +89,14 @@ public class CollisionManager implements ContactListener {
         Object userDataA = fixtureA.getBody().getUserData();
         Object userDataB = fixtureB.getBody().getUserData();
 
+        LOGGER.debug("Collision detected between: " +
+                (userDataA != null ? userDataA.getClass().getSimpleName() : "null") +
+                " and " +
+                (userDataB != null ? userDataB.getClass().getSimpleName() : "null"));
+
+        // Add to active collisions using our visitor pattern handler
+        collisionPairTracker.addCollisionPair(userDataA, userDataB);
+
         // Delegate to collision resolver which uses pure polymorphism
         collisionResolver.resolveCollision(userDataA, userDataB, collisionQueue);
 
@@ -70,8 +106,19 @@ public class CollisionManager implements ContactListener {
 
     @Override
     public void endContact(Contact contact) {
-        // Reset collision status when objects separate
-        collided = false;
+        Fixture fixtureA = contact.getFixtureA();
+        Fixture fixtureB = contact.getFixtureB();
+
+        Object userDataA = fixtureA.getBody().getUserData();
+        Object userDataB = fixtureB.getBody().getUserData();
+
+        // Remove from active collisions
+        collisionPairTracker.removeCollisionPair(userDataA, userDataB);
+
+        // Only set collided = false if there are no more active collisions
+        if (collisionPairTracker.isEmpty()) {
+            collided = false;
+        }
     }
 
     @Override
@@ -93,12 +140,47 @@ public class CollisionManager implements ContactListener {
 
     public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
-            entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
-            entry.getValue().updateMovement();
+            MovementManager manager = entry.getValue();
+            if (manager != null) {
+                entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+                entry.getValue().updateMovement();
+            }
         }
+
+        // Handle entity updates with collision awareness
         for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
-            EntityCollisionUpdater.updateEntity(entry.getKey(), entry.getValue(), gameWidth, gameHeight,
-                    pixelsToMeters);
+            ICollidable entity = entry.getKey();
+            MovementManager manager = entry.getValue();
+
+            // Check if this entity is involved in any active collisions
+            boolean entityInCollision = collisionPairTracker.isEntityInCollision(entity);
+
+            // Make sure the entity's collision state matches our tracked state
+            if (entityInCollision && !entity.isInCollision()) {
+                // If we're tracking this as in collision but the entity doesn't know,
+                // make sure it's aware that a collision is active
+                refreshEntityCollisionState(entity);
+            }
+
+            if (manager != null) {
+                EntityCollisionUpdater.updateEntity(entity, manager, gameWidth, gameHeight,
+                        pixelsToMeters, collisionMovementStrength,
+                        movementThreshold);
+            } else {
+                EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
+            }
+        }
+    }
+
+    // Use reflection to refresh collision state, avoiding the need for instanceof
+    private void refreshEntityCollisionState(ICollidable entity) {
+        try {
+            java.lang.reflect.Method method = entity.getClass().getMethod("setCollisionActive", long.class);
+            method.invoke(entity, defaultCollisionDuration);
+        } catch (Exception e) {
+            // If the entity doesn't have this method, just leave it as is
+            LOGGER.warn("Could not refresh collision state for entity: {0}",
+                    entity.getClass().getSimpleName());
         }
     }
 
