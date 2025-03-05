@@ -89,5 +89,6 @@ public class GameOverScene extends Scene {
         stage.dispose();
         batch.dispose();
         font.dispose();
+        
     }
 }

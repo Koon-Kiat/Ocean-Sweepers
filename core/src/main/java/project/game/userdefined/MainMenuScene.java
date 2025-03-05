@@ -5,13 +5,19 @@ import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
+import project.game.abstractengine.audiomanager.AudioConfig;
 import project.game.abstractengine.audiomanager.AudioManager;
+import project.game.abstractengine.audiomanager.AudioUIManager;
+import project.game.abstractengine.audiomanager.MusicManager;
+import project.game.abstractengine.audiomanager.SoundManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
@@ -23,7 +29,8 @@ public class MainMenuScene extends Scene {
     private TextButton playButton, exitButton, optionsButton;
     private GameScene gameScene;
     private OrthographicCamera camera;
-    private FitViewport viewport;
+    private Viewport viewport;
+    private Stage stage;
     private AudioManager audioManager;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
@@ -37,8 +44,9 @@ public class MainMenuScene extends Scene {
      */
     @Override
     public void create() {
+        stage = new Stage();
         this.camera = new OrthographicCamera();
-        this.viewport = new FitViewport(stage.getHeight(), stage.getWidth(), camera);
+        this.viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
         stage.setViewport(viewport);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
@@ -51,7 +59,10 @@ public class MainMenuScene extends Scene {
         exitButton = new TextButton("EXIT", skin);
 
         // Initialize AudioManager for sound effects and music.
-        audioManager = new AudioManager(stage);
+        AudioConfig audioConfig = new AudioConfig();
+        AudioUIManager audioUIManager = new AudioUIManager(null, audioConfig, stage);
+        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), new AudioConfig(), new AudioUIManager(audioManager, new AudioConfig(), stage));
+        // audioManager.playMusic("BackgroundMusic");
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
@@ -64,7 +75,6 @@ public class MainMenuScene extends Scene {
             audioManager.playSoundEffect("selection");
             LOGGER.log(Level.INFO, "Options Clicked!");
             sceneManager.setScene("options");
-
         });
 
         inputManager.addButtonClickListener(exitButton, () -> {
@@ -88,7 +98,6 @@ public class MainMenuScene extends Scene {
         table.add(exitButton);
 
         stage.addActor(table);
-
     }
 
     @Override
@@ -99,13 +108,14 @@ public class MainMenuScene extends Scene {
     public void render(float delta) {
         super.render(delta);
         Gdx.input.setInputProcessor(stage);
+        stage.act(delta);
+        stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
         camera.setToOrtho(false, width, height);
-        viewport.setWorldSize(width, height);
-        stage.getViewport().update(width, height, true);
+        viewport.update(width, height, true);
     }
 
     @Override
