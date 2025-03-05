@@ -1,7 +1,7 @@
 package project.game.context.api.pool;
 
-import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Queue;
 
 public class ObjectPool<T> {
     private final Queue<T> pool;
