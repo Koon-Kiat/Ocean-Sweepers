@@ -9,7 +9,7 @@ import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
 
 /**
- * Implements spring-like following behavior between entities.
+ * Implements spring-like following strategy between entities.
  * The follower is connected to the target by an imaginary spring,
  * creating elastic movement with oscillation and damping.
  */
@@ -26,7 +26,7 @@ public class SpringFollowStrategy implements IMovementStrategy {
         this.lenientMode = lenientMode;
 
         if (target == null) {
-            String errorMessage = "Target cannot be null in SpringFollowBehavior.";
+            String errorMessage = "Target cannot be null in SpringFollowStrategy.";
             LOGGER.error(errorMessage);
             throw new MovementException(errorMessage);
         }
@@ -87,7 +87,7 @@ public class SpringFollowStrategy implements IMovementStrategy {
             movable.setVelocity(velocity);
 
         } catch (Exception e) {
-            String errorMessage = "Error in SpringFollowBehavior: " + e.getMessage();
+            String errorMessage = "Error in SpringFollowStrategy: " + e.getMessage();
             LOGGER.error(errorMessage, e);
             if (!lenientMode) {
                 throw new MovementException(errorMessage, e);

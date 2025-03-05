@@ -9,7 +9,7 @@ import project.game.context.builder.NPCMovementBuilder;
  * provides movement functionality for non-player characters (NPCs) in the game.
  * 
  * It extends MovementManager and uses the NPCMovementBuilder to configure the
- * NPC's movement behavior.
+ * NPC's movement strategy.
  */
 public class NPCMovementManager extends MovementManager {
 
@@ -23,7 +23,7 @@ public class NPCMovementManager extends MovementManager {
         super(checkBuilder(builder).getMovableEntity(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
-                checkBuilder(builder).getMovementBehavior(),
+                checkBuilder(builder).getMovementStrategy(),
                 checkBuilder(builder).isLenientMode());
         this.builder = builder;
     }

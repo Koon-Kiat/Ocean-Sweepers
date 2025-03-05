@@ -20,7 +20,7 @@ public class AcceleratedMovementStrategy implements IStoppableStrategy {
     private float currentSpeed;
 
     /**
-     * Constructs an AcceleratedMovementBehavior with specified parameters.
+     * Constructs an AcceleratedMovementStrategy with specified parameters.
      * Terminates the program if any provided parameter is negative.
      */
     public AcceleratedMovementStrategy(float acceleration, float deceleration, float maxSpeed, boolean lenientMode) {
@@ -82,18 +82,18 @@ public class AcceleratedMovementStrategy implements IStoppableStrategy {
             }
 
         } catch (MovementException e) {
-            LOGGER.fatal("Exception in AcceleratedMovementBehavior.updatePosition: " + e.getMessage(), e);
+            LOGGER.fatal("Exception in AcceleratedMovementStrategy.updatePosition: " + e.getMessage(), e);
             if (lenientMode) {
                 movable.setVelocity(0, 0);
             } else {
                 throw e;
             }
         } catch (Exception e) {
-            LOGGER.fatal("Unexpected error in AcceleratedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Unexpected error in AcceleratedMovementStrategy: " + e.getMessage(), e);
             if (lenientMode) {
                 movable.setVelocity(0, 0);
             } else {
-                throw new MovementException("Error updating position in AcceleratedMovementBehavior", e);
+                throw new MovementException("Error updating position in AcceleratedMovementStrategy", e);
             }
         }
     }
@@ -106,6 +106,6 @@ public class AcceleratedMovementStrategy implements IStoppableStrategy {
 
     @Override
     public void resumeMovement(IMovable movable, float deltaTime) {
-        // No special resume behavior needed - entity's velocity will be set elsewhere
+        // No special resume strategy needed - entity's velocity will be set elsewhere
     }
 }

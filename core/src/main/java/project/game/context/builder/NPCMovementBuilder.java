@@ -5,7 +5,7 @@ import java.util.List;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
-import project.game.context.factory.MovementBehaviorFactory;
+import project.game.context.factory.MovementStrategyFactory;
 import project.game.context.movement.FollowMovementStrategy;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
@@ -27,32 +27,32 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withConstantMovement() {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed, this.lenientMode);
+            this.movementStrategy = MovementStrategyFactory.createConstantMovement(this.speed, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating ConstantMovementBehavior in lenient mode: " + e.getMessage()
+                LOGGER.warn("Error creating ConstantMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using default movement.");
-                this.movementBehavior = MovementBehaviorFactory.createDefaultMovement();
+                this.movementStrategy = MovementStrategyFactory.createDefaultMovement();
                 return this;
             }
-            LOGGER.fatal("Error in ConstantMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error in ConstantMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error in ConstantMovementStrategy: " + e.getMessage(), e);
+            throw new MovementException("Error in ConstantMovementStrategy: " + e.getMessage(), e);
         }
         return this;
     }
 
     public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createZigZagMovement(this.speed, amplitude, frequency,
+            this.movementStrategy = MovementStrategyFactory.createZigZagMovement(this.speed, amplitude, frequency,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating ZigZagMovementBehavior in lenient mode: " + e.getMessage()
+                LOGGER.warn("Error creating ZigZagMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
-            LOGGER.fatal("Error in ZigZagMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error in ZigZagMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error in ZigZagMovementStrategy: " + e.getMessage(), e);
+            throw new MovementException("Error in ZigZagMovementStrategy: " + e.getMessage(), e);
         }
         return this;
     }
@@ -68,24 +68,24 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             throw new MovementException(errorMsg);
         }
         try {
-            this.movementBehavior = MovementBehaviorFactory.createFollowMovement(target, this.speed, this.lenientMode);
+            this.movementStrategy = MovementStrategyFactory.createFollowMovement(target, this.speed, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error in FollowMovementBehavior in lenient mode: " + e.getMessage()
+                LOGGER.warn("Error in FollowMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
-            LOGGER.fatal("Error in FollowMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error in FollowMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error in FollowMovementStrategy: " + e.getMessage(), e);
+            throw new MovementException("Error in FollowMovementStrategy: " + e.getMessage(), e);
         }
         return this;
     }
 
-    public NPCMovementBuilder withRandomisedMovement(List<IMovementStrategy> behaviorPool, float minDuration,
+    public NPCMovementBuilder withRandomisedMovement(List<IMovementStrategy> strategyPool, float minDuration,
             float maxDuration) {
-        if (behaviorPool == null || behaviorPool.isEmpty()) {
-            String errorMsg = behaviorPool == null ? "Behavior pool cannot be null in withRandomisedMovement."
-                    : "Behavior pool cannot be empty in withRandomisedMovement.";
+        if (strategyPool == null || strategyPool.isEmpty()) {
+            String errorMsg = strategyPool == null ? "Strategy pool cannot be null in withRandomisedMovement."
+                    : "Strategy pool cannot be empty in withRandomisedMovement.";
             if (this.lenientMode) {
                 LOGGER.warn(errorMsg + " Using constant movement fallback.");
                 return withConstantMovement();
@@ -94,16 +94,16 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             throw new MovementException(errorMsg);
         }
         try {
-            this.movementBehavior = MovementBehaviorFactory.createRandomisedMovement(behaviorPool, minDuration,
+            this.movementStrategy = MovementStrategyFactory.createRandomisedMovement(strategyPool, minDuration,
                     maxDuration, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error in RandomisedMovementBehavior in lenient mode: " + e.getMessage()
+                LOGGER.warn("Error in RandomisedMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
-            LOGGER.fatal("Error in RandomisedMovementBehavior: " + e.getMessage(), e);
-            throw new MovementException("Error in RandomisedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error in RandomisedMovementStrategy: " + e.getMessage(), e);
+            throw new MovementException("Error in RandomisedMovementStrategy: " + e.getMessage(), e);
         }
         return this;
     }
@@ -111,12 +111,12 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     public NPCMovementBuilder withOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
             float eccentricity) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createOrbitalMovement(target, orbitRadius, rotationSpeed,
+            this.movementStrategy = MovementStrategyFactory.createOrbitalMovement(target, orbitRadius, rotationSpeed,
                     eccentricity,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating OrbitalMovementBehavior: " + e.getMessage()
+                LOGGER.warn("Error creating OrbitalMovementStrategy: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
@@ -127,11 +127,11 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withSpringFollow(IPositionable target, float springConstant, float damping) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createSpringFollowMovement(target, springConstant, damping,
+            this.movementStrategy = MovementStrategyFactory.createSpringFollowMovement(target, springConstant, damping,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating SpringFollowBehavior: " + e.getMessage()
+                LOGGER.warn("Error creating SpringFollowStrategy: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
@@ -142,11 +142,11 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withInterceptorMovement(IMovable movable) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createInterceptorMovement(movable, this.speed,
+            this.movementStrategy = MovementStrategyFactory.createInterceptorMovement(movable, this.speed,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating InterceptorMovementBehavior: " + e.getMessage()
+                LOGGER.warn("Error creating InterceptorMovementStrategy: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
@@ -157,12 +157,70 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withSpiralApproach(IPositionable target, float spiralTightness, float approachSpeed) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createSpiralApproachMovement(target, this.speed,
+            this.movementStrategy = MovementStrategyFactory.createSpiralApproachMovement(target, this.speed,
                     spiralTightness, approachSpeed,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating SpiralApproachBehavior: " + e.getMessage()
+                LOGGER.warn("Error creating SpiralApproachStrategy: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    public NPCMovementBuilder withObstacleAvoidanceTargeting(IMovable target) {
+        try {
+            this.movementStrategy = MovementStrategyFactory.createObstacleAvoidanceStrategy(target, this.speed,
+                    this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating ObstacleAvoidanceStrategy: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    /**
+     * Creates an obstacle avoidance Strategy for this movement builder with a list
+     * of obstacles to avoid.
+     * 
+     * @param obstacles The list of entities to avoid
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withObstacleAvoidance(List<Entity> obstacles) {
+        try {
+            this.movementStrategy = MovementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, obstacles,
+                    this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating ObstacleAvoidanceStrategy with obstacles: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    /**
+     * Creates a default obstacle avoidance Strategy without specific obstacles.
+     * Obstacles can be added later through the movementStrategy if needed.
+     * 
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withObstacleAvoidance() {
+        try {
+            this.movementStrategy = MovementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, null,
+                    this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating ObstacleAvoidanceStrategy: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
@@ -199,20 +257,20 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
                 LOGGER.fatal(errorMsg);
                 throw new MovementException(errorMsg);
             }
-            if (this.movementBehavior == null) {
-                LOGGER.warn("No movement behavior specified. Defaulting to ConstantMovementBehavior.");
+            if (this.movementStrategy == null) {
+                LOGGER.warn("No movement Strategy specified. Defaulting to ConstantMovementStrategy.");
                 withConstantMovement();
             }
 
             // Use initialVelocity instead of direction
             if (initialVelocity.len2() < 0.0001f
-                    && !(this.movementBehavior instanceof FollowMovementStrategy)) {
+                    && !(this.movementStrategy instanceof FollowMovementStrategy)) {
                 if (lenientMode) {
                     LOGGER.warn("{0} needs an initial velocity. Setting default up direction.",
-                            this.movementBehavior.getClass().getSimpleName());
+                            this.movementStrategy.getClass().getSimpleName());
                     this.initialVelocity = new Vector2(0, 1); // Default to moving up
                 } else {
-                    String errorMessage = "Invalid configuration: " + this.movementBehavior.getClass().getSimpleName()
+                    String errorMessage = "Invalid configuration: " + this.movementStrategy.getClass().getSimpleName()
                             + " needs a non-zero initial velocity";
                     LOGGER.fatal(errorMessage);
                     throw new MovementException(errorMessage);

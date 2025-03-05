@@ -49,7 +49,7 @@ public class MovementManager implements IMovementManager {
         if (movementStrategy == null) {
             if (lenientMode) {
                 LOGGER.warn("Movement strategy is null. Defaulting to VectorMovementBehavior.");
-                this.movementStrategy = project.game.context.factory.MovementBehaviorFactory.createDefaultMovement();
+                this.movementStrategy = project.game.context.factory.MovementStrategyFactory.createDefaultMovement();
             } else {
                 throw new MovementException("Movement strategy cannot be null");
             }

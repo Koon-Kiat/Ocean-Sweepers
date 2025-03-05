@@ -16,38 +16,38 @@ import project.game.engine.api.movement.IMovementStrategy;
  * 
  * The entity moves in a random direction at a random speed for a random
  * duration.
- * The behavior pool is provided in the constructor.
+ * The strategy pool is provided in the constructor.
  */
 public class RandomisedMovementStrategy implements IMovementStrategy {
 
     private static final GameLogger LOGGER = new GameLogger(RandomisedMovementStrategy.class);
-    private final List<IMovementStrategy> behaviorPool;
+    private final List<IMovementStrategy> strategyPool;
     private final float minDuration;
     private final float maxDuration;
-    private IMovementStrategy currentBehavior;
+    private IMovementStrategy currentStrategy;
     private float remainingTime;
     private final boolean lenientMode;
 
     /**
-     * Constructs a RandomisedMovementBehavior with the specified parameters.
+     * Constructs a RandomisedMovementStrategy with the specified parameters.
      */
-    public RandomisedMovementStrategy(List<IMovementStrategy> behaviorPool, float minDuration, float maxDuration,
+    public RandomisedMovementStrategy(List<IMovementStrategy> strategyPool, float minDuration, float maxDuration,
             boolean lenientMode) {
         this.lenientMode = lenientMode;
-        if (behaviorPool == null || behaviorPool.isEmpty()) {
-            String errorMessage = "Invalid behavior pool provided for RandomisedMovementBehavior.";
+        if (strategyPool == null || strategyPool.isEmpty()) {
+            String errorMessage = "Invalid strategy pool provided for RandomisedMovementStrategy.";
             LOGGER.error(errorMessage);
             if (lenientMode) {
-                LOGGER.warn("{0} Using fallback pool with ConstantMovementBehavior.", errorMessage);
-                this.behaviorPool = new ArrayList<>();
-                this.behaviorPool
+                LOGGER.warn("{0} Using fallback pool with ConstantMovementStrategy.", errorMessage);
+                this.strategyPool = new ArrayList<>();
+                this.strategyPool
                         .add(new ConstantMovementStrategy(GameConstantsFactory.getConstants().DEFAULT_SPEED(),
                                 lenientMode));
             } else {
                 throw new MovementException(errorMessage);
             }
         } else {
-            this.behaviorPool = behaviorPool;
+            this.strategyPool = strategyPool;
         }
         // Validate durations in a single block.
         if (minDuration <= 0 || maxDuration <= 0) {
@@ -79,7 +79,7 @@ public class RandomisedMovementStrategy implements IMovementStrategy {
             this.maxDuration = maxDuration;
         }
         this.remainingTime = MathUtils.random(this.minDuration, this.maxDuration);
-        pickRandomBehavior();
+        pickRandomStrategy();
     }
 
     @Override
@@ -87,31 +87,31 @@ public class RandomisedMovementStrategy implements IMovementStrategy {
         try {
             remainingTime -= deltaTime;
             if (remainingTime <= 0) {
-                pickRandomBehavior();
+                pickRandomStrategy();
                 remainingTime = MathUtils.random(minDuration, maxDuration);
             }
-            if (currentBehavior != null) {
-                currentBehavior.move(movable, deltaTime);
+            if (currentStrategy != null) {
+                currentStrategy.move(movable, deltaTime);
             }
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Invalid argument in RandomisedMovementBehavior", e);
+            LOGGER.error("Invalid argument in RandomisedMovementStrategy", e);
             if (!lenientMode) {
-                throw new MovementException("Invalid argument in RandomisedMovementBehavior", e);
+                throw new MovementException("Invalid argument in RandomisedMovementStrategy", e);
             }
         } catch (NullPointerException e) {
-            LOGGER.error("Null reference in RandomisedMovementBehavior", e);
+            LOGGER.error("Null reference in RandomisedMovementStrategy", e);
             if (!lenientMode) {
-                throw new MovementException("Null reference in RandomisedMovementBehavior", e);
+                throw new MovementException("Null reference in RandomisedMovementStrategy", e);
             }
         } catch (Exception e) {
-            LOGGER.error("Unexpected error in RandomisedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.error("Unexpected error in RandomisedMovementStrategy: " + e.getMessage(), e);
             if (!lenientMode) {
-                throw new MovementException("Unexpected error in RandomisedMovementBehavior", e);
+                throw new MovementException("Unexpected error in RandomisedMovementStrategy", e);
             }
         }
     }
 
-    private void pickRandomBehavior() {
-        currentBehavior = behaviorPool.get(MathUtils.random(behaviorPool.size() - 1));
+    private void pickRandomStrategy() {
+        currentStrategy = strategyPool.get(MathUtils.random(strategyPool.size() - 1));
     }
 }

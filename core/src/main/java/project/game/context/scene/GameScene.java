@@ -33,6 +33,7 @@ import project.game.context.factory.GameConstantsFactory;
 import project.game.context.factory.RockFactory;
 import project.game.context.factory.TrashFactory;
 import project.game.context.movement.ConstantMovementStrategy;
+import project.game.context.movement.ObstacleAvoidanceStrategy;
 import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.audio.AudioManager;
@@ -80,7 +81,7 @@ public class GameScene extends Scene {
     private AudioManager audioManager;
     // private Trash nonMovableTrash;
     private IGameConstants constants;
-    List<IMovementStrategy> behaviorPool = new ArrayList<>();
+    List<IMovementStrategy> strategyPool = new ArrayList<>();
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
@@ -154,16 +155,32 @@ public class GameScene extends Scene {
                 .withConstantMovement()
                 .build();
 
-        // Add behavior to the pool for Random Movement
-        behaviorPool = new ArrayList<>();
-        behaviorPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
-        LOGGER.info("Configured NPC movement behaviors: {0}", behaviorPool.size());
+        // Add strategy to the pool for Random Movement
+        strategyPool = new ArrayList<>();
+        strategyPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
+        LOGGER.info("Configured NPC movement strategys: {0}", strategyPool.size());
 
+        // Create rock entities first so we can pass them to the builder
+        rockFactory = new RockFactory(constants, world);
+        rocks = new ArrayList<>();
+
+        for (int i = 0; i < constants.NUM_ROCKS(); i++) {
+            Rock rock = rockFactory.createObject();
+            rocks.add(rock);
+        }
+
+        // Convert rocks to Entity objects for obstacle avoidance
+        List<Entity> rockEntities = new ArrayList<>();
+        for (Rock rock : rocks) {
+            rockEntities.add(rock.getEntity());
+        }
+
+        // Create NPC movement that follows the boat while avoiding rocks
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(monsterEntity)
                 .setSpeed(constants.NPC_SPEED())
+                .setInitialVelocity(1, 1)
                 .withInterceptorMovement(playerMovementManager)
-                .setInitialVelocity(0, 0)
                 .setLenientMode(true)
                 .build();
 
@@ -171,15 +188,13 @@ public class GameScene extends Scene {
         boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
         monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
 
-        rockFactory = new RockFactory(constants, world);
         trashFactory = new TrashFactory(constants, world);
-
-        rocks = new ArrayList<>();
         trashes = new ArrayList<>();
+
         Random random = new Random();
-        for (int i = 0; i < constants.NUM_ROCKS(); i++) {
-            Rock rock = rockFactory.createObject();
-            rocks.add(rock);
+
+        // Add rocks to entity manager
+        for (Rock rock : rocks) {
             entityManager.addRenderableEntity(rock);
         }
 
@@ -197,6 +212,18 @@ public class GameScene extends Scene {
         entityManager.addRenderableEntity(boat);
         entityManager.addRenderableEntity(monster);
 
+        // Double-check that obstacles are set properly
+        if (npcMovementManager.getMovementStrategy() instanceof ObstacleAvoidanceStrategy) {
+            ObstacleAvoidanceStrategy avoidanceStrategy = (ObstacleAvoidanceStrategy) npcMovementManager
+                    .getMovementStrategy();
+
+            // Add the rocks as obstacles to avoid
+            avoidanceStrategy.setObstacles(rockEntities);
+            LOGGER.info("Monster is following boat while avoiding {0} rocks", rockEntities.size());
+        } else {
+            LOGGER.warn("Monster is not using ObstacleAvoidanceStrategy");
+        }
+
         camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
         camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
         camera.update();
@@ -208,10 +235,10 @@ public class GameScene extends Scene {
         // Add entities to the collision manager
         collisionManager.addEntity(boat, playerMovementManager);
         collisionManager.addEntity(monster, npcMovementManager);
-        for (Rock rock: rocks) {
+        for (Rock rock : rocks) {
             collisionManager.addEntity(rock, null);
         }
-        for (Trash trash: trashes) {
+        for (Trash trash : trashes) {
             collisionManager.addEntity(trash, null);
         }
 

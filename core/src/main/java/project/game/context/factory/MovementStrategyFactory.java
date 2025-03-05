@@ -8,6 +8,7 @@ import project.game.context.movement.AcceleratedMovementStrategy;
 import project.game.context.movement.ConstantMovementStrategy;
 import project.game.context.movement.FollowMovementStrategy;
 import project.game.context.movement.InterceptorMovementStrategy;
+import project.game.context.movement.ObstacleAvoidanceStrategy;
 import project.game.context.movement.OrbitalMovementStrategy;
 import project.game.context.movement.RandomisedMovementStrategy;
 import project.game.context.movement.SpiralApproachStrategy;
@@ -16,74 +17,75 @@ import project.game.context.movement.ZigZagMovemenStrategy;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
+import project.game.engine.entitysystem.entity.Entity;
 
 /**
- * Factory class for creating movement behaviors.
+ * Factory class for creating movement strategys.
  * This helps avoid direct instantiation of dependencies and follows the
  * Dependency Inversion Principle.
  */
-public class MovementBehaviorFactory {
-    private static final GameLogger LOGGER = new GameLogger(MovementBehaviorFactory.class);
+public class MovementStrategyFactory {
+    private static final GameLogger LOGGER = new GameLogger(MovementStrategyFactory.class);
 
     /**
-     * Creates a constant movement behavior.
+     * Creates a constant movement strategy.
      * 
      * @param speed The speed of the movement.
-     * @return A new ConstantMovementBehavior instance.
+     * @return A new ConstantMovementStrategy instance.
      */
     public static IMovementStrategy createConstantMovement(float speed, boolean lenientMode) {
         try {
             return new ConstantMovementStrategy(speed, lenientMode);
         } catch (MovementException e) {
-            LOGGER.fatal("Error creating ConstantMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating ConstantMovementStrategy: " + e.getMessage(), e);
             throw e;
         }
     }
 
     /**
-     * Creates an accelerated movement behavior.
+     * Creates an accelerated movement strategy.
      * 
      * @param acceleration The acceleration of the movement.
      * @param deceleration The deceleration of the movement.
      * @param speed        The speed of the movement.
      * @param lenientMode  Whether to enable lenient mode.
-     * @return A new AcceleratedMovementBehavior instance.
+     * @return A new AcceleratedMovementStrategy instance.
      */
     public static IMovementStrategy createAcceleratedMovement(float acceleration, float deceleration, float speed,
             boolean lenientMode) {
         try {
             return new AcceleratedMovementStrategy(acceleration, deceleration, speed, lenientMode);
         } catch (MovementException e) {
-            LOGGER.fatal("Error creating AcceleratedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating AcceleratedMovementStrategy: " + e.getMessage(), e);
             throw e;
         }
     }
 
     /**
-     * Creates a zig-zag movement behavior.
+     * Creates a zig-zag movement strategy.
      * 
      * @param speed       The speed of the movement.
      * @param amplitude   The amplitude of the zigzag pattern.
      * @param frequency   The frequency of the zigzag pattern.
      * @param lenientMode Whether to enable lenient mode.
-     * @return A new ZigZagMovementBehavior instance.
+     * @return A new ZigZagMovementStrategy instance.
      */
     public static IMovementStrategy createZigZagMovement(float speed, float amplitude, float frequency,
             boolean lenientMode) {
         try {
             return new ZigZagMovemenStrategy(speed, amplitude, frequency, lenientMode);
         } catch (MovementException e) {
-            LOGGER.fatal("Error creating ZigZagMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating ZigZagMovementStrategy: " + e.getMessage(), e);
             throw e;
         }
     }
 
     /**
-     * Creates a follow movement behavior.
+     * Creates a follow movement strategy.
      * 
      * @param target The target to follow.
      * @param speed  The speed of the movement.
-     * @return A new FollowMovementBehavior instance.
+     * @return A new FollowMovementStrategy instance.
      */
     public static IMovementStrategy createFollowMovement(IPositionable target, float speed, boolean lenientMode) {
         if (target == null) {
@@ -94,59 +96,59 @@ public class MovementBehaviorFactory {
         try {
             return new FollowMovementStrategy(target, speed, lenientMode);
         } catch (MovementException e) {
-            LOGGER.fatal("Error creating FollowMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating FollowMovementStrategy: " + e.getMessage(), e);
             throw e;
         }
     }
 
     /**
-     * Creates a randomised movement behavior.
+     * Creates a randomised movement strategy.
      * 
-     * @param behaviorPool The pool of behaviors to randomly select from.
-     * @param minDuration  The minimum duration for each behavior.
-     * @param maxDuration  The maximum duration for each behavior.
-     * @return A new RandomisedMovementBehavior instance.
+     * @param strategyPool The pool of strategys to randomly select from.
+     * @param minDuration  The minimum duration for each strategy.
+     * @param maxDuration  The maximum duration for each strategy.
+     * @return A new RandomisedMovementStrategy instance.
      */
-    public static IMovementStrategy createRandomisedMovement(List<IMovementStrategy> behaviorPool,
+    public static IMovementStrategy createRandomisedMovement(List<IMovementStrategy> strategyPool,
             float minDuration,
             float maxDuration, boolean lenientMode) {
-        if (behaviorPool == null) {
-            String errorMsg = "Behavior pool cannot be null in createRandomisedMovement.";
+        if (strategyPool == null) {
+            String errorMsg = "Strategy pool cannot be null in createRandomisedMovement.";
             LOGGER.fatal(errorMsg);
             throw new MovementException(errorMsg);
         }
         try {
-            return new RandomisedMovementStrategy(behaviorPool, minDuration, maxDuration, lenientMode);
+            return new RandomisedMovementStrategy(strategyPool, minDuration, maxDuration, lenientMode);
         } catch (MovementException e) {
-            LOGGER.fatal("Error creating RandomisedMovementBehavior: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating RandomisedMovementStrategy: " + e.getMessage(), e);
             throw e;
         }
     }
 
     /**
-     * Creates a default movement behavior when none is specified.
+     * Creates a default movement strategy when none is specified.
      * 
-     * @return A new ConstantMovementBehavior with default speed.
+     * @return A new ConstantMovementStrategy with default speed.
      */
     public static IMovementStrategy createDefaultMovement() {
         return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
     }
 
     /**
-     * Creates an OrbitalMovementBehavior.
+     * Creates an OrbitalMovementStrategy.
      */
     public static IMovementStrategy createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
             float eccentricity, boolean lenientMode) {
         try {
             return new OrbitalMovementStrategy(target, orbitRadius, rotationSpeed, eccentricity, lenientMode);
         } catch (Exception e) {
-            LOGGER.error("Failed to create OrbitalMovementBehavior: " + e.getMessage());
-            throw new MovementException("Failed to create OrbitalMovementBehavior", e);
+            LOGGER.error("Failed to create OrbitalMovementStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create OrbitalMovementStrategy", e);
         }
     }
 
     /**
-     * Creates a SpringFollowBehavior.
+     * Creates a SpringFollowStrategy.
      */
     public static IMovementStrategy createSpringFollowMovement(IPositionable target, float springConstant,
             float damping,
@@ -154,25 +156,25 @@ public class MovementBehaviorFactory {
         try {
             return new SpringFollowStrategy(target, springConstant, damping, lenientMode);
         } catch (Exception e) {
-            LOGGER.error("Failed to create SpringFollowBehavior: " + e.getMessage());
-            throw new MovementException("Failed to create SpringFollowBehavior", e);
+            LOGGER.error("Failed to create SpringFollowStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create SpringFollowStrategy", e);
         }
     }
 
     /**
-     * Creates an InterceptorMovementBehavior.
+     * Creates an InterceptorMovementStrategy.
      */
     public static IMovementStrategy createInterceptorMovement(IMovable movable, float speed, boolean lenientMode) {
         try {
             return new InterceptorMovementStrategy(movable, speed, lenientMode);
         } catch (Exception e) {
-            LOGGER.error("Failed to create InterceptorMovementBehavior: " + e.getMessage());
-            throw new MovementException("Failed to create InterceptorMovementBehavior", e);
+            LOGGER.error("Failed to create InterceptorMovementStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create InterceptorMovementStrategy", e);
         }
     }
 
     /**
-     * Creates a SpiralApproachBehavior.
+     * Creates a SpiralApproachStrategy.
      */
     public static IMovementStrategy createSpiralApproachMovement(IPositionable target, float speed,
             float spiralTightness,
@@ -180,14 +182,49 @@ public class MovementBehaviorFactory {
         try {
             return new SpiralApproachStrategy(target, speed, spiralTightness, approachSpeed, lenientMode);
         } catch (Exception e) {
-            LOGGER.error("Failed to create SpiralApproachBehavior: " + e.getMessage());
-            throw new MovementException("Failed to create SpiralApproachBehavior", e);
+            LOGGER.error("Failed to create SpiralApproachStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create SpiralApproachStrategy", e);
+        }
+    }
+
+    /**
+     * Creates an ObstacleAvoidanceStrategy.
+     */
+    public static IMovementStrategy createObstacleAvoidanceStrategy(IMovable movable, float speed,
+            boolean lenientMode) {
+        try {
+            return new ObstacleAvoidanceStrategy(movable, speed, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create ObstacleAvoidanceStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create ObstacleAvoidanceStrategy", e);
+        }
+    }
+
+    /**
+     * Creates an ObstacleAvoidanceStrategy with a list of obstacles to avoid.
+     * 
+     * @param speed       The movement speed
+     * @param obstacles   List of obstacle entities to avoid
+     * @param lenientMode Whether to use lenient mode for error handling
+     * @return A new ObstacleAvoidanceStrategy instance
+     */
+    public static IMovementStrategy createObstacleAvoidanceStrategy(float speed, List<Entity> obstacles,
+            boolean lenientMode) {
+        try {
+            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(null, speed, lenientMode);
+            if (obstacles != null && !obstacles.isEmpty()) {
+                strategy.setObstacles(obstacles);
+            }
+            return strategy;
+        } catch (Exception e) {
+            LOGGER.error("Failed to create ObstacleAvoidanceStrategy with obstacles: " + e.getMessage());
+            throw new MovementException("Failed to create ObstacleAvoidanceStrategy with obstacles", e);
         }
     }
 
     // Private constructor to prevent instantiation
-    private MovementBehaviorFactory() {
+    private MovementStrategyFactory() {
         throw new UnsupportedOperationException(
-                "MovementBehaviorFactory is a utility class and cannot be instantiated.");
+                "MovementStrategyFactory is a utility class and cannot be instantiated.");
     }
 }

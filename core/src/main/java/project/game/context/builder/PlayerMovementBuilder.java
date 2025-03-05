@@ -1,7 +1,7 @@
 package project.game.context.builder;
 
 import project.game.common.exception.MovementException;
-import project.game.context.factory.MovementBehaviorFactory;
+import project.game.context.factory.MovementStrategyFactory;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
 import project.game.engine.entitysystem.movement.PlayerMovementManager;
@@ -33,32 +33,32 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
 
     public PlayerMovementBuilder withConstantMovement() {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createConstantMovement(this.speed, this.lenientMode);
+            this.movementStrategy = MovementStrategyFactory.createConstantMovement(this.speed, this.lenientMode);
         } catch (Exception e) {
             if (this.lenientMode) {
-                LOGGER.warn("Failed to create ConstantMovementBehavior in lenient mode: " + e.getMessage()
+                LOGGER.warn("Failed to create ConstantMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using default movement.");
-                this.movementBehavior = MovementBehaviorFactory.createDefaultMovement();
+                this.movementStrategy = MovementStrategyFactory.createDefaultMovement();
                 return this;
             }
-            LOGGER.fatal("Failed to create ConstantMovementBehavior", e);
-            throw new MovementException("Failed to create ConstantMovementBehavior", e);
+            LOGGER.fatal("Failed to create ConstantMovementStrategy", e);
+            throw new MovementException("Failed to create ConstantMovementStrategy", e);
         }
         return this;
     }
 
     public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
         try {
-            this.movementBehavior = MovementBehaviorFactory.createAcceleratedMovement(acceleration, deceleration,
+            this.movementStrategy = MovementStrategyFactory.createAcceleratedMovement(acceleration, deceleration,
                     this.speed, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating AcceleratedMovementBehavior in lenient mode: " + e.getMessage()
+                LOGGER.warn("Error creating AcceleratedMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using ConstantMovement fallback.");
                 return withConstantMovement();
             }
-            LOGGER.fatal("Error in movement behavior creation: " + e.getMessage(), e);
-            throw new MovementException("Error in movement behavior creation: " + e.getMessage(), e);
+            LOGGER.fatal("Error in movement strategy creation: " + e.getMessage(), e);
+            throw new MovementException("Error in movement strategy creation: " + e.getMessage(), e);
         }
         return this;
     }
@@ -91,8 +91,8 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
                 LOGGER.fatal(errorMsg);
                 throw new MovementException(errorMsg);
             }
-            if (this.movementBehavior == null) {
-                LOGGER.info("No movement behavior specified. Using default ConstantMovementBehavior.");
+            if (this.movementStrategy == null) {
+                LOGGER.info("No movement strategy specified. Using default ConstantMovementStrategy.");
                 withConstantMovement();
             }
             return new PlayerMovementManager(this);
