@@ -33,7 +33,6 @@ import project.game.context.factory.GameConstantsFactory;
 import project.game.context.factory.RockFactory;
 import project.game.context.factory.TrashFactory;
 import project.game.context.movement.ConstantMovementStrategy;
-import project.game.context.movement.ObstacleAvoidanceStrategy;
 import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.audio.AudioManager;
@@ -175,14 +174,20 @@ public class GameScene extends Scene {
             rockEntities.add(rock.getEntity());
         }
 
-        // Create NPC movement that follows the boat while avoiding rocks
+        // Create NPC movement with composite strategy that follows boat while avoiding
+        // rocks
+        float[] customWeights = { 0.30f, 0.70f }; // 30% interception, 70% avoidance for better obstacle navigation
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(monsterEntity)
                 .setSpeed(constants.NPC_SPEED())
-                .setInitialVelocity(1, 1)
-                .withInterceptorMovement(playerMovementManager)
+                .setInitialVelocity(1, 1) // Set a clear initial direction
+                .withInterceptorAndObstacleAvoidance(playerMovementManager, rockEntities, customWeights)
                 .setLenientMode(true)
                 .build();
+
+        LOGGER.info(
+                "Created monster with composite movement strategy (30% intercept, 70% avoid) to follow boat while avoiding {0} rocks",
+                rockEntities.size());
 
         // Initialize entities
         boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
@@ -212,17 +217,7 @@ public class GameScene extends Scene {
         entityManager.addRenderableEntity(boat);
         entityManager.addRenderableEntity(monster);
 
-        // Double-check that obstacles are set properly
-        if (npcMovementManager.getMovementStrategy() instanceof ObstacleAvoidanceStrategy) {
-            ObstacleAvoidanceStrategy avoidanceStrategy = (ObstacleAvoidanceStrategy) npcMovementManager
-                    .getMovementStrategy();
-
-            // Add the rocks as obstacles to avoid
-            avoidanceStrategy.setObstacles(rockEntities);
-            LOGGER.info("Monster is following boat while avoiding {0} rocks", rockEntities.size());
-        } else {
-            LOGGER.warn("Monster is not using ObstacleAvoidanceStrategy");
-        }
+        LOGGER.info("Monster is using composite strategy to follow boat while avoiding {0} rocks", rockEntities.size());
 
         camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
         camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
