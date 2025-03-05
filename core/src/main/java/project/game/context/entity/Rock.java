@@ -168,8 +168,8 @@ public class Rock extends CollidableEntity implements IRenderable {
 
 		// Set up collision filtering
 		Filter filter = new Filter();
-		filter.categoryBits = 0x0002; // Rock category
-		filter.maskBits = -1; // Collide with everything
+		filter.categoryBits = 0x0002;
+		filter.maskBits = -1;
 		fixtureDef.filter.categoryBits = filter.categoryBits;
 		fixtureDef.filter.maskBits = filter.maskBits;
 

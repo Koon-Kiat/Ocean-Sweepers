@@ -137,7 +137,7 @@ public class Boat extends CollidableEntity implements IRenderable {
 				float dx = boatX - rockX;
 				float dy = boatY - rockY;
 				float distance = (float) Math.sqrt(dx * dx + dy * dy);
-				LOGGER.info("go distance: " +  distance);
+				LOGGER.info("go distance: " + distance);
 
 				if (distance > 0.0001f) {
 					dx /= distance;

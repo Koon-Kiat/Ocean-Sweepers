@@ -8,7 +8,7 @@ import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
 
 /**
- * Advanced movement behavior that predicts where a moving target will be and
+ * Advanced movement strategy that predicts where a moving target will be and
  * attempts to intercept it. Uses vector math to calculate interception points.
  */
 public class InterceptorMovementStrategy implements IMovementStrategy {
@@ -29,7 +29,7 @@ public class InterceptorMovementStrategy implements IMovementStrategy {
         this.lenientMode = lenientMode;
 
         if (target == null) {
-            String errorMessage = "Target cannot be null in InterceptorMovementBehavior.";
+            String errorMessage = "Target cannot be null in InterceptorMovementStrategy.";
             LOGGER.error(errorMessage);
             throw new MovementException(errorMessage);
         }
@@ -143,7 +143,7 @@ public class InterceptorMovementStrategy implements IMovementStrategy {
             movable.setVelocity(moveVec.x / deltaTime, moveVec.y / deltaTime);
 
         } catch (Exception e) {
-            String errorMessage = "Error in InterceptorMovementBehavior: " + e.getMessage();
+            String errorMessage = "Error in InterceptorMovementStrategy: " + e.getMessage();
             LOGGER.error(errorMessage, e);
             if (!lenientMode) {
                 throw new MovementException(errorMessage, e);

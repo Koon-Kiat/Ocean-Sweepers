@@ -83,7 +83,7 @@ public class GameScene extends Scene implements EntityRemovalListener {
     private AudioManager audioManager;
     // private Trash nonMovableTrash;
     private IGameConstants constants;
-    List<IMovementStrategy> behaviorPool = new ArrayList<>();
+    List<IMovementStrategy> strategyPool = new ArrayList<>();
     public static List<Entity> existingEntities;
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
@@ -158,30 +158,22 @@ public class GameScene extends Scene implements EntityRemovalListener {
                 .withConstantMovement()
                 .build();
 
-        // Add behavior to the pool for Random Movement
-        behaviorPool = new ArrayList<>();
-        behaviorPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
-        LOGGER.info("Configured NPC movement behaviors: {0}", behaviorPool.size());
+        // Add strategy to the pool for Random Movement
+        strategyPool = new ArrayList<>();
+        strategyPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
+        LOGGER.info("Configured NPC movement strategys: {0}", strategyPool.size());
 
-        npcMovementManager = new NPCMovementBuilder()
-                .withEntity(monsterEntity)
-                .setSpeed(constants.NPC_SPEED())
-                .withInterceptorMovement(playerMovementManager)
-                .setInitialVelocity(0, 0)
-                .setLenientMode(true)
-                .build();
-
-        // Initialize entities
-        boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
-        monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
-
+    
+        
+        List<Entity> rockEntities = new ArrayList<>();
+        rocks = new ArrayList<>();
+        trashes = new ArrayList<>();
         existingEntities = new ArrayList<>();
         rockFactory = new RockFactory(constants, world, existingEntities);
         trashFactory = new TrashFactory(constants, world, existingEntities);
-
-        rocks = new ArrayList<>();
-        trashes = new ArrayList<>();
         Random random = new Random();
+
+        // Create rock entities first so we can pass them to the builder
         for (int i = 0; i < constants.NUM_ROCKS(); i++) {
             Rock rock = rockFactory.createObject();
             rocks.add(rock);
@@ -197,6 +189,30 @@ public class GameScene extends Scene implements EntityRemovalListener {
             existingEntities.add(trash.getEntity());
         }
 
+        // Convert rocks to Entity objects for obstacle avoidance
+        for (Rock rock : rocks) {
+            rockEntities.add(rock.getEntity());
+        }
+
+        // Create NPC movement with composite strategy that follows boat while avoiding
+        // rocks
+        float[] customWeights = { 0.30f, 0.70f }; // 30% interception, 70% avoidance for better obstacle navigation
+        npcMovementManager = new NPCMovementBuilder()
+                .withEntity(monsterEntity)
+                .setSpeed(constants.NPC_SPEED())
+                .setInitialVelocity(1, 1) // Set a clear initial direction
+                .withInterceptorAndObstacleAvoidance(playerMovementManager, rockEntities, customWeights)
+                .setLenientMode(true)
+                .build();
+
+        LOGGER.info(
+                "Created monster with composite movement strategy (30% intercept, 70% avoid) to follow boat while avoiding {0} rocks",
+                rockEntities.size());
+
+        // Initialize entities
+        boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
+        monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
+
         // Initialize bodies
         boat.initBody(world);
         monster.initBody(world);
@@ -204,6 +220,8 @@ public class GameScene extends Scene implements EntityRemovalListener {
         // Add entities to the entity manager
         entityManager.addRenderableEntity(boat);
         entityManager.addRenderableEntity(monster);
+
+        LOGGER.info("Monster is using composite strategy to follow boat while avoiding {0} rocks", rockEntities.size());
 
         camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
         camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
@@ -216,10 +234,10 @@ public class GameScene extends Scene implements EntityRemovalListener {
         // Add entities to the collision manager
         collisionManager.addEntity(boat, playerMovementManager);
         collisionManager.addEntity(monster, npcMovementManager);
-        for (Rock rock: rocks) {
+        for (Rock rock : rocks) {
             collisionManager.addEntity(rock, null);
         }
-        for (Trash trash: trashes) {
+        for (Trash trash : trashes) {
             collisionManager.addEntity(trash, null);
         }
 

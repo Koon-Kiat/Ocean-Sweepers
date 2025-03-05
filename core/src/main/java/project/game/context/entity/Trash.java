@@ -10,6 +10,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.common.logging.core.GameLogger;
+import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
@@ -41,35 +42,35 @@ public class Trash extends CollidableEntity implements IRenderable {
     }
 
     private float entityX() {
-		return super.getEntity().getX();
-	}
+        return super.getEntity().getX();
+    }
 
-	private float entityY() {
-		return super.getEntity().getY();
-	}
+    private float entityY() {
+        return super.getEntity().getY();
+    }
 
-	private float entityWidth() {
-		return super.getEntity().getWidth();
-	}
+    private float entityWidth() {
+        return super.getEntity().getWidth();
+    }
 
-	private float entityHeight() {
-		return super.getEntity().getHeight();
-	}
+    private float entityHeight() {
+        return super.getEntity().getHeight();
+    }
 
-	@Override
-	public boolean isActive() {
-		return super.getEntity().isActive();
-	}
+    @Override
+    public boolean isActive() {
+        return super.getEntity().isActive();
+    }
 
-	@Override
-	public Body getBody() {
-		return super.getBody();
-	}
+    @Override
+    public Body getBody() {
+        return super.getBody();
+    }
 
-	@Override
-	public Entity getEntity() {
-		return super.getEntity();
-	}
+    @Override
+    public Entity getEntity() {
+        return super.getEntity();
+    }
 
     @Override
     public void render(SpriteBatch batch) {
@@ -81,28 +82,28 @@ public class Trash extends CollidableEntity implements IRenderable {
             if (texture != null) {
                 batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
             }
-            
+
         }
     }
 
     public void setCollisionActive(long durationMillis) {
-		collisionActive = true;
-		collisionEndTime = System.currentTimeMillis() + durationMillis;
-	}
-
-	@Override
-	public boolean isInCollision() {
-		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-			collisionActive = false;
-		}
-		return collisionActive;
-	}
+        collisionActive = true;
+        collisionEndTime = System.currentTimeMillis() + durationMillis;
+    }
 
     @Override
-	public boolean checkCollision(Entity other) {
-		// Always return true to ensure collision is checked using Box2D
-		return true;
-	}
+    public boolean isInCollision() {
+        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+            collisionActive = false;
+        }
+        return collisionActive;
+    }
+
+    @Override
+    public boolean checkCollision(Entity other) {
+        // Always return true to ensure collision is checked using Box2D
+        return true;
+    }
 
     @Override
     public void onCollision(ICollidable other) {
@@ -123,7 +124,7 @@ public class Trash extends CollidableEntity implements IRenderable {
             float trashHeight = getEntity().getHeight();
 
             boolean isCovered = (boatX < trashX + trashWidth / 2 && boatX + boatWidth > trashX + trashWidth / 2) &&
-                                (boatY < trashY + trashHeight / 2 && boatY + boatHeight > trashY + trashHeight / 2);
+                    (boatY < trashY + trashHeight / 2 && boatY + boatHeight > trashY + trashHeight / 2);
 
             if (isCovered) {
                 // Dispose of the trash or make it disappear
@@ -160,8 +161,8 @@ public class Trash extends CollidableEntity implements IRenderable {
 
         // Set up collision filtering
         Filter filter = new Filter();
-        filter.categoryBits = 0x0004; // Trash category
-        filter.maskBits = -1; // Collide with everything
+        filter.categoryBits = 0x0004;
+        filter.maskBits = -1 & ~0x0008;
         fixtureDef.filter.categoryBits = filter.categoryBits;
         fixtureDef.filter.maskBits = filter.maskBits;
 

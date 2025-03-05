@@ -1,5 +1,11 @@
 package project.game.context.factory;
 
+import java.util.Random;
+
+import com.badlogic.gdx.physics.box2d.World;
+
+import project.game.context.api.constant.IGameConstants;
+import project.game.context.api.pool.ObjectPool;
 import project.game.context.entity.Rock;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.context.api.constant.IGameConstants;

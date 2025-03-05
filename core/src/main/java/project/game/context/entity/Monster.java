@@ -135,8 +135,9 @@ public class Monster extends CollidableEntity implements IRenderable {
                     new Object[] { getEntity().getClass().getSimpleName(),
                             other.getClass().getSimpleName() });
 
-            setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-            lastCollisionTime = currentTime;
+            if (!(other instanceof Trash)) {
+                setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+            }
 
             if (other instanceof Boat) {
                 // Calculate direction from monster to boat
@@ -201,8 +202,8 @@ public class Monster extends CollidableEntity implements IRenderable {
         fixtureDef.restitution = 0.1f;
 
         Filter filter = new Filter();
-        filter.categoryBits = 0x0004; // Monster category
-        filter.maskBits = -1;
+        filter.categoryBits = 0x0008;
+        filter.maskBits = -1 & ~0x0004;
         fixtureDef.filter.categoryBits = filter.categoryBits;
         fixtureDef.filter.maskBits = filter.maskBits;
 

@@ -40,7 +40,7 @@ public class BoundaryFactory {
          *                    Box2D meters)
          * @param bodyType    The body type (typically StaticBody for boundaries)
          * @param density     Density of the fixture (affects mass in dynamic bodies)
-         * @param friction    Friction of the fixture (affects sliding behavior)
+         * @param friction    Friction of the fixture (affects sliding strategy)
          * @param restitution Bounciness of the fixture (affects how objects bounce off)
          * @param userData    String identifier for the body used in collision detection
          */

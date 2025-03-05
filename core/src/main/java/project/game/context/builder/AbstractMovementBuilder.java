@@ -22,7 +22,7 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
     protected Entity entity;
     protected float speed;
     protected Vector2 initialVelocity = new Vector2(0, 0);
-    protected IMovementStrategy movementBehavior;
+    protected IMovementStrategy movementStrategy;
     protected boolean lenientMode = false;
 
     @SuppressWarnings("unchecked")
@@ -100,8 +100,8 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
         return self();
     }
 
-    public IMovementStrategy getMovementBehavior() {
-        return movementBehavior;
+    public IMovementStrategy getMovementStrategy() {
+        return movementStrategy;
     }
 
     public boolean isLenientMode() {

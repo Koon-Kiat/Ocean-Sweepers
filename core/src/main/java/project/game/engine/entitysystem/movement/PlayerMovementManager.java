@@ -9,7 +9,7 @@ import project.game.context.builder.PlayerMovementBuilder;
  * provides movement functionality for the player character in the game.
  * 
  * It extends MovementManager and uses the PlayerMovementBuilder to configure
- * the player's movement behavior.
+ * the player's movement strategy.
  */
 public class PlayerMovementManager extends MovementManager {
 
@@ -23,7 +23,7 @@ public class PlayerMovementManager extends MovementManager {
         super(checkBuilder(builder).getMovableEntity(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
-                checkBuilder(builder).getMovementBehavior(),
+                checkBuilder(builder).getMovementStrategy(),
                 checkBuilder(builder).isLenientMode());
         this.builder = builder;
     }
