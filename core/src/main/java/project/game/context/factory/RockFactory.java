@@ -8,11 +8,7 @@ import project.game.context.api.constant.IGameConstants;
 import project.game.context.api.pool.ObjectPool;
 import project.game.context.entity.Rock;
 import project.game.engine.entitysystem.entity.Entity;
-import project.game.context.api.constant.IGameConstants;
-import com.badlogic.gdx.physics.box2d.World;
-import project.game.context.api.pool.ObjectPool;
 
-import java.util.Random;
 import java.util.List;
 
 public class RockFactory implements ObjectPool.ObjectFactory<Rock> {
