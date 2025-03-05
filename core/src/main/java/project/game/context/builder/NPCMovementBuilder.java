@@ -229,6 +229,84 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
+    /**
+     * Creates a combined interceptor with obstacle avoidance movement strategy.
+     * This makes the NPC follow/intercept a target while avoiding obstacles.
+     * 
+     * @param target    The target to follow/intercept
+     * @param obstacles The obstacles to avoid
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withInterceptorAndObstacleAvoidance(IMovable target, List<Entity> obstacles) {
+        try {
+            this.movementStrategy = MovementStrategyFactory.createInterceptorWithObstacleAvoidance(
+                    target, obstacles, this.speed, this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating combined InterceptorWithObstacleAvoidance: " + e.getMessage()
+                        + ". Using interceptor movement fallback.");
+                return withInterceptorMovement(target);
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    /**
+     * Creates a combined interceptor with obstacle avoidance movement strategy
+     * using custom weights.
+     * 
+     * @param target    The target to follow/intercept
+     * @param obstacles The obstacles to avoid
+     * @param weights   Custom weights for interceptor and avoidance (first for
+     *                  interceptor, second for avoidance)
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withInterceptorAndObstacleAvoidance(IMovable target, List<Entity> obstacles,
+            float[] weights) {
+        try {
+            this.movementStrategy = MovementStrategyFactory.createInterceptorWithObstacleAvoidance(
+                    target, obstacles, this.speed, weights, this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating combined InterceptorWithObstacleAvoidance with custom weights: "
+                        + e.getMessage()
+                        + ". Using interceptor movement fallback.");
+                return withInterceptorMovement(target);
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    /**
+     * Creates a composite movement strategy combining multiple strategies.
+     * 
+     * @param baseStrategy         The primary strategy
+     * @param additionalStrategies Additional strategies to apply
+     * @param weights              The relative weights for each strategy
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withCompositeMovement(
+            IMovementStrategy baseStrategy,
+            List<IMovementStrategy> additionalStrategies,
+            float[] weights) {
+
+        try {
+            this.movementStrategy = MovementStrategyFactory.createCompositeMovementStrategy(
+                    baseStrategy, additionalStrategies, weights);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating CompositeMovementStrategy: " + e.getMessage()
+                        + ". Using base strategy as fallback.");
+                this.movementStrategy = baseStrategy;
+            } else {
+                throw e;
+            }
+        }
+        return this;
+    }
+
     @Override
     protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
         if (entity == null) {
