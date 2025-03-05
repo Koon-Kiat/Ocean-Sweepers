@@ -18,11 +18,13 @@ public abstract class CollidableEntity extends Entity implements ICollidable, IC
 
 	private final Entity entity;
 	private Body body;
+	private final World world;
 	private boolean inCollision;
 
 	public CollidableEntity(Entity baseEntity, World world) {
 		this.entity = baseEntity;
 		this.inCollision = false;
+		this.world = world;
 	}
 
 	public final void initBody(World world) {
@@ -42,6 +44,11 @@ public abstract class CollidableEntity extends Entity implements ICollidable, IC
 	}
 
 	@Override
+	public World getWorld() {
+		return world;
+	}
+
+	@Override
 	public Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -56,7 +63,7 @@ public abstract class CollidableEntity extends Entity implements ICollidable, IC
 		fixtureDef.shape = shape;
 		fixtureDef.density = 1.0f;
 		fixtureDef.friction = 0.3f;
-		fixtureDef.restitution = 0.5f;
+		fixtureDef.restitution = 0.0f;
 
 		createdBody.createFixture(fixtureDef);
 		shape.dispose();

@@ -8,6 +8,8 @@ import project.game.engine.constant.AbstractConfigurableConstants;
  * Game-specific implementation of configurable constants.
  */
 public class ConfigurableGameConstants extends AbstractConfigurableConstants implements IGameConstants {
+    // Implementing missing methods from IEntityConstants
+    
     private static final GameLogger LOGGER = new GameLogger(ConfigurableGameConstants.class);
     private static ConfigurableGameConstants instance;
 
@@ -140,6 +142,46 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
         return getFloatValue("DROP_HEIGHT");
     }
 
+    @Override
+    public float MONSTER_HEIGHT() {
+        return getFloatValue("MONSTER_HEIGHT");
+    }
+
+    @Override
+    public float MONSTER_WIDTH() {
+        return getFloatValue("MONSTER_WIDTH");
+    }
+
+    @Override
+    public float TRASH_HEIGHT() {
+        return getFloatValue("TRASH_HEIGHT");
+    }
+
+    @Override
+    public float TRASH_WIDTH() {
+        return getFloatValue("TRASH_WIDTH");
+    }
+
+    @Override
+    public int NUM_TRASHES() {
+        return getIntValue("NUM_TRASHES");
+    }
+
+    @Override
+    public float ROCK_HEIGHT() {
+        return getFloatValue("ROCK_HEIGHT");
+    }
+
+    @Override
+    public float ROCK_WIDTH() {
+        return getFloatValue("ROCK_WIDTH");
+    }
+
+    @Override
+    public int NUM_ROCKS() {
+        return getIntValue("NUM_ROCKS");
+    }
+
     // Collision Constants
     @Override
     public float MONSTER_BASE_IMPULSE() {
@@ -149,5 +191,10 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
     @Override
     public float ROCK_BASE_IMPULSE() {
         return getFloatValue("ROCK_BASE_IMPULSE");
+    }
+
+    @Override
+    public float BOAT_BOUNCE_FORCE() {
+        return getFloatValue("BOAT_BOUNCE_FORCE");
     }
 }

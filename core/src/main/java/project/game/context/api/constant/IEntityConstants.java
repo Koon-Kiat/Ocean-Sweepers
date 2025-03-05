@@ -21,4 +21,27 @@ public interface IEntityConstants {
     float DROP_WIDTH();
 
     float DROP_HEIGHT();
+
+    // Rock constants
+    float ROCK_WIDTH();
+
+    float ROCK_HEIGHT();
+
+    int NUM_ROCKS();
+
+    //Trash constants
+    float TRASH_WIDTH();
+
+    float TRASH_HEIGHT();
+
+    int NUM_TRASHES();
+
+    //Monster constants
+    float MONSTER_WIDTH();
+
+    float MONSTER_HEIGHT();
+
+    float BOAT_BOUNCE_FORCE();
+
+    
 }

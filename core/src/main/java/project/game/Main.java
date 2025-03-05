@@ -74,6 +74,10 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         LOGGER.info("Application shutting down");
-        sceneManager.dispose();
+        if (sceneManager != null) {
+            sceneManager.dispose();
+            sceneManager = null;
+        }
+        
     }
 }

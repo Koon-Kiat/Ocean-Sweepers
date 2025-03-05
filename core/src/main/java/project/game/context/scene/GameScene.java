@@ -2,6 +2,7 @@ package project.game.context.scene;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -29,6 +30,8 @@ import project.game.context.entity.Monster;
 import project.game.context.entity.Rock;
 import project.game.context.entity.Trash;
 import project.game.context.factory.GameConstantsFactory;
+import project.game.context.factory.RockFactory;
+import project.game.context.factory.TrashFactory;
 import project.game.context.movement.ConstantMovementStrategy;
 import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.asset.CustomAssetManager;
@@ -55,9 +58,11 @@ public class GameScene extends Scene {
     private Texture boatImage;
     private Texture trashImage;
     private Texture monsterImage;
-    private Rock rock;
+    private RockFactory rockFactory;
+    private TrashFactory trashFactory;
+    private List<Rock> rocks;
+    private List<Trash> trashes;
     private Boat boat;
-    private Trash trash;
     private Monster monster;
     private Window popupMenu;
     private Skin skin;
@@ -73,7 +78,7 @@ public class GameScene extends Scene {
     private InputMultiplexer inputMultiplexer;
     private Options options;
     private AudioManager audioManager;
-    private Trash nonMovableTrash;
+    // private Trash nonMovableTrash;
     private IGameConstants constants;
     List<IMovementStrategy> behaviorPool = new ArrayList<>();
 
@@ -102,8 +107,8 @@ public class GameScene extends Scene {
             CustomAssetManager.getInstance().update();
             CustomAssetManager.getInstance().getasset_Manager().finishLoading();
             if (CustomAssetManager.getInstance().isLoaded()) {
-                boatImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
-                trashImage = CustomAssetManager.getInstance().getAsset("bucket.png", Texture.class);
+                boatImage = CustomAssetManager.getInstance().getAsset("bucket.png", Texture.class);
+                trashImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
                 rockImage = CustomAssetManager.getInstance().getAsset("rock.png", Texture.class);
                 monsterImage = CustomAssetManager.getInstance().getAsset("monster.png", Texture.class);
             } else {
@@ -139,14 +144,6 @@ public class GameScene extends Scene {
                 constants.BUCKET_HEIGHT(),
                 true);
 
-        Entity trashEntity = new Entity(
-                constants.DROP_START_X(),
-                constants.DROP_START_Y(),
-                constants.DROP_WIDTH(),
-                constants.DROP_HEIGHT(),
-                true);
-
-        Entity rockEntity = new Entity(100f, 200f, 50f, 50f, true);
         Entity monsterEntity = new Entity(100, 100, 70f, 70f, true);
 
         playerMovementManager = new PlayerMovementBuilder()
@@ -172,19 +169,32 @@ public class GameScene extends Scene {
 
         // Initialize entities
         boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
-        trash = new Trash(trashEntity, "droplet.png");
-        rock = new Rock(rockEntity, world, "rock.png");
         monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
+
+        rockFactory = new RockFactory(constants, world);
+        trashFactory = new TrashFactory(constants, world);
+
+        rocks = new ArrayList<>();
+        trashes = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < constants.NUM_ROCKS(); i++) {
+            Rock rock = rockFactory.createObject();
+            rocks.add(rock);
+            entityManager.addRenderableEntity(rock);
+        }
+
+        for (int i = 0; i < constants.NUM_TRASHES(); i++) {
+            Trash trash = trashFactory.createObject();
+            trashes.add(trash);
+            entityManager.addRenderableEntity(trash);
+        }
 
         // Initialize bodies
         boat.initBody(world);
-        rock.initBody(world);
         monster.initBody(world);
 
         // Add entities to the entity manager
         entityManager.addRenderableEntity(boat);
-        entityManager.addRenderableEntity(trash);
-        entityManager.addRenderableEntity(rock);
         entityManager.addRenderableEntity(monster);
 
         camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
@@ -197,8 +207,13 @@ public class GameScene extends Scene {
 
         // Add entities to the collision manager
         collisionManager.addEntity(boat, playerMovementManager);
-        collisionManager.addEntity(rock, null);
         collisionManager.addEntity(monster, npcMovementManager);
+        for (Rock rock: rocks) {
+            collisionManager.addEntity(rock, null);
+        }
+        for (Trash trash: trashes) {
+            collisionManager.addEntity(trash, null);
+        }
 
         // Create boundaries
         BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
@@ -210,6 +225,7 @@ public class GameScene extends Scene {
 
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
+
     }
 
     @Override

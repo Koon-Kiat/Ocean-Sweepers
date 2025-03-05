@@ -74,6 +74,9 @@ public class ConstantsRegistry extends AbstractConstantsRegistry {
         def = new ConstantDefinition("ROCK_BASE_IMPULSE", CATEGORY_COLLISION, Float.class, 2.0f);
         register(def.getKey(), def);
 
+        def = new ConstantDefinition("BOAT_BOUNCE_FORCE", CATEGORY_COLLISION, Float.class, 0.1f);
+        register(def.getKey(), def);
+
     }
 
     private void registerScreenConstants() {
@@ -111,6 +114,24 @@ public class ConstantsRegistry extends AbstractConstantsRegistry {
         register(def.getKey(), def);
 
         def = new ConstantDefinition("DROP_HEIGHT", CATEGORY_ENTITY, Float.class, 50.0f);
+        register(def.getKey(), def);
+
+        def = new ConstantDefinition("ROCK_WIDTH", CATEGORY_ENTITY, Float.class, 50.0f);
+        register(def.getKey(), def);
+
+        def = new ConstantDefinition("ROCK_HEIGHT", CATEGORY_ENTITY, Float.class, 50.0f);
+        register(def.getKey(), def);
+
+        def = new ConstantDefinition("NUM_ROCKS", CATEGORY_ENTITY, Integer.class, 10);
+        register(def.getKey(), def);
+
+        def = new ConstantDefinition("TRASH_WIDTH", CATEGORY_ENTITY, Float.class, 50.0f);
+        register(def.getKey(), def);
+
+        def = new ConstantDefinition("TRASH_HEIGHT", CATEGORY_ENTITY, Float.class, 50.0f);
+        register(def.getKey(), def);
+
+        def = new ConstantDefinition("NUM_TRASHES", CATEGORY_ENTITY, Integer.class, 10);
         register(def.getKey(), def);
     }
 }

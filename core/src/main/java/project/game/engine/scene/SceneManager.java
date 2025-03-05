@@ -76,7 +76,9 @@ public class SceneManager {
 
     public void dispose() {
         for (IScene scene : scenes.values()) {
-            scene.dispose();
+            if (scene != null) {
+                scene.dispose();
+            }
         }
         scenes.clear();
     }

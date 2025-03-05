@@ -29,4 +29,6 @@ public interface ICollidable {
 
 	void collideWithBoundary();
 
+	World getWorld();
+
 }

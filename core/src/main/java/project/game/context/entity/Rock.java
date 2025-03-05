@@ -48,7 +48,7 @@ public class Rock extends CollidableEntity implements IRenderable {
 
 	@Override
 	public boolean isActive() {
-		return super.isActive();
+		return super.getEntity().isActive();
 	}
 
 	@Override
@@ -164,7 +164,7 @@ public class Rock extends CollidableEntity implements IRenderable {
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.friction = 0.4f;
-		fixtureDef.restitution = 0.5f;
+		fixtureDef.restitution = 0.0f;
 
 		// Set up collision filtering
 		Filter filter = new Filter();

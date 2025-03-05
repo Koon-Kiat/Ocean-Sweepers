@@ -127,10 +127,29 @@ public class Boat extends CollidableEntity implements IRenderable {
 
 			setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
 
-			// Special case for monster collisions - don't apply force to monsters
-			if (other instanceof Monster) {
-				// Let the monster's collision handler push the boat
-				// Don't apply counter-force to the monster
+			if (other instanceof Rock) {
+				float boatX = getBody().getPosition().x;
+				float boatY = getBody().getPosition().y;
+				float rockX = other.getBody().getPosition().x;
+				float rockY = other.getBody().getPosition().y;
+
+				float dx = boatX - rockX;
+				float dy = boatY - rockY;
+				float distance = (float) Math.sqrt(dx * dx + dy * dy);
+				LOGGER.info("go distance: " +  distance);
+
+				if (distance > 0.0001f) {
+					dx /= distance;
+					dy /= distance;
+					float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE();
+					LOGGER.info("boat bounce force: " + bounceForce);
+					LOGGER.info("dy dx: " + dx);
+					getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);
+				}
+			} else if (other instanceof Trash) {
+				Trash trash = (Trash) other;
+				trash.getEntity().setActive(false);
+				getWorld().destroyBody(trash.getBody());
 			}
 		}
 	}
@@ -158,7 +177,7 @@ public class Boat extends CollidableEntity implements IRenderable {
 		fixtureDef.shape = shape;
 		fixtureDef.density = 10.0f;
 		fixtureDef.friction = 0.1f;
-		fixtureDef.restitution = 0.05f;
+		fixtureDef.restitution = 0.0f;
 
 		Filter filter = new Filter();
 		filter.categoryBits = 0x0001;

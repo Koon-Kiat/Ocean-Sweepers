@@ -23,6 +23,7 @@ public class MainMenuScene extends Scene {
     private OrthographicCamera camera;
     private FitViewport viewport;
     private AudioManager audioManager;
+    private boolean disposed = false;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
@@ -112,7 +113,10 @@ public class MainMenuScene extends Scene {
 
     @Override
     public void dispose() {
-        sceneUIManager.getStage().dispose();
-        skin.dispose();
+        if (!disposed) {
+            sceneUIManager.getStage().dispose();
+            skin.dispose();
+            disposed = true;
+        }
     }
 }
