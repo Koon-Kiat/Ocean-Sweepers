@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.Array;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.context.api.constant.IGameConstants;
@@ -29,11 +30,13 @@ import project.game.context.entity.Boat;
 import project.game.context.entity.Monster;
 import project.game.context.entity.Rock;
 import project.game.context.entity.Trash;
+import project.game.context.entityInterface.EntityRemovalListener;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.context.factory.RockFactory;
 import project.game.context.factory.TrashFactory;
 import project.game.context.movement.ConstantMovementStrategy;
 import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.audio.AudioManager;
 import project.game.engine.entitysystem.collision.BoundaryFactory;
@@ -47,7 +50,7 @@ import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
 
 @SuppressWarnings("unused")
-public class GameScene extends Scene {
+public class GameScene extends Scene implements EntityRemovalListener {
 
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
     private EntityManager entityManager;
@@ -81,6 +84,7 @@ public class GameScene extends Scene {
     // private Trash nonMovableTrash;
     private IGameConstants constants;
     List<IMovementStrategy> behaviorPool = new ArrayList<>();
+    public static List<Entity> existingEntities;
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
@@ -171,8 +175,9 @@ public class GameScene extends Scene {
         boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
         monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
 
-        rockFactory = new RockFactory(constants, world);
-        trashFactory = new TrashFactory(constants, world);
+        existingEntities = new ArrayList<>();
+        rockFactory = new RockFactory(constants, world, existingEntities);
+        trashFactory = new TrashFactory(constants, world, existingEntities);
 
         rocks = new ArrayList<>();
         trashes = new ArrayList<>();
@@ -181,12 +186,15 @@ public class GameScene extends Scene {
             Rock rock = rockFactory.createObject();
             rocks.add(rock);
             entityManager.addRenderableEntity(rock);
+            existingEntities.add(rock.getEntity());
         }
 
         for (int i = 0; i < constants.NUM_TRASHES(); i++) {
             Trash trash = trashFactory.createObject();
+            trash.setRemovalListener(this);
             trashes.add(trash);
             entityManager.addRenderableEntity(trash);
+            existingEntities.add(trash.getEntity());
         }
 
         // Initialize bodies
@@ -292,6 +300,14 @@ public class GameScene extends Scene {
         rockImage.dispose();
         debugRenderer.dispose();
         LOGGER.info("GameScene disposed");
+    }
+
+    @Override
+    public void onEntityRemove(Entity entity) {
+        existingEntities.remove(entity);
+        if (entity instanceof IRenderable) {
+            entityManager.removeRenderableEntity((IRenderable) entity);
+        }
     }
 
     /**

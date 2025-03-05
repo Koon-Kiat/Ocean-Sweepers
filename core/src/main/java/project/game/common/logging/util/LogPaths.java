@@ -11,10 +11,10 @@ import java.io.File;
 public final class LogPaths {
 
     // The one, fixed location for all logs
-    private static final String GLOBAL_LOG_DIRECTORY = "C:\\OOPProject\\logs";
+    private static final String GLOBAL_LOG_DIRECTORY = "D:\\SIT\\year1\\Year_1_tri_2\\INF1009_oop\\vsoopproj\\OOPProject\\logs";
 
     // The project root directory
-    private static final String PROJECT_ROOT = "C:\\OOPProject";
+    private static final String PROJECT_ROOT = "D:\\SIT\\year1\\Year_1_tri_2\\INF1009_oop\\vsoopproj\\OOPProject";
 
     private LogPaths() {
         // Utility class, no instantiation

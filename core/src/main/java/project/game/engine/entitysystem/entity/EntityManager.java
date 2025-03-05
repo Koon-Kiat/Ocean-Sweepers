@@ -43,6 +43,16 @@ public class EntityManager {
 		return true;
 	}
 
+	public void removeRenderableEntity(IRenderable renderable) {
+		renderables.remove(renderable);
+
+		if (renderable instanceof Entity) {
+			Entity entity = (Entity) renderable;
+			entityIDs.remove(entity.getID());
+			entityList.remove(entity);
+		}
+	}
+
 	public boolean addEntity(Entity entity) {
 		if (entityIDs.contains(entity.getID())) {
 			LOGGER.warn("Duplicate ID: {0}", entity.getID());

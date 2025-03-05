@@ -15,6 +15,7 @@ import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entity.CollidableEntity;
 import project.game.engine.entitysystem.entity.Entity;
+import project.game.context.entityInterface.EntityRemovalListener;
 import project.game.context.factory.GameConstantsFactory;
 
 public class Trash extends CollidableEntity implements IRenderable {
@@ -23,10 +24,15 @@ public class Trash extends CollidableEntity implements IRenderable {
     private final String texturePath;
     private boolean collisionActive = false;
 	private long collisionEndTime = 0;
+    private EntityRemovalListener removalListener;
 
     public Trash(Entity entity, World world, String texturePath) {
         super(entity, world);
         this.texturePath = texturePath;
+    }
+
+    public void setRemovalListener(EntityRemovalListener removalListener) {
+        this.removalListener = removalListener;
     }
 
     @Override
@@ -123,6 +129,10 @@ public class Trash extends CollidableEntity implements IRenderable {
                 // Dispose of the trash or make it disappear
                 super.getEntity().setActive(false);
                 getWorld().destroyBody(getBody());
+
+                if(removalListener != null) {
+                    removalListener.onEntityRemove(getEntity());
+                }
             }
         }
     }

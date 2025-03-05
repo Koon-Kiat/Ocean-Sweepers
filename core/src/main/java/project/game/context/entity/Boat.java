@@ -125,9 +125,10 @@ public class Boat extends CollidableEntity implements IRenderable {
 					new Object[] { getEntity().getClass().getSimpleName(),
 							other.getClass().getSimpleName() });
 
-			setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+			
 
 			if (other instanceof Rock) {
+				setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
 				float boatX = getBody().getPosition().x;
 				float boatY = getBody().getPosition().y;
 				float rockX = other.getBody().getPosition().x;
