@@ -12,54 +12,41 @@ import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.entitysystem.entity.Entity;
 
 /**
- * Advanced movement strategy that predicts where a moving target will be and
- * attempts to intercept it. Uses vector math to calculate interception points
- * and avoids obstacles along the way.
+ * A pure obstacle avoidance strategy that focuses only on avoiding obstacles.
+ * This is designed to be combined with other strategies using the decorator
+ * pattern.
  */
 public class ObstacleAvoidanceStrategy implements IMovementStrategy {
 
     private static final GameLogger LOGGER = new GameLogger(ObstacleAvoidanceStrategy.class);
-    private final IMovable target;
     private final float speed;
     private final boolean lenientMode;
-    private final Vector2 lastTargetPos;
-    private final Vector2 targetVelocity;
-    private static final float PREDICTION_TIME = 0.5f;
-    private static final float MIN_DISTANCE = 10f;
     private final Vector2 persistentDirection = new Vector2(1, 0);
     private float directionChangeSmoothing = 0.2f;
-    private boolean isApproaching = false;
 
-    // Obstacle avoidance parameters - INCREASED FOR BETTER AVOIDANCE
+    // Enhanced obstacle avoidance parameters
     private List<Entity> obstacles = new ArrayList<>();
-    private float avoidanceRadius = 300f; // Increased for better avoidance distance
-    private float avoidanceWeight = 5.0f; // Significantly increased to prioritize obstacle avoidance
-    private final int lookaheadRays = 5; // Number of rays to cast for obstacle detection
-    private final float lookaheadDistance = 350f; // Increased from 300f
-    private final float rayAngle = 30f; // Angle between rays in degrees
+    private float avoidanceRadius = 300f; // Keep this large for early detection
+    private final float criticalRadius = 80f; // Increased for stronger close-range avoidance
+    private float avoidanceWeight = 5.0f;
+    private final float lookaheadDistance = 350f;
+    private final Vector2 lastSafePosition = new Vector2();
+    private boolean isAvoiding = false;
+    private float avoidanceTimer = 0;
+    private final float maxAvoidanceTime = 2.0f; // Increased to allow more time for path finding
+    private final float directionWeight = 1.5f; // Increased direction influence
+    private final Vector2 lastAvoidanceForce = new Vector2();
+    private final float steeringStrength = 3.0f; // New parameter for sharper turns
+    private float currentRotationFactor = 1.0f; // Dynamic rotation factor
 
     /**
-     * Constructor for obstacle avoidance with a movable target
+     * Constructor for pure obstacle avoidance
      * 
-     * @param target      The target to avoid or intercept
      * @param speed       The movement speed
      * @param lenientMode Whether to use lenient mode for error handling
      */
-    public ObstacleAvoidanceStrategy(IMovable target, float speed, boolean lenientMode) {
+    public ObstacleAvoidanceStrategy(float speed, boolean lenientMode) {
         this.lenientMode = lenientMode;
-
-        if (target == null) {
-            // If target is null, we'll just do obstacle avoidance without tracking a target
-            LOGGER.info("Target is null in ObstacleAvoidanceStrategy, will focus on obstacle avoidance only");
-            this.target = null;
-            this.lastTargetPos = new Vector2(0, 0);
-            this.targetVelocity = new Vector2(0, 0);
-        } else {
-            this.target = target;
-            // Initialize with position data, not velocity
-            this.lastTargetPos = new Vector2(target.getX(), target.getY());
-            this.targetVelocity = new Vector2(0, 0);
-        }
 
         if (speed <= 0) {
             String errorMessage = "Speed must be positive. Got: " + speed;
@@ -101,117 +88,82 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
     @Override
     public void move(IMovable movable, float deltaTime) {
         try {
-            // Log obstacle count occasionally for debugging
-            if (Math.random() < 0.01) { // Only log 1% of the time to avoid spamming
-                LOGGER.debug("ObstacleAvoidanceStrategy tracking {0} obstacles", obstacles.size());
+            // Start with current direction or use a default
+            Vector2 movementDir;
+            if (persistentDirection.len2() < 0.001f) {
+                persistentDirection.set(1, 0);
+            }
+            movementDir = new Vector2(persistentDirection);
+
+            // Store current position
+            Vector2 currentPos = new Vector2(movable.getX(), movable.getY());
+
+            // Get current velocity for direction-aware obstacle detection
+            Vector2 currentVelocity = movable.getVelocity();
+            if (currentVelocity.len2() < 0.001f) {
+                currentVelocity.set(movementDir);
             }
 
-            Vector2 movementDir;
+            // Calculate obstacle avoidance forces with direction awareness
+            ObstacleAvoidanceResult avoidanceResult = calculateObstacleAvoidance(movable, currentVelocity);
+            Vector2 avoidanceForce = avoidanceResult.force;
 
-            // Target-based movement (if target exists)
-            if (target != null) {
-                // Get the target's current position
-                Vector2 currentTargetPos = new Vector2(target.getX(), target.getY());
+            float currentSpeed = speed;
 
-                // Calculate target's velocity based on position change
-                Vector2 targetDelta = new Vector2(currentTargetPos).sub(lastTargetPos);
-                targetVelocity.set(targetDelta.scl(1f / deltaTime));
+            // Reset avoidance state if no obstacles are nearby
+            if (!hasNearbyObstacles(currentPos, currentVelocity)) {
+                isAvoiding = false;
+                avoidanceTimer = 0;
+                lastAvoidanceForce.setZero();
+                directionChangeSmoothing = 0.2f; // Reset to normal smoothing
+            }
 
-                // Update last known position
-                lastTargetPos.set(currentTargetPos);
-
-                // Calculate vector from movable object to target
-                Vector2 toTarget = new Vector2(currentTargetPos).sub(movable.getX(), movable.getY());
-                float distance = toTarget.len();
-
-                // If we're very close to target, maintain minimum distance
-                if (distance < MIN_DISTANCE) {
-                    Vector2 avoidance = new Vector2(toTarget).nor().scl(-MIN_DISTANCE);
-                    movable.setX(currentTargetPos.x + avoidance.x);
-                    movable.setY(currentTargetPos.y + avoidance.y);
-                    return;
+            // Check if we need to avoid obstacles
+            if (avoidanceResult.shouldAvoid) {
+                if (!isAvoiding) {
+                    lastSafePosition.set(currentPos);
+                    isAvoiding = true;
+                    avoidanceTimer = 0;
                 }
 
-                // Direct vector to target (without prediction)
-                Vector2 directDir = new Vector2(toTarget).nor();
+                avoidanceTimer += deltaTime;
+                if (avoidanceTimer <= maxAvoidanceTime) {
+                    // Calculate tangential avoidance direction with momentum
+                    Vector2 avoidDir = calculateTangentialAvoidance(currentPos, avoidanceResult.nearestObstacle,
+                            currentVelocity, deltaTime);
 
-                // Calculate predicted target position based on target's velocity
-                Vector2 predictedPos = new Vector2(currentTargetPos).add(
-                        new Vector2(targetVelocity).scl(PREDICTION_TIME));
+                    // Blend with previous avoidance force for smoother transitions
+                    if (lastAvoidanceForce.len2() > 0) {
+                        avoidDir.scl(0.7f).add(lastAvoidanceForce.scl(0.3f));
+                        avoidDir.nor();
+                    }
 
-                // Calculate direction to predicted position
-                Vector2 interceptDir = new Vector2(predictedPos).sub(movable.getX(), movable.getY());
-
-                // Detect if target is approaching
-                Vector2 normalizedToTarget = new Vector2(toTarget).nor();
-                Vector2 normalizedTargetVelocity = new Vector2(targetVelocity);
-
-                // Only normalize if not close to zero (avoid NaN)
-                if (normalizedTargetVelocity.len2() > 0.001f) {
-                    normalizedTargetVelocity.nor();
+                    movementDir.set(avoidDir);
+                    lastAvoidanceForce.set(avoidDir);
                 } else {
-                    normalizedTargetVelocity.set(0, 0);
-                }
-
-                float dotProduct = normalizedToTarget.dot(normalizedTargetVelocity);
-
-                // Detect if target is approaching
-                isApproaching = dotProduct < -0.1f;
-
-                // Movement strategy depends on whether target is approaching
-                if (isApproaching) {
-                    // Target is moving toward us - move directly toward target
-                    movementDir = directDir;
-                    directionChangeSmoothing = 0.4f;
-                } else {
-                    // Target is not approaching - use interception prediction
-                    movementDir = interceptDir.nor();
-                    directionChangeSmoothing = 0.2f;
+                    isAvoiding = false;
                 }
             } else {
-                // No target - use current direction or initialize a default direction
-                if (persistentDirection.len2() < 0.001f) {
-                    // Initialize with a default direction if not set
-                    persistentDirection.set(1, 0);
+                isAvoiding = false;
+
+                // Gradual return to normal movement
+                if (avoidanceForce.len2() > 0.001f) {
+                    // Blend movement direction with avoidance force
+                    movementDir.scl(1.5f).add(avoidanceForce.scl(avoidanceWeight));
+                    movementDir.nor();
+                    directionChangeSmoothing = 0.4f;
+                    lastAvoidanceForce.set(avoidanceForce).nor();
+                } else {
+                    directionChangeSmoothing = 0.2f;
+                    lastAvoidanceForce.setZero();
                 }
-                movementDir = new Vector2(persistentDirection);
             }
 
-            // Calculate obstacle avoidance forces
-            Vector2 avoidanceForce = calculateObstacleAvoidance(movable, movementDir);
-
-            // Check if we're seeing any avoidance forces at all
-            if (avoidanceForce.len2() > 0.001f) {
-                // If force was generated, log it for debugging
-                LOGGER.debug("Generated avoidance force: ({0}, {1}) with magnitude {2}",
-                        avoidanceForce.x, avoidanceForce.y, avoidanceForce.len());
-
-                // If avoiding obstacles, blend with higher weight to obstacle avoidance
-                // Use higher priority for obstacle avoidance vs. desired direction
-                movementDir = new Vector2(movementDir).scl(1f).add(avoidanceForce.scl(avoidanceWeight)).nor();
-
-                // Use higher smoothing for more responsive obstacle avoidance
-                directionChangeSmoothing = 0.8f; // Increased for more responsive avoidance
-            }
-
-            // Gradually blend new direction with persistent direction for smoothness
+            // Blend direction changes more smoothly
             persistentDirection.lerp(movementDir, directionChangeSmoothing).nor();
 
-            // If we have a target, force movement toward target if we're heading away and
-            // not avoiding obstacles
-            if (target != null) {
-                Vector2 toTarget = new Vector2(target.getX(), target.getY())
-                        .sub(movable.getX(), movable.getY()).nor();
-                float directionDot = persistentDirection.dot(toTarget);
-
-                // Only correct direction if we're not actively avoiding obstacles
-                if (directionDot < 0.3f && avoidanceForce.len2() < 0.5f) {
-                    persistentDirection.lerp(toTarget, 0.5f).nor();
-                }
-            }
-
-            // Calculate actual movement vector
-            Vector2 moveVec = new Vector2(persistentDirection).scl(speed * deltaTime);
+            // Apply movement with consistent speed
+            Vector2 moveVec = new Vector2(persistentDirection).scl(currentSpeed * deltaTime);
 
             // Apply movement
             movable.setX(movable.getX() + moveVec.x);
@@ -229,134 +181,175 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
         }
     }
 
-    /**
-     * Calculate obstacle avoidance steering forces
-     * 
-     * @return A normalized vector representing the avoidance direction
-     */
-    private Vector2 calculateObstacleAvoidance(IMovable movable, Vector2 desiredDirection) {
+    private boolean hasNearbyObstacles(Vector2 position, Vector2 direction) {
+        if (obstacles == null || obstacles.isEmpty())
+            return false;
+
+        // Look in a cone in front of the entity
+        Vector2 forward = new Vector2(direction).nor();
+        float checkDistance = avoidanceRadius * 1.5f; // Increased check distance
+
+        for (Entity obstacle : obstacles) {
+            if (obstacle == null || !obstacle.isActive())
+                continue;
+
+            Vector2 toObstacle = new Vector2(obstacle.getX(), obstacle.getY()).sub(position);
+            float distance = toObstacle.len();
+
+            if (distance < criticalRadius)
+                return true; // Always consider very close obstacles
+
+            if (distance < checkDistance) {
+                // Check if obstacle is in front of us (within a 150-degree cone)
+                float dot = forward.dot(toObstacle.nor());
+                if (dot > -0.866f) { // cos(150°) ≈ -0.866
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private Vector2 calculateTangentialAvoidance(Vector2 position, Entity obstacle, Vector2 desiredDir,
+            float deltaTime) {
+        if (obstacle == null)
+            return desiredDir;
+
+        Vector2 toObstacle = new Vector2(obstacle.getX(), obstacle.getY()).sub(position);
+        float distance = toObstacle.len();
+
+        // Calculate perpendicular direction
+        Vector2 perpendicular = new Vector2(-toObstacle.y, toObstacle.x).nor();
+
+        // Determine optimal avoidance direction
+        if (perpendicular.dot(desiredDir) < 0) {
+            perpendicular.scl(-1);
+        }
+
+        // Enhanced path finding with dynamic steering
+        float obstacleRadius = Math.max(obstacle.getWidth(), obstacle.getHeight()) / 2;
+        float clearanceNeeded = obstacleRadius + criticalRadius;
+
+        // Calculate a wider berth when close to obstacles
+        float proximityFactor = Math.max(0, 1 - (distance / avoidanceRadius));
+        float steeringFactor = steeringStrength * (1 + proximityFactor * 2);
+
+        // Apply stronger avoidance when very close
+        if (distance < clearanceNeeded * 1.5f) {
+            perpendicular.scl(steeringFactor);
+            currentRotationFactor = Math.min(currentRotationFactor + deltaTime * 2, 2.0f);
+            return perpendicular.nor();
+        }
+
+        // Gradually blend between avoidance and desired direction
+        float blendFactor = Math.min(1.0f,
+                Math.max(0.0f, (distance - clearanceNeeded) / (avoidanceRadius - clearanceNeeded)));
+        currentRotationFactor = Math.max(1.0f, currentRotationFactor - deltaTime);
+
+        return perpendicular.scl(1 - blendFactor).add(desiredDir.scl(blendFactor)).nor();
+    }
+
+    private class ObstacleAvoidanceResult {
+        Vector2 force;
+        boolean shouldAvoid;
+        Entity nearestObstacle;
+
+        ObstacleAvoidanceResult(Vector2 force, boolean shouldAvoid, Entity nearestObstacle) {
+            this.force = force;
+            this.shouldAvoid = shouldAvoid;
+            this.nearestObstacle = nearestObstacle;
+        }
+    }
+
+    private ObstacleAvoidanceResult calculateObstacleAvoidance(IMovable movable, Vector2 currentDirection) {
         if (obstacles == null || obstacles.isEmpty()) {
-            return new Vector2(0, 0);
+            return new ObstacleAvoidanceResult(new Vector2(0, 0), false, null);
         }
 
         Vector2 avoidanceForce = new Vector2(0, 0);
         Vector2 movablePos = new Vector2(movable.getX(), movable.getY());
-        Vector2 forwardDir = new Vector2(desiredDirection).nor();
-
-        // Make the forward direction non-zero if it's zero
-        if (forwardDir.len2() < 0.0001f) {
-            forwardDir.set(1, 0); // Default direction if none provided
-        }
-
-        // Cast rays to detect obstacles
-        boolean obstacleDetected = false;
-        float nearestObstacleDistance = Float.MAX_VALUE;
+        Vector2 forwardDir = new Vector2(currentDirection).nor();
+        boolean shouldAvoid = false;
         Entity nearestObstacle = null;
+        float nearestDistance = Float.MAX_VALUE;
 
-        // Check each obstacle for proximity and collision potential
+        // Look ahead for obstacles in the movement direction
+        Vector2 lookaheadPoint = new Vector2(forwardDir).scl(lookaheadDistance).add(movablePos);
+
+        int obstacleCount = 0;
         for (Entity obstacle : obstacles) {
-            // Skip null or inactive obstacles
-            if (obstacle == null || !obstacle.isActive()) {
+            if (obstacle == null || !obstacle.isActive())
                 continue;
-            }
+            if (movable instanceof Entity && ((Entity) movable) == obstacle)
+                continue;
 
-            // Calculate vector to obstacle
             float obstacleX = obstacle.getX();
             float obstacleY = obstacle.getY();
-
-            // Check if this is the same entity
-            if (movable instanceof Entity) {
-                Entity movableEntity = (Entity) movable;
-                if (movableEntity == obstacle) {
-                    continue; // Don't avoid yourself
-                }
-            }
-
-            // Create a vector from movable to obstacle
             Vector2 toObstacle = new Vector2(obstacleX, obstacleY).sub(movablePos);
-            float distanceToObstacle = toObstacle.len();
-
-            // Account for obstacle size
             float obstacleRadius = Math.max(obstacle.getWidth(), obstacle.getHeight()) / 2;
-            float effectiveDistance = distanceToObstacle - obstacleRadius;
+            float effectiveDistance = toObstacle.len() - obstacleRadius;
 
-            // Check if obstacle is within avoidance radius
-            if (effectiveDistance < avoidanceRadius) {
-                // Get normalized vector to obstacle
-                Vector2 toObstacleNorm = new Vector2(toObstacle).nor();
+            // Update nearest obstacle
+            if (effectiveDistance < nearestDistance) {
+                nearestDistance = effectiveDistance;
+                nearestObstacle = obstacle;
+            }
 
-                // Check if obstacle is in front or very close
-                float dotProduct = forwardDir.dot(toObstacleNorm);
+            // Only consider obstacles that are in our path or very close
+            Vector2 toLookahead = lookaheadPoint.cpy().sub(movablePos);
+            float projectedDist = toObstacle.dot(toLookahead.nor());
+            float perpDist = toObstacle.len2() - projectedDist * projectedDist;
 
-                // If obstacle is ahead of us or very close (within 70% of the radius)
-                if (dotProduct > -0.5f || effectiveDistance < avoidanceRadius * 0.7f) {
-                    obstacleDetected = true;
+            // Consider direction when calculating avoidance
+            float directionFactor = (forwardDir.dot(toObstacle.nor()) + 1) * 0.5f; // 0 to 1
+            float effectiveRadius = obstacleRadius * (1 + directionFactor * directionWeight);
 
-                    // More aggressive avoidance for very close obstacles
-                    float priority = 1.0f;
-                    if (effectiveDistance < avoidanceRadius * 0.3f) {
-                        priority = 2.0f; // Higher priority for close obstacles
-                    }
+            // Enhanced obstacle detection
+            if ((projectedDist > 0
+                    && perpDist < (effectiveRadius + criticalRadius * 2) * (effectiveRadius + criticalRadius * 2))
+                    || effectiveDistance < criticalRadius * 1.5f) {
+                shouldAvoid = true;
+                obstacleCount++;
+            }
 
-                    // Find the closest obstacle with priority consideration
-                    float weightedDistance = effectiveDistance / priority;
-                    if (weightedDistance < nearestObstacleDistance) {
-                        nearestObstacleDistance = weightedDistance;
-                        nearestObstacle = obstacle;
-                    }
+            // Only consider obstacles within avoidance radius and in front of us
+            if (effectiveDistance < avoidanceRadius * 1.2f && projectedDist > -obstacleRadius) {
+                Vector2 avoidDir = calculateAvoidanceDirection(movablePos, obstacle, forwardDir);
+                float strength = calculateAvoidanceStrength(effectiveDistance)
+                        * (1 + directionFactor * directionWeight);
+
+                // Increase avoidance strength when obstacle is directly in path
+                if (perpDist < (effectiveRadius + criticalRadius) * (effectiveRadius + criticalRadius)) {
+                    strength *= 2.0f;
                 }
+
+                avoidanceForce.add(avoidDir.scl(strength));
             }
         }
 
-        // If we detected an obstacle ahead, calculate avoidance force
-        if (obstacleDetected && nearestObstacle != null) {
-            // Get the nearest obstacle position
-            float obstacleX = nearestObstacle.getX();
-            float obstacleY = nearestObstacle.getY();
-            float obstacleRadius = Math.max(nearestObstacle.getWidth(), nearestObstacle.getHeight()) / 2;
-
-            // Vector from movable to obstacle center
-            Vector2 toObstacle = new Vector2(obstacleX, obstacleY).sub(movablePos);
-            float distanceToObstacle = toObstacle.len() - obstacleRadius;
-
-            // Normalize the toObstacle vector
-            Vector2 toObstacleNorm = new Vector2(toObstacle).nor();
-
-            // Determine which way to steer by taking the perpendicular vector
-            // We want to find the "best" perpendicular direction to avoid the obstacle
-            Vector2 perpendicular = new Vector2(-forwardDir.y, forwardDir.x);
-
-            // Check if the perpendicular is pointing toward or away from the obstacle
-            // by calculating the dot product
-            if (perpendicular.dot(toObstacleNorm) > 0) {
-                // If the perpendicular is pointing toward the obstacle,
-                // we need the opposite perpendicular
-                perpendicular.scl(-1);
-            }
-
-            // Obstacle avoidance force with strength inversely proportional to distance
-            float avoidanceStrength = 1.0f - (distanceToObstacle / avoidanceRadius);
-            avoidanceStrength = Math.max(0.1f, Math.min(1.0f, avoidanceStrength)); // Clamp between 0.1 and 1.0
-
-            // Apply stronger avoidance for very close obstacles
-            float scaleFactor = 3.0f;
-            if (distanceToObstacle < avoidanceRadius * 0.3f) {
-                scaleFactor = 5.0f; // Even stronger for very close obstacles
-            }
-
-            // Set the avoidance force
-            avoidanceForce.set(perpendicular).scl(avoidanceStrength * scaleFactor);
-
-            // Add a direct repulsion force away from the obstacle
-            Vector2 directRepulsion = new Vector2(toObstacleNorm).scl(-avoidanceStrength * 2.0f);
-            avoidanceForce.add(directRepulsion);
-
-            // Log obstacle avoidance for debugging
-            LOGGER.debug("Avoiding obstacle at ({0},{1}), distance: {2}, force: {3}, strength: {4}",
-                    obstacleX, obstacleY, distanceToObstacle, avoidanceForce.len(), avoidanceStrength);
+        // If we have multiple close obstacles, increase avoidance force
+        if (obstacleCount > 1) {
+            avoidanceForce.scl(1.5f + (obstacleCount - 1) * 0.2f);
         }
 
-        return avoidanceForce;
+        return new ObstacleAvoidanceResult(avoidanceForce, shouldAvoid, nearestObstacle);
+    }
+
+    private Vector2 calculateAvoidanceDirection(Vector2 position, Entity obstacle, Vector2 forward) {
+        Vector2 toObstacle = new Vector2(obstacle.getX(), obstacle.getY()).sub(position);
+        Vector2 perpendicular = new Vector2(-forward.y, forward.x);
+
+        // Choose the perpendicular direction that points away from the obstacle
+        if (perpendicular.dot(toObstacle) > 0) {
+            perpendicular.scl(-1);
+        }
+
+        return perpendicular.nor();
+    }
+
+    private float calculateAvoidanceStrength(float distance) {
+        float normalizedDistance = distance / avoidanceRadius;
+        return (1 - normalizedDistance) * (1 - normalizedDistance); // Quadratic falloff
     }
 
     /**
@@ -369,7 +362,7 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
     }
 
     /**
-     * Set how strongly to prioritize obstacle avoidance vs. target interception
+     * Set how strongly to prioritize obstacle avoidance
      */
     public void setAvoidanceWeight(float weight) {
         if (weight > 0) {
