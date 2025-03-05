@@ -1,9 +1,11 @@
 package project.game.context.factory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
+import project.game.context.composite.CompositeMovementStrategy;
 import project.game.context.movement.AcceleratedMovementStrategy;
 import project.game.context.movement.ConstantMovementStrategy;
 import project.game.context.movement.FollowMovementStrategy;
@@ -188,12 +190,107 @@ public class MovementStrategyFactory {
     }
 
     /**
+     * Creates a composite movement strategy combining multiple movement strategies.
+     * 
+     * @param baseStrategy         The primary movement strategy
+     * @param additionalStrategies Additional strategies to apply
+     * @param weights              Weights for each strategy (including base
+     *                             strategy)
+     * @return A new CompositeMovementStrategy instance
+     */
+    public static IMovementStrategy createCompositeMovementStrategy(
+            IMovementStrategy baseStrategy,
+            List<IMovementStrategy> additionalStrategies,
+            float[] weights) {
+
+        if (baseStrategy == null) {
+            LOGGER.error("Base strategy cannot be null for composite movement");
+            throw new MovementException("Base strategy cannot be null for composite movement");
+        }
+
+        try {
+            return new CompositeMovementStrategy(baseStrategy, additionalStrategies, weights);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create CompositeMovementStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create CompositeMovementStrategy", e);
+        }
+    }
+
+    /**
+     * Creates a composite movement strategy combining interceptor movement with
+     * obstacle avoidance.
+     * This is a common use case where an entity follows a target while avoiding
+     * obstacles.
+     * 
+     * @param target      The target to follow/intercept
+     * @param obstacles   The obstacles to avoid
+     * @param speed       The movement speed
+     * @param weights     Optional custom weights for interceptor and avoidance
+     *                    (first for interceptor, second for avoidance)
+     * @param lenientMode Whether to use lenient mode
+     * @return A CompositeMovementStrategy that combines interception and obstacle
+     *         avoidance
+     */
+    public static IMovementStrategy createInterceptorWithObstacleAvoidance(
+            IMovable target,
+            List<Entity> obstacles,
+            float speed,
+            float[] weights,
+            boolean lenientMode) {
+
+        try {
+            // Create the base interceptor strategy
+            IMovementStrategy interceptor = createInterceptorMovement(target, speed, lenientMode);
+
+            // Create obstacle avoidance strategy
+            IMovementStrategy avoidance = createObstacleAvoidanceStrategy(speed, obstacles, lenientMode);
+
+            // Use provided weights or default if not provided
+            float[] finalWeights = weights;
+            if (weights == null || weights.length != 2) {
+                // Default weights: 60% interception, 40% avoidance
+                finalWeights = new float[] { 0.6f, 0.4f };
+                LOGGER.debug("Using default weights for interceptor with obstacle avoidance: {0}, {1}",
+                        finalWeights[0], finalWeights[1]);
+            }
+
+            List<IMovementStrategy> additionalStrategies = new ArrayList<>();
+            additionalStrategies.add(avoidance);
+
+            return createCompositeMovementStrategy(interceptor, additionalStrategies, finalWeights);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create interceptor with obstacle avoidance: " + e.getMessage());
+            throw new MovementException("Failed to create interceptor with obstacle avoidance", e);
+        }
+    }
+
+    /**
+     * Creates a composite movement strategy combining interceptor movement with
+     * obstacle avoidance using default weights.
+     * 
+     * @param target      The target to follow/intercept
+     * @param obstacles   The obstacles to avoid
+     * @param speed       The movement speed
+     * @param lenientMode Whether to use lenient mode
+     * @return A CompositeMovementStrategy that combines interception and obstacle
+     *         avoidance
+     */
+    public static IMovementStrategy createInterceptorWithObstacleAvoidance(
+            IMovable target,
+            List<Entity> obstacles,
+            float speed,
+            boolean lenientMode) {
+        return createInterceptorWithObstacleAvoidance(target, obstacles, speed, null, lenientMode);
+    }
+
+    /**
      * Creates an ObstacleAvoidanceStrategy.
      */
     public static IMovementStrategy createObstacleAvoidanceStrategy(IMovable movable, float speed,
             boolean lenientMode) {
         try {
-            return new ObstacleAvoidanceStrategy(movable, speed, lenientMode);
+            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
+            return strategy;
         } catch (Exception e) {
             LOGGER.error("Failed to create ObstacleAvoidanceStrategy: " + e.getMessage());
             throw new MovementException("Failed to create ObstacleAvoidanceStrategy", e);
@@ -211,7 +308,7 @@ public class MovementStrategyFactory {
     public static IMovementStrategy createObstacleAvoidanceStrategy(float speed, List<Entity> obstacles,
             boolean lenientMode) {
         try {
-            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(null, speed, lenientMode);
+            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
             if (obstacles != null && !obstacles.isEmpty()) {
                 strategy.setObstacles(obstacles);
             }
