@@ -15,11 +15,11 @@ import project.game.engine.api.logging.LogLevel;
 import project.game.engine.logging.AbstractLogger;
 
 public class GameLogger extends AbstractLogger {
-    
+
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final Object LOCK = new Object();
     private static volatile PrintWriter sharedFileWriter;
     private static volatile boolean isInitialized = false;
-    private static final Object LOCK = new Object();
     private static LoggerConfig config;
 
     static {
@@ -50,49 +50,13 @@ public class GameLogger extends AbstractLogger {
         initializeLoggerIfNeeded();
     }
 
-    private void initializeLoggerIfNeeded() {
-        if (!isInitialized) {
-            synchronized (LOCK) {
-                if (!isInitialized) {
-                    LogManager logManager = LogManager.createInstance(
-                            config.getLogDirectory(),
-                            config.getMaxLogFiles());
-
-                    if (logManager.getCurrentLogFile() == null) {
-                        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-                        File logFile = new File(logManager.getLogDirectory(), timestamp + ".log");
-                        try {
-                            logFile.getParentFile().mkdirs();
-                            sharedFileWriter = new PrintWriter(new FileWriter(logFile, true), true);
-                            logManager.setCurrentLogFile(logFile);
-                        } catch (IOException e) {
-                            System.err.println("Failed to create log file: " + e.getMessage());
-                            throw new RuntimeException("Failed to initialize logger", e);
-                        }
-                    }
-                    isInitialized = true;
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void doLog(LogLevel level, String message, Throwable thrown) {
-        String timestamp = TIME_FORMATTER.format(LocalDateTime.now());
-        String logEntry = MessageFormat.format("{0} [{1}] {2}: {3}",
-                timestamp, level, getName(), message);
-
-        // Write to console
-        System.out.println(logEntry);
-
-        // Write to file
+    public void dispose() {
         synchronized (LOCK) {
             if (sharedFileWriter != null) {
-                sharedFileWriter.println(logEntry);
-                if (thrown != null) {
-                    thrown.printStackTrace(sharedFileWriter);
-                    thrown.printStackTrace(System.out);
-                }
+                flush();
+                sharedFileWriter.close();
+                sharedFileWriter = null;
+                isInitialized = false;
             }
         }
     }
@@ -119,13 +83,49 @@ public class GameLogger extends AbstractLogger {
         }
     }
 
-    public void dispose() {
+    @Override
+    protected void doLog(LogLevel level, String message, Throwable thrown) {
+        String timestamp = TIME_FORMATTER.format(LocalDateTime.now());
+        String logEntry = MessageFormat.format("{0} [{1}] {2}: {3}",
+                timestamp, level, getName(), message);
+
+        // Write to console
+        System.out.println(logEntry);
+
+        // Write to file
         synchronized (LOCK) {
             if (sharedFileWriter != null) {
-                flush();
-                sharedFileWriter.close();
-                sharedFileWriter = null;
-                isInitialized = false;
+                sharedFileWriter.println(logEntry);
+                if (thrown != null) {
+                    thrown.printStackTrace(sharedFileWriter);
+                    thrown.printStackTrace(System.out);
+                }
+            }
+        }
+    }
+
+    private void initializeLoggerIfNeeded() {
+        if (!isInitialized) {
+            synchronized (LOCK) {
+                if (!isInitialized) {
+                    LogManager logManager = LogManager.createInstance(
+                            config.getLogDirectory(),
+                            config.getMaxLogFiles());
+
+                    if (logManager.getCurrentLogFile() == null) {
+                        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+                        File logFile = new File(logManager.getLogDirectory(), timestamp + ".log");
+                        try {
+                            logFile.getParentFile().mkdirs();
+                            sharedFileWriter = new PrintWriter(new FileWriter(logFile, true), true);
+                            logManager.setCurrentLogFile(logFile);
+                        } catch (IOException e) {
+                            System.err.println("Failed to create log file: " + e.getMessage());
+                            throw new RuntimeException("Failed to initialize logger", e);
+                        }
+                    }
+                    isInitialized = true;
+                }
             }
         }
     }

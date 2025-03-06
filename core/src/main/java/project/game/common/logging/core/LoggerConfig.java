@@ -7,7 +7,7 @@ import project.game.engine.api.logging.LogLevel;
  * This class holds all configurable parameters for logging.
  */
 public class LoggerConfig {
-    
+
     private final String logDirectory;
     private final int maxLogFiles;
     private final LogLevel defaultLogLevel;
@@ -32,7 +32,7 @@ public class LoggerConfig {
 
     public static class Builder {
         private String logDirectory;
-        private int maxLogFiles = 10; // reasonable default
+        private int maxLogFiles = 10;
         private LogLevel defaultLogLevel = LogLevel.INFO;
 
         public Builder withLogDirectory(String logDirectory) {

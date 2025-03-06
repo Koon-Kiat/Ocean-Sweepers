@@ -25,10 +25,6 @@ public class LogManager implements ILogManager {
         initializeLogManager();
     }
 
-    private void initializeLogManager() {
-        cleanupOldLogs();
-    }
-
     public static synchronized LogManager createInstance(String logDirectory, int maxLogFiles) {
         if (instance == null) {
             instance = new LogManager(logDirectory, maxLogFiles);
@@ -99,5 +95,9 @@ public class LogManager implements ILogManager {
      */
     protected boolean isValidLogFile(File file) {
         return file.isFile() && file.getName().endsWith(".log");
+    }
+
+    private void initializeLogManager() {
+        cleanupOldLogs();
     }
 }
