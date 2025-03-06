@@ -139,10 +139,17 @@ The codebase demonstrates exemplary use of OOP principles and design patterns ac
 
 #### Entity System Patterns
 
+- **Composition over Inheritance**:
+
 - **Object Pool Pattern**:
   - `ObjectPool` interface with implementation for game object recycling
   - `RockFactory` and `TrashFactory` work with object pools for efficient memory usage
   - Reduces garbage collection overhead during gameplay
+
+- **Prototype Pattern**:
+  - Entities can be cloned to create new instances with similar properties
+  - Template entities serve as prototypes for creating variations
+  - Efficient creation of multiple similar objects
 
 #### Collision System Patterns
 
@@ -155,6 +162,16 @@ The codebase demonstrates exemplary use of OOP principles and design patterns ac
   - `ICollisionOperation` encapsulates collision responses
   - Collision callbacks execute appropriate commands based on collision type
   - Decouples collision detection from collision response logic
+
+- **Chain of Responsibility**:
+  - Collision handlers form a chain for processing different collision types
+  - Each handler decides whether to process the collision or pass it to the next handler
+  - Allows for flexible handling of various collision scenarios
+
+- **Mediator Pattern**:
+  - `CollisionManager` acts as a mediator between collidable objects
+  - Centralizes collision logic instead of distributing it across entities
+  - Reduces dependencies between individual entities
 
 #### Audio System Patterns
 
@@ -173,6 +190,11 @@ The codebase demonstrates exemplary use of OOP principles and design patterns ac
   - UI components observe and respond to audio state changes
   - Decouples audio system from UI components
 
+- **Proxy Pattern**:
+  - Lazy loading of audio resources through proxy objects
+  - Audio files are only loaded when needed
+  - Reduces initial loading time and memory usage
+
 #### Factory Patterns
 
 - **Factory Method Pattern**:
@@ -185,21 +207,56 @@ The codebase demonstrates exemplary use of OOP principles and design patterns ac
   - Different factory implementations can produce different families of related objects
   - Allows for swapping out entire families of strategies
 
-#### Additional Patterns
+- **Builder Factory Pattern**:
+  - Combines Builder and Factory patterns
+  - Factory creates appropriate builder instances
+  - Enables complex object creation with fluent interfaces
 
-- **Template Method Pattern**:
-  - `AbstractLogger` defines the logging algorithm structure
-  - Subclasses implement the specific logging behavior
+#### Scene Management Patterns
 
 - **State Pattern**:
   - Scene transitions represent different game states
   - Each scene encapsulates state-specific behavior
   - `SceneManager` handles state transitions
 
+- **Context-Strategy Pattern Combination**:
+  - `SceneManager` acts as context for scene-specific strategies
+  - Scenes implement strategy interfaces for behavior
+  - Clean separation between scene management and scene-specific logic
+
+#### Configuration and Logging Patterns
+
+- **Template Method Pattern**:
+  - `AbstractLogger` defines the logging algorithm structure
+  - `AbstractConfigurationLoader` provides template methods for configuration operations
+  - Subclasses implement the specific loading/saving behavior
+
+- **Registry Pattern**:
+  - Central registries maintain collections of game elements
+  - Registration and lookup mechanisms for accessing components
+  - Streamlines component access without direct dependencies
+
 - **Service Locator Pattern**:
   - Used for accessing common services like logging and configuration
   - Components can locate required services without direct dependencies
   - Enhances testability by allowing service mocking
+
+#### Miscellaneous Patterns
+
+- **Adapter Pattern**:
+  - Adapts external libraries (like Box2D) to the game's interfaces
+  - Shields game code from third-party API changes
+  - `CollidableEntityHandler` adapts collision interfaces
+
+- **Flyweight Pattern**:
+  - Shared resources like textures and sounds minimize memory usage
+  - `CustomAssetManager` ensures assets are loaded only once
+  - Reference counting for efficient resource management
+
+- **Null Object Pattern**:
+  - Default implementations prevent null checking
+  - Empty strategies and handlers provide safe defaults
+  - Reduces null pointer exceptions and improves code readability
 
 ## Movement Strategies
 
