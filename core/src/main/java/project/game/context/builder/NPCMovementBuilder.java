@@ -9,6 +9,7 @@ import project.game.context.factory.MovementStrategyFactory;
 import project.game.context.movement.FollowMovementStrategy;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.api.movement.IMovementStrategyFactory;
 import project.game.engine.api.movement.IPositionable;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
@@ -20,9 +21,34 @@ import project.game.engine.entitysystem.movement.NPCMovementManager;
  */
 public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuilder> {
 
-    @Override
-    public NPCMovementBuilder setSpeed(float speed) {
-        return super.setSpeed(speed);
+    private IMovementStrategyFactory movementStrategyFactory;
+
+    public NPCMovementBuilder() {
+        this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+    }
+
+    /**
+     * Sets the movement strategy factory to use for creating movement strategies.
+     * 
+     * @param factory The factory to use
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withMovementStrategyFactory(IMovementStrategyFactory factory) {
+        if (factory != null) {
+            this.movementStrategyFactory = factory;
+        } else {
+            LOGGER.warn("Null movement strategy factory provided. Using default factory.");
+        }
+        return this;
+    }
+
+    /**
+     * Gets the movement strategy factory that will be used to create strategies.
+     * 
+     * @return The movement strategy factory
+     */
+    public IMovementStrategyFactory getMovementStrategyFactory() {
+        return this.movementStrategyFactory;
     }
 
     public NPCMovementBuilder withConstantMovement() {
@@ -32,7 +58,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             if (this.lenientMode) {
                 LOGGER.warn("Error creating ConstantMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using default movement.");
-                this.movementStrategy = MovementStrategyFactory.createDefaultMovement();
+                this.movementStrategy = this.movementStrategyFactory.createDefaultMovement();
                 return this;
             }
             LOGGER.fatal("Error in ConstantMovementStrategy: " + e.getMessage(), e);
@@ -335,7 +361,12 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
                 }
             }
 
-            return new NPCMovementManager(this);
+            if (this.movementStrategyFactory == null) {
+                LOGGER.warn("Movement strategy factory is null. Using default factory.");
+                this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+            }
+
+            return new NPCMovementManager(this, this.movementStrategyFactory);
         } catch (MovementException e) {
             LOGGER.fatal("Failed to build NPCMovementManager: " + e.getMessage(), e);
             throw new MovementException("Failed to build NPCMovementManager: " + e.getMessage(), e);
@@ -344,6 +375,11 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             LOGGER.fatal(msg, e);
             throw new MovementException(msg, e);
         }
+    }
+
+    @Override
+    public NPCMovementBuilder setSpeed(float speed) {
+        return super.setSpeed(speed);
     }
 
     @Override

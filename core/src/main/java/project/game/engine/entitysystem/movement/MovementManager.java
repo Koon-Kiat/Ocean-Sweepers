@@ -10,6 +10,7 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementManager;
 import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.api.movement.IMovementStrategyFactory;
 
 /**
  * MovementManager manages movement for entities implementing IMovable.
@@ -19,6 +20,7 @@ public class MovementManager implements IMovementManager {
 
     private static final GameLogger LOGGER = new GameLogger(MovementManager.class);
     private final IMovable movable;
+    private final IMovementStrategyFactory movementStrategyFactory;
     private final boolean lenientMode;
     private IMovementStrategy movementStrategy;
 
@@ -26,12 +28,14 @@ public class MovementManager implements IMovementManager {
      * Constructs a MovementManager with the specified parameters.
      */
     public MovementManager(IMovable movable, float speed, Vector2 initialVelocity,
-            IMovementStrategy movementStrategy, boolean lenientMode) {
+            IMovementStrategy movementStrategy, boolean lenientMode,
+            IMovementStrategyFactory movementStrategyFactory) {
         if (movable == null) {
             throw new MovementException("MovableEntity cannot be null");
         }
         this.movable = movable;
         this.lenientMode = lenientMode;
+        this.movementStrategyFactory = movementStrategyFactory;
 
         // Handle initial speed validation
         float correctedSpeed = speed;
@@ -48,8 +52,12 @@ public class MovementManager implements IMovementManager {
         // Set movement strategy with validation
         if (movementStrategy == null) {
             if (lenientMode) {
-                LOGGER.warn("Movement strategy is null. Defaulting to VectorMovementBehavior.");
-                this.movementStrategy = project.game.context.factory.MovementStrategyFactory.createDefaultMovement();
+                LOGGER.warn("Movement strategy is null. Defaulting to default strategy.");
+                if (this.movementStrategyFactory == null) {
+                    LOGGER.fatal("Movement strategy factory is also null. Cannot create default strategy.");
+                    throw new MovementException("Both movement strategy and factory are null");
+                }
+                this.movementStrategy = this.movementStrategyFactory.createDefaultMovement();
             } else {
                 throw new MovementException("Movement strategy cannot be null");
             }
@@ -61,6 +69,14 @@ public class MovementManager implements IMovementManager {
         if (initialVelocity != null && (initialVelocity.x != 0 || initialVelocity.y != 0)) {
             setVelocity(initialVelocity);
         }
+    }
+
+    /**
+     * Convenience constructor that uses a default movement strategy.
+     */
+    public MovementManager(IMovable movable, float speed, Vector2 initialVelocity,
+            boolean lenientMode, IMovementStrategyFactory movementStrategyFactory) {
+        this(movable, speed, initialVelocity, null, lenientMode, movementStrategyFactory);
     }
 
     public IMovable getMovableEntity() {

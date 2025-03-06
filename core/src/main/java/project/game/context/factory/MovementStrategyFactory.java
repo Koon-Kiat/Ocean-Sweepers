@@ -17,6 +17,7 @@ import project.game.context.movement.SpringFollowStrategy;
 import project.game.context.movement.ZigZagMovemenStrategy;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.api.movement.IMovementStrategyFactory;
 import project.game.engine.api.movement.IPositionable;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.movement.CompositeMovementStrategy;
@@ -26,23 +27,24 @@ import project.game.engine.entitysystem.movement.CompositeMovementStrategy;
  * This helps avoid direct instantiation of dependencies and follows the
  * Dependency Inversion Principle.
  */
-public class MovementStrategyFactory {
+public class MovementStrategyFactory implements IMovementStrategyFactory {
 
     private static final GameLogger LOGGER = new GameLogger(MovementStrategyFactory.class);
-
-    // Private constructor to prevent instantiation
-    private MovementStrategyFactory() {
-        throw new UnsupportedOperationException(
-                "MovementStrategyFactory is a utility class and cannot be instantiated.");
-    }
+    private static final MovementStrategyFactory INSTANCE = new MovementStrategyFactory();
 
     /**
-     * Creates a default movement strategy when none is specified.
+     * Gets the singleton instance of the factory.
      * 
-     * @return A new ConstantMovementStrategy with default speed.
+     * @return The singleton instance
      */
-    public static IMovementStrategy createDefaultMovement() {
-        return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
+    public static MovementStrategyFactory getInstance() {
+        return INSTANCE;
+    }
+
+    // Constructor is now protected to allow subclassing but prevent arbitrary
+    // instantiation
+    protected MovementStrategyFactory() {
+        // Protected constructor for singleton pattern and to allow subclassing
     }
 
     /**
@@ -324,5 +326,15 @@ public class MovementStrategyFactory {
             float speed,
             boolean lenientMode) {
         return createInterceptorWithObstacleAvoidance(target, obstacles, speed, null, lenientMode);
+    }
+
+    /**
+     * Creates a default movement strategy when none is specified.
+     * 
+     * @return A new ConstantMovementStrategy with default speed.
+     */
+    @Override
+    public IMovementStrategy createDefaultMovement() {
+        return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
     }
 }

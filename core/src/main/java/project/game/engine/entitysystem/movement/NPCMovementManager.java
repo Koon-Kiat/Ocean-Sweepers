@@ -3,6 +3,7 @@ package project.game.engine.entitysystem.movement;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.context.builder.NPCMovementBuilder;
+import project.game.engine.api.movement.IMovementStrategyFactory;
 
 /**
  * NPCMovementManager is a concrete class that extends MovementManager and
@@ -19,12 +20,13 @@ public class NPCMovementManager extends MovementManager {
     /**
      * Constructor using the Builder pattern.
      */
-    public NPCMovementManager(NPCMovementBuilder builder) {
+    public NPCMovementManager(NPCMovementBuilder builder, IMovementStrategyFactory movementStrategyFactory) {
         super(checkBuilder(builder).getMovableEntity(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementStrategy(),
-                checkBuilder(builder).isLenientMode());
+                checkBuilder(builder).isLenientMode(),
+                movementStrategyFactory);
         this.builder = builder;
     }
 

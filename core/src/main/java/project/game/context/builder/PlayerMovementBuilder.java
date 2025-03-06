@@ -2,6 +2,7 @@ package project.game.context.builder;
 
 import project.game.common.exception.MovementException;
 import project.game.context.factory.MovementStrategyFactory;
+import project.game.engine.api.movement.IMovementStrategyFactory;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
 import project.game.engine.entitysystem.movement.PlayerMovementManager;
@@ -15,6 +16,35 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
     private static final float DEFAULT_SPEED = 200f;
     private static final float DEFAULT_ACCELERATION = 500f;
     private static final float DEFAULT_DECELERATION = 250f;
+    private IMovementStrategyFactory movementStrategyFactory;
+
+    public PlayerMovementBuilder() {
+        this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+    }
+
+    /**
+     * Sets the movement strategy factory to use for creating movement strategies.
+     * 
+     * @param factory The factory to use
+     * @return This builder for method chaining
+     */
+    public PlayerMovementBuilder withMovementStrategyFactory(IMovementStrategyFactory factory) {
+        if (factory != null) {
+            this.movementStrategyFactory = factory;
+        } else {
+            LOGGER.warn("Null movement strategy factory provided. Using default factory.");
+        }
+        return this;
+    }
+
+    /**
+     * Gets the movement strategy factory that will be used to create strategies.
+     * 
+     * @return The movement strategy factory
+     */
+    public IMovementStrategyFactory getMovementStrategyFactory() {
+        return this.movementStrategyFactory;
+    }
 
     // Static factory methods
     public static PlayerMovementBuilder createDefaultPlayer() {
@@ -38,7 +68,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
             if (this.lenientMode) {
                 LOGGER.warn("Failed to create ConstantMovementStrategy in lenient mode: " + e.getMessage()
                         + ". Using default movement.");
-                this.movementStrategy = MovementStrategyFactory.createDefaultMovement();
+                this.movementStrategy = this.movementStrategyFactory.createDefaultMovement();
                 return this;
             }
             LOGGER.fatal("Failed to create ConstantMovementStrategy", e);
@@ -75,7 +105,11 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
                 LOGGER.info("No movement strategy specified. Using default ConstantMovementStrategy.");
                 withConstantMovement();
             }
-            return new PlayerMovementManager(this);
+            if (this.movementStrategyFactory == null) {
+                LOGGER.warn("Movement strategy factory is null. Using default factory.");
+                this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+            }
+            return new PlayerMovementManager(this, this.movementStrategyFactory);
         } catch (MovementException e) {
             LOGGER.fatal("Failed to build PlayerMovementManager: " + e.getMessage(), e);
             throw e;
