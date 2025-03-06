@@ -17,8 +17,6 @@ public class SoundManager implements ISound {
     private static final Logger LOGGER = Logger.getLogger(SoundManager.class.getName());
     private boolean soundEnabled = true;
 
-    private SoundManager() {}
-
     public static SoundManager getInstance() {
         if (instance == null) {
             synchronized (SoundManager.class) {
@@ -37,8 +35,9 @@ public class SoundManager implements ISound {
             LOGGER.log(Level.WARNING, "Mismatch between sound files and keys count.");
             return;
         }
+
         for (int i = 0; i < soundFiles.length; i++) {
-            loadSoundEffect(keys[i], soundFiles[i]);
+            loadSoundEffect(keys[i], soundFiles[i]);  //Corrected line
         }
     }
 
@@ -50,7 +49,7 @@ public class SoundManager implements ISound {
     }
 
         Sound sound = Gdx.audio.newSound(Gdx.files.internal(filePath));  // Load sound
-        soundEffects.put(key, sound);  // Store sound in map with the key
+        soundEffects.put(key, sound);  // ✅ Store sound in map with the key
         LOGGER.log(Level.INFO, "Successfully loaded sound effect: " + filePath + " with key: " + key);
 
     }

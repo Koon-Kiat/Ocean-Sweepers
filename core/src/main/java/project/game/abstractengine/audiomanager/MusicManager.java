@@ -11,12 +11,10 @@ import com.badlogic.gdx.audio.Music;
 import project.game.abstractengine.interfaces.IMusic;
 
 public class MusicManager implements IMusic {
-    private static volatile MusicManager instance;  // Singleton instance
-    private final Map<String, Music> musicTracks = new HashMap<>();
+    private static volatile MusicManager instance; // Singleton instance
+    private final Map<String, Music> musicTrack = new HashMap<>();
     private static final Logger LOGGER = Logger.getLogger(MusicManager.class.getName());
-
-    // Private constructor to prevent instantiation
-    private MusicManager() {}
+    private MusicManager() {} // Private constructor to prevent instantiation
 
     // Public method to get the singleton instance of MusicManager
     public static MusicManager getInstance() {
@@ -29,8 +27,7 @@ public class MusicManager implements IMusic {
         }
         return instance;
     }
-
-    // Abstract method to load music with no hardcoded paths
+    // Load music tracks into the musicTrack map
     @Override
     public void loadMusicTracks(String... tracks) {
         for (String track : tracks) {
@@ -38,78 +35,69 @@ public class MusicManager implements IMusic {
         }
     }
 
-    // Method to unload music by track name
-    public void unloadMusic(String trackName) {
-        if (musicTracks.containsKey(trackName)) {
-            Music music = musicTracks.get(trackName);
+    public void unloadMusic(String musicName) {
+        if (musicTrack.containsKey(musicName)) {  // Corrected variable name
+            Music music = musicTrack.get(musicName);
             if (music != null) {
                 music.stop();
                 music.dispose();  // Properly unload from memory
-                LOGGER.log(Level.INFO, "Unloaded Music: {0}", trackName);
             }
-            musicTracks.remove(trackName);
+            musicTrack.remove(musicName);
+            LOGGER.log(Level.INFO, "Unloaded Music: {0}", musicName);
         } else {
-            LOGGER.log(Level.WARNING, "Attempted to unload non-existent music: {0}", trackName);
+            LOGGER.log(Level.WARNING, "Tried to unload non-existent music: {0}", musicName);
         }
     }
-
-    private String extractTrackKey(String filePath) {
-        int lastDotIndex = filePath.lastIndexOf('.');
-        return (lastDotIndex != -1) ? filePath.substring(0, lastDotIndex) : filePath;
-    }
+    
     
 
-    // Private method to load a single track with no context
+    //  Load a single music track (modular and reusable)
     private void loadSingleTrack(String track) {
-        try {
-            if (!isValidTrack(track)) {
-                LOGGER.log(Level.SEVERE, "File not found: {0}", track);
-                return;
-            }
-    
-            String trackKey = extractTrackKey(track);
-            Music music = Gdx.audio.newMusic(Gdx.files.internal(track));
-            music.setLooping(true);
-            musicTracks.put(trackKey, music);
-            LOGGER.log(Level.INFO, "Successfully loaded music: {0}", trackKey);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to Load Music: {0} - Error: {1}", new Object[]{track, e.getMessage()});
-        }
-    }
-    /** 
-     * Validates if a track exists before attempting to load. 
-     */
-    private boolean isValidTrack(String track) {
-        return track != null && !track.isEmpty() && Gdx.files.internal(track).exists();
-    }
+        String trackName = track.replace(".mp3", "");  // Key: Track name without .mp3
 
+        // Check if the file exists
+        if (!Gdx.files.internal("assets/" + track).exists()) {
+            LOGGER.log(Level.WARNING, "Failed to Load Music: {0}", track);
+            return;
+        }
+
+        // Load and store music in ConcurrentHashMap
+        Music music = Gdx.audio.newMusic(Gdx.files.internal("assets/" + track));
+        music.setLooping(true);  // Optional: Make music loop by default
+        musicTrack.put(trackName, music);  // Store in ConcurrentHashMap
+        LOGGER.log(Level.INFO, "Loaded Music: {0}", track);
+    }
     @Override
     public void playMusic(String trackName) {
-        if (musicTracks.containsKey(trackName)) {
-            musicTracks.get(trackName).play();
-        } else {
+        if (musicTrack.containsKey(trackName)) {
+            musicTrack.get(trackName).play();
+        }else{
             LOGGER.log(Level.WARNING, "Music track not found: {0}", trackName);
         }
     }
 
     @Override
     public void stopMusic() {
-        musicTracks.values().forEach(Music::stop);
+        musicTrack.values().forEach(Music::stop);
+        
     }
 
     @Override
     public void setMusicVolume(float volume) {
-        musicTracks.values().forEach(music -> music.setVolume(volume));
+        musicTrack.values().forEach(music -> {
+            music.setVolume(volume);  // Set volume even if not playing
+            System.out.println("Music volume set to: " + volume);
+        });
     }
 
     @Override
     public boolean isPlaying(String trackName) {
-        return musicTracks.containsKey(trackName) && musicTracks.get(trackName).isPlaying();
+        return musicTrack.containsKey(trackName) && musicTrack.get(trackName).isPlaying();
     }
 
     @Override
     public void dispose() {
-        musicTracks.values().forEach(Music::dispose);
-        musicTracks.clear();
+        musicTrack.values().forEach(Music::dispose);
+        musicTrack.clear();
     }
 }

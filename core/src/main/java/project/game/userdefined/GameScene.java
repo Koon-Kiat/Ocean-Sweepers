@@ -27,6 +27,7 @@ import project.game.Direction;
 import project.game.abstractengine.assetmanager.CustomAssetManager;
 import project.game.abstractengine.audiomanager.AudioConfig;
 import project.game.abstractengine.audiomanager.AudioManager;
+import project.game.abstractengine.audiomanager.AudioUIManager;
 import project.game.abstractengine.audiomanager.MusicManager;
 import project.game.abstractengine.audiomanager.SoundManager;
 import project.game.abstractengine.entitysystem.collisionmanager.BoundaryFactory;
@@ -40,7 +41,6 @@ import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
-import project.game.audioui.AudioUI;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
 import project.game.constants.GameConstants;
@@ -77,7 +77,7 @@ public class GameScene extends Scene {
     private Options options;
     private AudioManager audioManager;
     private AudioConfig config;
-    private AudioUI audioUI;
+    private AudioUIManager audioUIManager;
     private NonMovableDroplet nonMovableDroplet;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
@@ -193,25 +193,26 @@ public class GameScene extends Scene {
         // Create screen boundaries
         BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 0.1f);
 
-        // Initialize AudioManager and AudioUI
-        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
-        audioUI = new AudioUI(audioManager, config, stage, skin);
-        audioManager.setAudioUI(audioUI);
-
-        // Load and play audio
+        // Initialize AudioManager and play background music
+        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config, null);
+        // Create AudioUIManager with the correctly initialized audioManager
+        audioUIManager = new AudioUIManager(audioManager, config, stage);
+        // Set the AudioUIManager in audioManager after it is created
+        audioManager.setAudioUIManager(audioUIManager);
         MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
         SoundManager.getInstance().loadSoundEffects(
-            new String[]{"watercollision.mp3", "Boinkeffect.mp3", "selection.mp3"},
-            new String[]{"drophit", "keybuttons", "selection"}
+            new String[]{"watercollision.mp3", "Boinkeffect.mp3", "selection.mp3"},  // Corrected paths (no assets/ prefix)
+            new String[]{"drophit", "keybuttons", "selection"}  // Keys without .mp3
         );
-
         if (!MusicManager.getInstance().isPlaying("BackgroundMusic")) {
             audioManager.playMusic("BackgroundMusic");
         }
-        // Set audio configuration
+        
+
+        //set initial volume based on saved config
         audioManager.setMusicVolume(config.getMusicVolume());
         audioManager.setSoundEnabled(config.isSoundEnabled());
-        //playerMovementManager.setDirection(Direction.NONE);
+
     }
 
     @Override
@@ -224,12 +225,7 @@ public class GameScene extends Scene {
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(inputMultiplexer);
-        Gdx.input.setCursorPosition(0, 0);
-
     }
-
-    
-    
 
     @Override
     public void render(float deltaTime) {
@@ -320,30 +316,27 @@ public class GameScene extends Scene {
             if (isVolumePopupOpen) {
                 audioManager.showVolumeControls();
     
-                // Ensure UI elements are interactive
-                if (audioUI != null) {
-                    audioUI.restoreUIInteractivity();
+                // ✅ Ensure UI elements are interactive
+                if (audioUIManager != null) {
+                    audioUIManager.restoreUIInteractivity();
                 } else {
                     System.out.println("Error: audioUIManager is null!");
                 }
     
-                // Always ensure both stage & game input are handled
+                // ✅ Always ensure both stage & game input are handled
                 inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(inputManager); // Game input
                 inputMultiplexer.addProcessor(stage); // UI handling
+                inputMultiplexer.addProcessor(inputManager); // Game input
                 Gdx.input.setInputProcessor(inputMultiplexer);
     
                 System.out.println("Opened volume settings.");
             } else {
                 audioManager.hideVolumeControls();
     
-                // Ensure game controls still work after closing volume settings
-                // Safely remove specific processors if needed
-                inputMultiplexer.removeProcessor(stage);
-                inputMultiplexer.removeProcessor(inputManager);
-
-                // inputMultiplexer.addProcessor(inputManager);
-                // Gdx.input.setInputProcessor(inputMultiplexer);
+                // ✅ Ensure game controls still work after closing volume settings
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(inputManager);
+                Gdx.input.setInputProcessor(inputMultiplexer);
     
                 System.out.println("Closed volume settings.");
             }
