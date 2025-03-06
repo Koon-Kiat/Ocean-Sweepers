@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.collision.ICollisionTarget;
 
@@ -13,6 +14,7 @@ import project.game.engine.api.collision.ICollisionTarget;
  * This completely eliminates instanceof checks by using a registry approach.
  */
 public class CollisionResolver {
+    private static final GameLogger LOGGER = new GameLogger(CollisionResolver.class);
     // Registry of objects that can be collided with (target registry)
     private final Map<Object, ICollisionTarget> collisionTargets = new ConcurrentHashMap<>();
 
@@ -103,7 +105,7 @@ public class CollisionResolver {
      * Debug method to print registered entities
      */
     public void debugPrintRegistrations() {
-        System.out.println("Registered targets: " + collisionTargets.size());
-        System.out.println("Registered visitors: " + collisionVisitors.size());
+        LOGGER.info("Registered targets: " + collisionTargets.size());
+        LOGGER.info("Registered visitors: " + collisionVisitors.size());
     }
 }
