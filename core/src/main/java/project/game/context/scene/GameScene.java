@@ -312,10 +312,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 .setLenientMode(true)
                 .build();
 
-        LOGGER.info(
-                "Created monster with composite movement strategy (30% intercept, 70% avoid) to follow boat while avoiding {0} rocks",
-                rockEntities.size());
-
         // Initialize entities
         boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
         monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
