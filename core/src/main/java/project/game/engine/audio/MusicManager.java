@@ -10,6 +10,7 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.audio.IMusic;
 
 public class MusicManager implements IMusic {
+    
     private static final GameLogger LOGGER = new GameLogger(MusicManager.class);
     private static volatile MusicManager instance;
     private final Map<String, Music> musicTracks = new HashMap<>();

@@ -6,6 +6,7 @@ import project.game.engine.api.audio.IMusic;
 import project.game.engine.api.audio.ISound;
 
 public class AudioManager {
+    
     private static volatile AudioManager instance;
     private final IMusic musicManager;
     private final ISound soundManager;

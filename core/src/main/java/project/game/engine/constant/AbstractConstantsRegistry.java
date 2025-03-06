@@ -11,6 +11,7 @@ import project.game.engine.api.constant.IConstantsRegistry;
  * Base implementation of the constants registry.
  */
 public class AbstractConstantsRegistry implements IConstantsRegistry {
+    
     private final Map<String, ConstantDefinition> registry = new HashMap<>();
 
     @Override

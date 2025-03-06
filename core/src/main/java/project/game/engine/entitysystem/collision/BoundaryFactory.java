@@ -16,6 +16,7 @@ public class BoundaryFactory {
      * A class representing a single boundary in the game world.
      */
     private static class Boundary {
+        
         private final World world;
         private final float posX;
         private final float posY;

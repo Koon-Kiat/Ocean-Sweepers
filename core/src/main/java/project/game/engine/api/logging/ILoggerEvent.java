@@ -5,6 +5,7 @@ package project.game.engine.api.logging;
  * Log events contain all information related to a single logging operation.
  */
 public interface ILoggerEvent {
+    
     /**
      * Gets the log level.
      *

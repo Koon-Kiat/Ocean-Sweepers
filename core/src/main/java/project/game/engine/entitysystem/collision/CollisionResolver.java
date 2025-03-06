@@ -14,6 +14,7 @@ import project.game.engine.api.collision.ICollisionTarget;
  * This completely eliminates instanceof checks by using a registry approach.
  */
 public class CollisionResolver {
+    
     private static final GameLogger LOGGER = new GameLogger(CollisionResolver.class);
     // Registry of objects that can be collided with (target registry)
     private final Map<Object, ICollisionTarget> collisionTargets = new ConcurrentHashMap<>();

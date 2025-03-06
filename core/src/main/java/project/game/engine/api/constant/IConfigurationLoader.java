@@ -8,6 +8,7 @@ import project.game.engine.constant.AbstractConfigurableConstants;
  * Interface for loading and saving configuration data
  */
 public interface IConfigurationLoader {
+    
     /**
      * Load configuration from a source
      */

@@ -4,6 +4,7 @@ package project.game.engine.api.logging;
  * Defines the available logging levels in order of increasing severity.
  */
 public enum LogLevel {
+    
     TRACE(100),
     DEBUG(200),
     INFO(300),

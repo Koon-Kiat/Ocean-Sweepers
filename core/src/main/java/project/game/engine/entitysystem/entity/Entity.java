@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.badlogic.gdx.math.Vector2;
 
 public class Entity {
+	
 	private static AtomicInteger idCounter = new AtomicInteger(0);
 	private String id;
 	private final Vector2 position;

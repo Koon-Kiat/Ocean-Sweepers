@@ -6,6 +6,7 @@ import com.badlogic.gdx.Preferences;
 import project.game.engine.api.audio.IAudioConfig;
 
 public class AudioConfig implements IAudioConfig {
+    
     private final Preferences prefs = Gdx.app.getPreferences("AudioSettings");
 
     @Override

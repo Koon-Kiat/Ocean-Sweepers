@@ -12,7 +12,7 @@ import project.game.engine.io.SceneIOManager;
  * Abstract class for creating scenes in the game.
  */
 public abstract class Scene implements Screen, IScene {
-    // protected Stage stage;
+    
     protected SceneUIManager sceneUIManager;
     protected SceneIOManager inputManager;
     protected SceneManager sceneManager;

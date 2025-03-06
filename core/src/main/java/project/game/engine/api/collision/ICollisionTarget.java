@@ -4,6 +4,7 @@ package project.game.engine.api.collision;
  * An interface representing a target that can be collided with.
  */
 public interface ICollisionTarget {
+    
     /**
      * Accept method for the visitor pattern - called when something collides with
      * this target

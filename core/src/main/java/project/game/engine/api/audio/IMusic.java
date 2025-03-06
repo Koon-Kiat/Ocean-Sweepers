@@ -1,6 +1,7 @@
 package project.game.engine.api.audio;
 
 public interface IMusic {
+    
     void loadMusicTracks(String... tracks);
 
     void playMusic(String trackName);

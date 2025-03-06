@@ -11,6 +11,7 @@ import project.game.engine.asset.CustomAssetManager;
  * necessary methods and fields for entities that are renderable.
  */
 public abstract class RenderableEntity extends Entity implements IRenderable {
+	
 	private final Entity entity;
 	private final String texturePath;
 

@@ -8,6 +8,7 @@ import java.io.File;
  * policies.
  */
 public interface ILogManager {
+    
     /**
      * Gets the current active log file.
      * 

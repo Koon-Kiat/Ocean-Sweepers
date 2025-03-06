@@ -14,6 +14,7 @@ import project.game.engine.api.collision.ICollisionPairHandler;
  * This eliminates the need for instanceof checks when tracking collisions.
  */
 public class CollisionPairTracker implements ICollisionPairHandler {
+    
     // Registry of objects that can be tracked in collisions
     private final Map<Class<?>, Function<Object, ICollidable>> converters = new ConcurrentHashMap<>();
 

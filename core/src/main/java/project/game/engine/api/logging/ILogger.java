@@ -5,6 +5,7 @@ package project.game.engine.api.logging;
  * Provides methods for logging messages at different levels.
  */
 public interface ILogger {
+    
     /**
      * Logs a message at the specified level.
      *

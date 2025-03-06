@@ -4,6 +4,7 @@ package project.game.engine.api.constant;
  * Interface for managing configuration profiles
  */
 public interface IProfileManager {
+    
     void createProfile(String profileName);
 
     boolean setProfile(String profileName);

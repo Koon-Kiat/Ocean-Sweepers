@@ -10,6 +10,7 @@ import project.game.engine.api.logging.LogLevel;
  * Game-specific loggers can extend this class to add custom behavior.
  */
 public abstract class AbstractLogger implements ILogger {
+    
     protected final String name;
     protected LogLevel level;
 

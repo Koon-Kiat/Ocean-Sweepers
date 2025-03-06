@@ -5,6 +5,7 @@ package project.game.engine.constant;
  * This allows for more dynamic constant management.
  */
 public class ConstantDefinition {
+    
     private final String key;
     private final String category;
     private final Class<?> type;

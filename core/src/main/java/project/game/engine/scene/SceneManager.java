@@ -12,6 +12,7 @@ import project.game.engine.io.SceneIOManager;
  * Manages the scenes in the game.
  */
 public class SceneManager {
+    
     private final Map<String, IScene> scenes;
     private final Stack<IScene> sceneHistory;
     private final SceneIOManager baseInputManager;

@@ -10,6 +10,7 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.audio.ISound;
 
 public class SoundManager implements ISound {
+    
     private static final GameLogger LOGGER = new GameLogger(SoundManager.class);
     private static volatile SoundManager instance;
     private final Map<String, Sound> soundEffects = new HashMap<>();

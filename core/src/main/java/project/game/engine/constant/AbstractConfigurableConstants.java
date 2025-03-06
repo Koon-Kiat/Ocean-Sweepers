@@ -9,6 +9,7 @@ import project.game.engine.api.constant.IProfileManager;
  * configuration management.
  */
 public abstract class AbstractConfigurableConstants {
+    
     protected final IProfileManager profileManager;
     protected final IConstantsRegistry registry;
 
