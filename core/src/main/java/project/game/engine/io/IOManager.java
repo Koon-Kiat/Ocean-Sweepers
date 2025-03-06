@@ -23,6 +23,26 @@ public class IOManager extends InputAdapter {
         this.pressedKeys = new HashSet<>();
     }
 
+    public Vector2 getMousePosition() {
+        return mousePosition;
+    }
+
+    public boolean isMouseClicked() {
+        return isMouseClicked;
+    }
+
+    public Set<Integer> getPressedKeys() {
+        return pressedKeys;
+    }
+
+    public boolean isKeyJustPressed(int keycode) {
+        return Gdx.input.isKeyJustPressed(keycode);
+    }
+
+    public void clearPressedKeys() {
+        getPressedKeys().clear();
+    }
+
     @Override
     public boolean keyDown(int keycode) {
         return pressedKeys.add(keycode);
@@ -44,25 +64,5 @@ public class IOManager extends InputAdapter {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         isMouseClicked = false;
         return true;
-    }
-
-    public Vector2 getMousePosition() {
-        return mousePosition;
-    }
-
-    public boolean isMouseClicked() {
-        return isMouseClicked;
-    }
-
-    public Set<Integer> getPressedKeys() {
-        return pressedKeys;
-    }
-
-    public boolean isKeyJustPressed(int keycode) {
-        return Gdx.input.isKeyJustPressed(keycode);
-    }
-
-    public void clearPressedKeys() {
-        getPressedKeys().clear();
     }
 }

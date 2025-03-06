@@ -12,7 +12,7 @@ import project.game.engine.io.SceneIOManager;
  * Manages the scenes in the game.
  */
 public class SceneManager {
-    
+
     private final Map<String, IScene> scenes;
     private final Stack<IScene> sceneHistory;
     private final SceneIOManager baseInputManager;
@@ -22,6 +22,22 @@ public class SceneManager {
         baseInputManager = new SceneIOManager();
         this.scenes = new HashMap<>();
         this.sceneHistory = new Stack<>();
+    }
+
+    public IScene getScene(String name) {
+        return currentScene;
+    }
+
+    public Set<String> getSceneList() {
+        return scenes.keySet();
+    }
+
+    public IScene getCurrentScene() {
+        return currentScene;
+    }
+
+    public SceneIOManager getInputManager() {
+        return baseInputManager;
     }
 
     public void addScene(String name, IScene scene) {
@@ -59,10 +75,6 @@ public class SceneManager {
         scene.dispose();
     }
 
-    public IScene getScene(String name) {
-        return currentScene;
-    }
-
     public void render(float delta) {
         if (currentScene != null) {
             currentScene.render(delta);
@@ -84,15 +96,4 @@ public class SceneManager {
         scenes.clear();
     }
 
-    public Set<String> getSceneList() {
-        return scenes.keySet();
-    }
-
-    public IScene getCurrentScene() {
-        return currentScene;
-    }
-
-    public SceneIOManager getInputManager() {
-        return baseInputManager;
-    }
 }

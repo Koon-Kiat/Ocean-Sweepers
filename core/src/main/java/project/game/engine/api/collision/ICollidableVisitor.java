@@ -16,6 +16,8 @@ public interface ICollidableVisitor {
 
 	Body getBody();
 
+	World getWorld();
+
 	Body createBody(World world, float x, float y, float width, float height);
 
 	boolean checkCollision(Entity other);
@@ -24,11 +26,8 @@ public interface ICollidableVisitor {
 
 	boolean isInCollision();
 
-	// Visitor pattern methods
 	void collideWith(Object other);
 
 	void collideWithBoundary();
-
-	World getWorld();
 
 }

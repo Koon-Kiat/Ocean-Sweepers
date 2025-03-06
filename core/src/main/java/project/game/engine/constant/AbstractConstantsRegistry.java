@@ -11,8 +11,12 @@ import project.game.engine.api.constant.IConstantsRegistry;
  * Base implementation of the constants registry.
  */
 public class AbstractConstantsRegistry implements IConstantsRegistry {
-    
+
     private final Map<String, ConstantDefinition> registry = new HashMap<>();
+
+    public void addConstant(String key, String category, Class<?> type, Object defaultValue) {
+        register(key, new ConstantDefinition(key, category, type, defaultValue));
+    }
 
     @Override
     public void register(String key, ConstantDefinition definition) {
@@ -28,14 +32,6 @@ public class AbstractConstantsRegistry implements IConstantsRegistry {
     }
 
     @Override
-    public Set<String> getKeysByCategory(String category) {
-        return registry.values().stream()
-                .filter(def -> def.getCategory().equals(category))
-                .map(ConstantDefinition::getKey)
-                .collect(Collectors.toSet());
-    }
-
-    @Override
     public Set<String> getAllKeys() {
         return registry.keySet();
     }
@@ -45,7 +41,11 @@ public class AbstractConstantsRegistry implements IConstantsRegistry {
         return registry.containsKey(key);
     }
 
-    public void addConstant(String key, String category, Class<?> type, Object defaultValue) {
-        register(key, new ConstantDefinition(key, category, type, defaultValue));
+    @Override
+    public Set<String> getKeysByCategory(String category) {
+        return registry.values().stream()
+                .filter(def -> def.getCategory().equals(category))
+                .map(ConstantDefinition::getKey)
+                .collect(Collectors.toSet());
     }
 }

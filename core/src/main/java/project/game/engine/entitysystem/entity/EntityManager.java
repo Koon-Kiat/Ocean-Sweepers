@@ -28,6 +28,10 @@ public class EntityManager {
 
 	}
 
+	public List<Entity> getEntities() {
+		return entityList;
+	}
+
 	public boolean addRenderableEntity(IRenderable renderable) {
 		renderables.add(renderable);
 
@@ -66,10 +70,6 @@ public class EntityManager {
 	public void removeEntity(Entity entity) {
 		entityList.remove(entity);
 		entityIDs.remove(entity.getID());
-	}
-
-	public List<Entity> getEntities() {
-		return entityList;
 	}
 
 	public void draw(SpriteBatch batch) {

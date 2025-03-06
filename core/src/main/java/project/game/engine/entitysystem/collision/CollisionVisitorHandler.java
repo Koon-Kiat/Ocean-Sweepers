@@ -14,8 +14,9 @@ import project.game.engine.api.collision.ICollisionElement;
  * This completely eliminates instanceof checks by using a registry approach.
  */
 public class CollisionVisitorHandler {
-    
+
     private static final GameLogger LOGGER = new GameLogger(CollisionVisitorHandler.class);
+
     // Registry of objects that can be collided with (target registry)
     private final Map<Object, ICollisionElement> collisionTargets = new ConcurrentHashMap<>();
 
@@ -80,6 +81,11 @@ public class CollisionVisitorHandler {
         resolveCollisionOneWay(objectB, objectA, collisionQueue);
     }
 
+    public void debugPrintRegistrations() {
+        LOGGER.info("Registered targets: " + collisionTargets.size());
+        LOGGER.info("Registered visitors: " + collisionVisitors.size());
+    }
+
     /**
      * Resolve collision in one direction using pure polymorphism
      * 
@@ -100,13 +106,5 @@ public class CollisionVisitorHandler {
                 collisionQueue.add(collisionAction);
             }
         }
-    }
-
-    /**
-     * Debug method to print registered entities
-     */
-    public void debugPrintRegistrations() {
-        LOGGER.info("Registered targets: " + collisionTargets.size());
-        LOGGER.info("Registered visitors: " + collisionVisitors.size());
     }
 }

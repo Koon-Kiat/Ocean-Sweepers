@@ -5,10 +5,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.badlogic.gdx.math.Vector2;
 
 public class Entity {
-	
+
 	private static AtomicInteger idCounter = new AtomicInteger(0);
-	private String id;
 	private final Vector2 position;
+	private String id;
 	private float width;
 	private float height;
 	private boolean active;
@@ -27,10 +27,6 @@ public class Entity {
 		this.width = width;
 		this.height = height;
 		this.active = active;
-	}
-
-	private String generateUniqueID() {
-		return "E" + idCounter.getAndIncrement();
 	}
 
 	public String getID() {
@@ -83,5 +79,9 @@ public class Entity {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	private String generateUniqueID() {
+		return "E" + idCounter.getAndIncrement();
 	}
 }

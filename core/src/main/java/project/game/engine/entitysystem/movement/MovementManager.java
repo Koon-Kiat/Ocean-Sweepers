@@ -19,8 +19,8 @@ public class MovementManager implements IMovementManager {
 
     private static final GameLogger LOGGER = new GameLogger(MovementManager.class);
     private final IMovable movable;
-    private IMovementStrategy movementStrategy;
     private final boolean lenientMode;
+    private IMovementStrategy movementStrategy;
 
     /**
      * Constructs a MovementManager with the specified parameters.
@@ -63,6 +63,10 @@ public class MovementManager implements IMovementManager {
         }
     }
 
+    public IMovable getMovableEntity() {
+        return movable;
+    }
+
     public IMovementStrategy getMovementStrategy() {
         return movementStrategy;
     }
@@ -76,13 +80,37 @@ public class MovementManager implements IMovementManager {
         this.movementStrategy = movementStrategy;
     }
 
-    public IMovable getMovableEntity() {
-        return movable;
+    public boolean isLenientMode() {
+        return lenientMode;
+    }
+
+    public void applyMovementUpdate(float dt) {
+        if (movementStrategy == null) {
+            LOGGER.fatal("Cannot update position: movement strategy is not set.");
+            return;
+        }
+
+        try {
+            movementStrategy.move(movable, dt);
+        } catch (Exception e) {
+            String errorMessage = "Error during movement strategy update: " + e.getMessage();
+            LOGGER.fatal(errorMessage, e);
+            if (lenientMode) {
+                clearVelocity();
+            } else {
+                throw new MovementException(errorMessage, e);
+            }
+        }
     }
 
     @Override
     public float getX() {
         return movable.getX();
+    }
+
+    @Override
+    public float getY() {
+        return movable.getY();
     }
 
     @Override
@@ -95,11 +123,6 @@ public class MovementManager implements IMovementManager {
                 throw new MovementException("Failed to set X position", e);
             }
         }
-    }
-
-    @Override
-    public float getY() {
-        return movable.getY();
     }
 
     @Override
@@ -165,25 +188,6 @@ public class MovementManager implements IMovementManager {
         setVelocity(0, 0);
     }
 
-    public void applyMovementUpdate(float dt) {
-        if (movementStrategy == null) {
-            LOGGER.fatal("Cannot update position: movement strategy is not set.");
-            return;
-        }
-
-        try {
-            movementStrategy.move(movable, dt);
-        } catch (Exception e) {
-            String errorMessage = "Error during movement strategy update: " + e.getMessage();
-            LOGGER.fatal(errorMessage, e);
-            if (lenientMode) {
-                clearVelocity();
-            } else {
-                throw new MovementException(errorMessage, e);
-            }
-        }
-    }
-
     @Override
     public void updateMovement() {
         float dt = com.badlogic.gdx.Gdx.graphics.getDeltaTime();
@@ -216,9 +220,5 @@ public class MovementManager implements IMovementManager {
         }
 
         setVelocity(resultVelocity);
-    }
-
-    public boolean isLenientMode() {
-        return lenientMode;
     }
 }

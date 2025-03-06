@@ -2,15 +2,16 @@ package project.game.engine.api.scene;
 
 public interface IScene {
 
-    void resetScene();
+    void render(float delta);
 
     void show();
 
     void hide();
 
-    void render(float delta);
+    void dispose();
 
     void resize(int width, int height);
 
-    void dispose();
+    void resetScene();
+
 }

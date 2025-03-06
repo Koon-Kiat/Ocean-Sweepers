@@ -49,8 +49,8 @@ public class Boat extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public boolean isActive() {
-		return super.getEntity().isActive();
+	public Entity getEntity() {
+		return super.getEntity();
 	}
 
 	@Override
@@ -59,13 +59,13 @@ public class Boat extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public String getTexturePath() {
-		return texturePath;
+	public boolean isActive() {
+		return super.getEntity().isActive();
 	}
 
 	@Override
-	public Entity getEntity() {
-		return super.getEntity();
+	public String getTexturePath() {
+		return texturePath;
 	}
 
 	@Override
@@ -124,8 +124,6 @@ public class Boat extends CollidableEntity implements IRenderable {
 			LOGGER.info("{0} collided with {1}",
 					new Object[] { getEntity().getClass().getSimpleName(),
 							other.getClass().getSimpleName() });
-
-			
 
 			if (other instanceof Rock) {
 				setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());

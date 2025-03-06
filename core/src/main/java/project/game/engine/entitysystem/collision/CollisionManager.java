@@ -29,15 +29,9 @@ public class CollisionManager implements ContactListener {
     private final List<Runnable> collisionQueue;
     private final SceneIOManager inputManager;
     private final CollisionVisitorHandler collisionResolver;
-
-    // Maintain a map of collidable entities and their associated MovementManager.
+    private final ICollisionPairHandler collisionPairTracker;
     private final Map<ICollidableVisitor, MovementManager> entityMap;
     private boolean collided = false;
-
-    // Use the visitor-based collision pair tracking
-    private final ICollisionPairHandler collisionPairTracker;
-
-    // Configurable properties
     private float collisionMovementStrength;
     private float movementThreshold;
     private long defaultCollisionDuration;
@@ -49,8 +43,6 @@ public class CollisionManager implements ContactListener {
         this.entityMap = new HashMap<>();
         this.collisionResolver = new CollisionVisitorHandler();
         this.collisionPairTracker = new CollisionPairTracker();
-
-        // Register boundary by default
         collisionResolver.registerBoundary();
     }
 
@@ -79,6 +71,57 @@ public class CollisionManager implements ContactListener {
 
         // Register entity with the collision resolver
         collisionResolver.registerCollidable(entity);
+    }
+
+    public void processCollisions() {
+        for (Runnable r : collisionQueue) {
+            r.run();
+        }
+        collisionQueue.clear();
+    }
+
+    public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
+        for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
+            MovementManager manager = entry.getValue();
+            if (manager != null) {
+                entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+                entry.getValue().updateMovement();
+            }
+        }
+
+        // Handle entity updates with collision awareness
+        for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
+            ICollidableVisitor entity = entry.getKey();
+            MovementManager manager = entry.getValue();
+
+            // Check if this entity is involved in any active collisions
+            boolean entityInCollision = collisionPairTracker.isEntityInCollision(entity);
+
+            // Make sure the entity's collision state matches our tracked state
+            if (entityInCollision && !entity.isInCollision()) {
+                // If we're tracking this as in collision but the entity doesn't know,
+                // make sure it's aware that a collision is active
+                refreshEntityCollisionState(entity);
+            }
+
+            if (manager != null) {
+                EntityCollisionUpdater.updateEntity(entity, manager, gameWidth, gameHeight,
+                        pixelsToMeters, collisionMovementStrength,
+                        movementThreshold);
+            } else {
+                EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
+            }
+        }
+    }
+
+    public void syncEntityPositions(float pixelsToMeters) {
+        for (ICollidableVisitor entity : entityMap.keySet()) {
+            EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
+        }
+    }
+
+    public boolean collision() {
+        return collided;
     }
 
     @Override
@@ -131,47 +174,6 @@ public class CollisionManager implements ContactListener {
         // No implementation required
     }
 
-    public void processCollisions() {
-        for (Runnable r : collisionQueue) {
-            r.run();
-        }
-        collisionQueue.clear();
-    }
-
-    public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
-        for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
-            MovementManager manager = entry.getValue();
-            if (manager != null) {
-                entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
-                entry.getValue().updateMovement();
-            }
-        }
-
-        // Handle entity updates with collision awareness
-        for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
-            ICollidableVisitor entity = entry.getKey();
-            MovementManager manager = entry.getValue();
-
-            // Check if this entity is involved in any active collisions
-            boolean entityInCollision = collisionPairTracker.isEntityInCollision(entity);
-
-            // Make sure the entity's collision state matches our tracked state
-            if (entityInCollision && !entity.isInCollision()) {
-                // If we're tracking this as in collision but the entity doesn't know,
-                // make sure it's aware that a collision is active
-                refreshEntityCollisionState(entity);
-            }
-
-            if (manager != null) {
-                EntityCollisionUpdater.updateEntity(entity, manager, gameWidth, gameHeight,
-                        pixelsToMeters, collisionMovementStrength,
-                        movementThreshold);
-            } else {
-                EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
-            }
-        }
-    }
-
     // Use reflection to refresh collision state, avoiding the need for instanceof
     private void refreshEntityCollisionState(ICollidableVisitor entity) {
         try {
@@ -182,15 +184,5 @@ public class CollisionManager implements ContactListener {
             LOGGER.warn("Could not refresh collision state for entity: {0}",
                     entity.getClass().getSimpleName());
         }
-    }
-
-    public void syncEntityPositions(float pixelsToMeters) {
-        for (ICollidableVisitor entity : entityMap.keySet()) {
-            EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
-        }
-    }
-
-    public boolean collision() {
-        return collided;
     }
 }

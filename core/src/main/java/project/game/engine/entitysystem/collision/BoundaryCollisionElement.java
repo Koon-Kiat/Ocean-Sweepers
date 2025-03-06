@@ -13,6 +13,10 @@ public class BoundaryCollisionElement implements ICollisionElement {
 
     private static final BoundaryCollisionElement INSTANCE = new BoundaryCollisionElement();
 
+    // Private constructor to enforce singleton pattern
+    private BoundaryCollisionElement() {
+    }
+
     /**
      * Get the singleton instance of the boundary collision target
      * 
@@ -20,10 +24,6 @@ public class BoundaryCollisionElement implements ICollisionElement {
      */
     public static BoundaryCollisionElement getInstance() {
         return INSTANCE;
-    }
-
-    // Private constructor to enforce singleton pattern
-    private BoundaryCollisionElement() {
     }
 
     @Override

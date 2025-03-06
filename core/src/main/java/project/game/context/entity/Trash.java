@@ -23,7 +23,7 @@ public class Trash extends CollidableEntity implements IRenderable {
     private static final GameLogger LOGGER = new GameLogger(Trash.class);
     private final String texturePath;
     private boolean collisionActive = false;
-	private long collisionEndTime = 0;
+    private long collisionEndTime = 0;
     private IEntityRemovalListener removalListener;
 
     public Trash(Entity entity, World world, String texturePath) {
@@ -33,11 +33,6 @@ public class Trash extends CollidableEntity implements IRenderable {
 
     public void setRemovalListener(IEntityRemovalListener removalListener) {
         this.removalListener = removalListener;
-    }
-
-    @Override
-    public String getTexturePath() {
-        return texturePath;
     }
 
     private float entityX() {
@@ -57,8 +52,8 @@ public class Trash extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public boolean isActive() {
-        return super.getEntity().isActive();
+    public Entity getEntity() {
+        return super.getEntity();
     }
 
     @Override
@@ -67,8 +62,13 @@ public class Trash extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public Entity getEntity() {
-        return super.getEntity();
+    public boolean isActive() {
+        return super.getEntity().isActive();
+    }
+
+    @Override
+    public String getTexturePath() {
+        return texturePath;
     }
 
     @Override
@@ -130,7 +130,7 @@ public class Trash extends CollidableEntity implements IRenderable {
                 super.getEntity().setActive(false);
                 getWorld().destroyBody(getBody());
 
-                if(removalListener != null) {
+                if (removalListener != null) {
                     removalListener.onEntityRemove(getEntity());
                 }
             }

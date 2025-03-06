@@ -13,7 +13,7 @@ import project.game.engine.api.logging.ILogManager;
  * This class handles log file management and rotation.
  */
 public class LogManager implements ILogManager {
-    
+
     private static volatile LogManager instance;
     private final String logDirectory;
     private int maxLogFiles;
@@ -47,24 +47,6 @@ public class LogManager implements ILogManager {
     }
 
     @Override
-    public String getLogDirectory() {
-        return logDirectory;
-    }
-
-    @Override
-    public int getMaxLogFiles() {
-        return maxLogFiles;
-    }
-
-    @Override
-    public void setMaxLogFiles(int maxFiles) {
-        if (maxFiles > 0) {
-            this.maxLogFiles = maxFiles;
-            cleanupOldLogs();
-        }
-    }
-
-    @Override
     public final void cleanupOldLogs() {
         File dir = new File(logDirectory);
         if (!dir.exists() || !dir.isDirectory()) {
@@ -87,6 +69,24 @@ public class LogManager implements ILogManager {
                 // Log error through standard error since logger might not be initialized
                 System.err.println("Failed to delete old log file: " + e.getMessage());
             }
+        }
+    }
+
+    @Override
+    public String getLogDirectory() {
+        return logDirectory;
+    }
+
+    @Override
+    public int getMaxLogFiles() {
+        return maxLogFiles;
+    }
+
+    @Override
+    public void setMaxLogFiles(int maxFiles) {
+        if (maxFiles > 0) {
+            this.maxLogFiles = maxFiles;
+            cleanupOldLogs();
         }
     }
 

@@ -47,8 +47,8 @@ public class Rock extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public boolean isActive() {
-		return super.getEntity().isActive();
+	public Entity getEntity() {
+		return super.getEntity();
 	}
 
 	@Override
@@ -57,13 +57,13 @@ public class Rock extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public String getTexturePath() {
-		return texturePath;
+	public boolean isActive() {
+		return super.getEntity().isActive();
 	}
 
 	@Override
-	public Entity getEntity() {
-		return super.getEntity();
+	public String getTexturePath() {
+		return texturePath;
 	}
 
 	@Override

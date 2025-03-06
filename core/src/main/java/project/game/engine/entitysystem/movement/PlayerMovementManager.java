@@ -28,6 +28,10 @@ public class PlayerMovementManager extends MovementManager {
         this.builder = builder;
     }
 
+    public PlayerMovementBuilder getBuilder() {
+        return this.builder;
+    }
+
     private static PlayerMovementBuilder checkBuilder(PlayerMovementBuilder builder) {
         if (builder == null) {
             String errorMessage = "PlayerMovementBuilder cannot be null.";
@@ -35,9 +39,5 @@ public class PlayerMovementManager extends MovementManager {
             throw new MovementException(errorMessage);
         }
         return builder;
-    }
-
-    public PlayerMovementBuilder getBuilder() {
-        return this.builder;
     }
 }

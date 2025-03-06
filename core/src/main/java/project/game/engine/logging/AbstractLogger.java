@@ -10,7 +10,7 @@ import project.game.engine.api.logging.LogLevel;
  * Game-specific loggers can extend this class to add custom behavior.
  */
 public abstract class AbstractLogger implements ILogger {
-    
+
     protected final String name;
     protected LogLevel level;
 
@@ -39,7 +39,6 @@ public abstract class AbstractLogger implements ILogger {
         return this.level.compareSeverity(level) <= 0;
     }
 
-    // Implement the basic logging methods
     @Override
     public void log(LogLevel level, String message) {
         if (isEnabled(level)) {
@@ -132,12 +131,11 @@ public abstract class AbstractLogger implements ILogger {
         log(LogLevel.FATAL, message, thrown);
     }
 
-    // Abstract methods that concrete implementations must provide
-    protected abstract void doLog(LogLevel level, String message, Throwable thrown);
-
     @Override
     public abstract ILogger getLogger(String name);
 
     @Override
     public abstract void flush();
+
+    protected abstract void doLog(LogLevel level, String message, Throwable thrown);
 }

@@ -17,6 +17,15 @@ public class EntityCollisionElement implements ICollisionElement {
         this.collidable = collidable;
     }
 
+    /**
+     * Get the collidable entity this target represents
+     * 
+     * @return The collidable entity
+     */
+    public ICollidableVisitor getCollidable() {
+        return collidable;
+    }
+
     @Override
     public void acceptCollision(ICollidableVisitor visitor, Runnable collisionAction) {
         // First check if the collision is valid according to collision detection logic
@@ -36,14 +45,5 @@ public class EntityCollisionElement implements ICollisionElement {
                 collisionAction.run();
             }
         }
-    }
-
-    /**
-     * Get the collidable entity this target represents
-     * 
-     * @return The collidable entity
-     */
-    public ICollidableVisitor getCollidable() {
-        return collidable;
     }
 }

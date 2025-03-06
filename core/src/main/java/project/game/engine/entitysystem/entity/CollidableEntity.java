@@ -17,9 +17,9 @@ import project.game.engine.api.collision.ICollisionOperation;
 public abstract class CollidableEntity extends Entity implements ICollidableVisitor, ICollisionOperation {
 
 	private final Entity entity;
-	private Body body;
 	private final World world;
 	private boolean inCollision;
+	private Body body;
 
 	public CollidableEntity(Entity baseEntity, World world) {
 		this.entity = baseEntity;
@@ -31,6 +31,41 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 		if (body == null) {
 			body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 		}
+	}
+
+	public void updatePosition() {
+		entity.setX(body.getPosition().x);
+		entity.setY(body.getPosition().y);
+	}
+
+	public void setInCollision(boolean inCollision) {
+		this.inCollision = inCollision;
+	}
+
+	public Body createBody(World world, float x, float y, float width, float height, float density,
+			float friction,
+			float restitution) {
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.type = BodyDef.BodyType.DynamicBody;
+		bodyDef.position.set(x, y);
+
+		Body createdBody = world.createBody(bodyDef);
+
+		PolygonShape shape = new PolygonShape();
+		shape.setAsBox(entity.getWidth() / 2, entity.getHeight() / 2);
+
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = shape;
+		fixtureDef.density = density;
+		fixtureDef.friction = friction;
+		fixtureDef.restitution = restitution;
+
+		createdBody.createFixture(fixtureDef);
+		shape.dispose();
+
+		createdBody.setUserData(this);
+
+		return createdBody;
 	}
 
 	@Override
@@ -71,37 +106,6 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 		return createdBody;
 	}
 
-	public Body createBody(World world, float x, float y, float width, float height, float density,
-			float friction,
-			float restitution) {
-		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		bodyDef.position.set(x, y);
-
-		Body createdBody = world.createBody(bodyDef);
-
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(entity.getWidth() / 2, entity.getHeight() / 2);
-
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = shape;
-		fixtureDef.density = density;
-		fixtureDef.friction = friction;
-		fixtureDef.restitution = restitution;
-
-		createdBody.createFixture(fixtureDef);
-		shape.dispose();
-
-		createdBody.setUserData(this);
-
-		return createdBody;
-	}
-
-	public void updatePosition() {
-		entity.setX(body.getPosition().x);
-		entity.setY(body.getPosition().y);
-	}
-
 	@Override
 	public boolean checkCollision(Entity other) {
 		return entity.getX() < other.getX() + other.getWidth() &&
@@ -111,11 +115,12 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 	}
 
 	@Override
-	public abstract void onCollision(ICollidableVisitor other);
+	public boolean isInCollision() {
+		return inCollision;
+	}
 
 	@Override
 	public void collideWith(Object other) {
-		// Default implementation - delegates to onCollision if other is an ICollidable
 		if (other instanceof ICollidableVisitor) {
 			onCollision((ICollidableVisitor) other);
 		}
@@ -123,23 +128,7 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 
 	@Override
 	public void collideWithBoundary() {
-		// Default implementation - calls onCollision with null to indicate boundary
-		// collision
 		onCollision(null);
-	}
-
-	@Override
-	public boolean isInCollision() {
-		return inCollision;
-	}
-
-	/**
-	 * Sets the collision state of this entity
-	 * 
-	 * @param inCollision Whether this entity is in a collision
-	 */
-	public void setInCollision(boolean inCollision) {
-		this.inCollision = inCollision;
 	}
 
 	/**
@@ -169,6 +158,9 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 	public boolean handlesCollisionWith(Class<?> clazz) {
 		// This entity can handle collisions with ICollidables and boundaries
 		return ICollidableVisitor.class.isAssignableFrom(clazz) ||
-				String.class.equals(clazz); // For boundary collisions
+				String.class.equals(clazz);
 	}
+
+	@Override
+	public abstract void onCollision(ICollidableVisitor other);
 }

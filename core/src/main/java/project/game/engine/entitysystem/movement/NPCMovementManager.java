@@ -28,6 +28,10 @@ public class NPCMovementManager extends MovementManager {
         this.builder = builder;
     }
 
+    public NPCMovementBuilder getBuilder() {
+        return this.builder;
+    }
+
     private static NPCMovementBuilder checkBuilder(NPCMovementBuilder builder) {
         if (builder == null) {
             String errorMessage = "NPCMovementBuilder cannot be null.";
@@ -35,9 +39,5 @@ public class NPCMovementManager extends MovementManager {
             throw new MovementException(errorMessage);
         }
         return builder;
-    }
-
-    public NPCMovementBuilder getBuilder() {
-        return this.builder;
     }
 }

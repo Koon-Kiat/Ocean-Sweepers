@@ -10,7 +10,7 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.audio.ISound;
 
 public class SoundManager implements ISound {
-    
+
     private static final GameLogger LOGGER = new GameLogger(SoundManager.class);
     private static volatile SoundManager instance;
     private final Map<String, Sound> soundEffects = new HashMap<>();
@@ -31,18 +31,6 @@ public class SoundManager implements ISound {
         return instance;
     }
 
-    // Method to load sound effects
-    @Override
-    public void loadSoundEffects(String[] soundFiles, String[] keys) {
-        if (soundFiles.length != keys.length) {
-            LOGGER.warn("Mismatch between sound files and keys count.");
-            return;
-        }
-        for (int i = 0; i < soundFiles.length; i++) {
-            loadSoundEffect(keys[i], soundFiles[i]);
-        }
-    }
-
     // Individual loader for a single sound effect
     public void loadSoundEffect(String key, String filePath) {
         if (!Gdx.files.internal(filePath).exists()) {
@@ -54,6 +42,18 @@ public class SoundManager implements ISound {
         soundEffects.put(key, sound);
         LOGGER.info("Successfully loaded sound effect: " + filePath + " with key: " + key);
 
+    }
+
+    // Method to load sound effects
+    @Override
+    public void loadSoundEffects(String[] soundFiles, String[] keys) {
+        if (soundFiles.length != keys.length) {
+            LOGGER.warn("Mismatch between sound files and keys count.");
+            return;
+        }
+        for (int i = 0; i < soundFiles.length; i++) {
+            loadSoundEffect(keys[i], soundFiles[i]);
+        }
     }
 
     @Override

@@ -11,7 +11,7 @@ import project.game.engine.asset.CustomAssetManager;
  * necessary methods and fields for entities that are renderable.
  */
 public abstract class RenderableEntity extends Entity implements IRenderable {
-	
+
 	private final Entity entity;
 	private final String texturePath;
 
@@ -24,13 +24,13 @@ public abstract class RenderableEntity extends Entity implements IRenderable {
 		return entity;
 	}
 
+	public void loadTexture() {
+		CustomAssetManager.getInstance().loadTextureAssets(texturePath);
+	}
+
 	@Override
 	public String getTexturePath() {
 		return this.texturePath;
-	}
-
-	public void loadTexture() {
-		CustomAssetManager.getInstance().loadTextureAssets(texturePath);
 	}
 
 	@Override

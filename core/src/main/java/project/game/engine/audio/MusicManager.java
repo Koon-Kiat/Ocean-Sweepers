@@ -10,7 +10,7 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.audio.IMusic;
 
 public class MusicManager implements IMusic {
-    
+
     private static final GameLogger LOGGER = new GameLogger(MusicManager.class);
     private static volatile MusicManager instance;
     private final Map<String, Music> musicTracks = new HashMap<>();
@@ -30,13 +30,6 @@ public class MusicManager implements IMusic {
         return instance;
     }
 
-    @Override
-    public void loadMusicTracks(String... tracks) {
-        for (String track : tracks) {
-            loadSingleTrack(track);
-        }
-    }
-
     public void unloadMusic(String trackName) {
         if (musicTracks.containsKey(trackName)) {
             Music music = musicTracks.get(trackName);
@@ -48,6 +41,13 @@ public class MusicManager implements IMusic {
             musicTracks.remove(trackName);
         } else {
             LOGGER.warn("Attempted to unload non-existent music: {0}", trackName);
+        }
+    }
+
+    @Override
+    public void loadMusicTracks(String... tracks) {
+        for (String track : tracks) {
+            loadSingleTrack(track);
         }
     }
 

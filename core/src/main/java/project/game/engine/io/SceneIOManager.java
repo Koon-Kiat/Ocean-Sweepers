@@ -22,13 +22,10 @@ public class SceneIOManager extends IOManager {
     // Map holding key codes mapped to their movement vectors
     private KeyBindingsManager keyBindingsManager;
 
-    // Constructor: initialize without movement controls
     public SceneIOManager() {
         super();
-        // No keyBindingsManager by default
     }
 
-    // Constructor: initialize with movement controls
     public SceneIOManager(boolean withMovementControls) {
         super();
         if (withMovementControls) {

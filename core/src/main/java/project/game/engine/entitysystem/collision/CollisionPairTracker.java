@@ -14,7 +14,7 @@ import project.game.engine.api.collision.ICollisionPairHandler;
  * This eliminates the need for instanceof checks when tracking collisions.
  */
 public class CollisionPairTracker implements ICollisionPairHandler {
-    
+
     // Registry of objects that can be tracked in collisions
     private final Map<Class<?>, Function<Object, ICollidableVisitor>> converters = new ConcurrentHashMap<>();
 
@@ -39,28 +39,6 @@ public class CollisionPairTracker implements ICollisionPairHandler {
         @SuppressWarnings("unchecked")
         Function<Object, ICollidableVisitor> castedConverter = obj -> converter.apply((T) obj);
         converters.put(clazz, castedConverter);
-    }
-
-    /**
-     * Try to convert an object to ICollidable using registered converters
-     * 
-     * @param object The object to convert
-     * @return The converted ICollidable or null if no converter is available
-     */
-    private ICollidableVisitor toCollidable(Object object) {
-        if (object == null) {
-            return null;
-        }
-
-        // Try to convert the object to ICollidable using registered converters
-        for (Map.Entry<Class<?>, Function<Object, ICollidableVisitor>> entry : converters.entrySet()) {
-            Class<?> clazz = entry.getKey();
-            if (clazz.isInstance(object)) {
-                return entry.getValue().apply(object);
-            }
-        }
-
-        return null;
     }
 
     @Override
@@ -141,5 +119,27 @@ public class CollisionPairTracker implements ICollisionPairHandler {
         public int hashCode() {
             return System.identityHashCode(entityA) * 31 + System.identityHashCode(entityB);
         }
+    }
+
+    /**
+     * Try to convert an object to ICollidable using registered converters
+     * 
+     * @param object The object to convert
+     * @return The converted ICollidable or null if no converter is available
+     */
+    private ICollidableVisitor toCollidable(Object object) {
+        if (object == null) {
+            return null;
+        }
+
+        // Try to convert the object to ICollidable using registered converters
+        for (Map.Entry<Class<?>, Function<Object, ICollidableVisitor>> entry : converters.entrySet()) {
+            Class<?> clazz = entry.getKey();
+            if (clazz.isInstance(object)) {
+                return entry.getValue().apply(object);
+            }
+        }
+
+        return null;
     }
 }

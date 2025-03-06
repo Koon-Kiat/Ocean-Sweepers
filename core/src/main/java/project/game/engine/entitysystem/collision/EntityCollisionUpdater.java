@@ -112,6 +112,22 @@ public class EntityCollisionUpdater {
     }
 
     /**
+     * Synchronizes the logical entity's position from the Box2D body.
+     */
+    public static void syncEntity(ICollidableVisitor entity, float pixelsToMeters) {
+        if (entity == null || entity.getBody() == null)
+            return;
+
+        // Get position from physics body
+        float x = entity.getBody().getPosition().x * pixelsToMeters;
+        float y = entity.getBody().getPosition().y * pixelsToMeters;
+
+        // Update entity position to match physics
+        entity.getEntity().setX(x);
+        entity.getEntity().setY(y);
+    }
+
+    /**
      * Checks if an entity is at or very close to the screen boundary
      */
     private static boolean isAtBoundary(float x, float y, float halfWidth, float halfHeight, float gameWidth,
@@ -130,21 +146,5 @@ public class EntityCollisionUpdater {
         } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
             // Method doesn't exist or can't be accessed - silently continue
         }
-    }
-
-    /**
-     * Synchronizes the logical entity's position from the Box2D body.
-     */
-    public static void syncEntity(ICollidableVisitor entity, float pixelsToMeters) {
-        if (entity == null || entity.getBody() == null)
-            return;
-
-        // Get position from physics body
-        float x = entity.getBody().getPosition().x * pixelsToMeters;
-        float y = entity.getBody().getPosition().y * pixelsToMeters;
-
-        // Update entity position to match physics
-        entity.getEntity().setX(x);
-        entity.getEntity().setY(y);
     }
 }

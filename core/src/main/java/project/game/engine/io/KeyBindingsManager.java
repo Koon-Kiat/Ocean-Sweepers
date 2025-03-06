@@ -33,6 +33,11 @@ public class KeyBindingsManager {
         keyBindings.put(Input.Keys.D, new Vector2(1, 0)); // Right
     }
 
+    // Getter for keyBindings map (for use by other systems)
+    public Map<Integer, Vector2> getKeyBindings() {
+        return keyBindings;
+    }
+
     // Update keyBindings based on new strings provided (e.g., during key rebind)
     public void updateKeyBindings(String upKeyString, String downKeyString, String leftKeyString,
             String rightKeyString) {
@@ -73,10 +78,5 @@ public class KeyBindingsManager {
                     return Input.Keys.UNKNOWN;
                 }
         }
-    }
-
-    // Getter for keyBindings map (for use by other systems)
-    public Map<Integer, Vector2> getKeyBindings() {
-        return keyBindings;
     }
 }
