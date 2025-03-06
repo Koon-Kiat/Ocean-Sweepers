@@ -2,11 +2,13 @@ package project.game.context.scene;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.audio.AudioManager;
@@ -21,8 +23,11 @@ public class MainMenuScene extends Scene {
     private TextButton playButton, exitButton, optionsButton;
     private GameScene gameScene;
     private OrthographicCamera camera;
-    private FitViewport viewport;
+    private Viewport viewport;
+    private Stage stage;
     private AudioManager audioManager;
+    private AudioUI audioUI;
+    private AudioConfig audioConfig;
     private boolean disposed = false;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
@@ -35,6 +40,7 @@ public class MainMenuScene extends Scene {
      */
     @Override
     public void create() {
+        stage = new Stage();
         this.camera = new OrthographicCamera();
         // this.viewport = new FitViewport(stage.getHeight(), stage.getWidth(), camera);
         // stage.setViewport(viewport);
@@ -51,8 +57,17 @@ public class MainMenuScene extends Scene {
         options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin);
 
-        // Initialize AudioManager for sound effects and music.
-        audioManager = new AudioManager(sceneUIManager.getStage());
+        audioConfig = new AudioConfig();
+        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), audioConfig);
+        audioUI = new AudioUI(audioManager, audioConfig, sceneUIManager.getStage(), skin);
+
+        // Load music tracks and sound effects using AudioManager directly
+        // audioManager.loadMusicTracks("assets/BackgroundMusic.mp3", "background");
+        // audioManager.loadSoundEffects(
+        //     new String[]{"assets/Selection.mp3", "assets/Watercollision.mp3"},
+        //     new String[]{"selection", "watercollision"}
+        // );
+
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
@@ -65,7 +80,6 @@ public class MainMenuScene extends Scene {
             audioManager.playSoundEffect("selection");
             LOGGER.info("Options Clicked!");
             sceneManager.setScene("options");
-
         });
 
         inputManager.addButtonClickListener(exitButton, () -> {
