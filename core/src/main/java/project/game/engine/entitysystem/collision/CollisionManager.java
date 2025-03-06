@@ -13,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.collision.ICollisionPairHandler;
 import project.game.engine.entitysystem.movement.MovementManager;
 import project.game.engine.io.SceneIOManager;
@@ -28,10 +28,10 @@ public class CollisionManager implements ContactListener {
     private final World world;
     private final List<Runnable> collisionQueue;
     private final SceneIOManager inputManager;
-    private final CollisionResolver collisionResolver;
+    private final CollisionVisitorDispatcher collisionResolver;
 
     // Maintain a map of collidable entities and their associated MovementManager.
-    private final Map<ICollidable, MovementManager> entityMap;
+    private final Map<ICollidableVisitor, MovementManager> entityMap;
     private boolean collided = false;
 
     // Use the visitor-based collision pair tracking
@@ -47,7 +47,7 @@ public class CollisionManager implements ContactListener {
         this.inputManager = inputManager;
         this.collisionQueue = new ArrayList<>();
         this.entityMap = new HashMap<>();
-        this.collisionResolver = new CollisionResolver();
+        this.collisionResolver = new CollisionVisitorDispatcher();
         this.collisionPairTracker = new CollisionPairTracker();
 
         // Register boundary by default
@@ -74,7 +74,7 @@ public class CollisionManager implements ContactListener {
         world.setContactListener(this);
     }
 
-    public void addEntity(ICollidable entity, MovementManager movementManager) {
+    public void addEntity(ICollidableVisitor entity, MovementManager movementManager) {
         entityMap.put(entity, movementManager);
 
         // Register entity with the collision resolver
@@ -139,7 +139,7 @@ public class CollisionManager implements ContactListener {
     }
 
     public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
-        for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
+        for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
             MovementManager manager = entry.getValue();
             if (manager != null) {
                 entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
@@ -148,8 +148,8 @@ public class CollisionManager implements ContactListener {
         }
 
         // Handle entity updates with collision awareness
-        for (Map.Entry<ICollidable, MovementManager> entry : entityMap.entrySet()) {
-            ICollidable entity = entry.getKey();
+        for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
+            ICollidableVisitor entity = entry.getKey();
             MovementManager manager = entry.getValue();
 
             // Check if this entity is involved in any active collisions
@@ -173,7 +173,7 @@ public class CollisionManager implements ContactListener {
     }
 
     // Use reflection to refresh collision state, avoiding the need for instanceof
-    private void refreshEntityCollisionState(ICollidable entity) {
+    private void refreshEntityCollisionState(ICollidableVisitor entity) {
         try {
             java.lang.reflect.Method method = entity.getClass().getMethod("setCollisionActive", long.class);
             method.invoke(entity, defaultCollisionDuration);
@@ -185,7 +185,7 @@ public class CollisionManager implements ContactListener {
     }
 
     public void syncEntityPositions(float pixelsToMeters) {
-        for (ICollidable entity : entityMap.keySet()) {
+        for (ICollidableVisitor entity : entityMap.keySet()) {
             EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
         }
     }

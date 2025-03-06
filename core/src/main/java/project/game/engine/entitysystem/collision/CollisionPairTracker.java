@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.collision.ICollisionPairHandler;
 
 /**
@@ -16,14 +16,14 @@ import project.game.engine.api.collision.ICollisionPairHandler;
 public class CollisionPairTracker implements ICollisionPairHandler {
     
     // Registry of objects that can be tracked in collisions
-    private final Map<Class<?>, Function<Object, ICollidable>> converters = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Function<Object, ICollidableVisitor>> converters = new ConcurrentHashMap<>();
 
     // Set of active collision pairs
     private final Set<CollisionPair> activeCollisions = new HashSet<>();
 
     public CollisionPairTracker() {
         // Register the ICollidable converter by default
-        registerConverter(ICollidable.class, obj -> (ICollidable) obj);
+        registerConverter(ICollidableVisitor.class, obj -> (ICollidableVisitor) obj);
     }
 
     /**
@@ -35,9 +35,9 @@ public class CollisionPairTracker implements ICollisionPairHandler {
      * @param clazz     The class to register the converter for
      * @param converter Function to convert from the class to ICollidable
      */
-    public final <T> void registerConverter(Class<T> clazz, Function<T, ICollidable> converter) {
+    public final <T> void registerConverter(Class<T> clazz, Function<T, ICollidableVisitor> converter) {
         @SuppressWarnings("unchecked")
-        Function<Object, ICollidable> castedConverter = obj -> converter.apply((T) obj);
+        Function<Object, ICollidableVisitor> castedConverter = obj -> converter.apply((T) obj);
         converters.put(clazz, castedConverter);
     }
 
@@ -47,13 +47,13 @@ public class CollisionPairTracker implements ICollisionPairHandler {
      * @param object The object to convert
      * @return The converted ICollidable or null if no converter is available
      */
-    private ICollidable toCollidable(Object object) {
+    private ICollidableVisitor toCollidable(Object object) {
         if (object == null) {
             return null;
         }
 
         // Try to convert the object to ICollidable using registered converters
-        for (Map.Entry<Class<?>, Function<Object, ICollidable>> entry : converters.entrySet()) {
+        for (Map.Entry<Class<?>, Function<Object, ICollidableVisitor>> entry : converters.entrySet()) {
             Class<?> clazz = entry.getKey();
             if (clazz.isInstance(object)) {
                 return entry.getValue().apply(object);
@@ -65,8 +65,8 @@ public class CollisionPairTracker implements ICollisionPairHandler {
 
     @Override
     public boolean addCollisionPair(Object objectA, Object objectB) {
-        ICollidable collidableA = toCollidable(objectA);
-        ICollidable collidableB = toCollidable(objectB);
+        ICollidableVisitor collidableA = toCollidable(objectA);
+        ICollidableVisitor collidableB = toCollidable(objectB);
 
         if (collidableA != null && collidableB != null) {
             return activeCollisions.add(new CollisionPair(collidableA, collidableB));
@@ -76,8 +76,8 @@ public class CollisionPairTracker implements ICollisionPairHandler {
 
     @Override
     public boolean removeCollisionPair(Object objectA, Object objectB) {
-        ICollidable collidableA = toCollidable(objectA);
-        ICollidable collidableB = toCollidable(objectB);
+        ICollidableVisitor collidableA = toCollidable(objectA);
+        ICollidableVisitor collidableB = toCollidable(objectB);
 
         if (collidableA != null && collidableB != null) {
             return activeCollisions.remove(new CollisionPair(collidableA, collidableB));
@@ -86,7 +86,7 @@ public class CollisionPairTracker implements ICollisionPairHandler {
     }
 
     @Override
-    public boolean isEntityInCollision(ICollidable entity) {
+    public boolean isEntityInCollision(ICollidableVisitor entity) {
         for (CollisionPair pair : activeCollisions) {
             if (pair.involves(entity)) {
                 return true;
@@ -109,10 +109,10 @@ public class CollisionPairTracker implements ICollisionPairHandler {
      * Helper class to track pairs of colliding objects
      */
     private static class CollisionPair {
-        private final ICollidable entityA;
-        private final ICollidable entityB;
+        private final ICollidableVisitor entityA;
+        private final ICollidableVisitor entityB;
 
-        public CollisionPair(ICollidable a, ICollidable b) {
+        public CollisionPair(ICollidableVisitor a, ICollidableVisitor b) {
             // Store in consistent order to ensure hashCode/equals work correctly
             // regardless of the order entities are passed in
             if (System.identityHashCode(a) <= System.identityHashCode(b)) {
@@ -124,7 +124,7 @@ public class CollisionPairTracker implements ICollisionPairHandler {
             }
         }
 
-        public boolean involves(ICollidable entity) {
+        public boolean involves(ICollidableVisitor entity) {
             return entityA == entity || entityB == entity;
         }
 

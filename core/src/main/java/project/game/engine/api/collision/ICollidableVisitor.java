@@ -10,7 +10,7 @@ import project.game.engine.entitysystem.entity.Entity;
  * 
  * Provides methods for creating and checking collisions between entities.
  */
-public interface ICollidable {
+public interface ICollidableVisitor {
 
 	Entity getEntity();
 
@@ -20,7 +20,7 @@ public interface ICollidable {
 
 	boolean checkCollision(Entity other);
 
-	void onCollision(ICollidable other);
+	void onCollision(ICollidableVisitor other);
 
 	boolean isInCollision();
 

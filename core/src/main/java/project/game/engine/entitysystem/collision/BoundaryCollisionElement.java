@@ -1,7 +1,7 @@
 package project.game.engine.entitysystem.collision;
 
-import project.game.engine.api.collision.ICollidable;
-import project.game.engine.api.collision.ICollisionTarget;
+import project.game.engine.api.collision.ICollidableVisitor;
+import project.game.engine.api.collision.ICollisionElement;
 
 /**
  * Represents a boundary in the game world that can be collided with.
@@ -9,25 +9,25 @@ import project.game.engine.api.collision.ICollisionTarget;
  * boundaries
  * without instanceof checks.
  */
-public class BoundaryCollisionTarget implements ICollisionTarget {
+public class BoundaryCollisionElement implements ICollisionElement {
 
-    private static final BoundaryCollisionTarget INSTANCE = new BoundaryCollisionTarget();
+    private static final BoundaryCollisionElement INSTANCE = new BoundaryCollisionElement();
 
     /**
      * Get the singleton instance of the boundary collision target
      * 
      * @return The boundary collision target instance
      */
-    public static BoundaryCollisionTarget getInstance() {
+    public static BoundaryCollisionElement getInstance() {
         return INSTANCE;
     }
 
     // Private constructor to enforce singleton pattern
-    private BoundaryCollisionTarget() {
+    private BoundaryCollisionElement() {
     }
 
     @Override
-    public void acceptCollision(ICollidable visitor, Runnable collisionAction) {
+    public void acceptCollision(ICollidableVisitor visitor, Runnable collisionAction) {
         // When a collidable visits a boundary, tell it to handle a boundary collision
         visitor.collideWithBoundary();
         if (collisionAction != null) {

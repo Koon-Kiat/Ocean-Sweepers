@@ -1,6 +1,6 @@
 package project.game.engine.entitysystem.collision;
 
-import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.entitysystem.movement.MovementManager;
 
 /**
@@ -13,7 +13,7 @@ public class EntityCollisionUpdater {
      * Updates an entity's position using its MovementManager when not in collision,
      * otherwise lets Box2D handle the physics.
      */
-    public static void updateEntity(ICollidable entity, MovementManager movementManager,
+    public static void updateEntity(ICollidableVisitor entity, MovementManager movementManager,
             float gameWidth, float gameHeight, float pixelsToMeters,
             float collisionMovementStrength, float movementThreshold) {
 
@@ -123,7 +123,7 @@ public class EntityCollisionUpdater {
     /**
      * Attempts to clear an entity's collision state using reflection
      */
-    private static void clearCollisionState(ICollidable entity) {
+    private static void clearCollisionState(ICollidableVisitor entity) {
         try {
             java.lang.reflect.Method method = entity.getClass().getMethod("setCollisionActive", long.class);
             method.invoke(entity, 0L);
@@ -135,7 +135,7 @@ public class EntityCollisionUpdater {
     /**
      * Synchronizes the logical entity's position from the Box2D body.
      */
-    public static void syncEntity(ICollidable entity, float pixelsToMeters) {
+    public static void syncEntity(ICollidableVisitor entity, float pixelsToMeters) {
         if (entity == null || entity.getBody() == null)
             return;
 

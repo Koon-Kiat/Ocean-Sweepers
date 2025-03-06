@@ -8,13 +8,13 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.engine.api.collision.ICollidable;
-import project.game.engine.api.collision.ICollisionHandler;
+import project.game.engine.api.collision.ICollidableVisitor;
+import project.game.engine.api.collision.ICollisionOperation;
 
 /**
  * Abstract class for entities that can collide with other entities.
  */
-public abstract class CollidableEntity extends Entity implements ICollidable, ICollisionHandler {
+public abstract class CollidableEntity extends Entity implements ICollidableVisitor, ICollisionOperation {
 
 	private final Entity entity;
 	private Body body;
@@ -111,13 +111,13 @@ public abstract class CollidableEntity extends Entity implements ICollidable, IC
 	}
 
 	@Override
-	public abstract void onCollision(ICollidable other);
+	public abstract void onCollision(ICollidableVisitor other);
 
 	@Override
 	public void collideWith(Object other) {
 		// Default implementation - delegates to onCollision if other is an ICollidable
-		if (other instanceof ICollidable) {
-			onCollision((ICollidable) other);
+		if (other instanceof ICollidableVisitor) {
+			onCollision((ICollidableVisitor) other);
 		}
 	}
 
@@ -154,12 +154,12 @@ public abstract class CollidableEntity extends Entity implements ICollidable, IC
 		}
 
 		// Handle other collidables
-		if (other instanceof ICollidable) {
-			ICollidable otherCollidable = (ICollidable) other;
+		if (other instanceof ICollidableVisitor) {
+			ICollidableVisitor otherCollidable = (ICollidableVisitor) other;
 
 			// Check if collision should be processed
 			if (checkCollision(otherCollidable.getEntity())) {
-				final ICollidable otherFinal = otherCollidable;
+				final ICollidableVisitor otherFinal = otherCollidable;
 				collisionQueue.add(() -> collideWith(otherFinal));
 			}
 		}
@@ -168,7 +168,7 @@ public abstract class CollidableEntity extends Entity implements ICollidable, IC
 	@Override
 	public boolean handlesCollisionWith(Class<?> clazz) {
 		// This entity can handle collisions with ICollidables and boundaries
-		return ICollidable.class.isAssignableFrom(clazz) ||
+		return ICollidableVisitor.class.isAssignableFrom(clazz) ||
 				String.class.equals(clazz); // For boundary collisions
 	}
 }

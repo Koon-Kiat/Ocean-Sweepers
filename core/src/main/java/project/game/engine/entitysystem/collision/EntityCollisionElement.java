@@ -1,7 +1,7 @@
 package project.game.engine.entitysystem.collision;
 
-import project.game.engine.api.collision.ICollidable;
-import project.game.engine.api.collision.ICollisionTarget;
+import project.game.engine.api.collision.ICollidableVisitor;
+import project.game.engine.api.collision.ICollisionElement;
 import project.game.engine.entitysystem.entity.Entity;
 
 /**
@@ -9,16 +9,16 @@ import project.game.engine.entitysystem.entity.Entity;
  * This implementation eliminates the need for instanceof checks
  * by providing a visitable target for collision handling.
  */
-public class CollidableEntityTarget implements ICollisionTarget {
+public class EntityCollisionElement implements ICollisionElement {
 
-    private final ICollidable collidable;
+    private final ICollidableVisitor collidable;
 
-    public CollidableEntityTarget(ICollidable collidable) {
+    public EntityCollisionElement(ICollidableVisitor collidable) {
         this.collidable = collidable;
     }
 
     @Override
-    public void acceptCollision(ICollidable visitor, Runnable collisionAction) {
+    public void acceptCollision(ICollidableVisitor visitor, Runnable collisionAction) {
         // First check if the collision is valid according to collision detection logic
         Entity visitorEntity = visitor.getEntity();
 
@@ -43,7 +43,7 @@ public class CollidableEntityTarget implements ICollisionTarget {
      * 
      * @return The collidable entity
      */
-    public ICollidable getCollidable() {
+    public ICollidableVisitor getCollidable() {
         return collidable;
     }
 }

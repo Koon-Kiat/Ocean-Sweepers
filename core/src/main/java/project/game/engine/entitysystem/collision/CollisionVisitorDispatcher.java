@@ -6,18 +6,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.collision.ICollidable;
-import project.game.engine.api.collision.ICollisionTarget;
+import project.game.engine.api.collision.ICollidableVisitor;
+import project.game.engine.api.collision.ICollisionElement;
 
 /**
  * A resolver class that handles collisions using the visitor pattern.
  * This completely eliminates instanceof checks by using a registry approach.
  */
-public class CollisionResolver {
+public class CollisionVisitorDispatcher {
     
-    private static final GameLogger LOGGER = new GameLogger(CollisionResolver.class);
+    private static final GameLogger LOGGER = new GameLogger(CollisionVisitorDispatcher.class);
     // Registry of objects that can be collided with (target registry)
-    private final Map<Object, ICollisionTarget> collisionTargets = new ConcurrentHashMap<>();
+    private final Map<Object, ICollisionElement> collisionTargets = new ConcurrentHashMap<>();
 
     // Registry of collision visitors (maps objects to their visitor interfaces)
     private final Map<Object, Function<Object, Runnable>> collisionVisitors = new ConcurrentHashMap<>();
@@ -26,7 +26,7 @@ public class CollisionResolver {
      * Register a boundary with the collision resolver
      */
     public void registerBoundary() {
-        collisionTargets.put("boundary", BoundaryCollisionTarget.getInstance());
+        collisionTargets.put("boundary", BoundaryCollisionElement.getInstance());
     }
 
     /**
@@ -34,9 +34,9 @@ public class CollisionResolver {
      * 
      * @param collidable The entity to register
      */
-    public void registerCollidable(ICollidable collidable) {
+    public void registerCollidable(ICollidableVisitor collidable) {
         // Register as a target
-        collisionTargets.put(collidable, new CollidableEntityTarget(collidable));
+        collisionTargets.put(collidable, new EntityCollisionElement(collidable));
 
         // Register as a visitor
         collisionVisitors.put(collidable, target -> {
@@ -47,7 +47,7 @@ public class CollisionResolver {
 
             // For entity-entity collisions
             // Get the collision target if registered
-            ICollisionTarget collisionTarget = collisionTargets.get(target);
+            ICollisionElement collisionTarget = collisionTargets.get(target);
             if (collisionTarget != null) {
                 return () -> collisionTarget.acceptCollision(collidable, null);
             }

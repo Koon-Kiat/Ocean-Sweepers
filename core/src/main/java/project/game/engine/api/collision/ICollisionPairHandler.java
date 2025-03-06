@@ -33,7 +33,7 @@ public interface ICollisionPairHandler {
      * @param entity The entity to check
      * @return true if the entity is in an active collision, false otherwise
      */
-    boolean isEntityInCollision(ICollidable entity);
+    boolean isEntityInCollision(ICollidableVisitor entity);
 
     /**
      * Check if there are any active collisions.

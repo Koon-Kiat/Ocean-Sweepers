@@ -13,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.Main;
 import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
-import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entity.CollidableEntity;
@@ -122,7 +122,7 @@ public class Monster extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public void onCollision(ICollidable other) {
+    public void onCollision(ICollidableVisitor other) {
         long currentTime = System.currentTimeMillis();
         long cooldownTime = (other instanceof Boat) ? 300 : 100;
 
@@ -213,7 +213,7 @@ public class Monster extends CollidableEntity implements IRenderable {
         return newBody;
     }
 
-    private void handleBoatCollision(ICollidable boat, float monsterX, float monsterY) {
+    private void handleBoatCollision(ICollidableVisitor boat, float monsterX, float monsterY) {
         float boatX = boat.getEntity().getX();
         float boatY = boat.getEntity().getY();
 

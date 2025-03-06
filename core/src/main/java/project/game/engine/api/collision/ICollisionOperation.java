@@ -9,7 +9,7 @@ import java.util.List;
  * visitor pattern is used to allow for flexible collision handling between
  * different types of entities.
  */
-public interface ICollisionHandler {
+public interface ICollisionOperation {
 
     void handleCollisionWith(Object other, List<Runnable> collisionQueue);
 

@@ -11,7 +11,7 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
-import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entity.CollidableEntity;
@@ -117,7 +117,7 @@ public class Boat extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public void onCollision(ICollidable other) {
+	public void onCollision(ICollidableVisitor other) {
 		// Only handle collisions with actual entities, not boundaries
 		if (other != null) {
 			// Log normal entity collisions

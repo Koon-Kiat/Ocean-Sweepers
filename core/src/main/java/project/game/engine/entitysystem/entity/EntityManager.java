@@ -8,7 +8,7 @@ import java.util.Set;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.collision.ICollidable;
+import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.render.IRenderable;
 
 /**
@@ -82,12 +82,12 @@ public class EntityManager {
 	public void checkCollision() {
 		for (int i = 0; i < entityList.size(); i++) {
 			Entity entityA = entityList.get(i);
-			if (entityA instanceof ICollidable) {
-				ICollidable collidableA = (ICollidable) entityA;
+			if (entityA instanceof ICollidableVisitor) {
+				ICollidableVisitor collidableA = (ICollidableVisitor) entityA;
 				for (int j = i + 1; j < entityList.size(); j++) {
 					Entity entityB = entityList.get(j);
-					if (entityB instanceof ICollidable) {
-						ICollidable collidableB = (ICollidable) entityB;
+					if (entityB instanceof ICollidableVisitor) {
+						ICollidableVisitor collidableB = (ICollidableVisitor) entityB;
 						if (collidableA.checkCollision(entityB)) {
 							collidableA.onCollision(collidableB);
 							collidableB.onCollision(collidableA);
