@@ -1,4 +1,4 @@
-package project.game.context.composite;
+package project.game.engine.entitysystem.movement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
+import project.game.engine.api.movement.ICompositeMovementStrategy;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
 
@@ -15,15 +16,12 @@ import project.game.engine.api.movement.IMovementStrategy;
  * them in sequence, blending their effects. For example, combining a
  * FollowMovementStrategy with an ObstacleAvoidanceStrategy will make an entity
  * follow a target while avoiding obstacles.
- * 
- * This uses the Composite pattern rather than Decorator, as it truly combines
- * multiple strategies rather than just adding behavior to one strategy.
  */
-public class CompositeMovementStrategy implements IMovementStrategy {
+public class CompositeMovementStrategy implements ICompositeMovementStrategy {
 
     private static final GameLogger LOGGER = new GameLogger(CompositeMovementStrategy.class);
     private final List<IMovementStrategy> strategies = new ArrayList<>();
-    private final float[] weights;
+    private float[] weights;
 
     /**
      * Create a composite strategy with a single base strategy
@@ -35,42 +33,8 @@ public class CompositeMovementStrategy implements IMovementStrategy {
             throw new MovementException("Base strategy cannot be null");
         }
         this.strategies.add(baseStrategy);
-        this.weights = new float[1]; // Just for the base strategy
-        this.weights[0] = 1.0f; // Default weight
-    }
-
-    /**
-     * Get all the strategies in this composition
-     */
-    public List<IMovementStrategy> getAllStrategies() {
-        return new ArrayList<>(strategies);
-    }
-
-    /**
-     * Get the base strategy (first strategy in the list)
-     */
-    public IMovementStrategy getBaseStrategy() {
-        return strategies.isEmpty() ? null : strategies.get(0);
-    }
-
-    /**
-     * Get the weight for a given strategy index
-     */
-    public float getWeight(int index) {
-        if (index >= 0 && index < weights.length) {
-            return weights[index];
-        }
-        return 0;
-    }
-
-    /**
-     * Set the weight for a given strategy index
-     */
-    public void setWeight(int index, float weight) {
-        if (index >= 0 && index < weights.length) {
-            weights[index] = weight;
-            normalizeWeights(weights);
-        }
+        this.weights = new float[1];
+        this.weights[0] = 1.0f;
     }
 
     /**
@@ -113,28 +77,6 @@ public class CompositeMovementStrategy implements IMovementStrategy {
         }
     }
 
-    /**
-     * Add a strategy to the composition with the specified weight
-     * 
-     * @param strategy The strategy to add
-     * @param weight   The weight of this strategy in the composition
-     * @return This composite strategy for method chaining
-     */
-    public CompositeMovementStrategy addStrategy(IMovementStrategy strategy, float weight) {
-        if (strategy != null) {
-            strategies.add(strategy);
-
-            // Create new weights array with one more element
-            float[] newWeights = new float[weights.length + 1];
-            System.arraycopy(weights, 0, newWeights, 0, weights.length);
-            newWeights[weights.length] = weight;
-
-            // Normalize weights
-            normalizeWeights(newWeights);
-        }
-        return this;
-    }
-
     @Override
     public void move(IMovable movable, float deltaTime) {
         try {
@@ -169,6 +111,118 @@ public class CompositeMovementStrategy implements IMovementStrategy {
             LOGGER.error("Error in CompositeMovementStrategy: " + e.getMessage(), e);
             throw new MovementException("Failed to apply composite movement", e);
         }
+    }
+
+    /**
+     * Get all the strategies in this composition
+     */
+    @Override
+    public List<IMovementStrategy> getAllStrategies() {
+        return new ArrayList<>(strategies);
+    }
+
+    /**
+     * Get the base strategy (first strategy in the list)
+     */
+    @Override
+    public IMovementStrategy getBaseStrategy() {
+        return strategies.isEmpty() ? null : strategies.get(0);
+    }
+
+    /**
+     * Get the weight for a given strategy index
+     */
+    @Override
+    public float getWeight(int index) {
+        if (index >= 0 && index < weights.length) {
+            return weights[index];
+        }
+        return 0;
+    }
+
+    /**
+     * Set the weight for a given strategy index
+     */
+    @Override
+    public void setWeight(int index, float weight) {
+        if (index >= 0 && index < weights.length) {
+            weights[index] = weight;
+            normalizeWeights(weights);
+        }
+    }
+
+    /**
+     * Add a strategy to the composition with the specified weight
+     * 
+     * @param strategy The strategy to add
+     * @param weight   The weight of this strategy in the composition
+     * @return This composite strategy for method chaining
+     */
+    @Override
+    public CompositeMovementStrategy addStrategy(IMovementStrategy strategy, float weight) {
+        if (strategy != null) {
+            strategies.add(strategy);
+
+            // Create new weights array with one more element
+            float[] newWeights = new float[weights.length + 1];
+            System.arraycopy(weights, 0, newWeights, 0, weights.length);
+            newWeights[weights.length] = weight;
+
+            // Normalize weights
+            normalizeWeights(newWeights);
+            this.weights = newWeights;
+        }
+        return this;
+    }
+
+    /**
+     * Remove a strategy from the composition by index
+     * 
+     * @param index The index of the strategy to remove
+     * @return True if the strategy was removed, false otherwise
+     */
+    @Override
+    public boolean removeStrategy(int index) {
+        if (index < 0 || index >= strategies.size() || strategies.size() <= 1) {
+            // Can't remove if invalid index or only one strategy remains
+            return false;
+        }
+
+        strategies.remove(index);
+
+        // Create new weights array with one less element
+        float[] newWeights = new float[weights.length - 1];
+
+        // Copy weights before the removed index
+        if (index > 0) {
+            System.arraycopy(weights, 0, newWeights, 0, index);
+        }
+
+        // Copy weights after the removed index
+        if (index < weights.length - 1) {
+            System.arraycopy(weights, index + 1, newWeights, index, weights.length - 1 - index);
+        }
+
+        // Normalize weights
+        normalizeWeights(newWeights);
+        this.weights = newWeights;
+
+        return true;
+    }
+
+    /**
+     * Remove a specific strategy from the composition
+     * 
+     * @param strategy The strategy to remove
+     * @return True if the strategy was removed, false otherwise
+     */
+    @Override
+    public boolean removeStrategy(IMovementStrategy strategy) {
+        int index = strategies.indexOf(strategy);
+        if (index != -1) {
+            return removeStrategy(index);
+        }
+        return false;
     }
 
     /**

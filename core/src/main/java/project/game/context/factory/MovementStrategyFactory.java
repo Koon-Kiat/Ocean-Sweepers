@@ -5,7 +5,6 @@ import java.util.List;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.composite.CompositeMovementStrategy;
 import project.game.context.movement.AcceleratedMovementStrategy;
 import project.game.context.movement.ConstantMovementStrategy;
 import project.game.context.movement.FollowMovementStrategy;
@@ -20,6 +19,7 @@ import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
 import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.movement.CompositeMovementStrategy;
 
 /**
  * Factory class for creating movement strategys.
