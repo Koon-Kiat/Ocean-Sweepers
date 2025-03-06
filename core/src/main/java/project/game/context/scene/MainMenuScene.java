@@ -38,6 +38,32 @@ public class MainMenuScene extends Scene {
         super(sceneManager, inputManager);
     }
 
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+        Gdx.input.setInputProcessor(sceneUIManager.getStage());
+    }
+
+    @Override
+    public void show() {
+    }
+
+    @Override
+    public void dispose() {
+        if (!disposed) {
+            sceneUIManager.getStage().dispose();
+            skin.dispose();
+            disposed = true;
+        }
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        camera.setToOrtho(false, width, height);
+        viewport.setWorldSize(width, height);
+        sceneUIManager.getStage().getViewport().update(width, height, true);
+    }
+
     /**
      * Initializes the main menu scene with Play, Options, and Exit buttons.
      * Sets up the viewport, UI skin, audio manager, and button click listeners.
@@ -101,31 +127,5 @@ public class MainMenuScene extends Scene {
 
         LOGGER.info("Main Menu Scene sceneManager instance: {0}", System.identityHashCode(sceneManager));
 
-    }
-
-    @Override
-    public void show() {
-    }
-
-    @Override
-    public void render(float delta) {
-        super.render(delta);
-        Gdx.input.setInputProcessor(sceneUIManager.getStage());
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        camera.setToOrtho(false, width, height);
-        viewport.setWorldSize(width, height);
-        sceneUIManager.getStage().getViewport().update(width, height, true);
-    }
-
-    @Override
-    public void dispose() {
-        if (!disposed) {
-            sceneUIManager.getStage().dispose();
-            skin.dispose();
-            disposed = true;
-        }
     }
 }

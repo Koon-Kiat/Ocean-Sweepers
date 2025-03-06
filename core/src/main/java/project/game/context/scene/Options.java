@@ -21,11 +21,11 @@ import project.game.engine.scene.SceneManager;
 public class Options extends Scene {
 
     private static final GameLogger LOGGER = new GameLogger(Options.class);
+    private final GameScene gameScene;
     private Skin skin;
     private Window popupMenu;
     private Window rebindMenu;
     private boolean isPaused = true;
-    private final GameScene gameScene;
 
     // Button to control main menu visibility.
     private TextButton mainMenuButton;
@@ -33,6 +33,39 @@ public class Options extends Scene {
     public Options(SceneManager sceneManager, GameScene gameScene, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
         this.gameScene = gameScene;
+    }
+
+    public Window getPopupMenu() {
+        return popupMenu;
+    }
+
+    public Window getRebindMenu() {
+        return rebindMenu;
+    }
+
+    public void setMainMenuButtonVisibility(boolean isVisible) {
+        mainMenuButton.setVisible(isVisible);
+    }
+
+    public Stage getStage() {
+        return sceneUIManager.getStage();
+    }
+
+    public void setPopupMenu(Window popupMenu) {
+        this.popupMenu = popupMenu;
+    }
+
+    public void render() {
+        sceneUIManager.getStage().act();
+        sceneUIManager.getStage().draw();
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.isPaused = paused;
     }
 
     /**
@@ -184,38 +217,4 @@ public class Options extends Scene {
         rebindMenu.add(rebindTable);
         sceneUIManager.getStage().addActor(rebindMenu);
     }
-
-    public Window getPopupMenu() {
-        return popupMenu;
-    }
-
-    public Window getRebindMenu() {
-        return rebindMenu;
-    }
-
-    public void setMainMenuButtonVisibility(boolean isVisible) {
-        mainMenuButton.setVisible(isVisible);
-    }
-
-    public Stage getStage() {
-        return sceneUIManager.getStage();
-    }
-
-    public void setPopupMenu(Window popupMenu) {
-        this.popupMenu = popupMenu;
-    }
-
-    public void render() {
-        sceneUIManager.getStage().act();
-        sceneUIManager.getStage().draw();
-    }
-
-    public boolean isPaused() {
-        return isPaused;
-    }
-
-    public void setPaused(boolean paused) {
-        this.isPaused = paused;
-    }
-
 }

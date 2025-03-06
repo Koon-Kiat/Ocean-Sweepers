@@ -4,24 +4,26 @@ package project.game.context.api.constant;
  * Constants related to game entities and their properties.
  */
 public interface IEntityConstants {
-    
+
     // Player constants
-    float BUCKET_START_X();
+    float PLAYER_START_X();
 
-    float BUCKET_START_Y();
+    float PLAYER_START_Y();
 
-    float BUCKET_WIDTH();
+    float PLAYER_WIDTH();
 
-    float BUCKET_HEIGHT();
+    float PLAYER_HEIGHT();
 
     // NPC constants
-    float DROP_START_X();
+    float TRASH_START_X();
 
-    float DROP_START_Y();
+    float TRASH_START_Y();
 
-    float DROP_WIDTH();
+    float TRASH_WIDTH();
 
-    float DROP_HEIGHT();
+    float TRASH_HEIGHT();
+
+    int NUM_TRASHES();
 
     // Rock constants
     float ROCK_WIDTH();
@@ -30,19 +32,15 @@ public interface IEntityConstants {
 
     int NUM_ROCKS();
 
-    //Trash constants
-    float TRASH_WIDTH();
+    // Monster constants
+    float MONSTER_START_X();
 
-    float TRASH_HEIGHT();
+    float MONSTER_START_Y();
 
-    int NUM_TRASHES();
-
-    //Monster constants
     float MONSTER_WIDTH();
 
     float MONSTER_HEIGHT();
 
     float BOAT_BOUNCE_FORCE();
 
-    
 }

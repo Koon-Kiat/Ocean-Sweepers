@@ -11,18 +11,14 @@ import project.game.engine.constant.ConstantDefinition;
  * Default implementation of profile management
  */
 public class DefaultProfileManager implements IProfileManager {
-    
+
     private final IConstantsRegistry registry;
-    private String currentProfile = "default";
     private final Map<String, Map<String, Object>> profiles = new HashMap<>();
+    private String currentProfile = "default";
 
     public DefaultProfileManager(IConstantsRegistry registry) {
         this.registry = registry;
         initializeDefaultProfile();
-    }
-
-    private void initializeDefaultProfile() {
-        createProfile("default");
     }
 
     @Override
@@ -145,5 +141,9 @@ public class DefaultProfileManager implements IProfileManager {
         if (expectedType == String.class)
             return value instanceof String;
         return expectedType.isInstance(value);
+    }
+
+    private void initializeDefaultProfile() {
+        createProfile("default");
     }
 }

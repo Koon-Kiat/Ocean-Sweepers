@@ -21,8 +21,8 @@ public class ZigZagMovemenStrategy implements IMovementStrategy {
     private final float speed;
     private final float amplitude;
     private final float frequency;
-    private float elapsedTime;
     private final boolean lenientMode;
+    private float elapsedTime;
 
     public ZigZagMovemenStrategy(float speed, float amplitude, float frequency, boolean lenientMode) {
         this.lenientMode = lenientMode;

@@ -35,51 +35,8 @@ public class Monster extends CollidableEntity implements IRenderable {
         this.texturePath = texturePath;
     }
 
-    private float entityX() {
-        return super.getEntity().getX();
-    }
-
-    private float entityY() {
-        return super.getEntity().getY();
-    }
-
-    private float entityWidth() {
-        return super.getEntity().getWidth();
-    }
-
-    private float entityHeight() {
-        return super.getEntity().getHeight();
-    }
-
-    @Override
-    public Entity getEntity() {
-        return super.getEntity();
-    }
-
-    @Override
-    public Body getBody() {
-        return super.getBody();
-    }
-
-    @Override
-    public boolean isActive() {
-        return super.getEntity().isActive();
-    }
-
-    @Override
-    public String getTexturePath() {
-        return texturePath;
-    }
-
-    @Override
-    public void render(SpriteBatch batch) {
-        if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
-            // Render the entity using offset for BOX2D body
-            float renderX = entityX() - entityWidth() / 2;
-            float renderY = entityY() - entityHeight() / 2;
-            Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
-            batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
-        }
+    public NPCMovementManager getMovementManager() {
+        return this.movementManager;
     }
 
     /**
@@ -104,15 +61,71 @@ public class Monster extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public boolean isInCollision() {
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-            collisionActive = false;
-            // Reset damping when collision ends
-            getBody().setLinearDamping(0.2f);
-            // Clear any lingering velocity when exiting collision state
-            getBody().setLinearVelocity(0, 0);
+    public boolean isActive() {
+        return super.getEntity().isActive();
+    }
+
+    @Override
+    public Entity getEntity() {
+        return super.getEntity();
+    }
+
+    @Override
+    public Body getBody() {
+        return super.getBody();
+    }
+
+    @Override
+    public final Body createBody(World world, float x, float y, float width, float height) {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+        float centerX = (x + width / 2) / pixelsToMeters;
+        float centerY = (y + height / 2) / pixelsToMeters;
+        bodyDef.position.set(centerX, centerY);
+        bodyDef.fixedRotation = true;
+        bodyDef.bullet = true;
+        bodyDef.linearDamping = 0.8f;
+        bodyDef.angularDamping = 0.8f;
+
+        Body newBody = world.createBody(bodyDef);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(
+                (width / 2) / pixelsToMeters,
+                (height / 2) / pixelsToMeters);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 500.0f;
+        fixtureDef.friction = 0.2f;
+        fixtureDef.restitution = 0.1f;
+
+        Filter filter = new Filter();
+        filter.categoryBits = 0x0008;
+        filter.maskBits = -1 & ~0x0004;
+        fixtureDef.filter.categoryBits = filter.categoryBits;
+        fixtureDef.filter.maskBits = filter.maskBits;
+
+        newBody.createFixture(fixtureDef);
+        shape.dispose();
+        newBody.setUserData(this);
+        return newBody;
+    }
+
+    @Override
+    public String getTexturePath() {
+        return texturePath;
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+            // Render the entity using offset for BOX2D body
+            float renderX = entityX() - entityWidth() / 2;
+            float renderY = entityY() - entityHeight() / 2;
+            Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
+            batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
         }
-        return collisionActive;
     }
 
     @Override
@@ -177,40 +190,15 @@ public class Monster extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public final Body createBody(World world, float x, float y, float width, float height) {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float centerX = (x + width / 2) / pixelsToMeters;
-        float centerY = (y + height / 2) / pixelsToMeters;
-        bodyDef.position.set(centerX, centerY);
-        bodyDef.fixedRotation = true;
-        bodyDef.bullet = true;
-        bodyDef.linearDamping = 0.8f;
-        bodyDef.angularDamping = 0.8f;
-
-        Body newBody = world.createBody(bodyDef);
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(
-                (width / 2) / pixelsToMeters,
-                (height / 2) / pixelsToMeters);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = shape;
-        fixtureDef.density = 500.0f;
-        fixtureDef.friction = 0.2f;
-        fixtureDef.restitution = 0.1f;
-
-        Filter filter = new Filter();
-        filter.categoryBits = 0x0008;
-        filter.maskBits = -1 & ~0x0004;
-        fixtureDef.filter.categoryBits = filter.categoryBits;
-        fixtureDef.filter.maskBits = filter.maskBits;
-
-        newBody.createFixture(fixtureDef);
-        shape.dispose();
-        newBody.setUserData(this);
-        return newBody;
+    public boolean isInCollision() {
+        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+            collisionActive = false;
+            // Reset damping when collision ends
+            getBody().setLinearDamping(0.2f);
+            // Clear any lingering velocity when exiting collision state
+            getBody().setLinearVelocity(0, 0);
+        }
+        return collisionActive;
     }
 
     private void handleBoatCollision(ICollidableVisitor boat, float monsterX, float monsterY) {
@@ -253,7 +241,19 @@ public class Monster extends CollidableEntity implements IRenderable {
         }
     }
 
-    public NPCMovementManager getMovementManager() {
-        return this.movementManager;
+    private float entityX() {
+        return super.getEntity().getX();
+    }
+
+    private float entityY() {
+        return super.getEntity().getY();
+    }
+
+    private float entityWidth() {
+        return super.getEntity().getWidth();
+    }
+
+    private float entityHeight() {
+        return super.getEntity().getHeight();
     }
 }

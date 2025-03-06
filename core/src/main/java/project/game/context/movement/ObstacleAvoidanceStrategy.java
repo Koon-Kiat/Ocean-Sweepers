@@ -22,22 +22,22 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
     private final float speed;
     private final boolean lenientMode;
     private final Vector2 persistentDirection = new Vector2(1, 0);
-    private float directionChangeSmoothing = 0.2f;
 
     // Enhanced obstacle avoidance parameters
-    private List<Entity> obstacles = new ArrayList<>();
-    private float avoidanceRadius = 300f; // Keep this large for early detection
     private final float criticalRadius = 80f; // Increased for stronger close-range avoidance
-    private float avoidanceWeight = 5.0f;
     private final float lookaheadDistance = 350f;
     private final Vector2 lastSafePosition = new Vector2();
-    private boolean isAvoiding = false;
-    private float avoidanceTimer = 0;
     private final float maxAvoidanceTime = 2.0f; // Increased to allow more time for path finding
     private final float directionWeight = 1.5f; // Increased direction influence
     private final Vector2 lastAvoidanceForce = new Vector2();
     private final float steeringStrength = 3.0f; // New parameter for sharper turns
+    private List<Entity> obstacles = new ArrayList<>();
     private float currentRotationFactor = 1.0f; // Dynamic rotation factor
+    private float directionChangeSmoothing = 0.2f;
+    private float avoidanceRadius = 300f; // Keep this large for early detection
+    private boolean isAvoiding = false;
+    private float avoidanceTimer = 0;
+    private float avoidanceWeight = 5.0f;
 
     /**
      * Constructor for pure obstacle avoidance
@@ -83,6 +83,33 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
      */
     public void removeObstacle(Entity obstacle) {
         obstacles.remove(obstacle);
+    }
+
+    /**
+     * Set the radius at which to start avoiding obstacles
+     */
+    public void setAvoidanceRadius(float radius) {
+        if (radius > 0) {
+            this.avoidanceRadius = radius;
+        }
+    }
+
+    /**
+     * Set how strongly to prioritize obstacle avoidance
+     */
+    public void setAvoidanceWeight(float weight) {
+        if (weight > 0) {
+            this.avoidanceWeight = weight;
+        }
+    }
+
+    /**
+     * Get the current list of obstacles being avoided
+     * 
+     * @return List of obstacle entities
+     */
+    public List<Entity> getObstacles() {
+        return obstacles;
     }
 
     @Override
@@ -350,32 +377,5 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
     private float calculateAvoidanceStrength(float distance) {
         float normalizedDistance = distance / avoidanceRadius;
         return (1 - normalizedDistance) * (1 - normalizedDistance); // Quadratic falloff
-    }
-
-    /**
-     * Set the radius at which to start avoiding obstacles
-     */
-    public void setAvoidanceRadius(float radius) {
-        if (radius > 0) {
-            this.avoidanceRadius = radius;
-        }
-    }
-
-    /**
-     * Set how strongly to prioritize obstacle avoidance
-     */
-    public void setAvoidanceWeight(float weight) {
-        if (weight > 0) {
-            this.avoidanceWeight = weight;
-        }
-    }
-
-    /**
-     * Get the current list of obstacles being avoided
-     * 
-     * @return List of obstacle entities
-     */
-    public List<Entity> getObstacles() {
-        return obstacles;
     }
 }

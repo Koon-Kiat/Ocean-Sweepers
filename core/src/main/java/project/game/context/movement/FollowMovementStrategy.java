@@ -22,20 +22,18 @@ import project.game.engine.api.movement.IPositionable;
 public class FollowMovementStrategy implements IMovementStrategy {
 
     private static final GameLogger LOGGER = new GameLogger(FollowMovementStrategy.class);
-    private final IPositionable target;
-    private final float speed;
-    private final boolean lenientMode;
-
-    // Path following parameters
-    private final List<Vector2> pathPoints;
-    private final Vector2 lastTargetPosition;
-    private float pathProgress = 0f;
     private static final float PATH_RECALC_THRESHOLD = 100f; // Distance the target must move to recalculate path
     private static final float ARRIVAL_THRESHOLD = 10f; // Distance at which to consider "arrived" at target
     private static final int PATH_SEGMENTS = 20; // Number of segments in the smooth path
     private static final float MIN_CONTROL_POINT_DISTANCE = 80f; // Minimum distance for control points
     private static final float MAX_CONTROL_POINT_DISTANCE = 200f; // Maximum distance for control points
     private static final float PATH_PROGRESS_SPEED = 1.0f; // Speed of movement along the path (1.0 = 100% per second)
+    private final IPositionable target;
+    private final float speed;
+    private final boolean lenientMode;
+    private final List<Vector2> pathPoints;
+    private final Vector2 lastTargetPosition;
+    private float pathProgress = 0f;
 
     /**
      * Constructs a FollowMovementBehavior with the specified parameters.

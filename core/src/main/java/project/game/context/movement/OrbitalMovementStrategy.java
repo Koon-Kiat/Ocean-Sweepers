@@ -15,14 +15,14 @@ import project.game.engine.api.movement.IPositionable;
  * configurable.
  */
 public class OrbitalMovementStrategy implements IMovementStrategy {
-    
+
     private static final GameLogger LOGGER = new GameLogger(OrbitalMovementStrategy.class);
     private final IPositionable target;
     private final float orbitRadius;
     private final float rotationSpeed; // Radians per second
     private final boolean lenientMode;
-    private float currentAngle = 0;
     private final float eccentricity; // 0 = circle, >0 = ellipse
+    private float currentAngle = 0;
 
     public OrbitalMovementStrategy(IPositionable target, float orbitRadius, float rotationSpeed, float eccentricity,
             boolean lenientMode) {

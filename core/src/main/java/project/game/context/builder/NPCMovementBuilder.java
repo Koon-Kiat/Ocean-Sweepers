@@ -307,26 +307,6 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    @Override
-    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
-        if (entity == null) {
-            String errorMsg = "Cannot create MovableEntity: Entity is null";
-            LOGGER.fatal(errorMsg);
-            throw new MovementException(errorMsg);
-        }
-
-        return new NPCMovableEntity(entity, speed);
-    }
-
-    /**
-     * Concrete implementation of MovableEntity for NPC entities
-     */
-    private static class NPCMovableEntity extends MovableEntity {
-        public NPCMovableEntity(Entity entity, float speed) {
-            super(entity, speed);
-        }
-    }
-
     public NPCMovementManager build() {
         try {
             validateBuildRequirements();
@@ -366,6 +346,17 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         }
     }
 
+    @Override
+    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
+        if (entity == null) {
+            String errorMsg = "Cannot create MovableEntity: Entity is null";
+            LOGGER.fatal(errorMsg);
+            throw new MovementException(errorMsg);
+        }
+
+        return new NPCMovableEntity(entity, speed);
+    }
+
     // Private validation method
     @Override
     protected void validateBuildRequirements() {
@@ -379,6 +370,15 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
                 LOGGER.fatal(errorMessage);
                 throw new MovementException(errorMessage);
             }
+        }
+    }
+
+    /**
+     * Concrete implementation of MovableEntity for NPC entities
+     */
+    private static class NPCMovableEntity extends MovableEntity {
+        public NPCMovableEntity(Entity entity, float speed) {
+            super(entity, speed);
         }
     }
 }

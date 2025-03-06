@@ -17,7 +17,7 @@ import project.game.engine.constant.AbstractConfigurationLoader;
  * LibGDX-specific implementation of configuration loading.
  */
 public class GameConfigurationLoader extends AbstractConfigurationLoader {
-    
+
     private static final GameLogger LOGGER = new GameLogger(GameConfigurationLoader.class);
     private static final GameConfigurationLoader INSTANCE = new GameConfigurationLoader();
     private final JsonReader jsonReader;
@@ -100,6 +100,16 @@ public class GameConfigurationLoader extends AbstractConfigurationLoader {
         }
     }
 
+    @Override
+    protected void handleWarning(String message) {
+        LOGGER.warn(message);
+    }
+
+    @Override
+    protected void handleError(String message, Exception e) {
+        LOGGER.error(message, e);
+    }
+
     private FileHandle resolveFileHandle(String path) {
         if (Gdx.files == null) {
             // Running outside of LibGDX context (e.g. tests)
@@ -109,15 +119,5 @@ public class GameConfigurationLoader extends AbstractConfigurationLoader {
             return Gdx.files.internal(path.substring("classpath:".length()));
         }
         return Gdx.files.absolute(path);
-    }
-
-    @Override
-    protected void handleWarning(String message) {
-        LOGGER.warn(message);
-    }
-
-    @Override
-    protected void handleError(String message, Exception e) {
-        LOGGER.error(message, e);
     }
 }

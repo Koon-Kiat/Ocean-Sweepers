@@ -27,22 +27,22 @@ import project.game.engine.entitysystem.entity.Entity;
  * Dependency Inversion Principle.
  */
 public class MovementStrategyFactory {
-    
+
     private static final GameLogger LOGGER = new GameLogger(MovementStrategyFactory.class);
 
+    // Private constructor to prevent instantiation
+    private MovementStrategyFactory() {
+        throw new UnsupportedOperationException(
+                "MovementStrategyFactory is a utility class and cannot be instantiated.");
+    }
+
     /**
-     * Creates a constant movement strategy.
+     * Creates a default movement strategy when none is specified.
      * 
-     * @param speed The speed of the movement.
-     * @return A new ConstantMovementStrategy instance.
+     * @return A new ConstantMovementStrategy with default speed.
      */
-    public static IMovementStrategy createConstantMovement(float speed, boolean lenientMode) {
-        try {
-            return new ConstantMovementStrategy(speed, lenientMode);
-        } catch (MovementException e) {
-            LOGGER.fatal("Error creating ConstantMovementStrategy: " + e.getMessage(), e);
-            throw e;
-        }
+    public static IMovementStrategy createDefaultMovement() {
+        return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
     }
 
     /**
@@ -65,20 +65,16 @@ public class MovementStrategyFactory {
     }
 
     /**
-     * Creates a zig-zag movement strategy.
+     * Creates a constant movement strategy.
      * 
-     * @param speed       The speed of the movement.
-     * @param amplitude   The amplitude of the zigzag pattern.
-     * @param frequency   The frequency of the zigzag pattern.
-     * @param lenientMode Whether to enable lenient mode.
-     * @return A new ZigZagMovementStrategy instance.
+     * @param speed The speed of the movement.
+     * @return A new ConstantMovementStrategy instance.
      */
-    public static IMovementStrategy createZigZagMovement(float speed, float amplitude, float frequency,
-            boolean lenientMode) {
+    public static IMovementStrategy createConstantMovement(float speed, boolean lenientMode) {
         try {
-            return new ZigZagMovemenStrategy(speed, amplitude, frequency, lenientMode);
+            return new ConstantMovementStrategy(speed, lenientMode);
         } catch (MovementException e) {
-            LOGGER.fatal("Error creating ZigZagMovementStrategy: " + e.getMessage(), e);
+            LOGGER.fatal("Error creating ConstantMovementStrategy: " + e.getMessage(), e);
             throw e;
         }
     }
@@ -101,6 +97,67 @@ public class MovementStrategyFactory {
         } catch (MovementException e) {
             LOGGER.fatal("Error creating FollowMovementStrategy: " + e.getMessage(), e);
             throw e;
+        }
+    }
+
+    /**
+     * Creates an InterceptorMovementStrategy.
+     */
+    public static IMovementStrategy createInterceptorMovement(IMovable movable, float speed, boolean lenientMode) {
+        try {
+            return new InterceptorMovementStrategy(movable, speed, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create InterceptorMovementStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create InterceptorMovementStrategy", e);
+        }
+    }
+
+    /**
+     * Creates an ObstacleAvoidanceStrategy.
+     */
+    public static IMovementStrategy createObstacleAvoidanceStrategy(IMovable movable, float speed,
+            boolean lenientMode) {
+        try {
+            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
+            return strategy;
+        } catch (Exception e) {
+            LOGGER.error("Failed to create ObstacleAvoidanceStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create ObstacleAvoidanceStrategy", e);
+        }
+    }
+
+    /**
+     * Creates an ObstacleAvoidanceStrategy with a list of obstacles to avoid.
+     * 
+     * @param speed       The movement speed
+     * @param obstacles   List of obstacle entities to avoid
+     * @param lenientMode Whether to use lenient mode for error handling
+     * @return A new ObstacleAvoidanceStrategy instance
+     */
+    public static IMovementStrategy createObstacleAvoidanceStrategy(float speed, List<Entity> obstacles,
+            boolean lenientMode) {
+        try {
+            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
+            if (obstacles != null && !obstacles.isEmpty()) {
+                strategy.setObstacles(obstacles);
+            }
+            return strategy;
+        } catch (Exception e) {
+            LOGGER.error("Failed to create ObstacleAvoidanceStrategy with obstacles: " + e.getMessage());
+            throw new MovementException("Failed to create ObstacleAvoidanceStrategy with obstacles", e);
+        }
+    }
+
+    /**
+     * Creates an OrbitalMovementStrategy.
+     */
+    public static IMovementStrategy createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
+            float eccentricity, boolean lenientMode) {
+        try {
+            return new OrbitalMovementStrategy(target, orbitRadius, rotationSpeed, eccentricity, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create OrbitalMovementStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create OrbitalMovementStrategy", e);
         }
     }
 
@@ -129,24 +186,16 @@ public class MovementStrategyFactory {
     }
 
     /**
-     * Creates a default movement strategy when none is specified.
-     * 
-     * @return A new ConstantMovementStrategy with default speed.
+     * Creates a SpiralApproachStrategy.
      */
-    public static IMovementStrategy createDefaultMovement() {
-        return createConstantMovement(GameConstantsFactory.getConstants().DEFAULT_SPEED(), false);
-    }
-
-    /**
-     * Creates an OrbitalMovementStrategy.
-     */
-    public static IMovementStrategy createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
-            float eccentricity, boolean lenientMode) {
+    public static IMovementStrategy createSpiralApproachMovement(IPositionable target, float speed,
+            float spiralTightness,
+            float approachSpeed, boolean lenientMode) {
         try {
-            return new OrbitalMovementStrategy(target, orbitRadius, rotationSpeed, eccentricity, lenientMode);
+            return new SpiralApproachStrategy(target, speed, spiralTightness, approachSpeed, lenientMode);
         } catch (Exception e) {
-            LOGGER.error("Failed to create OrbitalMovementStrategy: " + e.getMessage());
-            throw new MovementException("Failed to create OrbitalMovementStrategy", e);
+            LOGGER.error("Failed to create SpiralApproachStrategy: " + e.getMessage());
+            throw new MovementException("Failed to create SpiralApproachStrategy", e);
         }
     }
 
@@ -165,28 +214,21 @@ public class MovementStrategyFactory {
     }
 
     /**
-     * Creates an InterceptorMovementStrategy.
+     * Creates a zig-zag movement strategy.
+     * 
+     * @param speed       The speed of the movement.
+     * @param amplitude   The amplitude of the zigzag pattern.
+     * @param frequency   The frequency of the zigzag pattern.
+     * @param lenientMode Whether to enable lenient mode.
+     * @return A new ZigZagMovementStrategy instance.
      */
-    public static IMovementStrategy createInterceptorMovement(IMovable movable, float speed, boolean lenientMode) {
+    public static IMovementStrategy createZigZagMovement(float speed, float amplitude, float frequency,
+            boolean lenientMode) {
         try {
-            return new InterceptorMovementStrategy(movable, speed, lenientMode);
-        } catch (Exception e) {
-            LOGGER.error("Failed to create InterceptorMovementStrategy: " + e.getMessage());
-            throw new MovementException("Failed to create InterceptorMovementStrategy", e);
-        }
-    }
-
-    /**
-     * Creates a SpiralApproachStrategy.
-     */
-    public static IMovementStrategy createSpiralApproachMovement(IPositionable target, float speed,
-            float spiralTightness,
-            float approachSpeed, boolean lenientMode) {
-        try {
-            return new SpiralApproachStrategy(target, speed, spiralTightness, approachSpeed, lenientMode);
-        } catch (Exception e) {
-            LOGGER.error("Failed to create SpiralApproachStrategy: " + e.getMessage());
-            throw new MovementException("Failed to create SpiralApproachStrategy", e);
+            return new ZigZagMovemenStrategy(speed, amplitude, frequency, lenientMode);
+        } catch (MovementException e) {
+            LOGGER.fatal("Error creating ZigZagMovementStrategy: " + e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -282,47 +324,5 @@ public class MovementStrategyFactory {
             float speed,
             boolean lenientMode) {
         return createInterceptorWithObstacleAvoidance(target, obstacles, speed, null, lenientMode);
-    }
-
-    /**
-     * Creates an ObstacleAvoidanceStrategy.
-     */
-    public static IMovementStrategy createObstacleAvoidanceStrategy(IMovable movable, float speed,
-            boolean lenientMode) {
-        try {
-            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
-            return strategy;
-        } catch (Exception e) {
-            LOGGER.error("Failed to create ObstacleAvoidanceStrategy: " + e.getMessage());
-            throw new MovementException("Failed to create ObstacleAvoidanceStrategy", e);
-        }
-    }
-
-    /**
-     * Creates an ObstacleAvoidanceStrategy with a list of obstacles to avoid.
-     * 
-     * @param speed       The movement speed
-     * @param obstacles   List of obstacle entities to avoid
-     * @param lenientMode Whether to use lenient mode for error handling
-     * @return A new ObstacleAvoidanceStrategy instance
-     */
-    public static IMovementStrategy createObstacleAvoidanceStrategy(float speed, List<Entity> obstacles,
-            boolean lenientMode) {
-        try {
-            ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
-            if (obstacles != null && !obstacles.isEmpty()) {
-                strategy.setObstacles(obstacles);
-            }
-            return strategy;
-        } catch (Exception e) {
-            LOGGER.error("Failed to create ObstacleAvoidanceStrategy with obstacles: " + e.getMessage());
-            throw new MovementException("Failed to create ObstacleAvoidanceStrategy with obstacles", e);
-        }
-    }
-
-    // Private constructor to prevent instantiation
-    private MovementStrategyFactory() {
-        throw new UnsupportedOperationException(
-                "MovementStrategyFactory is a utility class and cannot be instantiated.");
     }
 }

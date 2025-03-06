@@ -32,51 +32,8 @@ public class Boat extends CollidableEntity implements IRenderable {
 		this.texturePath = texturePath;
 	}
 
-	private float entityX() {
-		return super.getEntity().getX();
-	}
-
-	private float entityY() {
-		return super.getEntity().getY();
-	}
-
-	private float entityWidth() {
-		return super.getEntity().getWidth();
-	}
-
-	private float entityHeight() {
-		return super.getEntity().getHeight();
-	}
-
-	@Override
-	public Entity getEntity() {
-		return super.getEntity();
-	}
-
-	@Override
-	public Body getBody() {
-		return super.getBody();
-	}
-
-	@Override
-	public boolean isActive() {
-		return super.getEntity().isActive();
-	}
-
-	@Override
-	public String getTexturePath() {
-		return texturePath;
-	}
-
-	@Override
-	public void render(SpriteBatch batch) {
-		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
-			// Render the entity using offset for BOX2D body
-			float renderX = entityX() - entityWidth() / 2;
-			float renderY = entityY() - entityHeight() / 2;
-			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
-			batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
-		}
+	public PlayerMovementManager getMovementManager() {
+		return this.movementManager;
 	}
 
 	/**
@@ -101,13 +58,71 @@ public class Boat extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public boolean isInCollision() {
-		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-			collisionActive = false;
-			// Important: Clear any lingering velocity when exiting collision state
-			getBody().setLinearVelocity(0, 0);
+	public boolean isActive() {
+		return super.getEntity().isActive();
+	}
+
+	@Override
+	public Entity getEntity() {
+		return super.getEntity();
+	}
+
+	@Override
+	public Body getBody() {
+		return super.getBody();
+	}
+
+	@Override
+	public final Body createBody(World world, float x, float y, float width, float height) {
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.type = BodyDef.BodyType.DynamicBody;
+		float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+		float centerX = (x + width / 2) / pixelsToMeters;
+		float centerY = (y + height / 2) / pixelsToMeters;
+		bodyDef.position.set(centerX, centerY);
+		bodyDef.fixedRotation = true;
+		bodyDef.linearDamping = 0.5f;
+		bodyDef.bullet = true;
+		bodyDef.allowSleep = false;
+
+		Body newBody = world.createBody(bodyDef);
+		PolygonShape shape = new PolygonShape();
+		shape.setAsBox(
+				(width / 2) / pixelsToMeters,
+				(height / 2) / pixelsToMeters);
+
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = shape;
+		fixtureDef.density = 10.0f;
+		fixtureDef.friction = 0.1f;
+		fixtureDef.restitution = 0.0f;
+
+		Filter filter = new Filter();
+		filter.categoryBits = 0x0001;
+		filter.maskBits = -1;
+		fixtureDef.filter.categoryBits = filter.categoryBits;
+		fixtureDef.filter.maskBits = filter.maskBits;
+
+		newBody.createFixture(fixtureDef);
+		shape.dispose();
+		newBody.setUserData(this);
+		return newBody;
+	}
+
+	@Override
+	public String getTexturePath() {
+		return texturePath;
+	}
+
+	@Override
+	public void render(SpriteBatch batch) {
+		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+			// Render the entity using offset for BOX2D body
+			float renderX = entityX() - entityWidth() / 2;
+			float renderY = entityY() - entityHeight() / 2;
+			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
+			batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
 		}
-		return collisionActive;
 	}
 
 	@Override
@@ -154,43 +169,28 @@ public class Boat extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public final Body createBody(World world, float x, float y, float width, float height) {
-		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-		float centerX = (x + width / 2) / pixelsToMeters;
-		float centerY = (y + height / 2) / pixelsToMeters;
-		bodyDef.position.set(centerX, centerY);
-		bodyDef.fixedRotation = true;
-		bodyDef.linearDamping = 0.5f;
-		bodyDef.bullet = true;
-		bodyDef.allowSleep = false;
-
-		Body newBody = world.createBody(bodyDef);
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(
-				(width / 2) / pixelsToMeters,
-				(height / 2) / pixelsToMeters);
-
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = shape;
-		fixtureDef.density = 10.0f;
-		fixtureDef.friction = 0.1f;
-		fixtureDef.restitution = 0.0f;
-
-		Filter filter = new Filter();
-		filter.categoryBits = 0x0001;
-		filter.maskBits = -1;
-		fixtureDef.filter.categoryBits = filter.categoryBits;
-		fixtureDef.filter.maskBits = filter.maskBits;
-
-		newBody.createFixture(fixtureDef);
-		shape.dispose();
-		newBody.setUserData(this);
-		return newBody;
+	public boolean isInCollision() {
+		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+			collisionActive = false;
+			// Important: Clear any lingering velocity when exiting collision state
+			getBody().setLinearVelocity(0, 0);
+		}
+		return collisionActive;
 	}
 
-	public PlayerMovementManager getMovementManager() {
-		return this.movementManager;
+	private float entityX() {
+		return super.getEntity().getX();
+	}
+
+	private float entityY() {
+		return super.getEntity().getY();
+	}
+
+	private float entityWidth() {
+		return super.getEntity().getWidth();
+	}
+
+	private float entityHeight() {
+		return super.getEntity().getHeight();
 	}
 }

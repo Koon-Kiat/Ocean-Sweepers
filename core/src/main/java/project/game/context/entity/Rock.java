@@ -30,20 +30,14 @@ public class Rock extends CollidableEntity implements IRenderable {
 		this.texturePath = texturePath;
 	}
 
-	private float entityX() {
-		return super.getEntity().getX();
+	public void setCollisionActive(long durationMillis) {
+		collisionActive = true;
+		collisionEndTime = System.currentTimeMillis() + durationMillis;
 	}
 
-	private float entityY() {
-		return super.getEntity().getY();
-	}
-
-	private float entityWidth() {
-		return super.getEntity().getWidth();
-	}
-
-	private float entityHeight() {
-		return super.getEntity().getHeight();
+	@Override
+	public boolean isActive() {
+		return super.getEntity().isActive();
 	}
 
 	@Override
@@ -57,8 +51,37 @@ public class Rock extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public boolean isActive() {
-		return super.getEntity().isActive();
+	public final Body createBody(World world, float x, float y, float width, float height) {
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.type = BodyDef.BodyType.StaticBody;
+		float centerX = (x + width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+		float centerY = (y + height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+		bodyDef.position.set(centerX, centerY);
+		bodyDef.fixedRotation = true;
+		bodyDef.allowSleep = false;
+
+		Body newBody = world.createBody(bodyDef);
+
+		CircleShape shape = new CircleShape();
+		float radius = Math.min(width, height) / 1.8f / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+		shape.setRadius(radius);
+
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = shape;
+		fixtureDef.friction = 0.4f;
+		fixtureDef.restitution = 0.0f;
+
+		// Set up collision filtering
+		Filter filter = new Filter();
+		filter.categoryBits = 0x0002;
+		filter.maskBits = -1;
+		fixtureDef.filter.categoryBits = filter.categoryBits;
+		fixtureDef.filter.maskBits = filter.maskBits;
+
+		newBody.createFixture(fixtureDef);
+		shape.dispose();
+		newBody.setUserData(this);
+		return newBody;
 	}
 
 	@Override
@@ -76,19 +99,6 @@ public class Rock extends CollidableEntity implements IRenderable {
 			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
 			batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
 		}
-	}
-
-	public void setCollisionActive(long durationMillis) {
-		collisionActive = true;
-		collisionEndTime = System.currentTimeMillis() + durationMillis;
-	}
-
-	@Override
-	public boolean isInCollision() {
-		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-			collisionActive = false;
-		}
-		return collisionActive;
 	}
 
 	@Override
@@ -146,36 +156,26 @@ public class Rock extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public final Body createBody(World world, float x, float y, float width, float height) {
-		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyDef.BodyType.StaticBody;
-		float centerX = (x + width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-		float centerY = (y + height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-		bodyDef.position.set(centerX, centerY);
-		bodyDef.fixedRotation = true;
-		bodyDef.allowSleep = false;
+	public boolean isInCollision() {
+		if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+			collisionActive = false;
+		}
+		return collisionActive;
+	}
 
-		Body newBody = world.createBody(bodyDef);
+	private float entityX() {
+		return super.getEntity().getX();
+	}
 
-		CircleShape shape = new CircleShape();
-		float radius = Math.min(width, height) / 1.8f / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-		shape.setRadius(radius);
+	private float entityY() {
+		return super.getEntity().getY();
+	}
 
-		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = shape;
-		fixtureDef.friction = 0.4f;
-		fixtureDef.restitution = 0.0f;
+	private float entityWidth() {
+		return super.getEntity().getWidth();
+	}
 
-		// Set up collision filtering
-		Filter filter = new Filter();
-		filter.categoryBits = 0x0002;
-		filter.maskBits = -1;
-		fixtureDef.filter.categoryBits = filter.categoryBits;
-		fixtureDef.filter.maskBits = filter.maskBits;
-
-		newBody.createFixture(fixtureDef);
-		shape.dispose();
-		newBody.setUserData(this);
-		return newBody;
+	private float entityHeight() {
+		return super.getEntity().getHeight();
 	}
 }

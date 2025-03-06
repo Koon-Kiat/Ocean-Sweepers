@@ -24,9 +24,9 @@ public class RandomisedMovementStrategy implements IMovementStrategy {
     private final List<IMovementStrategy> strategyPool;
     private final float minDuration;
     private final float maxDuration;
+    private final boolean lenientMode;
     private IMovementStrategy currentStrategy;
     private float remainingTime;
-    private final boolean lenientMode;
 
     /**
      * Constructs a RandomisedMovementStrategy with the specified parameters.

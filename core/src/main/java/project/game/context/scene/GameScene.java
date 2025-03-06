@@ -54,7 +54,8 @@ import project.game.engine.scene.SceneManager;
 
 @SuppressWarnings("unused")
 public class GameScene extends Scene implements IEntityRemovalListener {
-    
+
+    public static List<Entity> existingEntities;
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
@@ -88,10 +89,112 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private AudioUI audioUI;
     private IGameConstants constants;
     List<IMovementStrategy> strategyPool = new ArrayList<>();
-    public static List<Entity> existingEntities;
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
+    }
+
+    /**
+     * Initializes the in-game popup menu for options and key rebinding.
+     */
+    public void initPopUpMenu() {
+        options = new Options(sceneManager, this, inputManager);
+        options.setMainMenuButtonVisibility(true);
+        options.getPopupMenu().setTouchable(Touchable.enabled);
+
+        popupMenu = options.getPopupMenu();
+        inputMultiplexer = new InputMultiplexer();
+
+        // Add popup menu to the stage
+        if (popupMenu != null) {
+            float centerX = sceneUIManager.getStage().getWidth() / 2f - popupMenu.getWidth() / 2f;
+            float centerY = sceneUIManager.getStage().getHeight() / 2f - popupMenu.getHeight() / 2f;
+            popupMenu.setPosition(centerX, centerY);
+        } else {
+            Gdx.app.log("GameScene", "popupMenu is null");
+        }
+
+        sceneUIManager.getStage().addActor(options.getPopupMenu());
+        sceneUIManager.getStage().addActor(options.getRebindMenu());
+    }
+
+    /**
+     * Closes the popup menu and resumes game play.
+     */
+    public void closePopupMenu() {
+        isMenuOpen = false;
+        isPaused = false;
+        options.getPopupMenu().setVisible(false);
+        inputMultiplexer.removeProcessor(sceneUIManager.getStage());
+        inputMultiplexer.addProcessor(inputManager);
+        LOGGER.debug("Popup menu closed");
+    }
+
+    @Override
+    public void render(float deltaTime) {
+        input();
+
+        try {
+            collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(), constants.PIXELS_TO_METERS());
+        } catch (Exception e) {
+            LOGGER.error("Exception during game update: {0}", e.getMessage());
+        }
+
+        // Draw entities
+        batch.begin();
+        entityManager.draw(batch);
+        batch.end();
+
+        // Draw stage
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
+
+        // Render debug matrix
+        debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
+        debugRenderer.render(world, debugMatrix);
+
+        float timeStep = 1 / 300f;
+        int velocityIterations = 8;
+        int positionIterations = 3;
+        world.step(timeStep, velocityIterations, positionIterations);
+
+        // Process collisions
+        collisionManager.processCollisions();
+        collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
+
+        // Play sound effect on collision
+        if (collisionManager.collision() && audioManager != null) {
+            audioManager.playSoundEffect("drophit");
+        }
+    }
+
+    @Override
+    public void show() {
+        if (inputMultiplexer == null) {
+            inputMultiplexer = new InputMultiplexer();
+        } else {
+            inputMultiplexer.clear();
+        }
+        inputMultiplexer.addProcessor(sceneUIManager.getStage());
+        inputMultiplexer.addProcessor(inputManager);
+        Gdx.input.setInputProcessor(inputMultiplexer);
+        Gdx.input.setCursorPosition(0, 0);
+
+        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
+        audioManager.playMusic("BackgroundMusic");
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+        boatImage.dispose();
+        trashImage.dispose();
+        rockImage.dispose();
+        debugRenderer.dispose();
+        if (audioManager != null) {
+            audioManager.dispose();
+        }
+        LOGGER.info("GameScene disposed");
     }
 
     @Override
@@ -147,13 +250,18 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         entityManager = new EntityManager();
 
         Entity boatEntity = new Entity(
-                constants.BUCKET_START_X(),
-                constants.BUCKET_START_Y(),
-                constants.BUCKET_WIDTH(),
-                constants.BUCKET_HEIGHT(),
+                constants.PLAYER_START_X(),
+                constants.PLAYER_START_Y(),
+                constants.PLAYER_WIDTH(),
+                constants.PLAYER_HEIGHT(),
                 true);
 
-        Entity monsterEntity = new Entity(100, 100, 70f, 70f, true);
+        Entity monsterEntity = new Entity(
+                constants.MONSTER_START_X(),
+                constants.MONSTER_START_Y(),
+                constants.MONSTER_WIDTH(),
+                constants.MONSTER_HEIGHT(),
+                true);
 
         playerMovementManager = new PlayerMovementBuilder()
                 .withEntity(boatEntity)
@@ -233,6 +341,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Add entities to the collision manager
         collisionManager.addEntity(boat, playerMovementManager);
         collisionManager.addEntity(monster, npcMovementManager);
+
         for (Rock rock : rocks) {
             collisionManager.addEntity(rock, null);
         }
@@ -265,102 +374,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     }
 
     @Override
-    public void show() {
-        if (inputMultiplexer == null) {
-            inputMultiplexer = new InputMultiplexer();
-        } else {
-            inputMultiplexer.clear();
-        }
-        inputMultiplexer.addProcessor(sceneUIManager.getStage());
-        inputMultiplexer.addProcessor(inputManager);
-        Gdx.input.setInputProcessor(inputMultiplexer);
-        Gdx.input.setCursorPosition(0, 0);
-
-        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
-        audioManager.playMusic("BackgroundMusic");
-    }
-
-    @Override
-    public void render(float deltaTime) {
-        input();
-
-        try {
-            collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(), constants.PIXELS_TO_METERS());
-        } catch (Exception e) {
-            LOGGER.error("Exception during game update: {0}", e.getMessage());
-        }
-
-        // Draw entities
-        batch.begin();
-        entityManager.draw(batch);
-        batch.end();
-
-        // Draw stage
-        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
-        sceneUIManager.getStage().draw();
-
-        // Render debug matrix
-        debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
-        debugRenderer.render(world, debugMatrix);
-
-        float timeStep = 1 / 300f;
-        int velocityIterations = 8;
-        int positionIterations = 3;
-        world.step(timeStep, velocityIterations, positionIterations);
-
-        // Process collisions
-        collisionManager.processCollisions();
-        collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
-
-        // Play sound effect on collision
-        if (collisionManager.collision() && audioManager != null) {
-            audioManager.playSoundEffect("drophit");
-        }
-    }
-
-    @Override
-    public void dispose() {
-        batch.dispose();
-        boatImage.dispose();
-        trashImage.dispose();
-        rockImage.dispose();
-        debugRenderer.dispose();
-        if (audioManager != null) {
-            audioManager.dispose();
-        }
-        LOGGER.info("GameScene disposed");
-    }
-
-    @Override
     public void onEntityRemove(Entity entity) {
         existingEntities.remove(entity);
         if (entity instanceof IRenderable) {
             entityManager.removeRenderableEntity((IRenderable) entity);
         }
-    }
-
-    /**
-     * Initializes the in-game popup menu for options and key rebinding.
-     */
-    public void initPopUpMenu() {
-        options = new Options(sceneManager, this, inputManager);
-        options.setMainMenuButtonVisibility(true);
-        options.getPopupMenu().setTouchable(Touchable.enabled);
-
-        popupMenu = options.getPopupMenu();
-        inputMultiplexer = new InputMultiplexer();
-
-        // Add popup menu to the stage
-        if (popupMenu != null) {
-            float centerX = sceneUIManager.getStage().getWidth() / 2f - popupMenu.getWidth() / 2f;
-            float centerY = sceneUIManager.getStage().getHeight() / 2f - popupMenu.getHeight() / 2f;
-            popupMenu.setPosition(centerX, centerY);
-        } else {
-            Gdx.app.log("GameScene", "popupMenu is null");
-        }
-
-        sceneUIManager.getStage().addActor(options.getPopupMenu());
-        sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
     private void handleAudioInput() {
@@ -492,17 +510,4 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             }
         }
     }
-
-    /**
-     * Closes the popup menu and resumes game play.
-     */
-    public void closePopupMenu() {
-        isMenuOpen = false;
-        isPaused = false;
-        options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(sceneUIManager.getStage());
-        inputMultiplexer.addProcessor(inputManager);
-        LOGGER.debug("Popup menu closed");
-    }
-
 }

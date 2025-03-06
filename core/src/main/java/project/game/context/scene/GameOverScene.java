@@ -15,12 +15,46 @@ import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
 
 public class GameOverScene extends Scene {
-    
+
     private SpriteBatch batch;
     private BitmapFont font;
 
     public GameOverScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
+    }
+
+    /**
+     * Renders the Game Over scene by clearing the screen, drawing the "Game Over"
+     * text, and updating the stage.
+     */
+    @Override
+    public void render(float delta) {
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        super.render(delta);
+        Gdx.input.setInputProcessor(sceneUIManager.getStage());
+
+        batch.begin();
+        font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
+                false);
+        batch.end();
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
+    }
+
+    @Override
+    public void dispose() {
+        sceneUIManager.getStage().dispose();
+        batch.dispose();
+        font.dispose();
+
+    }
+
+    /**
+     * Updates the viewport when the window is resized.
+     */
+    @Override
+    public void resize(int width, int height) {
+        sceneUIManager.getStage().getViewport().update(width, height, true);
     }
 
     /**
@@ -62,39 +96,5 @@ public class GameOverScene extends Scene {
         sceneUIManager.getStage().addActor(retryButton);
         sceneUIManager.getStage().addActor(exitButton);
 
-    }
-
-    /**
-     * Renders the Game Over scene by clearing the screen, drawing the "Game Over"
-     * text, and updating the stage.
-     */
-    @Override
-    public void render(float delta) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        super.render(delta);
-        Gdx.input.setInputProcessor(sceneUIManager.getStage());
-
-        batch.begin();
-        font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
-                false);
-        batch.end();
-        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
-        sceneUIManager.getStage().draw();
-    }
-
-    /**
-     * Updates the viewport when the window is resized.
-     */
-    @Override
-    public void resize(int width, int height) {
-        sceneUIManager.getStage().getViewport().update(width, height, true);
-    }
-
-    @Override
-    public void dispose() {
-        sceneUIManager.getStage().dispose();
-        batch.dispose();
-        font.dispose();
-        
     }
 }

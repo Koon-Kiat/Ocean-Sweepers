@@ -20,7 +20,7 @@ import project.game.engine.api.movement.IMovementStrategy;
  * multiple strategies rather than just adding behavior to one strategy.
  */
 public class CompositeMovementStrategy implements IMovementStrategy {
-    
+
     private static final GameLogger LOGGER = new GameLogger(CompositeMovementStrategy.class);
     private final List<IMovementStrategy> strategies = new ArrayList<>();
     private final float[] weights;
@@ -37,6 +37,40 @@ public class CompositeMovementStrategy implements IMovementStrategy {
         this.strategies.add(baseStrategy);
         this.weights = new float[1]; // Just for the base strategy
         this.weights[0] = 1.0f; // Default weight
+    }
+
+    /**
+     * Get all the strategies in this composition
+     */
+    public List<IMovementStrategy> getAllStrategies() {
+        return new ArrayList<>(strategies);
+    }
+
+    /**
+     * Get the base strategy (first strategy in the list)
+     */
+    public IMovementStrategy getBaseStrategy() {
+        return strategies.isEmpty() ? null : strategies.get(0);
+    }
+
+    /**
+     * Get the weight for a given strategy index
+     */
+    public float getWeight(int index) {
+        if (index >= 0 && index < weights.length) {
+            return weights[index];
+        }
+        return 0;
+    }
+
+    /**
+     * Set the weight for a given strategy index
+     */
+    public void setWeight(int index, float weight) {
+        if (index >= 0 && index < weights.length) {
+            weights[index] = weight;
+            normalizeWeights(weights);
+        }
     }
 
     /**
@@ -101,27 +135,6 @@ public class CompositeMovementStrategy implements IMovementStrategy {
         return this;
     }
 
-    /**
-     * Normalize weights so they sum to 1.0
-     */
-    private void normalizeWeights(float[] weights) {
-        float sum = 0;
-        for (float weight : weights) {
-            sum += Math.abs(weight); // Use absolute values for weights
-        }
-
-        if (sum > 0.0001f) {
-            for (int i = 0; i < weights.length; i++) {
-                weights[i] = Math.abs(weights[i]) / sum;
-            }
-        } else {
-            // If all weights are zero, use equal weights
-            for (int i = 0; i < weights.length; i++) {
-                weights[i] = 1.0f / weights.length;
-            }
-        }
-    }
-
     @Override
     public void move(IMovable movable, float deltaTime) {
         try {
@@ -159,6 +172,27 @@ public class CompositeMovementStrategy implements IMovementStrategy {
     }
 
     /**
+     * Normalize weights so they sum to 1.0
+     */
+    private void normalizeWeights(float[] weights) {
+        float sum = 0;
+        for (float weight : weights) {
+            sum += Math.abs(weight); // Use absolute values for weights
+        }
+
+        if (sum > 0.0001f) {
+            for (int i = 0; i < weights.length; i++) {
+                weights[i] = Math.abs(weights[i]) / sum;
+            }
+        } else {
+            // If all weights are zero, use equal weights
+            for (int i = 0; i < weights.length; i++) {
+                weights[i] = 1.0f / weights.length;
+            }
+        }
+    }
+
+    /**
      * Apply a strategy with the given weight and accumulate its effect
      */
     private void applyStrategyWithWeight(IMovementStrategy strategy, TempMovableState tempState,
@@ -176,40 +210,6 @@ public class CompositeMovementStrategy implements IMovementStrategy {
         // Accumulate weighted velocity
         Vector2 strategyVelocity = tempState.getVelocity();
         resultVelocity.add(strategyVelocity.x * weight, strategyVelocity.y * weight);
-    }
-
-    /**
-     * Get all the strategies in this composition
-     */
-    public List<IMovementStrategy> getAllStrategies() {
-        return new ArrayList<>(strategies);
-    }
-
-    /**
-     * Get the base strategy (first strategy in the list)
-     */
-    public IMovementStrategy getBaseStrategy() {
-        return strategies.isEmpty() ? null : strategies.get(0);
-    }
-
-    /**
-     * Get the weight for a given strategy index
-     */
-    public float getWeight(int index) {
-        if (index >= 0 && index < weights.length) {
-            return weights[index];
-        }
-        return 0;
-    }
-
-    /**
-     * Set the weight for a given strategy index
-     */
-    public void setWeight(int index, float weight) {
-        if (index >= 0 && index < weights.length) {
-            weights[index] = weight;
-            normalizeWeights(weights);
-        }
     }
 
     /**
@@ -244,13 +244,13 @@ public class CompositeMovementStrategy implements IMovementStrategy {
         }
 
         @Override
-        public void setX(float x) {
-            this.x = x;
+        public float getY() {
+            return y;
         }
 
         @Override
-        public float getY() {
-            return y;
+        public void setX(float x) {
+            this.x = x;
         }
 
         @Override

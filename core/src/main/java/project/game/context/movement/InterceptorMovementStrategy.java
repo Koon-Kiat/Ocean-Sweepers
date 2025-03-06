@@ -14,13 +14,13 @@ import project.game.engine.api.movement.IMovementStrategy;
 public class InterceptorMovementStrategy implements IMovementStrategy {
 
     private static final GameLogger LOGGER = new GameLogger(InterceptorMovementStrategy.class);
+    private static final float PREDICTION_TIME = 0.5f;
+    private static final float MIN_DISTANCE = 10f;
     private final IMovable target;
     private final float speed;
     private final boolean lenientMode;
     private final Vector2 lastTargetPos;
     private final Vector2 targetVelocity;
-    private static final float PREDICTION_TIME = 0.5f;
-    private static final float MIN_DISTANCE = 10f;
     private final Vector2 persistentDirection = new Vector2(1, 0);
     private float directionChangeSmoothing = 0.2f;
     private boolean isApproaching = false;

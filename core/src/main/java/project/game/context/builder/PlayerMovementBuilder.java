@@ -63,26 +63,6 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
         return this;
     }
 
-    @Override
-    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
-        if (entity == null) {
-            String errorMsg = "Cannot create MovableEntity: Entity is null";
-            LOGGER.fatal(errorMsg);
-            throw new MovementException(errorMsg);
-        }
-
-        return new PlayerMovableEntity(entity, speed);
-    }
-
-    /**
-     * Concrete implementation of MovableEntity for player entities
-     */
-    private static class PlayerMovableEntity extends MovableEntity {
-        public PlayerMovableEntity(Entity entity, float speed) {
-            super(entity, speed);
-        }
-    }
-
     public PlayerMovementManager build() {
         validateBuildRequirements();
         try {
@@ -106,6 +86,17 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
         }
     }
 
+    @Override
+    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
+        if (entity == null) {
+            String errorMsg = "Cannot create MovableEntity: Entity is null";
+            LOGGER.fatal(errorMsg);
+            throw new MovementException(errorMsg);
+        }
+
+        return new PlayerMovableEntity(entity, speed);
+    }
+
     // Private validation method
     @Override
     protected void validateBuildRequirements() {
@@ -122,4 +113,12 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
         }
     }
 
+    /**
+     * Concrete implementation of MovableEntity for player entities
+     */
+    private static class PlayerMovableEntity extends MovableEntity {
+        public PlayerMovableEntity(Entity entity, float speed) {
+            super(entity, speed);
+        }
+    }
 }
