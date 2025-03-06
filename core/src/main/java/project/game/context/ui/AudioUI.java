@@ -1,4 +1,4 @@
-package project.game.audioui;
+package project.game.context.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -9,9 +9,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import project.game.abstractengine.audiomanager.AudioManager;
-import project.game.abstractengine.interfaces.IAudioConfig;
-import project.game.abstractengine.interfaces.IAudioUI;
+import project.game.engine.api.audio.IAudioConfig;
+import project.game.engine.api.audio.IAudioUI;
+import project.game.engine.audio.AudioManager;
 
 public class AudioUI implements IAudioUI {
     private final AudioManager audioManager;
@@ -37,6 +37,21 @@ public class AudioUI implements IAudioUI {
         createSoundToggle();
 
         stage.addActor(settingsWindow);
+        settingsWindow.setVisible(false);
+    }
+
+    public void restoreUIInteractivity() {
+        musicSlider.setValue(config.getMusicVolume());
+        soundToggle.setChecked(config.isSoundEnabled());
+    }
+
+    @Override
+    public void showSettings() {
+        settingsWindow.setVisible(true);
+    }
+
+    @Override
+    public void hideSettings() {
         settingsWindow.setVisible(false);
     }
 
@@ -73,17 +88,5 @@ public class AudioUI implements IAudioUI {
         });
 
         settingsWindow.add(soundToggle).padTop(20);
-    }
-    public void restoreUIInteractivity() {
-        musicSlider.setValue(config.getMusicVolume());
-        soundToggle.setChecked(config.isSoundEnabled());
-    }
-
-    public void showSettings() {
-        settingsWindow.setVisible(true);
-    }
-
-    public void hideSettings() {
-        settingsWindow.setVisible(false);
     }
 }

@@ -1,24 +1,24 @@
-package project.game.abstractengine.audiomanager;
+package project.game.engine.audio;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 
-import project.game.abstractengine.interfaces.ISound;
-
+import project.game.common.logging.core.GameLogger;
+import project.game.engine.api.audio.ISound;
 
 public class SoundManager implements ISound {
-    private static volatile SoundManager instance; // Singleton instance
+    private static final GameLogger LOGGER = new GameLogger(SoundManager.class);
+    private static volatile SoundManager instance;
     private final Map<String, Sound> soundEffects = new HashMap<>();
-    private static final Logger LOGGER = Logger.getLogger(SoundManager.class.getName());
     private boolean soundEnabled = true;
 
-    private SoundManager() {}
+    private SoundManager() {
+    }
 
+    @SuppressWarnings("DoubleCheckedLocking")
     public static SoundManager getInstance() {
         if (instance == null) {
             synchronized (SoundManager.class) {
@@ -30,11 +30,11 @@ public class SoundManager implements ISound {
         return instance;
     }
 
-     // Method to load sound effects
+    // Method to load sound effects
     @Override
     public void loadSoundEffects(String[] soundFiles, String[] keys) {
         if (soundFiles.length != keys.length) {
-            LOGGER.log(Level.WARNING, "Mismatch between sound files and keys count.");
+            LOGGER.warn("Mismatch between sound files and keys count.");
             return;
         }
         for (int i = 0; i < soundFiles.length; i++) {
@@ -44,36 +44,38 @@ public class SoundManager implements ISound {
 
     // Individual loader for a single sound effect
     public void loadSoundEffect(String key, String filePath) {
-    if (!Gdx.files.internal(filePath).exists()) {
-        LOGGER.log(Level.WARNING, "Sound file not found at path: " + filePath);
-        return;
+        if (!Gdx.files.internal(filePath).exists()) {
+            LOGGER.warn("Sound file not found at path: {0}", filePath);
+            return;
+        }
+
+        Sound sound = Gdx.audio.newSound(Gdx.files.internal(filePath));
+        soundEffects.put(key, sound);
+        LOGGER.info("Successfully loaded sound effect: " + filePath + " with key: " + key);
+
     }
 
-        Sound sound = Gdx.audio.newSound(Gdx.files.internal(filePath));  // Load sound
-        soundEffects.put(key, sound);  // Store sound in map with the key
-        LOGGER.log(Level.INFO, "Successfully loaded sound effect: " + filePath + " with key: " + key);
-
-    }
-    
     @Override
     public void playSoundEffect(String key) {
         if (soundEnabled && soundEffects.containsKey(key)) {
-            long id = soundEffects.get(key).play();  // Play with volume
+            long id = soundEffects.get(key).play();
             if (id == -1) {
-                LOGGER.log(Level.WARNING, "Failed to play sound for key: " + key);
+                LOGGER.warn("Failed to play sound for key: {0}", key);
             } else {
-                LOGGER.log(Level.INFO, "Playing sound effect for key: " + key);
+                LOGGER.info("Playing sound effect for key: {0}", key);
             }
-        } else if (!soundEnabled){
-            LOGGER.log(Level.INFO, "Sound effects are disabled.");
+        } else if (!soundEnabled) {
+            LOGGER.info("Sound effects are disabled.");
         } else {
-            LOGGER.log(Level.WARNING, "Sound effect not found for key: " + key);
+            LOGGER.warn("Sound effect not found for key: {0}", key);
         }
     }
+
     @Override
     public void stopAllSounds() {
         soundEffects.values().forEach(Sound::stop);
     }
+
     @Override
     public void setSoundEnabled(boolean enabled) {
         this.soundEnabled = enabled;

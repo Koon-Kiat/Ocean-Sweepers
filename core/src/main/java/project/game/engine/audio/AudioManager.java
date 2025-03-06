@@ -1,27 +1,26 @@
 package project.game.engine.audio;
 
-import project.game.abstractengine.interfaces.IAudioConfig;
-import project.game.abstractengine.interfaces.IMusic;
-import project.game.abstractengine.interfaces.ISound;
-import project.game.audioui.AudioUI;
+import project.game.context.ui.AudioUI;
+import project.game.engine.api.audio.IAudioConfig;
+import project.game.engine.api.audio.IMusic;
+import project.game.engine.api.audio.ISound;
 
 public class AudioManager {
-    private static volatile AudioManager instance;  // Singleton instance
+    private static volatile AudioManager instance;
+    private final IMusic musicManager;
+    private final ISound soundManager;
+    private final IAudioConfig audioConfig;
+    private AudioUI audioUI;
 
-    private final IMusic MusicManager;
-    private final ISound SoundManager;
-    private final IAudioConfig AudioConfig;
-    private AudioUI AudioUI;  // Can be null if UI is not needed
-
-    // Private constructor to prevent direct instantiation
     private AudioManager(IMusic musicManager, ISound soundManager, IAudioConfig audioConfig) {
-        this.MusicManager = musicManager;
-        this.SoundManager = soundManager;
-        this.AudioConfig = audioConfig;
-        this.AudioUI = null;  // Initially null
+        this.musicManager = musicManager;
+        this.soundManager = soundManager;
+        this.audioConfig = audioConfig;
+        this.audioUI = null;
     }
 
     // Public method to get the singleton instance of AudioManager with parameters
+    @SuppressWarnings("DoubleCheckedLocking")
     public static AudioManager getInstance(IMusic musicManager, ISound soundManager, IAudioConfig config) {
         if (instance == null) {
             synchronized (AudioManager.class) {
@@ -32,60 +31,53 @@ public class AudioManager {
         }
         return instance;
     }
-    
-    // Setter for AudioUI
+
     public void setAudioUI(AudioUI audioUI) {
-        this.AudioUI = audioUI;
+        this.audioUI = audioUI;
     }
 
     public void loadMusicTracks(String... tracks) {
-        MusicManager.loadMusicTracks(tracks);  // Calls MusicManager's method
+        musicManager.loadMusicTracks(tracks);
     }
 
     public void loadSoundEffects(String[] paths, String[] keys) {
-        SoundManager.loadSoundEffects(paths, keys);  // Calls SoundManager's method
+        soundManager.loadSoundEffects(paths, keys);
     }
 
     public void playMusic(String trackName) {
-        MusicManager.playMusic(trackName);
+        musicManager.playMusic(trackName);
     }
 
     public void stopMusic() {
-        MusicManager.stopMusic();
+        musicManager.stopMusic();
     }
 
     public void setMusicVolume(float volume) {
-        MusicManager.setMusicVolume(volume);
-    public void setmusicVolume(float musicvolume) {
-        this.setmusicVolume = musicvolume;
-        for (Music music : musicTrack.values()) {
-            music.setVolume(setmusicVolume);
-        }
-        LOGGER.info("Updated Music Volume: {0}", musicvolume);
+        musicManager.setMusicVolume(volume);
     }
 
     public void playSoundEffect(String key) {
-        SoundManager.playSoundEffect(key);
+        soundManager.playSoundEffect(key);
     }
 
     public void setSoundEnabled(boolean enabled) {
-        SoundManager.setSoundEnabled(enabled);
+        soundManager.setSoundEnabled(enabled);
     }
 
     public void showVolumeControls() {
-        if (AudioUI != null) {
-            AudioUI.showSettings();
+        if (audioUI != null) {
+            audioUI.showSettings();
         }
     }
 
     public void hideVolumeControls() {
-        if (AudioUI != null) {
-            AudioUI.hideSettings();
+        if (audioUI != null) {
+            audioUI.hideSettings();
         }
     }
 
     public void dispose() {
-        MusicManager.dispose();
-        SoundManager.dispose();
+        musicManager.dispose();
+        soundManager.dispose();
     }
 }

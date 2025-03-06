@@ -1,9 +1,9 @@
-package project.game.abstractengine.audiomanager;
+package project.game.engine.audio;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 
-import project.game.abstractengine.interfaces.IAudioConfig;
+import project.game.engine.api.audio.IAudioConfig;
 
 public class AudioConfig implements IAudioConfig {
     private final Preferences prefs = Gdx.app.getPreferences("AudioSettings");
@@ -27,7 +27,7 @@ public class AudioConfig implements IAudioConfig {
 
     @Override
     public float getMusicVolume() {
-        return prefs.getFloat("musicVolume", 0.5f);
+        return prefs.getFloat("musicVolume", 0.2f);
     }
 
     @Override
@@ -38,6 +38,6 @@ public class AudioConfig implements IAudioConfig {
 
     @Override
     public float getSoundVolume() {
-        return prefs.getFloat("soundVolume", 0.5f);
+        return prefs.getFloat("soundVolume", 0.2f);
     }
 }
