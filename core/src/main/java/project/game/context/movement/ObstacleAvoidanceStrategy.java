@@ -5,10 +5,7 @@ import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.entitysystem.entity.Entity;
 
 /**
@@ -16,11 +13,9 @@ import project.game.engine.entitysystem.entity.Entity;
  * This is designed to be combined with other strategies using the decorator
  * pattern.
  */
-public class ObstacleAvoidanceStrategy implements IMovementStrategy {
+public class ObstacleAvoidanceStrategy extends AbstractMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(ObstacleAvoidanceStrategy.class);
     private final float speed;
-    private final boolean lenientMode;
     private final Vector2 persistentDirection = new Vector2(1, 0);
 
     // Enhanced obstacle avoidance parameters
@@ -46,20 +41,8 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
      * @param lenientMode Whether to use lenient mode for error handling
      */
     public ObstacleAvoidanceStrategy(float speed, boolean lenientMode) {
-        this.lenientMode = lenientMode;
-
-        if (speed <= 0) {
-            String errorMessage = "Speed must be positive. Got: " + speed;
-            if (lenientMode) {
-                LOGGER.warn(errorMessage + " Using default value of 200.");
-                this.speed = 200f;
-            } else {
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.speed = speed;
-        }
+        super(ObstacleAvoidanceStrategy.class, lenientMode);
+        this.speed = validateSpeed(speed, 200f);
     }
 
     /**
@@ -126,7 +109,7 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
             Vector2 currentPos = new Vector2(movable.getX(), movable.getY());
 
             // Get current velocity for direction-aware obstacle detection
-            Vector2 currentVelocity = movable.getVelocity();
+            Vector2 currentVelocity = getSafeVelocity(movable);
             if (currentVelocity.len2() < 0.001f) {
                 currentVelocity.set(movementDir);
             }
@@ -193,18 +176,13 @@ public class ObstacleAvoidanceStrategy implements IMovementStrategy {
             Vector2 moveVec = new Vector2(persistentDirection).scl(currentSpeed * deltaTime);
 
             // Apply movement
-            movable.setX(movable.getX() + moveVec.x);
-            movable.setY(movable.getY() + moveVec.y);
+            applyMovement(movable, moveVec);
 
             // Update velocity for animations
-            movable.setVelocity(moveVec.x / deltaTime, moveVec.y / deltaTime);
+            updateVelocity(movable, moveVec, deltaTime);
 
         } catch (Exception e) {
-            String errorMessage = "Error in ObstacleAvoidanceStrategy: " + e.getMessage();
-            LOGGER.error(errorMessage, e);
-            if (!lenientMode) {
-                throw new MovementException(errorMessage, e);
-            }
+            handleMovementException(e, "Error in ObstacleAvoidanceStrategy: " + e.getMessage());
         }
     }
 

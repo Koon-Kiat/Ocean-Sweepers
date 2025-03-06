@@ -3,50 +3,33 @@ package project.game.context.movement;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
 
 /**
  * Makes an entity approach its target in a spiral pattern.
  * The spiral tightens as the entity gets closer to the target.
  */
-public class SpiralApproachStrategy implements IMovementStrategy {
-    
-    private static final GameLogger LOGGER = new GameLogger(SpiralApproachStrategy.class);
+public class SpiralApproachStrategy extends AbstractMovementStrategy {
+
     private final IPositionable target;
     private final float speed;
     private final float spiralTightness; // Controls how tight the spiral is
     private final float approachSpeed; // Controls how quickly entity moves toward target
-    private final boolean lenientMode;
     private float currentAngle = 0;
 
     public SpiralApproachStrategy(IPositionable target, float speed, float spiralTightness, float approachSpeed,
             boolean lenientMode) {
-        this.lenientMode = lenientMode;
+        super(SpiralApproachStrategy.class, lenientMode);
 
-        if (target == null) {
-            String errorMessage = "Target cannot be null in SpiralApproachBehavior.";
-            LOGGER.error(errorMessage);
-            throw new MovementException(errorMessage);
-        }
+        // Validate target
+        validateTarget(target, "Target");
         this.target = target;
 
-        if (speed <= 0) {
-            String errorMessage = "Speed must be positive. Got: " + speed;
-            if (lenientMode) {
-                LOGGER.warn(errorMessage + " Using default speed of 200.");
-                this.speed = 200f;
-            } else {
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.speed = speed;
-        }
+        // Validate speed
+        this.speed = validateSpeed(speed, 200f);
 
+        // Validate and set spiral parameters
         this.spiralTightness = Math.max(0.1f, spiralTightness);
         this.approachSpeed = Math.max(0.1f, approachSpeed);
     }
@@ -87,11 +70,7 @@ public class SpiralApproachStrategy implements IMovementStrategy {
             movable.setY(newPosition.y);
 
         } catch (Exception e) {
-            String errorMessage = "Error in SpiralApproachBehavior: " + e.getMessage();
-            LOGGER.error(errorMessage, e);
-            if (!lenientMode) {
-                throw new MovementException(errorMessage, e);
-            }
+            handleMovementException(e, "Error in SpiralApproachStrategy: " + e.getMessage());
         }
     }
 }

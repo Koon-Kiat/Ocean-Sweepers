@@ -7,10 +7,7 @@ import com.badlogic.gdx.math.Bezier;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
 
 /**
@@ -19,9 +16,8 @@ import project.game.engine.api.movement.IPositionable;
  * The entity moves towards the target entity along a smooth curved path.
  * The path is recalculated when the target moves significantly.
  */
-public class FollowMovementStrategy implements IMovementStrategy {
+public class FollowMovementStrategy extends AbstractMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(FollowMovementStrategy.class);
     private static final float PATH_RECALC_THRESHOLD = 100f; // Distance the target must move to recalculate path
     private static final float ARRIVAL_THRESHOLD = 10f; // Distance at which to consider "arrived" at target
     private static final int PATH_SEGMENTS = 20; // Number of segments in the smooth path
@@ -30,36 +26,22 @@ public class FollowMovementStrategy implements IMovementStrategy {
     private static final float PATH_PROGRESS_SPEED = 1.0f; // Speed of movement along the path (1.0 = 100% per second)
     private final IPositionable target;
     private final float speed;
-    private final boolean lenientMode;
     private final List<Vector2> pathPoints;
     private final Vector2 lastTargetPosition;
     private float pathProgress = 0f;
 
     /**
-     * Constructs a FollowMovementBehavior with the specified parameters.
-     * Terminates the program if any provided parameter is negative or null.
+     * Constructs a FollowMovementStrategy with the specified parameters.
      */
     public FollowMovementStrategy(IPositionable target, float speed, boolean lenientMode) {
-        this.lenientMode = lenientMode;
-        if (target == null) {
-            String errorMessage = "Target cannot be null in FollowMovementBehavior.";
-            LOGGER.error(errorMessage);
-            throw new MovementException(errorMessage);
-        } else {
-            this.target = target;
-        }
-        if (speed < 0) {
-            if (lenientMode) {
-                LOGGER.warn("Negative speed provided in FollowMovementBehavior: {0}. Using absolute value.", speed);
-                this.speed = Math.abs(speed);
-            } else {
-                String errorMessage = "Negative speed provided in FollowMovementBehavior: " + speed;
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.speed = speed;
-        }
+        super(FollowMovementStrategy.class, lenientMode);
+
+        // Validate target
+        validateTarget(target, "Target");
+        this.target = target;
+
+        // Validate speed
+        this.speed = validateNonNegative(speed, "Speed", 200f);
 
         // Initialize path data
         this.pathPoints = new ArrayList<>();
@@ -85,11 +67,10 @@ public class FollowMovementStrategy implements IMovementStrategy {
                 // Instead of slowing down, maintain speed when close to target
                 // This ensures continuous movement when reaching the target
                 Vector2 direction = new Vector2(targetPosition).sub(currentPosition).nor();
-                movable.setX(movable.getX() + direction.x * speed * deltaTime);
-                movable.setY(movable.getY() + direction.y * speed * deltaTime);
+                Vector2 moveVec = new Vector2(direction).scl(speed * deltaTime);
 
-                // Make sure to always update the velocity for animations
-                movable.setVelocity(direction.x * speed, direction.y * speed);
+                applyMovement(movable, moveVec);
+                updateVelocity(movable, moveVec, deltaTime);
                 return;
             }
 
@@ -104,7 +85,6 @@ public class FollowMovementStrategy implements IMovementStrategy {
             // Follow the path
             if (!pathPoints.isEmpty()) {
                 // Advance along the path based on speed and delta time
-                // Fixed: Increased speed multiplier to ensure entity doesn't stop
                 pathProgress += PATH_PROGRESS_SPEED * deltaTime * (speed / 50f);
 
                 // Clamp progress to [0,1]
@@ -133,27 +113,18 @@ public class FollowMovementStrategy implements IMovementStrategy {
                         direction.nor();
                         // Fixed: Always use full speed rather than slowing down when close
                         float moveSpeed = speed * deltaTime;
-                        movable.setX(movable.getX() + direction.x * moveSpeed);
-                        movable.setY(movable.getY() + direction.y * moveSpeed);
+                        Vector2 moveVec = new Vector2(direction).scl(moveSpeed);
 
-                        // Update entity's velocity direction (for animations)
-                        movable.setVelocity(direction.x * speed, direction.y * speed);
+                        applyMovement(movable, moveVec);
+                        updateVelocity(movable, direction.scl(speed), 1.0f);
                     }
                 }
             } else {
                 // Fallback direct movement if path calculation failed
                 directMovement(movable, targetPosition, deltaTime);
             }
-        } catch (IllegalArgumentException e) {
-            LOGGER.error("Illegal argument in FollowMovementBehavior: " + e.getMessage(), e);
-            if (!lenientMode) {
-                throw new MovementException("Invalid argument in FollowMovementBehavior", e);
-            }
         } catch (Exception e) {
-            LOGGER.error("Unexpected error in FollowMovementBehavior: " + e.getMessage(), e);
-            if (!lenientMode) {
-                throw new MovementException("Error updating position in FollowMovementBehavior", e);
-            }
+            handleMovementException(e, "Error in FollowMovementStrategy: " + e.getMessage());
         }
     }
 
@@ -205,7 +176,7 @@ public class FollowMovementStrategy implements IMovementStrategy {
                 pathPoints.add(point);
             }
         } catch (Exception e) {
-            LOGGER.error("Error calculating path in FollowMovementBehavior: " + e.getMessage(), e);
+            logger.error("Error calculating path in FollowMovementStrategy: " + e.getMessage(), e);
             pathPoints.clear(); // Clear path to fall back to direct movement
         }
     }
@@ -223,13 +194,10 @@ public class FollowMovementStrategy implements IMovementStrategy {
         }
 
         // Normalize and scale by speed and deltaTime
-        direction.nor().scl(speed * deltaTime);
+        Vector2 moveVec = direction.nor().scl(speed * deltaTime);
 
         // Apply movement
-        movable.setX(movable.getX() + direction.x);
-        movable.setY(movable.getY() + direction.y);
-
-        // Update entity's velocity for animations
-        movable.setVelocity(direction.x / deltaTime, direction.y / deltaTime);
+        applyMovement(movable, moveVec);
+        updateVelocity(movable, moveVec, deltaTime);
     }
 }

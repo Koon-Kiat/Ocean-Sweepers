@@ -1,5 +1,5 @@
 package project.game.engine.api.movement;
 
-public interface IMovable extends IPositionable, IPositionMutable, IVelocity {
+public interface IMovable extends IPositionMutable, IVelocity {
 
 }

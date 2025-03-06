@@ -4,9 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
 
 /**
@@ -14,34 +12,30 @@ import project.game.engine.api.movement.IPositionable;
  * The orbit can be circular or elliptical, and the rotation speed is
  * configurable.
  */
-public class OrbitalMovementStrategy implements IMovementStrategy {
+public class OrbitalMovementStrategy extends AbstractMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(OrbitalMovementStrategy.class);
     private final IPositionable target;
     private final float orbitRadius;
     private final float rotationSpeed; // Radians per second
-    private final boolean lenientMode;
     private final float eccentricity; // 0 = circle, >0 = ellipse
     private float currentAngle = 0;
 
     public OrbitalMovementStrategy(IPositionable target, float orbitRadius, float rotationSpeed, float eccentricity,
             boolean lenientMode) {
-        this.lenientMode = lenientMode;
+        super(OrbitalMovementStrategy.class, lenientMode);
 
-        if (target == null) {
-            String errorMessage = "Target cannot be null in OrbitalMovementBehavior.";
-            LOGGER.error(errorMessage);
-            throw new MovementException(errorMessage);
-        }
+        // Validate target
+        validateTarget(target, "Target");
         this.target = target;
 
+        // Validate orbit radius
         if (orbitRadius <= 0) {
             String errorMessage = "Orbit radius must be positive. Got: " + orbitRadius;
             if (lenientMode) {
-                LOGGER.warn(errorMessage + " Using default radius of 100.");
+                logger.warn(errorMessage + " Using default radius of 100.");
                 this.orbitRadius = 100;
             } else {
-                LOGGER.error(errorMessage);
+                logger.error(errorMessage);
                 throw new MovementException(errorMessage);
             }
         } else {
@@ -86,11 +80,7 @@ public class OrbitalMovementStrategy implements IMovementStrategy {
             movable.setVelocity(velocity);
 
         } catch (Exception e) {
-            String errorMessage = "Error in OrbitalMovementBehavior: " + e.getMessage();
-            LOGGER.error(errorMessage, e);
-            if (!lenientMode) {
-                throw new MovementException(errorMessage, e);
-            }
+            handleMovementException(e, "Error in OrbitalMovementStrategy: " + e.getMessage());
         }
     }
 }

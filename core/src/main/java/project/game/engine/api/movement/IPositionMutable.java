@@ -1,6 +1,6 @@
 package project.game.engine.api.movement;
 
-public interface IPositionMutable {
+public interface IPositionMutable extends IPositionable {
 
     void setX(float x);
 

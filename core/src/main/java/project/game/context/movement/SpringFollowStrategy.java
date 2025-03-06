@@ -2,10 +2,7 @@ package project.game.context.movement;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.movement.IPositionable;
 
 /**
@@ -13,52 +10,25 @@ import project.game.engine.api.movement.IPositionable;
  * The follower is connected to the target by an imaginary spring,
  * creating elastic movement with oscillation and damping.
  */
-public class SpringFollowStrategy implements IMovementStrategy {
-    
-    private static final GameLogger LOGGER = new GameLogger(SpringFollowStrategy.class);
+public class SpringFollowStrategy extends AbstractMovementStrategy {
+
     private final IPositionable target;
     private final float springConstant; // Higher = stiffer spring
     private final float damping; // Higher = more damping (less oscillation)
-    private final boolean lenientMode;
     private final Vector2 velocity;
 
     public SpringFollowStrategy(IPositionable target, float springConstant, float damping, boolean lenientMode) {
-        this.lenientMode = lenientMode;
+        super(SpringFollowStrategy.class, lenientMode);
 
-        if (target == null) {
-            String errorMessage = "Target cannot be null in SpringFollowStrategy.";
-            LOGGER.error(errorMessage);
-            throw new MovementException(errorMessage);
-        }
+        // Validate target
+        validateTarget(target, "Target");
         this.target = target;
 
         // Validate spring constant
-        if (springConstant <= 0) {
-            String errorMessage = "Spring constant must be positive. Got: " + springConstant;
-            if (lenientMode) {
-                LOGGER.warn(errorMessage + " Using default value of 5.0.");
-                this.springConstant = 5.0f;
-            } else {
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.springConstant = springConstant;
-        }
+        this.springConstant = validateSpeed(springConstant, 5.0f);
 
         // Validate damping
-        if (damping < 0) {
-            String errorMessage = "Damping must be non-negative. Got: " + damping;
-            if (lenientMode) {
-                LOGGER.warn(errorMessage + " Using default value of 0.5.");
-                this.damping = 0.5f;
-            } else {
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.damping = damping;
-        }
+        this.damping = validateNonNegative(damping, "Damping", 0.5f);
 
         this.velocity = new Vector2(0, 0);
     }
@@ -87,11 +57,7 @@ public class SpringFollowStrategy implements IMovementStrategy {
             movable.setVelocity(velocity);
 
         } catch (Exception e) {
-            String errorMessage = "Error in SpringFollowStrategy: " + e.getMessage();
-            LOGGER.error(errorMessage, e);
-            if (!lenientMode) {
-                throw new MovementException(errorMessage, e);
-            }
+            handleMovementException(e, "Error in SpringFollowStrategy: " + e.getMessage());
         }
     }
 }

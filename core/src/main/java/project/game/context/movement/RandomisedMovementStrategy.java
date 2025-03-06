@@ -6,7 +6,6 @@ import java.util.List;
 import com.badlogic.gdx.math.MathUtils;
 
 import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
@@ -18,13 +17,11 @@ import project.game.engine.api.movement.IMovementStrategy;
  * duration.
  * The strategy pool is provided in the constructor.
  */
-public class RandomisedMovementStrategy implements IMovementStrategy {
+public class RandomisedMovementStrategy extends AbstractMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(RandomisedMovementStrategy.class);
     private final List<IMovementStrategy> strategyPool;
     private final float minDuration;
     private final float maxDuration;
-    private final boolean lenientMode;
     private IMovementStrategy currentStrategy;
     private float remainingTime;
 
@@ -33,51 +30,17 @@ public class RandomisedMovementStrategy implements IMovementStrategy {
      */
     public RandomisedMovementStrategy(List<IMovementStrategy> strategyPool, float minDuration, float maxDuration,
             boolean lenientMode) {
-        this.lenientMode = lenientMode;
-        if (strategyPool == null || strategyPool.isEmpty()) {
-            String errorMessage = "Invalid strategy pool provided for RandomisedMovementStrategy.";
-            LOGGER.error(errorMessage);
-            if (lenientMode) {
-                LOGGER.warn("{0} Using fallback pool with ConstantMovementStrategy.", errorMessage);
-                this.strategyPool = new ArrayList<>();
-                this.strategyPool
-                        .add(new ConstantMovementStrategy(GameConstantsFactory.getConstants().DEFAULT_SPEED(),
-                                lenientMode));
-            } else {
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.strategyPool = strategyPool;
-        }
-        // Validate durations in a single block.
-        if (minDuration <= 0 || maxDuration <= 0) {
-            String errorMessage = "Invalid duration range: minDuration=" + minDuration + ", maxDuration=" + maxDuration;
-            if (lenientMode) {
-                LOGGER.warn("{0} Using fallback values: minDuration=1.0f, maxDuration=2.0f.",
-                        errorMessage);
-                this.minDuration = 1.0f;
-                this.maxDuration = 2.0f;
-            } else {
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else if (minDuration > maxDuration) {
-            if (lenientMode) {
-                LOGGER.warn(
-                        "Invalid duration range: minDuration ({0}) is greater than maxDuration ({1}). Swapping values.",
-                        new Object[] { minDuration, maxDuration });
-                this.minDuration = maxDuration;
-                this.maxDuration = minDuration;
-            } else {
-                String errorMessage = "Invalid duration range: minDuration (" + minDuration
-                        + ") is greater than maxDuration (" + maxDuration + ")";
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.minDuration = minDuration;
-            this.maxDuration = maxDuration;
-        }
+        super(RandomisedMovementStrategy.class, lenientMode);
+
+        // Validate strategy pool
+        this.strategyPool = validateStrategyPool(strategyPool);
+
+        // Validate durations
+        float[] durations = validateRange(minDuration, maxDuration, "minDuration", "maxDuration", 1.0f, 2.0f);
+        this.minDuration = durations[0];
+        this.maxDuration = durations[1];
+
+        // Initialize state
         this.remainingTime = MathUtils.random(this.minDuration, this.maxDuration);
         pickRandomStrategy();
     }
@@ -93,25 +56,33 @@ public class RandomisedMovementStrategy implements IMovementStrategy {
             if (currentStrategy != null) {
                 currentStrategy.move(movable, deltaTime);
             }
-        } catch (IllegalArgumentException e) {
-            LOGGER.error("Invalid argument in RandomisedMovementStrategy", e);
-            if (!lenientMode) {
-                throw new MovementException("Invalid argument in RandomisedMovementStrategy", e);
-            }
-        } catch (NullPointerException e) {
-            LOGGER.error("Null reference in RandomisedMovementStrategy", e);
-            if (!lenientMode) {
-                throw new MovementException("Null reference in RandomisedMovementStrategy", e);
-            }
         } catch (Exception e) {
-            LOGGER.error("Unexpected error in RandomisedMovementStrategy: " + e.getMessage(), e);
-            if (!lenientMode) {
-                throw new MovementException("Unexpected error in RandomisedMovementStrategy", e);
-            }
+            handleMovementException(e, "Error in RandomisedMovementStrategy: " + e.getMessage());
         }
     }
 
     private void pickRandomStrategy() {
         currentStrategy = strategyPool.get(MathUtils.random(strategyPool.size() - 1));
+    }
+
+    /**
+     * Validates the strategy pool and provides a fallback if needed
+     */
+    private List<IMovementStrategy> validateStrategyPool(List<IMovementStrategy> pool) {
+        if (pool == null || pool.isEmpty()) {
+            String errorMessage = "Invalid strategy pool provided for RandomisedMovementStrategy.";
+            logger.error(errorMessage);
+            if (lenientMode) {
+                logger.warn("{0} Using fallback pool with ConstantMovementStrategy.", errorMessage);
+                List<IMovementStrategy> fallbackPool = new ArrayList<>();
+                fallbackPool.add(new ConstantMovementStrategy(
+                        GameConstantsFactory.getConstants().DEFAULT_SPEED(),
+                        lenientMode));
+                return fallbackPool;
+            } else {
+                throw new MovementException(errorMessage);
+            }
+        }
+        return pool;
     }
 }

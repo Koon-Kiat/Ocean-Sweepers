@@ -2,23 +2,18 @@ package project.game.context.movement;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
 
 /**
  * Advanced movement strategy that predicts where a moving target will be and
  * attempts to intercept it. Uses vector math to calculate interception points.
  */
-public class InterceptorMovementStrategy implements IMovementStrategy {
+public class InterceptorMovementStrategy extends AbstractMovementStrategy {
 
-    private static final GameLogger LOGGER = new GameLogger(InterceptorMovementStrategy.class);
     private static final float PREDICTION_TIME = 0.5f;
     private static final float MIN_DISTANCE = 10f;
     private final IMovable target;
     private final float speed;
-    private final boolean lenientMode;
     private final Vector2 lastTargetPos;
     private final Vector2 targetVelocity;
     private final Vector2 persistentDirection = new Vector2(1, 0);
@@ -26,27 +21,14 @@ public class InterceptorMovementStrategy implements IMovementStrategy {
     private boolean isApproaching = false;
 
     public InterceptorMovementStrategy(IMovable target, float speed, boolean lenientMode) {
-        this.lenientMode = lenientMode;
+        super(InterceptorMovementStrategy.class, lenientMode);
 
-        if (target == null) {
-            String errorMessage = "Target cannot be null in InterceptorMovementStrategy.";
-            LOGGER.error(errorMessage);
-            throw new MovementException(errorMessage);
-        }
+        // Validate target
+        validateTarget(target, "Target");
         this.target = target;
 
-        if (speed <= 0) {
-            String errorMessage = "Speed must be positive. Got: " + speed;
-            if (lenientMode) {
-                LOGGER.warn(errorMessage + " Using default value of 200.");
-                this.speed = 200f;
-            } else {
-                LOGGER.error(errorMessage);
-                throw new MovementException(errorMessage);
-            }
-        } else {
-            this.speed = speed;
-        }
+        // Validate speed
+        this.speed = validateSpeed(speed, 200f);
 
         // Correctly initialize with position data, not velocity
         this.lastTargetPos = new Vector2(target.getX(), target.getY());
@@ -88,8 +70,7 @@ public class InterceptorMovementStrategy implements IMovementStrategy {
             // Calculate direction to predicted position
             Vector2 interceptDir = new Vector2(predictedPos).sub(movable.getX(), movable.getY());
 
-            // IMPROVED LOGIC: Detect if target is approaching (moving toward the
-            // interceptor)
+            // Detect if target is approaching (moving toward the interceptor)
             Vector2 normalizedToTarget = new Vector2(toTarget).nor();
             Vector2 normalizedTargetVelocity = new Vector2(targetVelocity);
 
@@ -136,18 +117,13 @@ public class InterceptorMovementStrategy implements IMovementStrategy {
             Vector2 moveVec = new Vector2(persistentDirection).scl(speed * deltaTime);
 
             // Apply movement
-            movable.setX(movable.getX() + moveVec.x);
-            movable.setY(movable.getY() + moveVec.y);
+            applyMovement(movable, moveVec);
 
             // Update velocity for animations
-            movable.setVelocity(moveVec.x / deltaTime, moveVec.y / deltaTime);
+            updateVelocity(movable, moveVec, deltaTime);
 
         } catch (Exception e) {
-            String errorMessage = "Error in InterceptorMovementStrategy: " + e.getMessage();
-            LOGGER.error(errorMessage, e);
-            if (!lenientMode) {
-                throw new MovementException(errorMessage, e);
-            }
+            handleMovementException(e, "Error in InterceptorMovementStrategy: " + e.getMessage());
         }
     }
 }
