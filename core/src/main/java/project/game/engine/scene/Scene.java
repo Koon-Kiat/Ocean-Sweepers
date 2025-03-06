@@ -12,7 +12,7 @@ import project.game.engine.io.SceneIOManager;
  * Abstract class for creating scenes in the game.
  */
 public abstract class Scene implements Screen, IScene {
-    
+
     protected SceneUIManager sceneUIManager;
     protected SceneIOManager inputManager;
     protected SceneManager sceneManager;
@@ -29,6 +29,16 @@ public abstract class Scene implements Screen, IScene {
     }
 
     @Override
+    public void pause() {
+        Gdx.app.log("Scene", "Paused: " + this.getClass().getSimpleName());
+    }
+
+    @Override
+    public void resume() {
+        Gdx.app.log("Scene", "Resumed: " + this.getClass().getSimpleName());
+    }
+
+    @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         sceneUIManager.update(delta);
@@ -39,16 +49,6 @@ public abstract class Scene implements Screen, IScene {
     public void show() {
         Gdx.app.log("Scene", "Showing: " + this.getClass().getSimpleName());
         Gdx.input.setInputProcessor(sceneUIManager.getStage());
-    }
-
-    @Override
-    public void pause() {
-        Gdx.app.log("Scene", "Paused: " + this.getClass().getSimpleName());
-    }
-
-    @Override
-    public void resume() {
-        Gdx.app.log("Scene", "Resumed: " + this.getClass().getSimpleName());
     }
 
     @Override
