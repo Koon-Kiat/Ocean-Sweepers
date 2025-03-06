@@ -3,8 +3,8 @@ package project.game.context.builder;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
+import project.game.common.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;

@@ -1,6 +1,6 @@
 package project.game.engine.constant;
 
-import project.game.context.constant.DefaultProfileManager;
+import project.game.common.constant.DefaultProfileManager;
 import project.game.engine.api.constant.IConstantsRegistry;
 import project.game.engine.api.constant.IProfileManager;
 

@@ -1,4 +1,4 @@
-package project.game.context.constant;
+package project.game.common.constant;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.context.api.constant.IGameConstants;

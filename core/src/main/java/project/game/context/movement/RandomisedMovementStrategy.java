@@ -6,9 +6,10 @@ import java.util.List;
 import com.badlogic.gdx.math.MathUtils;
 
 import project.game.common.exception.MovementException;
-import project.game.context.factory.GameConstantsFactory;
+import project.game.common.factory.GameConstantsFactory;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.entitysystem.movement.AbstractMovementStrategy;
 
 /**
  * Provides randomised movement for movable entities.

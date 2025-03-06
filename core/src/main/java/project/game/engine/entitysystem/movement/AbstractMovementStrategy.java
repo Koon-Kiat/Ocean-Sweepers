@@ -1,4 +1,4 @@
-package project.game.context.movement;
+package project.game.engine.entitysystem.movement;
 
 import com.badlogic.gdx.math.Vector2;
 

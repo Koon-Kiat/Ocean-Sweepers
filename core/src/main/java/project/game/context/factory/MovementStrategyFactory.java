@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import project.game.common.exception.MovementException;
+import project.game.common.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.context.movement.AcceleratedMovementStrategy;
 import project.game.context.movement.ConstantMovementStrategy;

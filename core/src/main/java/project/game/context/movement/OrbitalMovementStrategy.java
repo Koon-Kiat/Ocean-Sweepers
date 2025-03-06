@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.common.exception.MovementException;
 import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IPositionable;
+import project.game.engine.entitysystem.movement.AbstractMovementStrategy;
 
 /**
  * Makes an entity orbit around a target entity.

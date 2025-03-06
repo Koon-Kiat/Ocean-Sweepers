@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.engine.api.movement.IMovable;
+import project.game.engine.entitysystem.movement.AbstractMovementStrategy;
 
 /**
  * Provides zig-zag movement for movable entities.

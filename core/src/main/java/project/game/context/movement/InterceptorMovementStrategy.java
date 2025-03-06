@@ -3,6 +3,7 @@ package project.game.context.movement;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.engine.api.movement.IMovable;
+import project.game.engine.entitysystem.movement.AbstractMovementStrategy;
 
 /**
  * Advanced movement strategy that predicts where a moving target will be and

@@ -1,4 +1,4 @@
-package project.game.context.constant;
+package project.game.common.constant;
 
 import project.game.engine.constant.AbstractConstantsRegistry;
 import project.game.engine.constant.ConstantDefinition;

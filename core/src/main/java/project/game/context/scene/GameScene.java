@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
+import project.game.common.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.context.api.constant.IGameConstants;
 import project.game.context.api.entity.IEntityRemovalListener;
@@ -30,7 +31,6 @@ import project.game.context.entity.Boat;
 import project.game.context.entity.Monster;
 import project.game.context.entity.Rock;
 import project.game.context.entity.Trash;
-import project.game.context.factory.GameConstantsFactory;
 import project.game.context.factory.RockFactory;
 import project.game.context.factory.TrashFactory;
 import project.game.context.movement.ConstantMovementStrategy;

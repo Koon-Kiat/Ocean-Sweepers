@@ -1,4 +1,4 @@
-package project.game.context.constant;
+package project.game.common.constant;
 
 import java.util.HashMap;
 import java.util.Map;

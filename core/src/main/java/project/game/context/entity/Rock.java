@@ -10,8 +10,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
+import project.game.common.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;

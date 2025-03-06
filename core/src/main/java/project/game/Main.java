@@ -4,10 +4,10 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import project.game.common.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.common.logging.util.LogPaths;
 import project.game.common.util.ProjectPaths;
-import project.game.context.factory.GameConstantsFactory;
 import project.game.context.factory.SceneFactory;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.SceneManager;
