@@ -33,8 +33,7 @@ public class Options extends Scene {
     private TextButton mainMenuButton;
 
     public Options(SceneManager sceneManager, GameScene gameScene, SceneIOManager inputManager) {
-        super(inputManager);
-        this.sceneManager = sceneManager;
+        super(sceneManager, inputManager);
         this.gameScene = gameScene;
     }
 
@@ -78,7 +77,7 @@ public class Options extends Scene {
         Table table = new Table();
         table.add(rebindButton).fillX().pad(5);
         popupMenu.add(table);
-        stage.addActor(popupMenu);
+        sceneUIManager.getStage().addActor(popupMenu);
 
         // Rebind Menu Creation
         rebindMenu = new Window("Rebind", skin);
@@ -185,7 +184,7 @@ public class Options extends Scene {
         rebindTable.row();
         rebindTable.add(exitHintLabel).colspan(2).center().pad(5);
         rebindMenu.add(rebindTable);
-        stage.addActor(rebindMenu);
+        sceneUIManager.getStage().addActor(rebindMenu);
     }
 
     public Window getPopupMenu() {
@@ -201,7 +200,7 @@ public class Options extends Scene {
     }
 
     public Stage getStage() {
-        return stage;
+        return sceneUIManager.getStage();
     }
 
     public void setPopupMenu(Window popupMenu) {
@@ -209,8 +208,8 @@ public class Options extends Scene {
     }
 
     public void render() {
-        stage.act();
-        stage.draw();
+        sceneUIManager.getStage().act();
+        sceneUIManager.getStage().draw();
     }
 
     public boolean isPaused() {

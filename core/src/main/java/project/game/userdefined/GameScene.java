@@ -82,10 +82,7 @@ public class GameScene extends Scene {
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
-        super(inputManager);
-        this.sceneManager = sceneManager;
-        this.inputManager = inputManager;
-        
+        super(sceneManager, inputManager);
     }
 
     @Override
@@ -95,6 +92,7 @@ public class GameScene extends Scene {
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        inputManager.enableMovementControls();
         LOGGER.log(Level.INFO, "GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         initPopUpMenu();
@@ -196,7 +194,7 @@ public class GameScene extends Scene {
 
         // Initialize AudioManager and AudioUI
         audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
-        audioUI = new AudioUI(audioManager, config, stage, skin);
+        audioUI = new AudioUI(audioManager, config, sceneUIManager.getStage(), skin);
         audioManager.setAudioUI(audioUI);
 
         // Load and play audio
@@ -222,7 +220,7 @@ public class GameScene extends Scene {
         } else {
             inputMultiplexer.clear();
         }
-        inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(sceneUIManager.getStage());
         inputMultiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCursorPosition(0, 0);
@@ -248,8 +246,8 @@ public class GameScene extends Scene {
         batch.end();
 
         // Draw stage
-        stage.act(Gdx.graphics.getDeltaTime());
-        stage.draw();
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
 
         // Render debug matrix
         debugMatrix = camera.combined.cpy().scl(GameConstants.PIXELS_TO_METERS);
@@ -290,15 +288,15 @@ public class GameScene extends Scene {
 
         // Add popup menu to the stage
         if (popupMenu != null) {
-            float centerX = stage.getWidth() / 2f - popupMenu.getWidth() / 2f;
-            float centerY = stage.getHeight() / 2f - popupMenu.getHeight() / 2f;
+            float centerX = sceneUIManager.getStage().getWidth() / 2f - popupMenu.getWidth() / 2f;
+            float centerY = sceneUIManager.getStage().getHeight() / 2f - popupMenu.getHeight() / 2f;
             popupMenu.setPosition(centerX, centerY);
         } else {
             Gdx.app.log("GameScene", "popupMenu is null");
         }
 
-        stage.addActor(options.getPopupMenu());
-        stage.addActor(options.getRebindMenu());
+        sceneUIManager.getStage().addActor(options.getPopupMenu());
+        sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
     //Handles input specifically for audio controls
@@ -390,16 +388,15 @@ public class GameScene extends Scene {
             if (isMenuOpen) {
                 isPaused = true;
                 inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(stage); // UI handling
+                inputMultiplexer.addProcessor(sceneUIManager.getStage()); // UI handling
                 inputMultiplexer.addProcessor(inputManager); // Game input
                 Gdx.input.setInputProcessor(inputMultiplexer);
                 LOGGER.log(Level.INFO, "InputProcessor set to stage");
             } else {
                 isPaused = false;
-                inputMultiplexer.clear();
+                inputMultiplexer.removeProcessor(sceneUIManager.getStage());
                 inputMultiplexer.addProcessor(inputManager);
-                Gdx.input.setInputProcessor(inputMultiplexer);
-                stage.setKeyboardFocus(null);
+                sceneUIManager.getStage().setKeyboardFocus(null);
                 LOGGER.log(Level.INFO, "InputProcessor set to inputManager");
             }
         }
@@ -416,16 +413,16 @@ public class GameScene extends Scene {
         final TextField textField = new TextField("", style);
         textField.setWidth(300);
         textField.setHeight(40);
-        textField.setPosition(stage.getWidth() / 2f - textField.getWidth() / 2f,
-                stage.getHeight() - textField.getHeight());
+        textField.setPosition(sceneUIManager.getStage().getWidth() / 2f - textField.getWidth() / 2f,
+        sceneUIManager.getStage().getHeight() - textField.getHeight());
         textField.setMessageText(
                 "Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
         textField.setDisabled(true);
-        stage.addActor(textField);
+        sceneUIManager.getStage().addActor(textField);
 
         // Overlay debug message
         batch.begin();
-        skin.getFont("default-font").draw(batch, "Debug Mode Active", 10, stage.getHeight() - 10);
+        skin.getFont("default-font").draw(batch, "Debug Mode Active", 10, sceneUIManager.getStage().getHeight() - 10);
         batch.end();
     }
 
@@ -433,7 +430,7 @@ public class GameScene extends Scene {
      * Removes the on-screen key binding message.
      */
     private void hideDisplayMessage() {
-        for (Actor actor : stage.getActors()) {
+        for (Actor actor : sceneUIManager.getStage().getActors()) {
             if (actor instanceof TextField) {
                 actor.remove();
             }
@@ -447,7 +444,7 @@ public class GameScene extends Scene {
         isMenuOpen = false;
         isPaused = false;
         options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(stage);
+        inputMultiplexer.removeProcessor(sceneUIManager.getStage());
         inputMultiplexer.addProcessor(inputManager);
         LOGGER.log(Level.INFO, "Popup closed and game unpaused");
     }

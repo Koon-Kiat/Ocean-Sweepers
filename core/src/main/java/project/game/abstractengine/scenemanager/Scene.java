@@ -3,7 +3,6 @@ package project.game.abstractengine.scenemanager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
@@ -11,15 +10,16 @@ import project.game.abstractengine.iomanager.SceneIOManager;
 /**
  * Abstract class for creating scenes in the game.
  */
-public abstract class Scene implements Screen {
-    protected Stage stage;
+public abstract class Scene implements Screen, IScene {
+    //protected Stage stage;
+    protected SceneUIManager sceneUIManager;
     protected SceneIOManager inputManager;
     protected SceneManager sceneManager;
 
-    public Scene(SceneIOManager inputManager) {
+    public Scene(SceneManager sceneManager, SceneIOManager inputManager) {
+        this.sceneManager = sceneManager;
         this.inputManager = inputManager;
-        this.stage = new Stage(new ScreenViewport());
-        this.sceneManager = new SceneManager();
+        this.sceneUIManager = new SceneUIManager(new ScreenViewport()); // new instance for each concrete scene
         initialize();
     }
 
@@ -30,14 +30,16 @@ public abstract class Scene implements Screen {
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        stage.act(delta);
-        stage.draw();
+        //stage.act(delta);
+        //stage.draw();
+        sceneUIManager.update(delta);
+        sceneUIManager.render();
     }
 
     @Override
     public void show() {
         Gdx.app.log("Scene", "Showing: " + this.getClass().getSimpleName());
-        Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(sceneUIManager.getStage());
     }
 
     @Override
@@ -58,12 +60,13 @@ public abstract class Scene implements Screen {
     @Override
     public void dispose() {
         Gdx.app.log("Scene", "Disposed: " + this.getClass().getSimpleName());
-        stage.dispose();
+        sceneUIManager.dispose();
     }
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        //stage.getViewport().update(width, height, true);
+        sceneUIManager.resize(width, height);
     }
 
     public void resetScene() {
