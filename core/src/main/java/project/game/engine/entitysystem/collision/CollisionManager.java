@@ -28,7 +28,7 @@ public class CollisionManager implements ContactListener {
     private final World world;
     private final List<Runnable> collisionQueue;
     private final SceneIOManager inputManager;
-    private final CollisionVisitorDispatcher collisionResolver;
+    private final CollisionVisitorHandler collisionResolver;
 
     // Maintain a map of collidable entities and their associated MovementManager.
     private final Map<ICollidableVisitor, MovementManager> entityMap;
@@ -47,7 +47,7 @@ public class CollisionManager implements ContactListener {
         this.inputManager = inputManager;
         this.collisionQueue = new ArrayList<>();
         this.entityMap = new HashMap<>();
-        this.collisionResolver = new CollisionVisitorDispatcher();
+        this.collisionResolver = new CollisionVisitorHandler();
         this.collisionPairTracker = new CollisionPairTracker();
 
         // Register boundary by default

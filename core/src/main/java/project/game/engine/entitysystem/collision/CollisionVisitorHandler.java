@@ -13,9 +13,9 @@ import project.game.engine.api.collision.ICollisionElement;
  * A resolver class that handles collisions using the visitor pattern.
  * This completely eliminates instanceof checks by using a registry approach.
  */
-public class CollisionVisitorDispatcher {
+public class CollisionVisitorHandler {
     
-    private static final GameLogger LOGGER = new GameLogger(CollisionVisitorDispatcher.class);
+    private static final GameLogger LOGGER = new GameLogger(CollisionVisitorHandler.class);
     // Registry of objects that can be collided with (target registry)
     private final Map<Object, ICollisionElement> collisionTargets = new ConcurrentHashMap<>();
 
