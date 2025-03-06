@@ -85,6 +85,7 @@ public class GameScene extends Scene {
         super(inputManager);
         this.sceneManager = sceneManager;
         this.inputManager = inputManager;
+        
     }
 
     @Override
@@ -329,8 +330,8 @@ public class GameScene extends Scene {
     
                 // Always ensure both stage & game input are handled
                 inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(inputManager); // Game input
                 inputMultiplexer.addProcessor(stage); // UI handling
+                inputMultiplexer.addProcessor(inputManager); // Game input  
                 Gdx.input.setInputProcessor(inputMultiplexer);
     
                 System.out.println("Opened volume settings.");
@@ -339,11 +340,12 @@ public class GameScene extends Scene {
     
                 // Ensure game controls still work after closing volume settings
                 // Safely remove specific processors if needed
-                inputMultiplexer.removeProcessor(stage);
-                inputMultiplexer.removeProcessor(inputManager);
+                // inputMultiplexer.removeProcessor(stage);
+                // inputMultiplexer.removeProcessor(inputManager);
+                inputMultiplexer.clear();
 
-                // inputMultiplexer.addProcessor(inputManager);
-                // Gdx.input.setInputProcessor(inputMultiplexer);
+                inputMultiplexer.addProcessor(inputManager);
+                Gdx.input.setInputProcessor(inputMultiplexer);
     
                 System.out.println("Closed volume settings.");
             }
