@@ -61,14 +61,8 @@ public class SoundManager implements ISound {
         if (soundEnabled && soundEffects.containsKey(key)) {
             long id = soundEffects.get(key).play();
             if (id == -1) {
-                LOGGER.warn("Failed to play sound for key: {0}", key);
-            } else {
-                LOGGER.info("Playing sound effect for key: {0}", key);
+                LOGGER.warn("Failed to play sound effect with key: " + key);
             }
-        } else if (!soundEnabled) {
-            LOGGER.info("Sound effects are disabled.");
-        } else {
-            LOGGER.warn("Sound effect not found for key: {0}", key);
         }
     }
 
