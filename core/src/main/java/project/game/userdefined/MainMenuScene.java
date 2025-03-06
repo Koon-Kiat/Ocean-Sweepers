@@ -15,12 +15,12 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import project.game.abstractengine.audiomanager.AudioConfig;
 import project.game.abstractengine.audiomanager.AudioManager;
-import project.game.abstractengine.audiomanager.AudioUIManager;
 import project.game.abstractengine.audiomanager.MusicManager;
 import project.game.abstractengine.audiomanager.SoundManager;
 import project.game.abstractengine.iomanager.SceneIOManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
+import project.game.audioui.AudioUI;
 
 public class MainMenuScene extends Scene {
 
@@ -32,6 +32,8 @@ public class MainMenuScene extends Scene {
     private Viewport viewport;
     private Stage stage;
     private AudioManager audioManager;
+    private AudioUI audioUI;
+    private AudioConfig audioConfig;
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(inputManager);
@@ -58,11 +60,17 @@ public class MainMenuScene extends Scene {
         options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", skin);
 
-        // Initialize AudioManager for sound effects and music.
-        AudioConfig audioConfig = new AudioConfig();
-        AudioUIManager audioUIManager = new AudioUIManager(null, audioConfig, stage);
-        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), new AudioConfig(), new AudioUIManager(audioManager, new AudioConfig(), stage));
-        // audioManager.playMusic("BackgroundMusic");
+        audioConfig = new AudioConfig();
+        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), audioConfig);
+        audioUI = new AudioUI(audioManager, audioConfig, stage, skin);
+
+        // Load music tracks and sound effects using AudioManager directly
+        // audioManager.loadMusicTracks("assets/BackgroundMusic.mp3", "background");
+        // audioManager.loadSoundEffects(
+        //     new String[]{"assets/Selection.mp3", "assets/Watercollision.mp3"},
+        //     new String[]{"selection", "watercollision"}
+        // );
+
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {
