@@ -11,7 +11,11 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import project.game.common.logging.core.GameLogger;
+import project.game.context.ui.AudioUI;
+import project.game.engine.audio.AudioConfig;
 import project.game.engine.audio.AudioManager;
+import project.game.engine.audio.MusicManager;
+import project.game.engine.audio.SoundManager;
 import project.game.engine.io.SceneIOManager;
 import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
@@ -24,8 +28,8 @@ public class MainMenuScene extends Scene {
     private GameScene gameScene;
     private OrthographicCamera camera;
     private Viewport viewport;
-    private Stage stage;
     private AudioManager audioManager;
+    private Stage stage;
     private AudioUI audioUI;
     private AudioConfig audioConfig;
     private boolean disposed = false;
@@ -42,8 +46,7 @@ public class MainMenuScene extends Scene {
     public void create() {
         stage = new Stage();
         this.camera = new OrthographicCamera();
-        // this.viewport = new FitViewport(stage.getHeight(), stage.getWidth(), camera);
-        // stage.setViewport(viewport);
+
         this.viewport = new FitViewport(sceneUIManager.getStage().getHeight(), sceneUIManager.getStage().getWidth(),
                 camera);
         sceneUIManager.getStage().setViewport(viewport);
@@ -60,14 +63,6 @@ public class MainMenuScene extends Scene {
         audioConfig = new AudioConfig();
         audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), audioConfig);
         audioUI = new AudioUI(audioManager, audioConfig, sceneUIManager.getStage(), skin);
-
-        // Load music tracks and sound effects using AudioManager directly
-        // audioManager.loadMusicTracks("assets/BackgroundMusic.mp3", "background");
-        // audioManager.loadSoundEffects(
-        //     new String[]{"assets/Selection.mp3", "assets/Watercollision.mp3"},
-        //     new String[]{"selection", "watercollision"}
-        // );
-
 
         // Instead of checking clicks manually in render, add click listeners here:
         inputManager.addButtonClickListener(playButton, () -> {

@@ -20,25 +20,28 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.utils.Array;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.context.api.constant.IGameConstants;
+import project.game.context.api.entity.IEntityRemovalListener;
 import project.game.context.builder.NPCMovementBuilder;
 import project.game.context.builder.PlayerMovementBuilder;
 import project.game.context.entity.Boat;
 import project.game.context.entity.Monster;
 import project.game.context.entity.Rock;
 import project.game.context.entity.Trash;
-import project.game.context.entityInterface.EntityRemovalListener;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.context.factory.RockFactory;
 import project.game.context.factory.TrashFactory;
 import project.game.context.movement.ConstantMovementStrategy;
+import project.game.context.ui.AudioUI;
 import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
+import project.game.engine.audio.AudioConfig;
 import project.game.engine.audio.AudioManager;
+import project.game.engine.audio.MusicManager;
+import project.game.engine.audio.SoundManager;
 import project.game.engine.entitysystem.collision.BoundaryFactory;
 import project.game.engine.entitysystem.collision.CollisionManager;
 import project.game.engine.entitysystem.entity.Entity;
@@ -50,8 +53,7 @@ import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
 
 @SuppressWarnings("unused")
-public class GameScene extends Scene implements EntityRemovalListener {
-
+public class GameScene extends Scene implements IEntityRemovalListener {
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;
@@ -81,7 +83,8 @@ public class GameScene extends Scene implements EntityRemovalListener {
     private InputMultiplexer inputMultiplexer;
     private Options options;
     private AudioManager audioManager;
-    // private Trash nonMovableTrash;
+    private AudioConfig config;
+    private AudioUI audioUI;
     private IGameConstants constants;
     List<IMovementStrategy> strategyPool = new ArrayList<>();
     public static List<Entity> existingEntities;
@@ -98,6 +101,7 @@ public class GameScene extends Scene implements EntityRemovalListener {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         inputManager.enableMovementControls();
         constants = GameConstantsFactory.getConstants();
+        config = new AudioConfig();
         LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
 
         initPopUpMenu();
@@ -158,13 +162,10 @@ public class GameScene extends Scene implements EntityRemovalListener {
                 .withConstantMovement()
                 .build();
 
-        // Add strategy to the pool for Random Movement
         strategyPool = new ArrayList<>();
         strategyPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
         LOGGER.info("Configured NPC movement strategys: {0}", strategyPool.size());
 
-    
-        
         List<Entity> rockEntities = new ArrayList<>();
         rocks = new ArrayList<>();
         trashes = new ArrayList<>();
@@ -173,7 +174,6 @@ public class GameScene extends Scene implements EntityRemovalListener {
         trashFactory = new TrashFactory(constants, world, existingEntities);
         Random random = new Random();
 
-        // Create rock entities first so we can pass them to the builder
         for (int i = 0; i < constants.NUM_ROCKS(); i++) {
             Rock rock = rockFactory.createObject();
             rocks.add(rock);
@@ -194,13 +194,11 @@ public class GameScene extends Scene implements EntityRemovalListener {
             rockEntities.add(rock.getEntity());
         }
 
-        // Create NPC movement with composite strategy that follows boat while avoiding
-        // rocks
-        float[] customWeights = { 0.30f, 0.70f }; // 30% interception, 70% avoidance for better obstacle navigation
+        float[] customWeights = { 0.30f, 0.70f };
         npcMovementManager = new NPCMovementBuilder()
                 .withEntity(monsterEntity)
                 .setSpeed(constants.NPC_SPEED())
-                .setInitialVelocity(1, 1) // Set a clear initial direction
+                .setInitialVelocity(1, 1)
                 .withInterceptorAndObstacleAvoidance(playerMovementManager, rockEntities, customWeights)
                 .setLenientMode(true)
                 .build();
@@ -245,9 +243,20 @@ public class GameScene extends Scene implements EntityRemovalListener {
         BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
                 constants.PIXELS_TO_METERS());
 
-        // Initialize AudioManager and play background music
-        audioManager = new AudioManager(sceneUIManager.getStage());
-        audioManager.playMusic("BackgroundMusic");
+        // Initialize AudioManager and AudioUI
+        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
+        audioUI = new AudioUI(audioManager, config, sceneUIManager.getStage(), skin);
+        audioManager.setAudioUI(audioUI);
+
+        // Load and play audio
+        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
+        SoundManager.getInstance().loadSoundEffects(
+                new String[] { "watercollision.mp3", "Boinkeffect.mp3", "selection.mp3" },
+                new String[] { "drophit", "keybuttons", "selection" });
+
+        // Set audio configuration
+        audioManager.setMusicVolume(config.getMusicVolume());
+        audioManager.setSoundEnabled(config.isSoundEnabled());
 
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
@@ -264,7 +273,10 @@ public class GameScene extends Scene implements EntityRemovalListener {
         inputMultiplexer.addProcessor(sceneUIManager.getStage());
         inputMultiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(inputMultiplexer);
-        LOGGER.debug("GameScene shown");
+        Gdx.input.setCursorPosition(0, 0);
+
+        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
+        audioManager.playMusic("BackgroundMusic");
     }
 
     @Override
@@ -290,9 +302,8 @@ public class GameScene extends Scene implements EntityRemovalListener {
         debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
         debugRenderer.render(world, debugMatrix);
 
-        // Step the physics simulation forward with fixed timestep and more iterations
-        float timeStep = 1 / 300f; // Increased physics update rate
-        int velocityIterations = 8; // Increased from 6
+        float timeStep = 1 / 300f;
+        int velocityIterations = 8;
         int positionIterations = 3;
         world.step(timeStep, velocityIterations, positionIterations);
 
@@ -301,12 +312,8 @@ public class GameScene extends Scene implements EntityRemovalListener {
         collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
 
         // Play sound effect on collision
-        if (collisionManager.collision()) {
-            if (audioManager != null) {
-                audioManager.playSoundEffect("drophit");
-            } else {
-                LOGGER.error("AudioManager is null!");
-            }
+        if (collisionManager.collision() && audioManager != null) {
+            audioManager.playSoundEffect("drophit");
         }
     }
 
@@ -317,6 +324,9 @@ public class GameScene extends Scene implements EntityRemovalListener {
         trashImage.dispose();
         rockImage.dispose();
         debugRenderer.dispose();
+        if (audioManager != null) {
+            audioManager.dispose();
+        }
         LOGGER.info("GameScene disposed");
     }
 
@@ -352,27 +362,63 @@ public class GameScene extends Scene implements EntityRemovalListener {
         sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
+    private void handleAudioInput() {
+        if (inputManager.isKeyJustPressed(Input.Keys.V)) {
+            LOGGER.info("Key V detected!");
+
+            // If pause menu is open, close it before opening volume settings
+            if (isMenuOpen) {
+                isMenuOpen = false;
+                isPaused = false;
+                options.getRebindMenu().setVisible(false);
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(inputManager); // Restore game input
+                Gdx.input.setInputProcessor(inputMultiplexer);
+                LOGGER.info("Closed rebind menu because V was pressed.");
+            }
+
+            isVolumePopupOpen = !isVolumePopupOpen;
+            if (isVolumePopupOpen) {
+                audioManager.showVolumeControls();
+
+                // Ensure UI elements are interactive
+                if (audioUI != null) {
+                    audioUI.restoreUIInteractivity();
+                } else {
+                    LOGGER.error("Error: audioUIManager is null!");
+                }
+
+                // Always ensure both stage & game input are handled
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(sceneUIManager.getStage());
+                inputMultiplexer.addProcessor(inputManager);
+                Gdx.input.setInputProcessor(inputMultiplexer);
+
+                LOGGER.info("Opened volume settings.");
+            } else {
+                audioManager.hideVolumeControls();
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(inputManager);
+                Gdx.input.setInputProcessor(inputMultiplexer);
+
+                LOGGER.info("Closed volume settings.");
+            }
+        }
+    }
+
     /**
      * Handles key inputs for game control:
      */
     private void input() {
+        handleAudioInput();
         for (Integer key : inputManager.getKeyBindings().keySet()) {
             if (inputManager.isKeyJustPressed(key)) {
                 LOGGER.info("Direction Key pressed: {0}", Input.Keys.toString(key));
-                audioManager.playSoundEffect("keybuttons");
-            }
-        }
-        // Toggle volume controls
-        if (inputManager.isKeyJustPressed(Input.Keys.V)) {
-            if (isMenuOpen) {
-                isMenuOpen = false;
-                options.getRebindMenu().setVisible(false);
-            }
-            isVolumePopupOpen = !isVolumePopupOpen;
-            if (isVolumePopupOpen) {
-                audioManager.showVolumeControls();
-            } else {
-                audioManager.hideVolumeControls();
+                if (audioManager != null) {
+                    audioManager.playSoundEffect("keybuttons");
+                } else {
+                    LOGGER.warn("AudioManager is null");
+                }
             }
         }
         // Toggle game menu
@@ -395,7 +441,10 @@ public class GameScene extends Scene implements EntityRemovalListener {
             options.getRebindMenu().setVisible(isMenuOpen);
             if (isMenuOpen) {
                 isPaused = true;
-                inputMultiplexer.setProcessors(sceneUIManager.getStage(), inputManager);
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(sceneUIManager.getStage());
+                inputMultiplexer.addProcessor(inputManager);
+                Gdx.input.setInputProcessor(inputMultiplexer);
                 LOGGER.info("InputProcessor set to stage");
             } else {
                 isPaused = false;
