@@ -1,5 +1,6 @@
 package project.game.abstractengine.scenemanager;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -32,11 +33,11 @@ public class SceneFactory {
          * The key is the name of the scene and the value is a lambda expression that
          * creates a new instance of the scene.
          */
-        sceneCreators = Map.of(
-                "menu", () -> new MainMenuScene(sceneManager, inputManager),
-                "game", () -> new GameScene(sceneManager, inputManager),
-                "options", () -> new OptionsScene(sceneManager, inputManager),
-                "gameover", () -> new GameOverScene(sceneManager, inputManager));
+        sceneCreators = new HashMap<>();
+        sceneCreators.put("menu", () -> new MainMenuScene(sceneManager, inputManager));
+        sceneCreators.put("game", () -> new GameScene(sceneManager, inputManager));
+        sceneCreators.put("options", () -> new OptionsScene(sceneManager, inputManager));
+        sceneCreators.put("gameover", () -> new GameOverScene(sceneManager, inputManager));
     }
 
     public void createAndRegisterScenes() {
