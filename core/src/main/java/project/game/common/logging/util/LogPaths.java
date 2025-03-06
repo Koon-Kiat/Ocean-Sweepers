@@ -9,15 +9,62 @@ import java.io.File;
  * current working directory.
  */
 public final class LogPaths {
+    // The name of the log directory relative to the project root
+    private static final String LOG_DIRECTORY_NAME = "logs";
 
-    // The one, fixed location for all logs
-    private static final String GLOBAL_LOG_DIRECTORY = "D:\\SIT\\year1\\Year_1_tri_2\\INF1009_oop\\vsoopproj\\OOPProject\\logs";
+    // Directory detection markers that identify the project root
+    private static final String[] PROJECT_MARKERS = {
+            "build.gradle", "settings.gradle", "pom.xml", "core", "assets"
+    };
 
-    // The project root directory
-    private static final String PROJECT_ROOT = "D:\\SIT\\year1\\Year_1_tri_2\\INF1009_oop\\vsoopproj\\OOPProject";
+    private static String projectRoot;
+    private static String logDirectory;
+
+    static {
+        initializePaths();
+    }
 
     private LogPaths() {
         // Utility class, no instantiation
+    }
+
+    /**
+     * Initialize paths by finding the project root directory
+     */
+    private static void initializePaths() {
+        // Start with the working directory
+        File currentDir = new File(System.getProperty("user.dir"));
+        projectRoot = findProjectRoot(currentDir);
+        logDirectory = new File(projectRoot, LOG_DIRECTORY_NAME).getAbsolutePath();
+    }
+
+    /**
+     * Find the project root by looking for project markers
+     */
+    private static String findProjectRoot(File startDir) {
+        File dir = startDir;
+
+        // Try to find a marker file/directory that indicates the project root
+        while (dir != null) {
+            int markersFound = 0;
+            for (String marker : PROJECT_MARKERS) {
+                if (new File(dir, marker).exists()) {
+                    markersFound++;
+                }
+            }
+
+            // If we found multiple markers, this is likely the project root
+            if (markersFound >= 2) {
+                return dir.getAbsolutePath();
+            }
+
+            // Go up one directory
+            dir = dir.getParentFile();
+        }
+
+        // Fallback to user.dir if we couldn't find the project root
+        System.err.println("WARNING: Could not detect project root. Using working directory.");
+        return startDir.getAbsolutePath();
     }
 
     /**
@@ -26,7 +73,7 @@ public final class LogPaths {
      * @return the absolute path to the project root
      */
     public static String getProjectRoot() {
-        return PROJECT_ROOT;
+        return projectRoot;
     }
 
     /**
@@ -38,11 +85,11 @@ public final class LogPaths {
      */
     public static String getGlobalLogDirectory() {
         // Create directory if it doesn't exist
-        File dir = new File(GLOBAL_LOG_DIRECTORY);
+        File dir = new File(logDirectory);
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        return GLOBAL_LOG_DIRECTORY;
+        return logDirectory;
     }
 
     /**
@@ -63,7 +110,7 @@ public final class LogPaths {
      * @return the absolute path
      */
     public static String resolveProjectPath(String relativePath) {
-        return new File(PROJECT_ROOT, relativePath).getAbsolutePath();
+        return new File(projectRoot, relativePath).getAbsolutePath();
     }
 
     /**
@@ -73,12 +120,12 @@ public final class LogPaths {
     public static void cleanupInvalidLogs() {
         // Common locations where logs might be erroneously created
         String[] potentialBadPaths = {
-                PROJECT_ROOT + "\\assets\\logs",
-                PROJECT_ROOT + "\\lwjgl3\\bin\\main\\logs"
+                projectRoot + "\\assets\\logs",
+                projectRoot + "\\lwjgl3\\bin\\main\\logs"
         };
 
         // Get the valid global log directory
-        File globalDir = new File(GLOBAL_LOG_DIRECTORY);
+        File globalDir = new File(logDirectory);
         if (!globalDir.exists()) {
             globalDir.mkdirs();
         }
