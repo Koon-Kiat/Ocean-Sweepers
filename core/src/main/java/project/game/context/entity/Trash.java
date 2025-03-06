@@ -10,14 +10,13 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.common.logging.core.GameLogger;
+import project.game.context.api.entity.IEntityRemovalListener;
 import project.game.context.factory.GameConstantsFactory;
 import project.game.engine.api.collision.ICollidable;
 import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.CustomAssetManager;
 import project.game.engine.entitysystem.entity.CollidableEntity;
 import project.game.engine.entitysystem.entity.Entity;
-import project.game.context.entityInterface.EntityRemovalListener;
-import project.game.context.factory.GameConstantsFactory;
 
 public class Trash extends CollidableEntity implements IRenderable {
 
@@ -25,14 +24,14 @@ public class Trash extends CollidableEntity implements IRenderable {
     private final String texturePath;
     private boolean collisionActive = false;
 	private long collisionEndTime = 0;
-    private EntityRemovalListener removalListener;
+    private IEntityRemovalListener removalListener;
 
     public Trash(Entity entity, World world, String texturePath) {
         super(entity, world);
         this.texturePath = texturePath;
     }
 
-    public void setRemovalListener(EntityRemovalListener removalListener) {
+    public void setRemovalListener(IEntityRemovalListener removalListener) {
         this.removalListener = removalListener;
     }
 
