@@ -203,10 +203,7 @@ public class GameScene extends Scene {
             new String[]{"watercollision.mp3", "Boinkeffect.mp3", "selection.mp3"},
             new String[]{"drophit", "keybuttons", "selection"}
         );
-
-        if (!MusicManager.getInstance().isPlaying("BackgroundMusic")) {
-            audioManager.playMusic("BackgroundMusic");
-        }
+        
         // Set audio configuration
         audioManager.setMusicVolume(config.getMusicVolume());
         audioManager.setSoundEnabled(config.isSoundEnabled());
@@ -224,6 +221,10 @@ public class GameScene extends Scene {
         inputMultiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCursorPosition(0, 0);
+
+        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");  // Ensure music is loaded
+        audioManager.playMusic("BackgroundMusic");                          // Play it
+
 
     }
 
@@ -273,6 +274,10 @@ public class GameScene extends Scene {
         dropImage.dispose();
         bucketImage.dispose();
         debugRenderer.dispose();
+        if (audioManager != null) {
+            audioManager.dispose();  // Dispose audio resources
+        }
+        
     }
 
     /**
@@ -328,7 +333,7 @@ public class GameScene extends Scene {
     
                 // Always ensure both stage & game input are handled
                 inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(stage); // UI handling
+                inputMultiplexer.addProcessor(sceneUIManager.getStage()); // UI handling
                 inputMultiplexer.addProcessor(inputManager); // Game input  
                 Gdx.input.setInputProcessor(inputMultiplexer);
     
