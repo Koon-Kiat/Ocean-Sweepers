@@ -14,8 +14,8 @@ import project.game.engine.api.movement.IPositionable;
  * creating elastic movement with oscillation and damping.
  */
 public class SpringFollowStrategy implements IMovementStrategy {
+    
     private static final GameLogger LOGGER = new GameLogger(SpringFollowStrategy.class);
-
     private final IPositionable target;
     private final float springConstant; // Higher = stiffer spring
     private final float damping; // Higher = more damping (less oscillation)

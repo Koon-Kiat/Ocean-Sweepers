@@ -54,6 +54,7 @@ import project.game.engine.scene.SceneManager;
 
 @SuppressWarnings("unused")
 public class GameScene extends Scene implements IEntityRemovalListener {
+    
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
     private EntityManager entityManager;
     private PlayerMovementManager playerMovementManager;

@@ -11,6 +11,7 @@ import project.game.engine.constant.ConstantDefinition;
  * Default implementation of profile management
  */
 public class DefaultProfileManager implements IProfileManager {
+    
     private final IConstantsRegistry registry;
     private String currentProfile = "default";
     private final Map<String, Map<String, Object>> profiles = new HashMap<>();

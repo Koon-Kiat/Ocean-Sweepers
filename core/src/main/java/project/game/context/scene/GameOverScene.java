@@ -15,6 +15,7 @@ import project.game.engine.scene.Scene;
 import project.game.engine.scene.SceneManager;
 
 public class GameOverScene extends Scene {
+    
     private SpriteBatch batch;
     private BitmapFont font;
 

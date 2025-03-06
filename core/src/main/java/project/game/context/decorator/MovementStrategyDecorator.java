@@ -4,6 +4,7 @@ import project.game.engine.api.movement.IMovable;
 import project.game.engine.api.movement.IMovementStrategy;
 
 public abstract class MovementStrategyDecorator implements IMovementStrategy {
+    
     protected final IMovementStrategy wrappedStrategy;
 
     public MovementStrategyDecorator(IMovementStrategy strategy) {

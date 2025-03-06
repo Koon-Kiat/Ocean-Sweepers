@@ -4,6 +4,7 @@ package project.game.context.api.constant;
  * Constants related to game entities and their properties.
  */
 public interface IEntityConstants {
+    
     // Player constants
     float BUCKET_START_X();
 

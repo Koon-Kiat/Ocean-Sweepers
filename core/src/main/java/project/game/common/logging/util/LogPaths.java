@@ -9,6 +9,7 @@ import java.io.File;
  * current working directory.
  */
 public final class LogPaths {
+    
     // The name of the log directory relative to the project root
     private static final String LOG_DIRECTORY_NAME = "logs";
 

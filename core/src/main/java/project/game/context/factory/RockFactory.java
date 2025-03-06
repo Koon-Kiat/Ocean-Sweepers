@@ -1,5 +1,6 @@
 package project.game.context.factory;
 
+import java.util.List;
 import java.util.Random;
 
 import com.badlogic.gdx.physics.box2d.World;
@@ -9,9 +10,8 @@ import project.game.context.api.pool.ObjectPool;
 import project.game.context.entity.Rock;
 import project.game.engine.entitysystem.entity.Entity;
 
-import java.util.List;
-
 public class RockFactory implements ObjectPool.ObjectFactory<Rock> {
+    
     private final IGameConstants constants;
     private final World world;
     private final Random random;

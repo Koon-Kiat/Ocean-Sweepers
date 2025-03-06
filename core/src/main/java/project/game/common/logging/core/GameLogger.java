@@ -15,6 +15,7 @@ import project.game.engine.api.logging.LogLevel;
 import project.game.engine.logging.AbstractLogger;
 
 public class GameLogger extends AbstractLogger {
+    
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static volatile PrintWriter sharedFileWriter;
     private static volatile boolean isInitialized = false;

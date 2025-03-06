@@ -14,8 +14,8 @@ import project.game.engine.api.movement.IPositionable;
  * The spiral tightens as the entity gets closer to the target.
  */
 public class SpiralApproachStrategy implements IMovementStrategy {
+    
     private static final GameLogger LOGGER = new GameLogger(SpiralApproachStrategy.class);
-
     private final IPositionable target;
     private final float speed;
     private final float spiralTightness; // Controls how tight the spiral is

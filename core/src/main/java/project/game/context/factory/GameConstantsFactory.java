@@ -8,6 +8,7 @@ import project.game.context.constant.ConfigurableGameConstants;
  * Provides access to the configurable constants system.
  */
 public class GameConstantsFactory {
+    
     private static IGameConstants instance;
 
     /**

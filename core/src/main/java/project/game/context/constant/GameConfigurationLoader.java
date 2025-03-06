@@ -17,6 +17,7 @@ import project.game.engine.constant.AbstractConfigurationLoader;
  * LibGDX-specific implementation of configuration loading.
  */
 public class GameConfigurationLoader extends AbstractConfigurationLoader {
+    
     private static final GameLogger LOGGER = new GameLogger(GameConfigurationLoader.class);
     private static final GameConfigurationLoader INSTANCE = new GameConfigurationLoader();
     private final JsonReader jsonReader;

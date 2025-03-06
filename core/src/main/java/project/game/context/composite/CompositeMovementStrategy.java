@@ -20,6 +20,7 @@ import project.game.engine.api.movement.IMovementStrategy;
  * multiple strategies rather than just adding behavior to one strategy.
  */
 public class CompositeMovementStrategy implements IMovementStrategy {
+    
     private static final GameLogger LOGGER = new GameLogger(CompositeMovementStrategy.class);
     private final List<IMovementStrategy> strategies = new ArrayList<>();
     private final float[] weights;

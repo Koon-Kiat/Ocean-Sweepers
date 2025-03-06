@@ -8,7 +8,6 @@ import project.game.engine.constant.AbstractConfigurableConstants;
  * Game-specific implementation of configurable constants.
  */
 public class ConfigurableGameConstants extends AbstractConfigurableConstants implements IGameConstants {
-    // Implementing missing methods from IEntityConstants
     
     private static final GameLogger LOGGER = new GameLogger(ConfigurableGameConstants.class);
     private static ConfigurableGameConstants instance;

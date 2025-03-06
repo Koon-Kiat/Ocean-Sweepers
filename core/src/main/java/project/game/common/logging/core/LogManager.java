@@ -13,6 +13,7 @@ import project.game.engine.api.logging.ILogManager;
  * This class handles log file management and rotation.
  */
 public class LogManager implements ILogManager {
+    
     private static volatile LogManager instance;
     private final String logDirectory;
     private int maxLogFiles;

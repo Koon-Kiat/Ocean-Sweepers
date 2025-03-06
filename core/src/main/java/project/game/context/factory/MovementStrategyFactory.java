@@ -27,6 +27,7 @@ import project.game.engine.entitysystem.entity.Entity;
  * Dependency Inversion Principle.
  */
 public class MovementStrategyFactory {
+    
     private static final GameLogger LOGGER = new GameLogger(MovementStrategyFactory.class);
 
     /**

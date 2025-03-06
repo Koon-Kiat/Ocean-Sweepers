@@ -9,6 +9,7 @@ import project.game.engine.constant.ConstantDefinition;
  * categories.
  */
 public class ConstantsRegistry extends AbstractConstantsRegistry {
+    
     // Categories
     public static final String CATEGORY_MOVEMENT = "movement";
     public static final String CATEGORY_PHYSICS = "physics";

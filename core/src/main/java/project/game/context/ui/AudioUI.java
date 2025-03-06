@@ -14,6 +14,7 @@ import project.game.engine.api.audio.IAudioUI;
 import project.game.engine.audio.AudioManager;
 
 public class AudioUI implements IAudioUI {
+    
     private final AudioManager audioManager;
     private final IAudioConfig config;
     private final Skin skin;

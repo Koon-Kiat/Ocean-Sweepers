@@ -15,8 +15,8 @@ import project.game.engine.api.movement.IPositionable;
  * configurable.
  */
 public class OrbitalMovementStrategy implements IMovementStrategy {
+    
     private static final GameLogger LOGGER = new GameLogger(OrbitalMovementStrategy.class);
-
     private final IPositionable target;
     private final float orbitRadius;
     private final float rotationSpeed; // Radians per second
