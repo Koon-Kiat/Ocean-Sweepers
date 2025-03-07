@@ -1,8 +1,8 @@
 package project.game.engine.entitysystem.movement;
 
+import project.game.application.builder.PlayerMovementBuilder;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.context.builder.PlayerMovementBuilder;
 import project.game.engine.api.movement.IMovementStrategyFactory;
 
 /**
