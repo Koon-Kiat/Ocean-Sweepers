@@ -2,7 +2,7 @@ package project.game.engine.api.constant;
 
 import java.util.Set;
 
-import project.game.engine.constant.ConstantDefinition;
+import project.game.engine.constant.core.ConstantDefinition;
 
 /**
  * Interface defining the contract for a constants registry.

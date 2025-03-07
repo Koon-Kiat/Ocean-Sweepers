@@ -15,8 +15,8 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.collision.ICollisionPairHandler;
-import project.game.engine.entitysystem.movement.MovementManager;
-import project.game.engine.io.SceneIOManager;
+import project.game.engine.entitysystem.movement.core.MovementManager;
+import project.game.engine.io.scene.SceneIOManager;
 
 /**
  * CollisionManager is a class that manages the collision detection and

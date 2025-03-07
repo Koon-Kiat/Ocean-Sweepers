@@ -4,13 +4,13 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.common.factory.GameConstantsFactory;
+import project.game.application.scene.factory.SceneFactory;
+import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.common.logging.util.LogPaths;
-import project.game.common.util.ProjectPaths;
-import project.game.application.factory.SceneFactory;
-import project.game.engine.io.SceneIOManager;
-import project.game.engine.scene.SceneManager;
+import project.game.common.util.file.ProjectPaths;
+import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.scene.core.SceneManager;
 
 public class Main extends ApplicationAdapter {
 

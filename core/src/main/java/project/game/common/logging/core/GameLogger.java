@@ -12,7 +12,7 @@ import project.game.common.logging.util.LogPaths;
 import project.game.engine.api.logging.ILogger;
 import project.game.engine.api.logging.ILoggerEvent;
 import project.game.engine.api.logging.LogLevel;
-import project.game.engine.logging.AbstractLogger;
+import project.game.engine.logging.core.AbstractLogger;
 
 public class GameLogger extends AbstractLogger {
 
