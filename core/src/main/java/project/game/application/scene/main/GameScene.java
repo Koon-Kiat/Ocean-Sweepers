@@ -10,6 +10,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -64,6 +65,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private SpriteBatch batch;
     private Texture rockImage;
     private Texture boatImage;
+    private Texture boatSpritesheet;
     private Texture trashImage;
     private Texture monsterImage;
     private RockFactory rockFactory;
@@ -71,6 +73,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private List<Rock> rocks;
     private List<Trash> trashes;
     private Boat boat;
+    private TextureRegion[] boatDirectionalSprites;
+    private Texture backgroundTexture;
     private Monster monster;
     private Window popupMenu;
     private Skin skin;
@@ -140,6 +144,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         } catch (Exception e) {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
+
+        batch.begin();
+        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+        batch.end();
 
         // Draw entities
         batch.begin();
@@ -214,16 +222,35 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         try {
             CustomAssetManager.getInstance().loadTextureAssets("droplet.png");
-            CustomAssetManager.getInstance().loadTextureAssets("bucket.png");
+            // CustomAssetManager.getInstance().loadTextureAssets("bucket.png");
+            CustomAssetManager.getInstance().loadTextureAssets("steamboat_black_0001-sheet.png");
             CustomAssetManager.getInstance().loadTextureAssets("rock.png");
             CustomAssetManager.getInstance().loadTextureAssets("monster.png");
+            CustomAssetManager.getInstance().loadTextureAssets("ocean_background.jpg");
             CustomAssetManager.getInstance().update();
             CustomAssetManager.getInstance().getasset_Manager().finishLoading();
             if (CustomAssetManager.getInstance().isLoaded()) {
-                boatImage = CustomAssetManager.getInstance().getAsset("bucket.png", Texture.class);
+                // boatImage = CustomAssetManager.getInstance().getAsset("bucket.png",
+                // Texture.class);
+                boatSpritesheet = CustomAssetManager.getInstance().getAsset("steamboat_black_0001-sheet.png", Texture.class);
                 trashImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
                 rockImage = CustomAssetManager.getInstance().getAsset("rock.png", Texture.class);
                 monsterImage = CustomAssetManager.getInstance().getAsset("monster.png", Texture.class);
+                backgroundTexture = CustomAssetManager.getInstance().getAsset("ocean_background.jpg", Texture.class);
+
+                int frameWidth = boatSpritesheet.getWidth() / 7; // 7 columns
+                int frameHeight = boatSpritesheet.getHeight() / 7; // 7 rows
+                TextureRegion[][] tmpFrames = TextureRegion.split(boatSpritesheet, frameWidth, frameHeight);
+
+                // Create array for the 4 directional sprites
+                boatDirectionalSprites = new TextureRegion[4];
+
+                // Assign specific frames for each direction
+                boatDirectionalSprites[0] = tmpFrames[0][0]; // UP - row 0, col 0
+                boatDirectionalSprites[1] = tmpFrames[1][4]; // RIGHT - row 1, col 4
+                boatDirectionalSprites[2] = tmpFrames[3][2]; // DOWN - row 3, col 2
+                boatDirectionalSprites[3] = tmpFrames[5][0]; // LEFT - row 5, col 0
+
             } else {
                 LOGGER.warn("Some assets not loaded yet!");
             }
@@ -314,7 +341,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 .build();
 
         // Initialize entities
-        boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
+        // boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
+        boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
         monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
 
         // Initialize bodies
