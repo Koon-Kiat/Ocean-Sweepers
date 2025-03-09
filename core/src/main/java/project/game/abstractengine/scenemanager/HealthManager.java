@@ -42,7 +42,7 @@ public class HealthManager {
     public void draw(SpriteBatch batch) {
         int heartSpacing = 50;
         int xOffset = 20;
-        int yOffset = 450;
+        int yOffset = 1000; // Top left corner
 
         for (int i = 0; i < lives; i++) { // Draw only remaining lives
             batch.draw(heartTexture, xOffset + (i * heartSpacing), yOffset);

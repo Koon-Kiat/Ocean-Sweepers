@@ -26,6 +26,10 @@ public class ScoreManager {
         this.score -= points;
     }
 
+    public void multiplyScore(int multiplier) {
+        this.score *= multiplier;
+    }
+
     public void resetScore() {
         score = 0;
     }

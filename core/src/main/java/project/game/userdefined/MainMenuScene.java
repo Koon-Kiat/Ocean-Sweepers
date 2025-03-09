@@ -37,7 +37,6 @@ public class MainMenuScene extends Scene {
 
     public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
-        super(sceneManager, inputManager);
     }
 
     /**

@@ -252,7 +252,7 @@ public class GameScene extends Scene {
         entityManager.draw(batch);
         healthManager.draw(batch); // Draws health (now droplet asset)
         // SCORE DRAWN HERE
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 10, sceneUIManager.getStage().getHeight() - 30);
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200, sceneUIManager.getStage().getHeight() - 30);
         batch.end();
 
         // Draw stage
