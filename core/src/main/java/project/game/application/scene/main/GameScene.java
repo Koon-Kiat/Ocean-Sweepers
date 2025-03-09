@@ -66,6 +66,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private Texture rockImage;
     private Texture boatImage;
     private Texture boatSpritesheet;
+    private Texture rockSpritesheet;
     private Texture trashImage;
     private Texture monsterImage;
     private RockFactory rockFactory;
@@ -74,6 +75,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private List<Trash> trashes;
     private Boat boat;
     private TextureRegion[] boatDirectionalSprites;
+    private Texture[] trashTextures;
     private Texture backgroundTexture;
     private Monster monster;
     private Window popupMenu;
@@ -220,11 +222,16 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         initPopUpMenu();
         displayMessage();
 
+        // Flatten the 2D array into a 1D array
+        TextureRegion[] rockRegions = new TextureRegion[9];
         try {
-            CustomAssetManager.getInstance().loadTextureAssets("droplet.png");
+            CustomAssetManager.getInstance().loadTextureAssets("trash1.png");
+            CustomAssetManager.getInstance().loadTextureAssets("trash2.png");
+            CustomAssetManager.getInstance().loadTextureAssets("trash3.png");
             // CustomAssetManager.getInstance().loadTextureAssets("bucket.png");
             CustomAssetManager.getInstance().loadTextureAssets("steamboat_black_0001-sheet.png");
             CustomAssetManager.getInstance().loadTextureAssets("rock.png");
+            CustomAssetManager.getInstance().loadTextureAssets("Rocks.png");
             CustomAssetManager.getInstance().loadTextureAssets("monster.png");
             CustomAssetManager.getInstance().loadTextureAssets("ocean_background.jpg");
             CustomAssetManager.getInstance().update();
@@ -232,11 +239,20 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             if (CustomAssetManager.getInstance().isLoaded()) {
                 // boatImage = CustomAssetManager.getInstance().getAsset("bucket.png",
                 // Texture.class);
-                boatSpritesheet = CustomAssetManager.getInstance().getAsset("steamboat_black_0001-sheet.png", Texture.class);
-                trashImage = CustomAssetManager.getInstance().getAsset("droplet.png", Texture.class);
-                rockImage = CustomAssetManager.getInstance().getAsset("rock.png", Texture.class);
+                boatSpritesheet = CustomAssetManager.getInstance().getAsset("steamboat_black_0001-sheet.png",
+                        Texture.class);
+                // rockImage = CustomAssetManager.getInstance().getAsset("rock.png",
+                // Texture.class);
+                rockImage = CustomAssetManager.getInstance().getAsset("Rocks.png", Texture.class);
                 monsterImage = CustomAssetManager.getInstance().getAsset("monster.png", Texture.class);
                 backgroundTexture = CustomAssetManager.getInstance().getAsset("ocean_background.jpg", Texture.class);
+                trashTextures = new Texture[3];
+                trashTextures[0] = CustomAssetManager.getInstance().getAsset("trash1.png", Texture.class);
+                trashTextures[1] = CustomAssetManager.getInstance().getAsset("trash2.png", Texture.class);
+                trashTextures[2] = CustomAssetManager.getInstance().getAsset("trash3.png", Texture.class);
+
+                // Keep this for backward compatibility
+                trashImage = trashTextures[0];
 
                 int frameWidth = boatSpritesheet.getWidth() / 7; // 7 columns
                 int frameHeight = boatSpritesheet.getHeight() / 7; // 7 rows
@@ -250,6 +266,18 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 boatDirectionalSprites[1] = tmpFrames[1][4]; // RIGHT - row 1, col 4
                 boatDirectionalSprites[2] = tmpFrames[3][2]; // DOWN - row 3, col 2
                 boatDirectionalSprites[3] = tmpFrames[5][0]; // LEFT - row 5, col 0
+
+                // Split the rock spritesheet (assumed to be 3x3)
+                int rockFrameWidth = rockImage.getWidth() / 3;
+                int rockFrameHeight = rockImage.getHeight() / 3;
+                TextureRegion[][] rockTmp = TextureRegion.split(rockImage, rockFrameWidth, rockFrameHeight);
+
+                int idx = 0;
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        rockRegions[idx++] = rockTmp[i][j];
+                    }
+                }
 
             } else {
                 LOGGER.warn("Some assets not loaded yet!");
@@ -307,8 +335,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         rocks = new ArrayList<>();
         trashes = new ArrayList<>();
         existingEntities = new ArrayList<>();
-        rockFactory = new RockFactory(constants, world, existingEntities);
-        trashFactory = new TrashFactory(constants, world, existingEntities);
+
+        // Pass the rockRegions array to your RockFactory
+        rockFactory = new RockFactory(constants, world, existingEntities, rockRegions);
+        trashFactory = new TrashFactory(constants, world, existingEntities, trashTextures);
+
         Random random = new Random();
 
         for (int i = 0; i < constants.NUM_ROCKS(); i++) {
