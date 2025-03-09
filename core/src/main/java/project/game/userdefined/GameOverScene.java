@@ -69,6 +69,7 @@ public class GameOverScene extends Scene {
         Table table = new Table();
         table.setFillParent(true);
         sceneUIManager.getStage().addActor(table);
+
         sceneUIManager.getStage().addActor(retryButton);
         sceneUIManager.getStage().addActor(exitButton);
 
@@ -107,5 +108,6 @@ public class GameOverScene extends Scene {
         sceneUIManager.getStage().dispose();
         batch.dispose();
         font.dispose();
+        
     }
 }

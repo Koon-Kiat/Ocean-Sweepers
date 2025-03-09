@@ -1,5 +1,6 @@
 package project.game.userdefined;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -24,7 +25,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.Direction;
 import project.game.abstractengine.assetmanager.CustomAssetManager;
+import project.game.abstractengine.audiomanager.AudioConfig;
 import project.game.abstractengine.audiomanager.AudioManager;
+import project.game.abstractengine.audiomanager.MusicManager;
+import project.game.abstractengine.audiomanager.SoundManager;
 import project.game.abstractengine.entitysystem.collisionmanager.BoundaryFactory;
 import project.game.abstractengine.entitysystem.collisionmanager.CollisionManager;
 import project.game.abstractengine.entitysystem.entitymanager.Entity;
@@ -38,6 +42,7 @@ import project.game.abstractengine.scenemanager.HealthManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
 import project.game.abstractengine.scenemanager.ScoreManager;
+import project.game.audioui.AudioUI;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
 import project.game.constants.GameConstants;
@@ -73,6 +78,8 @@ public class GameScene extends Scene {
     private InputMultiplexer inputMultiplexer;
     private Options options;
     private AudioManager audioManager;
+    private AudioConfig config;
+    private AudioUI audioUI;
     private NonMovableDroplet nonMovableDroplet;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
     private HealthManager healthManager;
@@ -86,6 +93,7 @@ public class GameScene extends Scene {
 
     @Override
     public void create() {
+        config = new AudioConfig();
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
@@ -190,10 +198,22 @@ public class GameScene extends Scene {
         // Create screen boundaries
         BoundaryFactory.createScreenBoundaries(world, GameConstants.GAME_WIDTH, GameConstants.GAME_HEIGHT, 0.1f);
 
-        // Initialize AudioManager and play background music
-        audioManager = new AudioManager(sceneUIManager.getStage());
-        audioManager.playMusic("BackgroundMusic");
+        // Initialize AudioManager and AudioUI
+        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
+        audioUI = new AudioUI(audioManager, config, sceneUIManager.getStage(), skin);
+        audioManager.setAudioUI(audioUI);
 
+        // Load and play audio
+        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
+        SoundManager.getInstance().loadSoundEffects(
+            new String[]{"watercollision.mp3", "Boinkeffect.mp3", "selection.mp3"},
+            new String[]{"drophit", "keybuttons", "selection"}
+        );
+        
+        // Set audio configuration
+        audioManager.setMusicVolume(config.getMusicVolume());
+        audioManager.setSoundEnabled(config.isSoundEnabled());
+        //playerMovementManager.setDirection(Direction.NONE);
     }
 
     @Override
@@ -206,7 +226,16 @@ public class GameScene extends Scene {
         inputMultiplexer.addProcessor(sceneUIManager.getStage());
         inputMultiplexer.addProcessor(inputManager);
         Gdx.input.setInputProcessor(inputMultiplexer);
+        Gdx.input.setCursorPosition(0, 0);
+
+        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");  // Ensure music is loaded
+        audioManager.playMusic("BackgroundMusic");                          // Play it
+
+
     }
+
+    
+    
 
     @Override
     public void render(float deltaTime) {
@@ -243,12 +272,8 @@ public class GameScene extends Scene {
         collisionManager.syncEntityPositions();
 
         // Play sound effect on collision
-        if (collisionManager.collision()) {
-            if (audioManager != null) {
-                audioManager.playSoundEffect("drophit");
-            } else {
-                LOGGER.log(Level.SEVERE, "AudioManager is null!");
-            }
+        if(collisionManager.collision() && audioManager != null) {
+            audioManager.playSoundEffect("drophit");
             // SCORE SYSTEM IMPLEMENTED HERE
             // Used with collision for testing purposes
             scoreManager.addScore(10);
@@ -262,6 +287,10 @@ public class GameScene extends Scene {
         dropImage.dispose();
         bucketImage.dispose();
         debugRenderer.dispose();
+        if (audioManager != null) {
+            audioManager.dispose();  // Dispose audio resources
+        }
+        
     }
 
     /**
@@ -288,29 +317,74 @@ public class GameScene extends Scene {
         sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
-    /**
-     * Handles key inputs for game control:
-     */
-    private void input() {
-        for (Integer key : inputManager.getKeyBindings().keySet()) {
-            if (inputManager.isKeyJustPressed(key)) {
-                LOGGER.log(Level.INFO, "Direction Key pressed: {0}", Input.Keys.toString(key));
-                audioManager.playSoundEffect("keybuttons");
-            }
-        }
-        // Toggle volume controls
+    //Handles input specifically for audio controls
+    private void handleAudioInput() {
         if (inputManager.isKeyJustPressed(Input.Keys.V)) {
+            System.out.println("Key V detected!");
+    
+            // If pause menu is open, close it before opening volume settings
             if (isMenuOpen) {
                 isMenuOpen = false;
+                isPaused = false;
                 options.getRebindMenu().setVisible(false);
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(inputManager); // Restore game input
+                Gdx.input.setInputProcessor(inputMultiplexer);
+                System.out.println("Closed rebind menu because V was pressed.");
             }
+    
             isVolumePopupOpen = !isVolumePopupOpen;
             if (isVolumePopupOpen) {
                 audioManager.showVolumeControls();
+    
+                // Ensure UI elements are interactive
+                if (audioUI != null) {
+                    audioUI.restoreUIInteractivity();
+                } else {
+                    System.out.println("Error: audioUIManager is null!");
+                }
+    
+                // Always ensure both stage & game input are handled
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(sceneUIManager.getStage()); // UI handling
+                inputMultiplexer.addProcessor(inputManager); // Game input  
+                Gdx.input.setInputProcessor(inputMultiplexer);
+    
+                System.out.println("Opened volume settings.");
             } else {
                 audioManager.hideVolumeControls();
+    
+                // Ensure game controls still work after closing volume settings
+                // Safely remove specific processors if needed
+                // inputMultiplexer.removeProcessor(stage);
+                // inputMultiplexer.removeProcessor(inputManager);
+                inputMultiplexer.clear();
+
+                inputMultiplexer.addProcessor(inputManager);
+                Gdx.input.setInputProcessor(inputMultiplexer);
+    
+                System.out.println("Closed volume settings.");
             }
         }
+    }
+    
+    
+
+    private void input() {
+        handleAudioInput(); // Handles audio input
+
+
+        for (Integer key : inputManager.getKeyBindings().keySet()) {
+            if (inputManager.isKeyJustPressed(key)) {
+                LOGGER.log(Level.INFO, "Direction Key pressed: {0}", Input.Keys.toString(key));
+                if (audioManager != null){
+                    audioManager.playSoundEffect("keybuttons");
+                }else{
+                    LOGGER.log(Level.WARNING, "AudioManager is null");
+                }
+            }
+        }
+        
         // Toggle game menu
         if (inputManager.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
@@ -331,7 +405,10 @@ public class GameScene extends Scene {
             options.getRebindMenu().setVisible(isMenuOpen);
             if (isMenuOpen) {
                 isPaused = true;
-                inputMultiplexer.setProcessors(sceneUIManager.getStage(), inputManager);
+                inputMultiplexer.clear();
+                inputMultiplexer.addProcessor(sceneUIManager.getStage()); // UI handling
+                inputMultiplexer.addProcessor(inputManager); // Game input
+                Gdx.input.setInputProcessor(inputMultiplexer);
                 LOGGER.log(Level.INFO, "InputProcessor set to stage");
             } else {
                 isPaused = false;

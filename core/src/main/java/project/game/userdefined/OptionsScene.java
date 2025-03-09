@@ -21,7 +21,6 @@ public class OptionsScene extends Scene {
 
     public OptionsScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
-        //this.sceneManager = sceneManager;
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
 
