@@ -10,16 +10,23 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
 
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.HealthManager;
 import project.game.abstractengine.scenemanager.IScene;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
+import project.game.abstractengine.scenemanager.ScoreManager;
+
 
 public class GameOverScene extends Scene {
     private SpriteBatch batch;
     private BitmapFont font;
+    private HealthManager healthManager;
+    private ScoreManager scoreManager;
 
     public GameOverScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
+        this.healthManager = HealthManager.getInstance();
+        this.scoreManager = ScoreManager.getInstance();
     }
 
     /**
@@ -29,6 +36,8 @@ public class GameOverScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
+        //scoreManager = ScoreManager.getInstance();
+        //healthManager = new HealthManager();
 
         // Font for Game Over text
         font = new BitmapFont();
@@ -43,6 +52,9 @@ public class GameOverScene extends Scene {
             if (gameScene != null) {
                 gameScene.resetScene();
             }
+            // Upon retry, reset the score and health
+            scoreManager.resetScore();
+            healthManager.resetHealth();
             // Then switch to the game scene
             sceneManager.setScene("game");
         });
@@ -57,7 +69,6 @@ public class GameOverScene extends Scene {
         Table table = new Table();
         table.setFillParent(true);
         sceneUIManager.getStage().addActor(table);
-
         sceneUIManager.getStage().addActor(retryButton);
         sceneUIManager.getStage().addActor(exitButton);
 
@@ -76,6 +87,8 @@ public class GameOverScene extends Scene {
         batch.begin();
         font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
                 false);
+        // Score reflects in the Game Over scene
+        font.draw(batch, "Score: " + scoreManager.getScore(), Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 130, 0, Align.center, false);
         batch.end();
         sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
         sceneUIManager.getStage().draw();

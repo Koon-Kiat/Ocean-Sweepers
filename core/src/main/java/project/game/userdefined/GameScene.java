@@ -34,8 +34,10 @@ import project.game.abstractengine.entitysystem.movementmanager.NPCMovementManag
 import project.game.abstractengine.entitysystem.movementmanager.PlayerMovementManager;
 import project.game.abstractengine.interfaces.IMovementBehavior;
 import project.game.abstractengine.iomanager.SceneIOManager;
+import project.game.abstractengine.scenemanager.HealthManager;
 import project.game.abstractengine.scenemanager.Scene;
 import project.game.abstractengine.scenemanager.SceneManager;
+import project.game.abstractengine.scenemanager.ScoreManager;
 import project.game.builder.NPCMovementBuilder;
 import project.game.builder.PlayerMovementBuilder;
 import project.game.constants.GameConstants;
@@ -73,9 +75,13 @@ public class GameScene extends Scene {
     private AudioManager audioManager;
     private NonMovableDroplet nonMovableDroplet;
     List<IMovementBehavior> behaviorPool = new ArrayList<>();
+    private HealthManager healthManager;
+    private ScoreManager scoreManager;
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
+        this.healthManager = HealthManager.getInstance(); // used to use same instance of health manager for multiple scenes (game over scene)
+        this.scoreManager = ScoreManager.getInstance();
     }
 
     @Override
@@ -215,6 +221,9 @@ public class GameScene extends Scene {
         // Draw entities
         batch.begin();
         entityManager.draw(batch);
+        healthManager.draw(batch); // Draws health (now droplet asset)
+        // SCORE DRAWN HERE
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 10, sceneUIManager.getStage().getHeight() - 30);
         batch.end();
 
         // Draw stage
@@ -240,6 +249,10 @@ public class GameScene extends Scene {
             } else {
                 LOGGER.log(Level.SEVERE, "AudioManager is null!");
             }
+            // SCORE SYSTEM IMPLEMENTED HERE
+            // Used with collision for testing purposes
+            scoreManager.addScore(10);
+            LOGGER.log(Level.INFO, "Score: {0}", scoreManager.getScore());
         }
     }
 
@@ -328,6 +341,18 @@ public class GameScene extends Scene {
                 LOGGER.log(Level.INFO, "InputProcessor set to inputManager");
             }
         }
+
+        // HEALTH SYSTEM USED HERE *******
+        // Lose life if input 0 is pressed -- Input is just placeholder for debugging
+        if (inputManager.isKeyJustPressed(Input.Keys.NUM_0)) {
+            loseLife();
+            if (healthManager.getLives() == 0) {
+            sceneManager.setScene("gameover");
+            audioManager.stopMusic();
+            audioManager.hideVolumeControls();
+            options.getRebindMenu().setVisible(false);
+            }
+        }
     }
 
     /**
@@ -377,4 +402,7 @@ public class GameScene extends Scene {
         LOGGER.log(Level.INFO, "Popup closed and game unpaused");
     }
 
+    public void loseLife() {
+        healthManager.loseLife();
+    }
 }
