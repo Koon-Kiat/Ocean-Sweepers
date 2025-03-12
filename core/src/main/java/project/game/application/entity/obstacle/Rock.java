@@ -2,6 +2,7 @@ package project.game.application.entity.obstacle;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -23,7 +24,8 @@ import project.game.engine.entitysystem.entity.Entity;
 public class Rock extends CollidableEntity implements IRenderable {
 
 	private static final GameLogger LOGGER = new GameLogger(Main.class);
-	private final String texturePath;
+	private String texturePath;
+	private TextureRegion rockRegion;
 	private boolean collisionActive = false;
 	private long collisionEndTime = 0;
 
@@ -31,6 +33,12 @@ public class Rock extends CollidableEntity implements IRenderable {
 		super(entity, world);
 		this.texturePath = texturePath;
 	}
+
+	// New constructor for a rock with a given region
+    public Rock(Entity entity, World world, TextureRegion rockRegion) {
+        super(entity, world);
+        this.rockRegion = rockRegion;
+    }
 
 	public void setCollisionActive(long durationMillis) {
 		collisionActive = true;
@@ -92,16 +100,13 @@ public class Rock extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-	public void render(SpriteBatch batch) {
-		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
-
-			// Render the entity using offset for BOX2D body
-			float renderX = entityX() - entityWidth() / 2;
-			float renderY = entityY() - entityHeight() / 2;
-			Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
-			batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
-		}
-	}
+    public void render(SpriteBatch batch) {
+        if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
+            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+            batch.draw(rockRegion, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
+        }
+    }
 
 	@Override
 	public boolean checkCollision(Entity other) {
