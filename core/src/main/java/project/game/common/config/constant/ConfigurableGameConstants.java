@@ -3,7 +3,7 @@ package project.game.common.config.constant;
 import project.game.application.api.constant.IGameConstants;
 import project.game.common.config.loader.GameConfigurationLoader;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.constant.loader.AbstractConfigurableConstants;
+import project.game.engine.constant.base.AbstractConfigurableConstants;
 
 /**
  * Game-specific implementation of configurable constants.

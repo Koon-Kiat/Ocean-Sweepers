@@ -1,11 +1,11 @@
-package project.game.engine.scene.core;
+package project.game.engine.scene.management;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.api.IScene;
 
 /**
@@ -15,11 +15,11 @@ public class SceneManager {
 
     private final Map<String, IScene> scenes;
     private final Stack<IScene> sceneHistory;
-    private final SceneIOManager baseInputManager;
+    private final SceneInputManager baseInputManager;
     private IScene currentScene;
 
     public SceneManager() {
-        baseInputManager = new SceneIOManager();
+        baseInputManager = new SceneInputManager();
         this.scenes = new HashMap<>();
         this.sceneHistory = new Stack<>();
     }
@@ -36,7 +36,7 @@ public class SceneManager {
         return currentScene;
     }
 
-    public SceneIOManager getInputManager() {
+    public SceneInputManager getInputManager() {
         return baseInputManager;
     }
 

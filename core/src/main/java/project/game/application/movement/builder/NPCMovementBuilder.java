@@ -13,7 +13,7 @@ import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 import project.game.engine.entitysystem.movement.api.IPositionable;
-import project.game.engine.entitysystem.movement.controller.NPCMovementManager;
+import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 
 /**
  * Builder class for creating NPCMovementManager objects.

@@ -9,17 +9,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
 
-import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.api.IScene;
-import project.game.engine.scene.core.Scene;
-import project.game.engine.scene.core.SceneManager;
+import project.game.engine.scene.management.Scene;
+import project.game.engine.scene.management.SceneManager;
 
 public class GameOverScene extends Scene {
 
     private SpriteBatch batch;
     private BitmapFont font;
 
-    public GameOverScene(SceneManager sceneManager, SceneIOManager inputManager) {
+    public GameOverScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
     }
 

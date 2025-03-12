@@ -5,7 +5,7 @@ import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.MovableEntity;
 import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
-import project.game.engine.entitysystem.movement.controller.PlayerMovementManager;
+import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 
 /**
  * Builder class for creating PlayerMovementManager objects.

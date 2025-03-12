@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.physics.core;
+package project.game.engine.entitysystem.physics.management;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,14 +18,14 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.movement.core.MovementManager;
+import project.game.engine.entitysystem.movement.management.MovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionPairHandler;
 import project.game.engine.entitysystem.physics.collision.detection.CollisionPairTracker;
 import project.game.engine.entitysystem.physics.collision.resolution.CollisionResponseHandler;
 import project.game.engine.entitysystem.physics.collision.resolution.CollisionVisitorResolver;
 import project.game.engine.entitysystem.physics.lifecycle.PhysicsBodyRemovalRequest;
-import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.io.management.SceneInputManager;
 
 /**
  * CollisionManager is a class that manages the collision detection and
@@ -36,7 +36,7 @@ public class CollisionManager implements ContactListener {
     private static final GameLogger LOGGER = new GameLogger(CollisionManager.class);
     private final World world;
     private final List<Runnable> collisionQueue;
-    private final SceneIOManager inputManager;
+    private final SceneInputManager inputManager;
     private final CollisionVisitorResolver collisionResolver;
     private final ICollisionPairHandler collisionPairTracker;
     private final Map<ICollidableVisitor, MovementManager> entityMap;
@@ -46,7 +46,7 @@ public class CollisionManager implements ContactListener {
     private long defaultCollisionDuration;
     private Queue<PhysicsBodyRemovalRequest> removalQueue = new LinkedList<>();
 
-    public CollisionManager(World world, SceneIOManager inputManager) {
+    public CollisionManager(World world, SceneInputManager inputManager) {
         this.world = world;
         this.inputManager = inputManager;
         this.collisionQueue = new ArrayList<>();

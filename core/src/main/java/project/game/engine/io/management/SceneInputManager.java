@@ -1,4 +1,4 @@
-package project.game.engine.io.scene;
+package project.game.engine.io.management;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,25 +10,24 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.io.binding.KeyBindingsManager;
-import project.game.engine.io.core.IOManager;
 
 /**
  * SceneIOManager handles input events (keyboard and mouse) for the game.
  * It extends IOManager to provide additional functionality for scene-based
  * input handling.
  */
-public class SceneIOManager extends IOManager {
+public class SceneInputManager extends InputManager {
 
-    private static final GameLogger LOGGER = new GameLogger(SceneIOManager.class);
+    private static final GameLogger LOGGER = new GameLogger(SceneInputManager.class);
 
     // Map holding key codes mapped to their movement vectors
     private KeyBindingsManager keyBindingsManager;
 
-    public SceneIOManager() {
+    public SceneInputManager() {
         super();
     }
 
-    public SceneIOManager(boolean withMovementControls) {
+    public SceneInputManager(boolean withMovementControls) {
         super();
         if (withMovementControls) {
             enableMovementControls();

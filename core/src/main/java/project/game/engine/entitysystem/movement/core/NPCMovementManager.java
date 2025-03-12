@@ -1,10 +1,10 @@
-package project.game.engine.entitysystem.movement.controller;
+package project.game.engine.entitysystem.movement.core;
 
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
-import project.game.engine.entitysystem.movement.core.MovementManager;
+import project.game.engine.entitysystem.movement.management.MovementManager;
 
 /**
  * NPCMovementManager is a concrete class that extends MovementManager and

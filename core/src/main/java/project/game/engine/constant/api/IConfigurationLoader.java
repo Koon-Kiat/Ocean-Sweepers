@@ -2,7 +2,7 @@ package project.game.engine.constant.api;
 
 import java.util.Map;
 
-import project.game.engine.constant.loader.AbstractConfigurableConstants;
+import project.game.engine.constant.base.AbstractConfigurableConstants;
 
 /**
  * Interface for loading and saving configuration data

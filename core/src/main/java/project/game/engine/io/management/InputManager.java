@@ -1,4 +1,4 @@
-package project.game.engine.io.core;
+package project.game.engine.io.management;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,13 +11,13 @@ import com.badlogic.gdx.math.Vector2;
  * IOManager handles input events (keyboard and mouse) for the game.
  * It extends LibGDX's InputAdapter to provide basic behavior.
  */
-public class IOManager extends InputAdapter {
+public class InputManager extends InputAdapter {
 
     private final Vector2 mousePosition;
     private final Set<Integer> pressedKeys;
     private boolean isMouseClicked;
 
-    public IOManager() {
+    public InputManager() {
         this.mousePosition = new Vector2();
         this.isMouseClicked = false;
         this.pressedKeys = new HashSet<>();

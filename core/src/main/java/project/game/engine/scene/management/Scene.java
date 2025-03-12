@@ -1,11 +1,11 @@
-package project.game.engine.scene.core;
+package project.game.engine.scene.management;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.api.IScene;
 import project.game.engine.scene.ui.SceneUIManager;
 
@@ -15,10 +15,10 @@ import project.game.engine.scene.ui.SceneUIManager;
 public abstract class Scene implements Screen, IScene {
 
     protected SceneUIManager sceneUIManager;
-    protected SceneIOManager inputManager;
+    protected SceneInputManager inputManager;
     protected SceneManager sceneManager;
 
-    public Scene(SceneManager sceneManager, SceneIOManager inputManager) {
+    public Scene(SceneManager sceneManager, SceneInputManager inputManager) {
         this.sceneManager = sceneManager;
         this.inputManager = inputManager;
         this.sceneUIManager = new SceneUIManager(new ScreenViewport());

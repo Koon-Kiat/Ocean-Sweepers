@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.constant.loader.AbstractConfigurationLoader;
+import project.game.engine.constant.io.AbstractConfigurationLoader;
 
 /**
  * LibGDX-specific implementation of configuration loading.

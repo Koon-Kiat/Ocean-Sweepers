@@ -9,9 +9,9 @@ import project.game.application.scene.main.MainMenuScene;
 import project.game.application.scene.overlay.GameOverScene;
 import project.game.application.scene.overlay.OptionsScene;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.api.IScene;
-import project.game.engine.scene.core.SceneManager;
+import project.game.engine.scene.management.SceneManager;
 
 /**
  * Factory class for creating and registering scenes.
@@ -21,10 +21,10 @@ public class SceneFactory {
 
     private static final GameLogger LOGGER = new GameLogger(SceneFactory.class);
     private final SceneManager sceneManager;
-    private final SceneIOManager inputManager;
+    private final SceneInputManager inputManager;
     private final Map<String, Supplier<IScene>> sceneCreators;
 
-    public SceneFactory(SceneManager sceneManager, SceneIOManager inputManager) {
+    public SceneFactory(SceneManager sceneManager, SceneInputManager inputManager) {
         this.sceneManager = sceneManager;
         this.inputManager = inputManager;
 

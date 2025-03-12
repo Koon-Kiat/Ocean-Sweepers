@@ -1,7 +1,7 @@
 package project.game.common.config.constant;
 
-import project.game.engine.constant.core.AbstractConstantsRegistry;
-import project.game.engine.constant.core.ConstantDefinition;
+import project.game.engine.constant.base.AbstractConstantsRegistry;
+import project.game.engine.constant.model.ConstantDefinition;
 
 /**
  * Game-specific implementation of the constants registry.

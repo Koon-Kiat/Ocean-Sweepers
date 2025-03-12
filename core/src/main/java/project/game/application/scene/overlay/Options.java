@@ -14,9 +14,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.application.scene.main.GameScene;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.io.scene.SceneIOManager;
-import project.game.engine.scene.core.Scene;
-import project.game.engine.scene.core.SceneManager;
+import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.Scene;
+import project.game.engine.scene.management.SceneManager;
 
 @SuppressWarnings("unused")
 public class Options extends Scene {
@@ -31,7 +31,7 @@ public class Options extends Scene {
     // Button to control main menu visibility.
     private TextButton mainMenuButton;
 
-    public Options(SceneManager sceneManager, GameScene gameScene, SceneIOManager inputManager) {
+    public Options(SceneManager sceneManager, GameScene gameScene, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.gameScene = gameScene;
     }

@@ -5,7 +5,7 @@ package project.game.engine.io.api;
  * 
  * Provides methods for handling input in the menu.
  */
-public interface IMenuInputHandler {
+public interface IInputHandler {
 
     void onMenuKeyPressed(int keycode);
 }

@@ -1,4 +1,4 @@
-package project.game.engine.constant.loader;
+package project.game.engine.constant.base;
 
 import project.game.common.config.constant.DefaultProfileManager;
 import project.game.engine.constant.api.IConstantsRegistry;
@@ -9,13 +9,17 @@ import project.game.engine.constant.api.IProfileManager;
  * configuration management.
  */
 public abstract class AbstractConfigurableConstants {
-    
+
     protected final IProfileManager profileManager;
     protected final IConstantsRegistry registry;
 
     protected AbstractConfigurableConstants(IConstantsRegistry registry) {
         this.registry = registry;
         this.profileManager = new DefaultProfileManager(registry);
+    }
+
+    public IConstantsRegistry getRegistry() {
+        return registry;
     }
 
     public void createProfile(String profileName) {

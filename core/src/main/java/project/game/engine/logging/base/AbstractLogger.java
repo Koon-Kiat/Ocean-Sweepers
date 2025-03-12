@@ -1,4 +1,4 @@
-package project.game.engine.logging.core;
+package project.game.engine.logging.base;
 
 import java.text.MessageFormat;
 

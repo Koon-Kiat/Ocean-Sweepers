@@ -1,6 +1,6 @@
 package project.game.engine.entitysystem.physics.collision.resolution;
 
-import project.game.engine.entitysystem.movement.core.MovementManager;
+import project.game.engine.entitysystem.movement.management.MovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 /**

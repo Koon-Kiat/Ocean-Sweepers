@@ -1,4 +1,4 @@
-package project.game.engine.constant.core;
+package project.game.engine.constant.base;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import project.game.engine.constant.api.IConstantsRegistry;
+import project.game.engine.constant.model.ConstantDefinition;
 
 /**
  * Base implementation of the constants registry.

@@ -1,4 +1,4 @@
-package project.game.engine.audio.core;
+package project.game.engine.audio.management;
 
 import project.game.application.scene.ui.AudioUI;
 import project.game.engine.audio.api.IAudioConfig;

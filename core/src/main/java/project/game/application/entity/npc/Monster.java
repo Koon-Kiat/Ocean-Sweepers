@@ -20,11 +20,11 @@ import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.asset.core.CustomAssetManager;
+import project.game.engine.asset.management.CustomAssetManager;
 import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.CollidableEntity;
-import project.game.engine.entitysystem.movement.controller.NPCMovementManager;
+import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 public class Monster extends CollidableEntity implements IRenderable {

@@ -3,7 +3,7 @@ package project.game.engine.entitysystem.entity.core;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.engine.asset.core.CustomAssetManager;
+import project.game.engine.asset.management.CustomAssetManager;
 import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 

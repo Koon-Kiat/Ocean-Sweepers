@@ -9,8 +9,8 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.common.logging.util.LogPaths;
 import project.game.common.util.file.ProjectPaths;
-import project.game.engine.io.scene.SceneIOManager;
-import project.game.engine.scene.core.SceneManager;
+import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.SceneManager;
 
 public class Main extends ApplicationAdapter {
 
@@ -45,7 +45,7 @@ public class Main extends ApplicationAdapter {
         // Scene Manager setup
         LOGGER.debug("Creating scene manager");
         sceneManager = new SceneManager();
-        SceneIOManager sharedInputManager = sceneManager.getInputManager();
+        SceneInputManager sharedInputManager = sceneManager.getInputManager();
 
         // Initializing and registering scenes now done in Scene Factory
         LOGGER.info("Initializing scene factory");

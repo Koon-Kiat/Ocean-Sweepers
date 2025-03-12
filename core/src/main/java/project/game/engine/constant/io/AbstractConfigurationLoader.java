@@ -1,10 +1,11 @@
-package project.game.engine.constant.loader;
+package project.game.engine.constant.io;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import project.game.engine.constant.api.IConfigurationLoader;
-import project.game.engine.constant.core.ConstantDefinition;
+import project.game.engine.constant.base.AbstractConfigurableConstants;
+import project.game.engine.constant.model.ConstantDefinition;
 
 /**
  * Abstract base class for configuration loading.
@@ -44,8 +45,8 @@ public abstract class AbstractConfigurationLoader implements IConfigurationLoade
     protected void validateAndLoadConfig(Map<String, Object> configData, String profileName,
             AbstractConfigurableConstants constants) {
         Map<String, ConstantDefinition> validationMap = new HashMap<>();
-        for (String key : constants.registry.getAllKeys()) {
-            validationMap.put(key, constants.registry.get(key));
+        for (String key : constants.getRegistry().getAllKeys()) {
+            validationMap.put(key, constants.getRegistry().get(key));
         }
 
         for (Map.Entry<String, Object> entry : configData.entrySet()) {
@@ -53,9 +54,9 @@ public abstract class AbstractConfigurationLoader implements IConfigurationLoade
         }
 
         // Set default values for missing constants
-        for (String key : constants.registry.getAllKeys()) {
+        for (String key : constants.getRegistry().getAllKeys()) {
             if (!constants.hasValue(profileName, key)) {
-                ConstantDefinition def = constants.registry.get(key);
+                ConstantDefinition def = constants.getRegistry().get(key);
                 handleWarning("Missing constant " + key + " in profile " + profileName +
                         ". Using default value: " + def.getDefaultValue());
                 constants.setValue(key, def.getDefaultValue());
@@ -81,7 +82,7 @@ public abstract class AbstractConfigurationLoader implements IConfigurationLoade
 
     protected Map<String, Object> collectConfigurationData(AbstractConfigurableConstants constants) {
         Map<String, Object> configData = new HashMap<>();
-        for (String key : constants.registry.getAllKeys()) {
+        for (String key : constants.getRegistry().getAllKeys()) {
             Object value = constants.getRawValue(key);
             configData.put(key, value);
         }

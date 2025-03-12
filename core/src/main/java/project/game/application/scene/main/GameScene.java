@@ -37,22 +37,22 @@ import project.game.application.scene.overlay.Options;
 import project.game.application.scene.ui.AudioUI;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.asset.core.CustomAssetManager;
+import project.game.engine.asset.management.CustomAssetManager;
 import project.game.engine.audio.config.AudioConfig;
-import project.game.engine.audio.core.AudioManager;
+import project.game.engine.audio.management.AudioManager;
 import project.game.engine.audio.music.MusicManager;
 import project.game.engine.audio.sound.SoundManager;
 import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
-import project.game.engine.entitysystem.movement.controller.NPCMovementManager;
-import project.game.engine.entitysystem.movement.controller.PlayerMovementManager;
+import project.game.engine.entitysystem.movement.core.NPCMovementManager;
+import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.boundary.WorldBoundaryFactory;
-import project.game.engine.entitysystem.physics.core.CollisionManager;
-import project.game.engine.io.scene.SceneIOManager;
-import project.game.engine.scene.core.Scene;
-import project.game.engine.scene.core.SceneManager;
+import project.game.engine.entitysystem.physics.management.CollisionManager;
+import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.Scene;
+import project.game.engine.scene.management.SceneManager;
 
 @SuppressWarnings("unused")
 public class GameScene extends Scene implements IEntityRemovalListener {
@@ -105,7 +105,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private static final String BOAT_ENTITY = "boat";
     private static final String MONSTER_ENTITY = "monster";
 
-    public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
+    public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
     }
 

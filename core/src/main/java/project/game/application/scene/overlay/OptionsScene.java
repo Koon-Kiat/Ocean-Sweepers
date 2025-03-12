@@ -5,9 +5,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
-import project.game.engine.io.scene.SceneIOManager;
-import project.game.engine.scene.core.Scene;
-import project.game.engine.scene.core.SceneManager;
+import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.Scene;
+import project.game.engine.scene.management.SceneManager;
 
 /**
  * The OptionsScene class represents the game scene where users can adjust
@@ -19,7 +19,7 @@ public class OptionsScene extends Scene {
     private final Table tableScene;
     private final TextButton returnButton;
 
-    public OptionsScene(SceneManager sceneManager, SceneIOManager inputManager) {
+    public OptionsScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));

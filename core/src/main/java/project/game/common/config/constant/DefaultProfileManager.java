@@ -5,7 +5,7 @@ import java.util.Map;
 
 import project.game.engine.constant.api.IConstantsRegistry;
 import project.game.engine.constant.api.IProfileManager;
-import project.game.engine.constant.core.ConstantDefinition;
+import project.game.engine.constant.model.ConstantDefinition;
 
 /**
  * Default implementation of profile management

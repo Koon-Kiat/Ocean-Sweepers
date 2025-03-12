@@ -14,12 +14,12 @@ import project.game.application.scene.overlay.Options;
 import project.game.application.scene.ui.AudioUI;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.audio.config.AudioConfig;
-import project.game.engine.audio.core.AudioManager;
+import project.game.engine.audio.management.AudioManager;
 import project.game.engine.audio.music.MusicManager;
 import project.game.engine.audio.sound.SoundManager;
-import project.game.engine.io.scene.SceneIOManager;
-import project.game.engine.scene.core.Scene;
-import project.game.engine.scene.core.SceneManager;
+import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.Scene;
+import project.game.engine.scene.management.SceneManager;
 
 public class MainMenuScene extends Scene {
 
@@ -35,7 +35,7 @@ public class MainMenuScene extends Scene {
     private AudioConfig audioConfig;
     private boolean disposed = false;
 
-    public MainMenuScene(SceneManager sceneManager, SceneIOManager inputManager) {
+    public MainMenuScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
     }
 

@@ -20,7 +20,7 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.SpriteEntity;
-import project.game.engine.entitysystem.movement.controller.PlayerMovementManager;
+import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 public class Boat extends SpriteEntity implements IRenderable {

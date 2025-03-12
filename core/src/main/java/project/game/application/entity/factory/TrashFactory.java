@@ -11,7 +11,7 @@ import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.pool.ObjectPool;
 import project.game.application.entity.item.Trash;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.physics.core.CollisionManager;
+import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class TrashFactory implements ObjectPool.ObjectFactory<Trash> {
 
