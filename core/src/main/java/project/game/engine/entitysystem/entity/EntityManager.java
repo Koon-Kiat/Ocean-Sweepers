@@ -11,8 +11,8 @@ import java.util.function.Function;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.render.IRenderable;
+import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 /**
  * EntityManager class that manages entities and renderables

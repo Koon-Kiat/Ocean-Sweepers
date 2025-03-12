@@ -1,7 +1,7 @@
 package project.game.engine.entitysystem.physics;
 
-import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.entitysystem.movement.core.MovementManager;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 /**
  * EntityCollisionUpdater is a utility class that updates an entity's position

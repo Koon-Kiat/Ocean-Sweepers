@@ -1,7 +1,7 @@
 package project.game.engine.entitysystem.physics.boundary;
 
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.collision.ICollisionElement;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.api.ICollisionElement;
 
 /**
  * Represents a boundary in the game world that can be collided with.

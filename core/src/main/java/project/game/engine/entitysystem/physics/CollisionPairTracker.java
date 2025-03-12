@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.collision.ICollisionPairHandler;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.api.ICollisionPairHandler;
 
 /**
  * A class that tracks active collision pairs using the visitor pattern.

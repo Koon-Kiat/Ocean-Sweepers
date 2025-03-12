@@ -4,8 +4,8 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 
 /**
  * Abstract base class for movement strategies. Provides common functionality

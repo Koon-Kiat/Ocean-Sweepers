@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
 
-import project.game.engine.api.scene.IScene;
 import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.scene.api.IScene;
 import project.game.engine.scene.core.Scene;
 import project.game.engine.scene.core.SceneManager;
 

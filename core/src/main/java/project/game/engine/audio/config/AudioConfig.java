@@ -3,7 +3,7 @@ package project.game.engine.audio.config;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 
-import project.game.engine.api.audio.IAudioConfig;
+import project.game.engine.audio.api.IAudioConfig;
 
 public class AudioConfig implements IAudioConfig {
     

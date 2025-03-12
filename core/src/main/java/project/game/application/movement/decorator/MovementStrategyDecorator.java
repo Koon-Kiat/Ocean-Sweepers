@@ -1,7 +1,7 @@
 package project.game.application.movement.decorator;
 
-import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 
 public abstract class MovementStrategyDecorator implements IMovementStrategy {
 

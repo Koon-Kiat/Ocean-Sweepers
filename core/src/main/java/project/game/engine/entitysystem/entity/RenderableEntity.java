@@ -3,8 +3,8 @@ package project.game.engine.entitysystem.entity;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import project.game.engine.api.render.IRenderable;
 import project.game.engine.asset.core.CustomAssetManager;
+import project.game.engine.entitysystem.entity.api.IRenderable;
 
 /**
  * RenderableEntity is an abstract class that extends Entity and provides the

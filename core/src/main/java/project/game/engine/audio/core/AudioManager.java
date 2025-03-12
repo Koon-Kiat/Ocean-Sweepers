@@ -1,9 +1,9 @@
 package project.game.engine.audio.core;
 
 import project.game.application.scene.ui.AudioUI;
-import project.game.engine.api.audio.IAudioConfig;
-import project.game.engine.api.audio.IMusic;
-import project.game.engine.api.audio.ISound;
+import project.game.engine.audio.api.IAudioConfig;
+import project.game.engine.audio.api.IMusic;
+import project.game.engine.audio.api.ISound;
 
 public class AudioManager {
     

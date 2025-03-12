@@ -5,8 +5,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import project.game.engine.api.scene.IScene;
 import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.scene.api.IScene;
 import project.game.engine.scene.ui.SceneUIManager;
 
 /**

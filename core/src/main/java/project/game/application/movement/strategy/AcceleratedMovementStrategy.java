@@ -3,8 +3,8 @@ package project.game.application.movement.strategy;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
-import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IStoppableStrategy;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IStoppableStrategy;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
 
 /**

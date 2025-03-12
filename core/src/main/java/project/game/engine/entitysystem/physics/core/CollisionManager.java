@@ -13,12 +13,12 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.collision.ICollisionPairHandler;
 import project.game.engine.entitysystem.movement.core.MovementManager;
 import project.game.engine.entitysystem.physics.CollisionPairTracker;
 import project.game.engine.entitysystem.physics.CollisionVisitorHandler;
 import project.game.engine.entitysystem.physics.EntityCollisionUpdater;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.api.ICollisionPairHandler;
 import project.game.engine.io.scene.SceneIOManager;
 
 /**

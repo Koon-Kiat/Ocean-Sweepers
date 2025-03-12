@@ -7,9 +7,9 @@ import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.ICompositeMovementStrategy;
-import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.entitysystem.movement.api.ICompositeMovementStrategy;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 
 /**
  * CompositeMovementStrategy combines multiple movement strategies and applies

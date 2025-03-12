@@ -16,11 +16,11 @@ import project.game.application.movement.strategy.ZigZagMovemenStrategy;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
-import project.game.engine.api.movement.IMovementStrategyFactory;
-import project.game.engine.api.movement.IPositionable;
 import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IMovementStrategy;
+import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
+import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrategy;
 
 /**

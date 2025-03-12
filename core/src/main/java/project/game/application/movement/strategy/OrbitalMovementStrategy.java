@@ -4,8 +4,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.common.exception.MovementException;
-import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IPositionable;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
 
 /**

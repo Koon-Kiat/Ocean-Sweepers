@@ -9,8 +9,8 @@ import project.game.application.scene.main.MainMenuScene;
 import project.game.application.scene.overlay.GameOverScene;
 import project.game.application.scene.overlay.OptionsScene;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.scene.IScene;
 import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.scene.api.IScene;
 import project.game.engine.scene.core.SceneManager;
 
 /**

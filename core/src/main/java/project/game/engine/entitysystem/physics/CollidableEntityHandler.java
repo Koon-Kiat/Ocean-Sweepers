@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.collision.ICollisionOperation;
 import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.api.ICollisionOperation;
 
 /**
  * Default implementation of ICollisionHandler for ICollidable entities

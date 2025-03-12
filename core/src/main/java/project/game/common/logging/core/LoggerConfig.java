@@ -1,6 +1,6 @@
 package project.game.common.logging.core;
 
-import project.game.engine.api.logging.LogLevel;
+import project.game.engine.logging.api.LogLevel;
 
 /**
  * Configuration for the logging system.

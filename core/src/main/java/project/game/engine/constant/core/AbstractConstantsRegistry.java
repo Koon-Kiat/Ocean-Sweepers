@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import project.game.engine.api.constant.IConstantsRegistry;
+import project.game.engine.constant.api.IConstantsRegistry;
 
 /**
  * Base implementation of the constants registry.

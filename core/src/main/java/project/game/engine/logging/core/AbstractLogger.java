@@ -2,8 +2,8 @@ package project.game.engine.logging.core;
 
 import java.text.MessageFormat;
 
-import project.game.engine.api.logging.ILogger;
-import project.game.engine.api.logging.LogLevel;
+import project.game.engine.logging.api.ILogger;
+import project.game.engine.logging.api.LogLevel;
 
 /**
  * Abstract base logger that implements core logging functionality.

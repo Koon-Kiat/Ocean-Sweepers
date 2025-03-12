@@ -12,8 +12,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.collision.ICollisionOperation;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.api.ICollisionOperation;
 
 /**
  * Abstract class for entities that can collide with other entities.

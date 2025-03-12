@@ -3,7 +3,7 @@ package project.game.engine.constant.loader;
 import java.util.HashMap;
 import java.util.Map;
 
-import project.game.engine.api.constant.IConfigurationLoader;
+import project.game.engine.constant.api.IConfigurationLoader;
 import project.game.engine.constant.core.ConstantDefinition;
 
 /**

@@ -2,9 +2,9 @@ package project.game.application.movement.builder;
 
 import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.exception.MovementException;
-import project.game.engine.api.movement.IMovementStrategyFactory;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
+import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 import project.game.engine.entitysystem.movement.type.PlayerMovementManager;
 
 /**

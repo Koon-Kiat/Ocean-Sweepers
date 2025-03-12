@@ -2,7 +2,7 @@ package project.game.engine.entitysystem.entity;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.engine.api.movement.IMovable;
+import project.game.engine.entitysystem.movement.api.IMovable;
 
 /**
  * MovableEntity is an abstract class that extends Entity and provides the

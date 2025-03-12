@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import project.game.common.logging.util.LogPaths;
-import project.game.engine.api.logging.ILogger;
-import project.game.engine.api.logging.ILoggerEvent;
-import project.game.engine.api.logging.LogLevel;
+import project.game.engine.logging.api.ILogger;
+import project.game.engine.logging.api.ILoggerEvent;
+import project.game.engine.logging.api.LogLevel;
 import project.game.engine.logging.core.AbstractLogger;
 
 public class GameLogger extends AbstractLogger {

@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import project.game.engine.api.logging.ILogManager;
+import project.game.engine.logging.api.ILogManager;
 
 /**
  * Base implementation of ILogManager.

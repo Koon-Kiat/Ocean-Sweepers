@@ -7,7 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.audio.IMusic;
+import project.game.engine.audio.api.IMusic;
 
 public class MusicManager implements IMusic {
 

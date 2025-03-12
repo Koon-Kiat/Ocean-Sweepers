@@ -3,8 +3,8 @@ package project.game.common.config.constant;
 import java.util.HashMap;
 import java.util.Map;
 
-import project.game.engine.api.constant.IConstantsRegistry;
-import project.game.engine.api.constant.IProfileManager;
+import project.game.engine.constant.api.IConstantsRegistry;
+import project.game.engine.constant.api.IProfileManager;
 import project.game.engine.constant.core.ConstantDefinition;
 
 /**

@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import project.game.engine.api.audio.IAudioConfig;
-import project.game.engine.api.audio.IAudioUI;
+import project.game.engine.audio.api.IAudioConfig;
+import project.game.engine.audio.api.IAudioUI;
 import project.game.engine.audio.core.AudioManager;
 
 public class AudioUI implements IAudioUI {

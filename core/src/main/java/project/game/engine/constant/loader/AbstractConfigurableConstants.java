@@ -1,8 +1,8 @@
 package project.game.engine.constant.loader;
 
 import project.game.common.config.constant.DefaultProfileManager;
-import project.game.engine.api.constant.IConstantsRegistry;
-import project.game.engine.api.constant.IProfileManager;
+import project.game.engine.constant.api.IConstantsRegistry;
+import project.game.engine.constant.api.IProfileManager;
 
 /**
  * An abstract base class for configurable constants that provides profile-based

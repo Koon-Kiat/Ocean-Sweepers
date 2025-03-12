@@ -5,9 +5,9 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.movement.IMovementStrategy;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.MovableEntity;
+import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 
 /**
  * Base builder class for movement builders.

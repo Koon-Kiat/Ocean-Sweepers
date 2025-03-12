@@ -7,7 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.audio.ISound;
+import project.game.engine.audio.api.ISound;
 
 public class SoundManager implements ISound {
 

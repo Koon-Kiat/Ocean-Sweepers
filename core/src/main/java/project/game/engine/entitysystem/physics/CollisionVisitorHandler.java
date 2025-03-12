@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.collision.ICollisionElement;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.api.ICollisionElement;
 import project.game.engine.entitysystem.physics.boundary.BoundaryCollisionElement;
 
 /**

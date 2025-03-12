@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import project.game.engine.api.scene.IScene;
 import project.game.engine.io.scene.SceneIOManager;
+import project.game.engine.scene.api.IScene;
 
 /**
  * Manages the scenes in the game.

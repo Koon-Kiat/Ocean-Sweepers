@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.MathUtils;
 
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.exception.MovementException;
-import project.game.engine.api.movement.IMovable;
-import project.game.engine.api.movement.IMovementStrategy;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
 
 /**

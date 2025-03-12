@@ -17,11 +17,11 @@ import project.game.application.entity.item.Trash;
 import project.game.application.entity.obstacle.Rock;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.api.collision.ICollidableVisitor;
-import project.game.engine.api.render.IRenderable;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.SpriteEntity;
+import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.movement.type.PlayerMovementManager;
+import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 public class Boat extends SpriteEntity implements IRenderable {
 

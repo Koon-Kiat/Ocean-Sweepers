@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.engine.api.movement.IMovable;
 import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
 
 /**
