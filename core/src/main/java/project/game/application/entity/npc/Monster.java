@@ -37,21 +37,20 @@ public class Monster extends CollidableEntity implements IRenderable {
     private long lastCollisionTime = 0;
 
     // Type-based collision handler registry
-    private static final Map<Class<?>, BiConsumer<Monster, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = new ConcurrentHashMap<>();
-
+    private static final Map<Class<?>, BiConsumer<Monster, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = 
+        new ConcurrentHashMap<>();
+    
     static {
         // Register collision handlers for specific entity types
         registerMonsterCollisionHandler(Boat.class, Monster::handleBoatCollision);
         registerMonsterCollisionHandler(Rock.class, Monster::handleRockCollision);
-        registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {
-            /* Ignore trash collisions */});
+        registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {/* Ignore trash collisions */});
     }
-
+    
     /**
      * Register a handler for a specific type of collidable entity
-     * 
-     * @param <T>     Type of collidable
-     * @param clazz   Class of collidable
+     * @param <T> Type of collidable
+     * @param clazz Class of collidable
      * @param handler Function to handle collision with the collidable
      */
     public static <T extends ICollidableVisitor> void registerMonsterCollisionHandler(
@@ -191,7 +190,6 @@ public class Monster extends CollidableEntity implements IRenderable {
 
     /**
      * Dispatches collision handling to the appropriate registered handler
-     * 
      * @param other The other entity involved in the collision
      */
     private void dispatchCollisionHandling(ICollidableVisitor other) {
@@ -207,8 +205,7 @@ public class Monster extends CollidableEntity implements IRenderable {
         Class<?> otherClass = other.getClass();
 
         // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<Monster, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS
-                .entrySet()) {
+        for (Map.Entry<Class<?>, BiConsumer<Monster, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS.entrySet()) {
             if (entry.getKey().isAssignableFrom(otherClass)) {
                 entry.getValue().accept(this, other);
                 return;

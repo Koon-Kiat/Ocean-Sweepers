@@ -10,6 +10,7 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -26,6 +27,12 @@ public class CustomAssetManager implements Disposable {
 
     // Group-based asset management
     private final Map<String, Set<String>> assetGroups = new HashMap<>();
+
+    // Sprite management - maps sprite sheet identifiers to arrays of TextureRegions
+    private final Map<String, TextureRegion[]> spriteSheets = new HashMap<>();
+
+    // Directional sprite sets - maps entity types to directional sprite arrays
+    private final Map<String, TextureRegion[]> directionalSpriteSets = new HashMap<>();
 
     private CustomAssetManager() {
         asset_Manager = new AssetManager();
@@ -78,6 +85,116 @@ public class CustomAssetManager implements Disposable {
             loadAsset(entry.getKey(), entry.getValue());
             assetGroups.get(groupName).add(entry.getKey());
         }
+    }
+
+    /**
+     * Creates and stores a sprite sheet from a texture
+     * 
+     * @param spriteSheetId Identifier for the sprite sheet
+     * @param texturePath   Path to the texture file
+     * @param cols          Number of columns in the sprite sheet
+     * @param rows          Number of rows in the sprite sheet
+     * @return Array of TextureRegions representing the sprite sheet
+     */
+    public TextureRegion[] createSpriteSheet(String spriteSheetId, String texturePath, int cols, int rows) {
+        // Ensure texture is loaded
+        loadTextureAssets(texturePath);
+        loadAndFinish();
+
+        Texture texture = getAsset(texturePath, Texture.class);
+        int frameWidth = texture.getWidth() / cols;
+        int frameHeight = texture.getHeight() / rows;
+
+        // Split the texture into regions
+        TextureRegion[][] tmp = TextureRegion.split(texture, frameWidth, frameHeight);
+
+        // Flatten 2D array into 1D
+        TextureRegion[] frames = new TextureRegion[cols * rows];
+        int index = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                frames[index++] = tmp[i][j];
+            }
+        }
+
+        // Store the sprite sheet
+        spriteSheets.put(spriteSheetId, frames);
+        LOGGER.info("Created sprite sheet '{0}' with {1} frames", spriteSheetId, frames.length);
+
+        return frames;
+    }
+
+    /**
+     * Registers a set of directional sprites for an entity type
+     * 
+     * @param entityType The type of entity (e.g., "player", "monster")
+     * @param sprites    Array of directional sprites (typically UP, RIGHT, DOWN,
+     *                   LEFT)
+     */
+    public void registerDirectionalSprites(String entityType, TextureRegion[] sprites) {
+        directionalSpriteSets.put(entityType, sprites);
+        LOGGER.info("Registered directional sprites for entity type: {0}", entityType);
+    }
+
+    /**
+     * Creates a directional sprite set from specific frames in a sprite sheet
+     * 
+     * @param entityType    The type of entity to create sprites for
+     * @param spriteSheetId ID of the sprite sheet to use
+     * @param upIndex       Index of UP direction sprite
+     * @param rightIndex    Index of RIGHT direction sprite
+     * @param downIndex     Index of DOWN direction sprite
+     * @param leftIndex     Index of LEFT direction sprite
+     * @return Array of directional sprites in order: UP, RIGHT, DOWN, LEFT
+     */
+    public TextureRegion[] createDirectionalSprites(String entityType, String spriteSheetId,
+            int upIndex, int rightIndex, int downIndex, int leftIndex) {
+        if (!spriteSheets.containsKey(spriteSheetId)) {
+            LOGGER.error("Sprite sheet '{0}' not found", spriteSheetId);
+            return null;
+        }
+
+        TextureRegion[] sheet = spriteSheets.get(spriteSheetId);
+        TextureRegion[] directionalSprites = new TextureRegion[4];
+
+        // Check indices are within bounds
+        if (upIndex >= 0 && upIndex < sheet.length &&
+                rightIndex >= 0 && rightIndex < sheet.length &&
+                downIndex >= 0 && downIndex < sheet.length &&
+                leftIndex >= 0 && leftIndex < sheet.length) {
+
+            directionalSprites[0] = sheet[upIndex]; // UP
+            directionalSprites[1] = sheet[rightIndex]; // RIGHT
+            directionalSprites[2] = sheet[downIndex]; // DOWN
+            directionalSprites[3] = sheet[leftIndex]; // LEFT
+
+            // Register the directional sprite set
+            registerDirectionalSprites(entityType, directionalSprites);
+            return directionalSprites;
+        } else {
+            LOGGER.error("Invalid sprite indices for directional sprites");
+            return null;
+        }
+    }
+
+    /**
+     * Gets a registered directional sprite set for an entity type
+     * 
+     * @param entityType The type of entity
+     * @return Array of directional sprites or null if not found
+     */
+    public TextureRegion[] getDirectionalSprites(String entityType) {
+        return directionalSpriteSets.get(entityType);
+    }
+
+    /**
+     * Gets a sprite sheet by ID
+     * 
+     * @param spriteSheetId ID of the sprite sheet
+     * @return Array of TextureRegions or null if not found
+     */
+    public TextureRegion[] getSpriteSheet(String spriteSheetId) {
+        return spriteSheets.get(spriteSheetId);
     }
 
     /**
@@ -166,6 +283,8 @@ public class CustomAssetManager implements Disposable {
     public synchronized void dispose() {
         assetReferenceCount.clear();
         assetGroups.clear();
+        spriteSheets.clear();
+        directionalSpriteSets.clear();
         asset_Manager.dispose();
         LOGGER.info("All assets disposed.");
     }

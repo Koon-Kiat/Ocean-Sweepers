@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -21,19 +19,32 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.render.IRenderable;
-import project.game.engine.asset.core.CustomAssetManager;
-import project.game.engine.entitysystem.entity.CollidableEntity;
 import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.SpriteEntity;
 import project.game.engine.entitysystem.movement.type.PlayerMovementManager;
 
-public class Boat extends CollidableEntity implements IRenderable {
+public class Boat extends SpriteEntity implements IRenderable {
 
     private static final GameLogger LOGGER = new GameLogger(Boat.class);
     private final PlayerMovementManager movementManager;
-    private final String texturePath;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
-    private int lastDirectionIndex = 2; // Default to DOWN (index 2)
+
+    // Direction constants - used as indices in directional sprite arrays
+    public static final int DIRECTION_UP = 0;
+    public static final int DIRECTION_RIGHT = 1;
+    public static final int DIRECTION_DOWN = 2;
+    public static final int DIRECTION_LEFT = 3;
+    public static final int DIRECTION_UP_RIGHT = 4;
+    public static final int DIRECTION_DOWN_RIGHT = 5;
+    public static final int DIRECTION_DOWN_LEFT = 6;
+    public static final int DIRECTION_UP_LEFT = 7;
+
+    // Current direction index - default to DOWN
+    private int currentDirectionIndex = DIRECTION_DOWN;
+
+    // Threshold to determine if we should consider movement on an axis
+    private static final float MOVEMENT_THRESHOLD = 0.01f;
 
     // Type handler registry for collision handling
     private static final Map<Class<?>, Consumer<Boat>> COLLISION_HANDLERS = new ConcurrentHashMap<>();
@@ -57,10 +68,6 @@ public class Boat extends CollidableEntity implements IRenderable {
         COLLISION_HANDLERS.put(clazz, handler);
     }
 
-    // New fields for directional sprites
-    private TextureRegion[] directionalSprites;
-    private boolean useDirectionalSprites = false;
-
     // Track the current collision entity
     private ICollidableVisitor currentCollisionEntity;
 
@@ -68,21 +75,16 @@ public class Boat extends CollidableEntity implements IRenderable {
      * Constructor for single texture boat
      */
     public Boat(Entity entity, World world, PlayerMovementManager movementManager, String texturePath) {
-        super(entity, world);
+        super(entity, world, texturePath, null);
         this.movementManager = movementManager;
-        this.texturePath = texturePath;
-        this.useDirectionalSprites = false;
     }
 
     /**
      * Constructor for directional sprites boat
      */
     public Boat(Entity entity, World world, PlayerMovementManager movementManager, TextureRegion[] directionalSprites) {
-        super(entity, world);
+        super(entity, world, null, directionalSprites);
         this.movementManager = movementManager;
-        this.texturePath = null;
-        this.directionalSprites = directionalSprites;
-        this.useDirectionalSprites = true;
     }
 
     public PlayerMovementManager getMovementManager() {
@@ -110,23 +112,122 @@ public class Boat extends CollidableEntity implements IRenderable {
         }
     }
 
+    /**
+     * Updates the current sprite index based on movement direction.
+     * Uses vector angles to determine the most appropriate sprite direction.
+     */
     @Override
-    public boolean isActive() {
-        return super.getEntity().isActive();
+    public void updateSpriteIndex() {
+        // Skip updating if no movement manager or sprites
+        if (movementManager == null || !hasSprites()) {
+            return;
+        }
+
+        // Get velocity from movement manager
+        Vector2 velocity = movementManager.getVelocity();
+
+        // Only update direction if actually moving
+        if (Math.abs(velocity.x) > MOVEMENT_THRESHOLD || Math.abs(velocity.y) > MOVEMENT_THRESHOLD) {
+            // Calculate angle in degrees (0° is right, 90° is up)
+            float angle = (float) Math.toDegrees(Math.atan2(velocity.y, velocity.x));
+            if (angle < 0)
+                angle += 360; // Convert to 0-360 range
+
+            // Determine direction based on angle
+            if (angle >= 337.5 || angle < 22.5) {
+                currentDirectionIndex = DIRECTION_RIGHT;
+            } else if (angle >= 22.5 && angle < 67.5) {
+                currentDirectionIndex = DIRECTION_UP_RIGHT;
+            } else if (angle >= 67.5 && angle < 112.5) {
+                currentDirectionIndex = DIRECTION_UP;
+            } else if (angle >= 112.5 && angle < 157.5) {
+                currentDirectionIndex = DIRECTION_UP_LEFT;
+            } else if (angle >= 157.5 && angle < 202.5) {
+                currentDirectionIndex = DIRECTION_LEFT;
+            } else if (angle >= 202.5 && angle < 247.5) {
+                currentDirectionIndex = DIRECTION_DOWN_LEFT;
+            } else if (angle >= 247.5 && angle < 292.5) {
+                currentDirectionIndex = DIRECTION_DOWN;
+            } else if (angle >= 292.5 && angle < 337.5) {
+                currentDirectionIndex = DIRECTION_DOWN_RIGHT;
+            }
+
+            LOGGER.debug("Boat moving at angle: {0}, direction: {1}",
+                    angle, getCurrentDirectionName());
+        }
+
+        // Check if we need to map our 8-directional index to a 4-directional sprite
+        // array
+        if (getCurrentSprite() != null) {
+            // If we only have 4 directional sprites, map diagonal directions to cardinal
+            // directions
+            if (hasSprites() && getSpritesCount() <= 4) {
+                int mappedIndex = mapTo4DirectionalIndex(currentDirectionIndex);
+                setCurrentSpriteIndex(mappedIndex);
+            } else {
+                // We have 8-directional sprites
+                setCurrentSpriteIndex(currentDirectionIndex);
+            }
+        }
+    }
+
+    /**
+     * Maps an 8-directional index to a 4-directional index for sprite display
+     * 
+     * @param eightDirIndex The 8-directional index (0-7)
+     * @return The 4-directional index (0-3)
+     */
+    private int mapTo4DirectionalIndex(int eightDirIndex) {
+        switch (eightDirIndex) {
+            case DIRECTION_UP:
+                return DIRECTION_UP; // UP
+            case DIRECTION_RIGHT:
+                return DIRECTION_RIGHT; // RIGHT
+            case DIRECTION_DOWN:
+                return DIRECTION_DOWN; // DOWN
+            case DIRECTION_LEFT:
+                return DIRECTION_LEFT; // LEFT
+            case DIRECTION_UP_RIGHT:
+                return DIRECTION_RIGHT; // UP_RIGHT maps to RIGHT
+            case DIRECTION_DOWN_RIGHT:
+                return DIRECTION_RIGHT; // DOWN_RIGHT maps to RIGHT
+            case DIRECTION_DOWN_LEFT:
+                return DIRECTION_LEFT; // DOWN_LEFT maps to LEFT
+            case DIRECTION_UP_LEFT:
+                return DIRECTION_LEFT; // UP_LEFT maps to LEFT
+            default:
+                return DIRECTION_DOWN; // Default to DOWN
+        }
+    }
+
+    /**
+     * Get the current direction as a descriptive string (for debugging)
+     */
+    public String getCurrentDirectionName() {
+        switch (currentDirectionIndex) {
+            case DIRECTION_UP:
+                return "UP";
+            case DIRECTION_RIGHT:
+                return "RIGHT";
+            case DIRECTION_DOWN:
+                return "DOWN";
+            case DIRECTION_LEFT:
+                return "LEFT";
+            case DIRECTION_UP_RIGHT:
+                return "UP_RIGHT";
+            case DIRECTION_DOWN_RIGHT:
+                return "DOWN_RIGHT";
+            case DIRECTION_DOWN_LEFT:
+                return "DOWN_LEFT";
+            case DIRECTION_UP_LEFT:
+                return "UP_LEFT";
+            default:
+                return "UNKNOWN";
+        }
     }
 
     @Override
-    public Entity getEntity() {
-        return super.getEntity();
-    }
-
-    @Override
-    public Body getBody() {
-        return super.getBody();
-    }
-
-    @Override
-    public final Body createBody(World world, float x, float y, float width, float height) {
+    public Body createBody(World world, float x, float y, float width, float height) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
@@ -140,9 +241,13 @@ public class Boat extends CollidableEntity implements IRenderable {
 
         Body newBody = world.createBody(bodyDef);
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(
-                (width / 2) / pixelsToMeters,
-                (height / 2) / pixelsToMeters);
+
+        // Reduce the hitbox size to be smaller than the visual sprite
+        // Using 60% of the original width and height for the hitbox
+        float hitboxScale = 0.6f;
+        float hitboxWidth = (width * hitboxScale) / pixelsToMeters;
+        float hitboxHeight = (height * hitboxScale) / pixelsToMeters;
+        shape.setAsBox(hitboxWidth / 2, hitboxHeight / 2);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -160,63 +265,6 @@ public class Boat extends CollidableEntity implements IRenderable {
         shape.dispose();
         newBody.setUserData(this);
         return newBody;
-    }
-
-    @Override
-    public String getTexturePath() {
-        return texturePath;
-    }
-
-    @Override
-    public void render(SpriteBatch batch) {
-        if (!isActive())
-            return;
-
-        // Calculate render coordinates (centered on Box2D body)
-        float renderX = getEntity().getX() - getEntity().getWidth() / 2;
-        float renderY = getEntity().getY() - getEntity().getHeight() / 2;
-
-        if (useDirectionalSprites && directionalSprites != null) {
-            // Use directional sprites
-            TextureRegion currentSprite = getDirectionalSprite();
-            batch.draw(currentSprite, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
-        } else if (CustomAssetManager.getInstance().isLoaded()) {
-            // Use single texture
-            Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
-            batch.draw(texture, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
-        }
-    }
-
-    /**
-     * Get the appropriate directional sprite based on movement
-     */
-    private TextureRegion getDirectionalSprite() {
-        // Get velocity from movement manager
-        Vector2 velocity = movementManager.getVelocity();
-
-        // Only update direction if actually moving
-        if (velocity.x != 0 || velocity.y != 0) {
-            // Determine predominant direction
-            if (Math.abs(velocity.y) > Math.abs(velocity.x)) {
-                // Vertical movement is stronger
-                if (velocity.y > 0) {
-                    lastDirectionIndex = 0; // UP
-                } else {
-                    lastDirectionIndex = 2; // DOWN
-                }
-            } else {
-                // Horizontal movement is stronger
-                if (velocity.x > 0) {
-                    lastDirectionIndex = 1; // RIGHT
-                } else {
-                    lastDirectionIndex = 3; // LEFT
-                }
-            }
-        }
-
-        // Return the last direction sprite (either just updated or preserved from
-        // before)
-        return directionalSprites[lastDirectionIndex];
     }
 
     @Override

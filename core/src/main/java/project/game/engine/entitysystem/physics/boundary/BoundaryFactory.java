@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collision;
+package project.game.engine.entitysystem.physics.boundary;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -12,11 +12,15 @@ import com.badlogic.gdx.physics.box2d.World;
  */
 public class BoundaryFactory {
 
+    private BoundaryFactory() {
+        // Private constructor to prevent instantiation
+    }
+
     /**
      * A class representing a single boundary in the game world.
      */
     private static class Boundary {
-        
+
         private final World world;
         private final float posX;
         private final float posY;
@@ -161,9 +165,5 @@ public class BoundaryFactory {
                 halfThickness,
                 screenHeight / 2f,
                 bodyType, density, friction, restitution, userData).create();
-    }
-
-    private BoundaryFactory() {
-        // Private constructor to prevent instantiation
     }
 }

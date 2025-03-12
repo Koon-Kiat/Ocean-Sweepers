@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collision;
+package project.game.engine.entitysystem.physics.boundary;
 
 import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.collision.ICollisionElement;

@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collision;
+package project.game.engine.entitysystem.physics;
 
 import java.util.List;
 import java.util.Map;
@@ -8,6 +8,7 @@ import java.util.function.Function;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.collision.ICollisionElement;
+import project.game.engine.entitysystem.physics.boundary.BoundaryCollisionElement;
 
 /**
  * A resolver class that handles collisions using the visitor pattern.

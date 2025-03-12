@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collision;
+package project.game.engine.entitysystem.physics;
 
 import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.entitysystem.movement.core.MovementManager;

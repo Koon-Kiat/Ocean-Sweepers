@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collision;
+package project.game.engine.entitysystem.physics;
 
 import java.util.HashSet;
 import java.util.Map;

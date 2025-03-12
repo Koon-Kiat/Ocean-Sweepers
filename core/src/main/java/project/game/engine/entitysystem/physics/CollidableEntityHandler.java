@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.collision;
+package project.game.engine.entitysystem.physics;
 
 import java.util.List;
 import java.util.Map;
@@ -16,12 +16,16 @@ import project.game.engine.entitysystem.entity.Entity;
  */
 public class CollidableEntityHandler implements ICollisionOperation {
 
-    private final ICollidableVisitor collidable;
     private static final Map<Class<?>, Function<Object, ICollidableVisitor>> CONVERTERS = new ConcurrentHashMap<>();
+    private final ICollidableVisitor collidable;
 
     static {
         // Register default converter for ICollidableVisitor
         registerConverter(ICollidableVisitor.class, o -> (ICollidableVisitor) o);
+    }
+
+    public CollidableEntityHandler(ICollidableVisitor collidable) {
+        this.collidable = collidable;
     }
 
     /**
@@ -37,10 +41,6 @@ public class CollidableEntityHandler implements ICollisionOperation {
         CONVERTERS.put(clazz, castedConverter);
     }
 
-    public CollidableEntityHandler(ICollidableVisitor collidable) {
-        this.collidable = collidable;
-    }
-
     @Override
     public void handleCollisionWith(Object other, List<Runnable> collisionQueue) {
         if ("boundary".equals(other)) {
@@ -50,6 +50,19 @@ public class CollidableEntityHandler implements ICollisionOperation {
 
         // Try to handle via double dispatch with another collidable
         tryHandleCollidable(other, collisionQueue);
+    }
+
+    @Override
+    public boolean handlesCollisionWith(Class<?> clazz) {
+        // Check if we have a converter for this class or any of its superclasses
+        for (Class<?> registeredClass : CONVERTERS.keySet()) {
+            if (registeredClass.isAssignableFrom(clazz)) {
+                return true;
+            }
+        }
+
+        // Also handle strings (for boundary collisions)
+        return String.class.equals(clazz);
     }
 
     /**
@@ -92,18 +105,5 @@ public class CollidableEntityHandler implements ICollisionOperation {
         }
 
         return null;
-    }
-
-    @Override
-    public boolean handlesCollisionWith(Class<?> clazz) {
-        // Check if we have a converter for this class or any of its superclasses
-        for (Class<?> registeredClass : CONVERTERS.keySet()) {
-            if (registeredClass.isAssignableFrom(clazz)) {
-                return true;
-            }
-        }
-
-        // Also handle strings (for boundary collisions)
-        return String.class.equals(clazz);
     }
 }

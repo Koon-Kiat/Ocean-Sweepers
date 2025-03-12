@@ -44,12 +44,12 @@ import project.game.engine.audio.config.AudioConfig;
 import project.game.engine.audio.core.AudioManager;
 import project.game.engine.audio.music.MusicManager;
 import project.game.engine.audio.sound.SoundManager;
-import project.game.engine.entitysystem.collision.BoundaryFactory;
-import project.game.engine.entitysystem.collision.CollisionManager;
 import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.EntityManager;
 import project.game.engine.entitysystem.movement.type.NPCMovementManager;
 import project.game.engine.entitysystem.movement.type.PlayerMovementManager;
+import project.game.engine.entitysystem.physics.boundary.BoundaryFactory;
+import project.game.engine.entitysystem.physics.core.CollisionManager;
 import project.game.engine.io.scene.SceneIOManager;
 import project.game.engine.scene.core.Scene;
 import project.game.engine.scene.core.SceneManager;
@@ -95,6 +95,15 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private AudioUI audioUI;
     private IGameConstants constants;
     List<IMovementStrategy> strategyPool = new ArrayList<>();
+
+    // Sprite sheet identifiers
+    private static final String BOAT_SPRITESHEET = "boat_sprites";
+    private static final String ROCK_SPRITESHEET = "rock_sprites";
+    private static final String MONSTER_SPRITESHEET = "monster_sprites";
+
+    // Entity type identifiers for directional sprites
+    private static final String BOAT_ENTITY = "boat";
+    private static final String MONSTER_ENTITY = "monster";
 
     public GameScene(SceneManager sceneManager, SceneIOManager inputManager) {
         super(sceneManager, inputManager);
@@ -207,6 +216,66 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         LOGGER.info("GameScene disposed");
     }
 
+    /**
+     * Initializes game assets including sprites and textures
+     */
+    private void initializeGameAssets() {
+        CustomAssetManager assetManager = CustomAssetManager.getInstance();
+
+        // Load all texture assets first
+        assetManager.loadTextureAssets("trash1.png");
+        assetManager.loadTextureAssets("trash2.png");
+        assetManager.loadTextureAssets("trash3.png");
+        assetManager.loadTextureAssets("steamboat.png");
+        assetManager.loadTextureAssets("rock.png");
+        assetManager.loadTextureAssets("Rocks.png");
+        assetManager.loadTextureAssets("monster.png");
+        assetManager.loadTextureAssets("ocean_background.jpg");
+        assetManager.update();
+        assetManager.loadAndFinish();
+
+        // Get background texture directly
+        backgroundTexture = assetManager.getAsset("ocean_background.jpg", Texture.class);
+
+        // Create and store boat sprite sheet (7x7)
+        boatSpritesheet = assetManager.getAsset("steamboat.png", Texture.class);
+        TextureRegion[] boatSheet = assetManager.createSpriteSheet(BOAT_SPRITESHEET, "steamboat.png", 7, 7);
+
+        // Create boat directional sprites for all 8 directions
+        // Note: These indices are specific to your steamboat.png layout
+        TextureRegion[] eightDirectionalSprites = new TextureRegion[8];
+        eightDirectionalSprites[Boat.DIRECTION_UP] = boatSheet[0]; // UP
+        eightDirectionalSprites[Boat.DIRECTION_RIGHT] = boatSheet[11]; // RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN] = boatSheet[23]; // DOWN
+        eightDirectionalSprites[Boat.DIRECTION_LEFT] = boatSheet[35]; // LEFT
+        eightDirectionalSprites[Boat.DIRECTION_UP_RIGHT] = boatSheet[7]; // UP-RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_RIGHT] = boatSheet[14]; // DOWN-RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_LEFT] = boatSheet[28]; // DOWN-LEFT
+        eightDirectionalSprites[Boat.DIRECTION_UP_LEFT] = boatSheet[42]; // UP-LEFT
+
+        // Register the directional sprites with the asset manager
+        assetManager.registerDirectionalSprites(BOAT_ENTITY, eightDirectionalSprites);
+        boatDirectionalSprites = eightDirectionalSprites;
+
+        // Create rock sprite sheet (3x3)
+        rockImage = assetManager.getAsset("Rocks.png", Texture.class);
+        TextureRegion[] rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
+
+        // Load monster texture
+        monsterImage = assetManager.getAsset("monster.png", Texture.class);
+
+        // Load trash textures
+        trashTextures = new Texture[3];
+        trashTextures[0] = assetManager.getAsset("trash1.png", Texture.class);
+        trashTextures[1] = assetManager.getAsset("trash2.png", Texture.class);
+        trashTextures[2] = assetManager.getAsset("trash3.png", Texture.class);
+
+        // Keep this for backward compatibility
+        trashImage = trashTextures[0];
+
+        LOGGER.info("Game assets initialized successfully");
+    }
+
     @Override
     public void create() {
         batch = new SpriteBatch();
@@ -221,198 +290,138 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         initPopUpMenu();
         displayMessage();
 
-        // Flatten the 2D array into a 1D array
-        TextureRegion[] rockRegions = new TextureRegion[9];
         try {
-            CustomAssetManager.getInstance().loadTextureAssets("trash1.png");
-            CustomAssetManager.getInstance().loadTextureAssets("trash2.png");
-            CustomAssetManager.getInstance().loadTextureAssets("trash3.png");
-            CustomAssetManager.getInstance().loadTextureAssets("steamboat.png");
-            CustomAssetManager.getInstance().loadTextureAssets("rock.png");
-            CustomAssetManager.getInstance().loadTextureAssets("Rocks.png");
-            CustomAssetManager.getInstance().loadTextureAssets("monster.png");
-            CustomAssetManager.getInstance().loadTextureAssets("ocean_background.jpg");
-            CustomAssetManager.getInstance().update();
-            CustomAssetManager.getInstance().getasset_Manager().finishLoading();
-            if (CustomAssetManager.getInstance().isLoaded()) {
+            // Initialize game assets using the enhanced asset manager
+            initializeGameAssets();
 
-                boatSpritesheet = CustomAssetManager.getInstance().getAsset("steamboat.png",
-                        Texture.class);
-                rockImage = CustomAssetManager.getInstance().getAsset("Rocks.png", Texture.class);
-                monsterImage = CustomAssetManager.getInstance().getAsset("monster.png", Texture.class);
-                backgroundTexture = CustomAssetManager.getInstance().getAsset("ocean_background.jpg", Texture.class);
-                trashTextures = new Texture[3];
-                trashTextures[0] = CustomAssetManager.getInstance().getAsset("trash1.png", Texture.class);
-                trashTextures[1] = CustomAssetManager.getInstance().getAsset("trash2.png", Texture.class);
-                trashTextures[2] = CustomAssetManager.getInstance().getAsset("trash3.png", Texture.class);
+            // Get the pre-created rock regions from the asset manager
+            TextureRegion[] rockRegions = CustomAssetManager.getInstance().getSpriteSheet(ROCK_SPRITESHEET);
 
-                // Keep this for backward compatibility
-                trashImage = trashTextures[0];
+            entityManager = new EntityManager();
 
-                int frameWidth = boatSpritesheet.getWidth() / 7; // 7 columns
-                int frameHeight = boatSpritesheet.getHeight() / 7; // 7 rows
-                TextureRegion[][] tmpFrames = TextureRegion.split(boatSpritesheet, frameWidth, frameHeight);
+            Entity boatEntity = new Entity(
+                    constants.PLAYER_START_X(),
+                    constants.PLAYER_START_Y(),
+                    constants.PLAYER_WIDTH(),
+                    constants.PLAYER_HEIGHT(),
+                    true);
 
-                // Create array for the 4 directional sprites
-                boatDirectionalSprites = new TextureRegion[4];
+            Entity monsterEntity = new Entity(
+                    constants.MONSTER_START_X(),
+                    constants.MONSTER_START_Y(),
+                    constants.MONSTER_WIDTH(),
+                    constants.MONSTER_HEIGHT(),
+                    true);
 
-                // Assign specific frames for each direction
-                boatDirectionalSprites[0] = tmpFrames[0][0]; // UP - row 0, col 0
-                boatDirectionalSprites[1] = tmpFrames[1][4]; // RIGHT - row 1, col 4
-                boatDirectionalSprites[2] = tmpFrames[3][2]; // DOWN - row 3, col 2
-                boatDirectionalSprites[3] = tmpFrames[5][0]; // LEFT - row 5, col 0
+            playerMovementManager = new PlayerMovementBuilder()
+                    .withEntity(boatEntity)
+                    .setSpeed(constants.PLAYER_SPEED())
+                    .setInitialVelocity(0, 0)
+                    .setLenientMode(true)
+                    .withConstantMovement()
+                    .build();
 
-                // Split the rock spritesheet (assumed to be 3x3)
-                int rockFrameWidth = rockImage.getWidth() / 3;
-                int rockFrameHeight = rockImage.getHeight() / 3;
-                TextureRegion[][] rockTmp = TextureRegion.split(rockImage, rockFrameWidth, rockFrameHeight);
+            strategyPool = new ArrayList<>();
+            strategyPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
+            LOGGER.info("Configured NPC movement strategys: {0}", strategyPool.size());
 
-                int idx = 0;
-                for (int i = 0; i < 3; i++) {
-                    for (int j = 0; j < 3; j++) {
-                        rockRegions[idx++] = rockTmp[i][j];
-                    }
-                }
+            List<Entity> rockEntities = new ArrayList<>();
+            rocks = new ArrayList<>();
+            trashes = new ArrayList<>();
+            existingEntities = new ArrayList<>();
 
-            } else {
-                LOGGER.warn("Some assets not loaded yet!");
+            // Pass the rockRegions array to your RockFactory
+            rockFactory = new RockFactory(constants, world, existingEntities, rockRegions);
+            trashFactory = new TrashFactory(constants, world, existingEntities, trashTextures);
+
+            Random random = new Random();
+
+            for (int i = 0; i < constants.NUM_ROCKS(); i++) {
+                Rock rock = rockFactory.createObject();
+                rocks.add(rock);
+                entityManager.addRenderableEntity(rock);
+                existingEntities.add(rock.getEntity());
             }
-            LOGGER.info("Loaded droplet.png successfully.");
-            LOGGER.info("Loaded bucket.png successfully.");
-            LOGGER.info("Loaded rock.png successfully.");
-            LOGGER.info("Loaded monster.png successfully.");
-            if (trashImage == null) {
-                LOGGER.error("trashImage is null after loading!");
+
+            for (int i = 0; i < constants.NUM_TRASHES(); i++) {
+                Trash trash = trashFactory.createObject();
+                trash.setRemovalListener(this);
+                trashes.add(trash);
+                entityManager.addRenderableEntity(trash);
+                existingEntities.add(trash.getEntity());
             }
-            if (rockImage == null) {
-                LOGGER.error("rockImage is null after loading!");
+
+            // Convert rocks to Entity objects for obstacle avoidance
+            for (Rock rock : rocks) {
+                rockEntities.add(rock.getEntity());
             }
-            if (monsterImage == null) {
-                LOGGER.error("monsterImage is null after loading!");
+
+            float[] customWeights = { 0.30f, 0.70f };
+            npcMovementManager = new NPCMovementBuilder()
+                    .withEntity(monsterEntity)
+                    .setSpeed(constants.NPC_SPEED())
+                    .setInitialVelocity(1, 1)
+                    .withInterceptorAndObstacleAvoidance(playerMovementManager, rockEntities, customWeights)
+                    .setLenientMode(true)
+                    .build();
+
+            // Use the directional sprites from the asset manager
+            boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
+            monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
+
+            // Initialize bodies
+            boat.initBody(world);
+            monster.initBody(world);
+
+            // Add entities to the entity manager
+            entityManager.addRenderableEntity(boat);
+            entityManager.addRenderableEntity(monster);
+
+            LOGGER.info("Monster is using composite strategy to follow boat while avoiding {0} rocks",
+                    rockEntities.size());
+
+            camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+            camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
+            camera.update();
+
+            // Initialize CollisionManager
+            collisionManager = new CollisionManager(world, inputManager);
+            collisionManager.init();
+
+            // Add entities to the collision manager
+            collisionManager.addEntity(boat, playerMovementManager);
+            collisionManager.addEntity(monster, npcMovementManager);
+
+            for (Rock rock : rocks) {
+                collisionManager.addEntity(rock, null);
             }
+            for (Trash trash : trashes) {
+                collisionManager.addEntity(trash, null);
+            }
+
+            // Create boundaries
+            BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
+                    constants.PIXELS_TO_METERS());
+
+            // Initialize AudioManager and AudioUI
+            audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
+            audioUI = new AudioUI(audioManager, config, sceneUIManager.getStage(), skin);
+            audioManager.setAudioUI(audioUI);
+
+            // Load and play audio
+            MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
+            SoundManager.getInstance().loadSoundEffects(
+                    new String[] { "watercollision.mp3", "Boinkeffect.mp3", "selection.mp3" },
+                    new String[] { "drophit", "keybuttons", "selection" });
+
+            // Set audio configuration
+            audioManager.setMusicVolume(config.getMusicVolume());
+            audioManager.setSoundEnabled(config.isSoundEnabled());
 
         } catch (Exception e) {
-            LOGGER.error("Exception loading assets: {0}", e.getMessage());
+            LOGGER.error("Exception during game creation: {0}", e.getMessage());
+            e.printStackTrace();
         }
-
-        entityManager = new EntityManager();
-
-        Entity boatEntity = new Entity(
-                constants.PLAYER_START_X(),
-                constants.PLAYER_START_Y(),
-                constants.PLAYER_WIDTH(),
-                constants.PLAYER_HEIGHT(),
-                true);
-
-        Entity monsterEntity = new Entity(
-                constants.MONSTER_START_X(),
-                constants.MONSTER_START_Y(),
-                constants.MONSTER_WIDTH(),
-                constants.MONSTER_HEIGHT(),
-                true);
-
-        playerMovementManager = new PlayerMovementBuilder()
-                .withEntity(boatEntity)
-                .setSpeed(constants.PLAYER_SPEED())
-                .setInitialVelocity(0, 0)
-                .setLenientMode(true)
-                .withConstantMovement()
-                .build();
-
-        strategyPool = new ArrayList<>();
-        strategyPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
-        LOGGER.info("Configured NPC movement strategys: {0}", strategyPool.size());
-
-        List<Entity> rockEntities = new ArrayList<>();
-        rocks = new ArrayList<>();
-        trashes = new ArrayList<>();
-        existingEntities = new ArrayList<>();
-
-        // Pass the rockRegions array to your RockFactory
-        rockFactory = new RockFactory(constants, world, existingEntities, rockRegions);
-        trashFactory = new TrashFactory(constants, world, existingEntities, trashTextures);
-
-        Random random = new Random();
-
-        for (int i = 0; i < constants.NUM_ROCKS(); i++) {
-            Rock rock = rockFactory.createObject();
-            rocks.add(rock);
-            entityManager.addRenderableEntity(rock);
-            existingEntities.add(rock.getEntity());
-        }
-
-        for (int i = 0; i < constants.NUM_TRASHES(); i++) {
-            Trash trash = trashFactory.createObject();
-            trash.setRemovalListener(this);
-            trashes.add(trash);
-            entityManager.addRenderableEntity(trash);
-            existingEntities.add(trash.getEntity());
-        }
-
-        // Convert rocks to Entity objects for obstacle avoidance
-        for (Rock rock : rocks) {
-            rockEntities.add(rock.getEntity());
-        }
-
-        float[] customWeights = { 0.30f, 0.70f };
-        npcMovementManager = new NPCMovementBuilder()
-                .withEntity(monsterEntity)
-                .setSpeed(constants.NPC_SPEED())
-                .setInitialVelocity(1, 1)
-                .withInterceptorAndObstacleAvoidance(playerMovementManager, rockEntities, customWeights)
-                .setLenientMode(true)
-                .build();
-
-        boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-        monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
-
-        // Initialize bodies
-        boat.initBody(world);
-        monster.initBody(world);
-
-        // Add entities to the entity manager
-        entityManager.addRenderableEntity(boat);
-        entityManager.addRenderableEntity(monster);
-
-        LOGGER.info("Monster is using composite strategy to follow boat while avoiding {0} rocks", rockEntities.size());
-
-        camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
-        camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
-        camera.update();
-
-        // Initialize CollisionManager
-        collisionManager = new CollisionManager(world, inputManager);
-        collisionManager.init();
-
-        // Add entities to the collision manager
-        collisionManager.addEntity(boat, playerMovementManager);
-        collisionManager.addEntity(monster, npcMovementManager);
-
-        for (Rock rock : rocks) {
-            collisionManager.addEntity(rock, null);
-        }
-        for (Trash trash : trashes) {
-            collisionManager.addEntity(trash, null);
-        }
-
-        // Create boundaries
-        BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
-                constants.PIXELS_TO_METERS());
-
-        // Initialize AudioManager and AudioUI
-        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
-        audioUI = new AudioUI(audioManager, config, sceneUIManager.getStage(), skin);
-        audioManager.setAudioUI(audioUI);
-
-        // Load and play audio
-        MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
-        SoundManager.getInstance().loadSoundEffects(
-                new String[] { "watercollision.mp3", "Boinkeffect.mp3", "selection.mp3" },
-                new String[] { "drophit", "keybuttons", "selection" });
-
-        // Set audio configuration
-        audioManager.setMusicVolume(config.getMusicVolume());
-        audioManager.setSoundEnabled(config.isSoundEnabled());
 
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");

@@ -25,7 +25,7 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 
 	// Entity extractors for different object types
 	private static final Map<Class<?>, Function<Object, Entity>> ENTITY_EXTRACTORS = new ConcurrentHashMap<>();
-	
+
 	private final Entity entity;
 	private final World world;
 	private boolean inCollision;
@@ -163,6 +163,9 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 	}
 
 	@Override
+	public abstract void onCollision(ICollidableVisitor other);
+
+	@Override
 	public boolean isInCollision() {
 		return inCollision;
 	}
@@ -170,36 +173,6 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 	@Override
 	public void collideWith(Object other) {
 		dispatchCollision(other);
-	}
-
-	/**
-	 * Dispatch collision to appropriate handler based on object type
-	 * 
-	 * @param other The object to collide with
-	 */
-	private void dispatchCollision(Object other) {
-		if (other == null) {
-			onCollision(null);
-			return;
-		}
-
-		Class<?> otherClass = other.getClass();
-		// Find the most specific handler for this class
-		BiConsumer<CollidableEntity, Object> handler = null;
-
-		// Look for exact class match or interface match
-		for (Map.Entry<Class<?>, BiConsumer<CollidableEntity, Object>> entry : COLLISION_VISITORS.entrySet()) {
-			if (entry.getKey().isAssignableFrom(otherClass)) {
-				if (handler == null || handler.getClass().isAssignableFrom(entry.getKey().getClass())) {
-					handler = entry.getValue();
-				}
-			}
-		}
-
-		// If we found a handler, use it
-		if (handler != null) {
-			handler.accept(this, other);
-		}
 	}
 
 	@Override
@@ -232,6 +205,50 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 		}
 	}
 
+	@Override
+	public boolean handlesCollisionWith(Class<?> clazz) {
+		// Check if we have a handler for this class or any of its
+		// superclasses/interfaces
+		for (Class<?> registeredClass : COLLISION_VISITORS.keySet()) {
+			if (registeredClass.isAssignableFrom(clazz)) {
+				return true;
+			}
+		}
+
+		// Also handle strings (for boundary collisions)
+		return String.class.equals(clazz);
+	}
+
+	/**
+	 * Dispatch collision to appropriate handler based on object type
+	 * 
+	 * @param other The object to collide with
+	 */
+	private void dispatchCollision(Object other) {
+		if (other == null) {
+			onCollision(null);
+			return;
+		}
+
+		Class<?> otherClass = other.getClass();
+		// Find the most specific handler for this class
+		BiConsumer<CollidableEntity, Object> handler = null;
+
+		// Look for exact class match or interface match
+		for (Map.Entry<Class<?>, BiConsumer<CollidableEntity, Object>> entry : COLLISION_VISITORS.entrySet()) {
+			if (entry.getKey().isAssignableFrom(otherClass)) {
+				if (handler == null || handler.getClass().isAssignableFrom(entry.getKey().getClass())) {
+					handler = entry.getValue();
+				}
+			}
+		}
+
+		// If we found a handler, use it
+		if (handler != null) {
+			handler.accept(this, other);
+		}
+	}
+
 	/**
 	 * Extracts an Entity from an object using registered extractors
 	 * 
@@ -255,21 +272,4 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 
 		return null;
 	}
-
-	@Override
-	public boolean handlesCollisionWith(Class<?> clazz) {
-		// Check if we have a handler for this class or any of its
-		// superclasses/interfaces
-		for (Class<?> registeredClass : COLLISION_VISITORS.keySet()) {
-			if (registeredClass.isAssignableFrom(clazz)) {
-				return true;
-			}
-		}
-
-		// Also handle strings (for boundary collisions)
-		return String.class.equals(clazz);
-	}
-
-	@Override
-	public abstract void onCollision(ICollidableVisitor other);
 }
