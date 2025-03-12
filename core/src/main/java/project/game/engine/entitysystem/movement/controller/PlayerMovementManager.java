@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.movement.type;
+package project.game.engine.entitysystem.movement.controller;
 
 import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.common.exception.MovementException;

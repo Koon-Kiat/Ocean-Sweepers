@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.physics;
+package project.game.engine.entitysystem.physics.collision.resolution;
 
 import project.game.engine.entitysystem.movement.core.MovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
@@ -7,7 +7,7 @@ import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
  * EntityCollisionUpdater is a utility class that updates an entity's position
  * based on its MovementManager and collision state.
  */
-public class EntityCollisionUpdater {
+public class CollisionResponseHandler {
 
     /**
      * Updates an entity's position using its MovementManager when not in collision,

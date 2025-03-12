@@ -2,9 +2,12 @@ package project.game.engine.entitysystem.physics.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -12,13 +15,16 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
+import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.common.logging.core.GameLogger;
+import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.MovementManager;
-import project.game.engine.entitysystem.physics.CollisionPairTracker;
-import project.game.engine.entitysystem.physics.CollisionVisitorHandler;
-import project.game.engine.entitysystem.physics.EntityCollisionUpdater;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionPairHandler;
+import project.game.engine.entitysystem.physics.collision.detection.CollisionPairTracker;
+import project.game.engine.entitysystem.physics.collision.resolution.CollisionResponseHandler;
+import project.game.engine.entitysystem.physics.collision.resolution.CollisionVisitorResolver;
+import project.game.engine.entitysystem.physics.lifecycle.PhysicsBodyRemovalRequest;
 import project.game.engine.io.scene.SceneIOManager;
 
 /**
@@ -31,20 +37,21 @@ public class CollisionManager implements ContactListener {
     private final World world;
     private final List<Runnable> collisionQueue;
     private final SceneIOManager inputManager;
-    private final CollisionVisitorHandler collisionResolver;
+    private final CollisionVisitorResolver collisionResolver;
     private final ICollisionPairHandler collisionPairTracker;
     private final Map<ICollidableVisitor, MovementManager> entityMap;
     private boolean collided = false;
     private float collisionMovementStrength;
     private float movementThreshold;
     private long defaultCollisionDuration;
+    private Queue<PhysicsBodyRemovalRequest> removalQueue = new LinkedList<>();
 
     public CollisionManager(World world, SceneIOManager inputManager) {
         this.world = world;
         this.inputManager = inputManager;
         this.collisionQueue = new ArrayList<>();
         this.entityMap = new HashMap<>();
-        this.collisionResolver = new CollisionVisitorHandler();
+        this.collisionResolver = new CollisionVisitorResolver();
         this.collisionPairTracker = new CollisionPairTracker();
         collisionResolver.registerBoundary();
     }
@@ -83,6 +90,27 @@ public class CollisionManager implements ContactListener {
         collisionQueue.clear();
     }
 
+    public void scheduleBodyRemoval(Body body, Entity entity, IEntityRemovalListener removalListener) {
+        removalQueue.add(new PhysicsBodyRemovalRequest(body, entity, removalListener));
+    }
+
+    public void processRemovalQueue() {
+        while (!removalQueue.isEmpty()) {
+            PhysicsBodyRemovalRequest request = removalQueue.poll();
+
+            // Set entity as inactive
+            request.getEntity().setActive(false);
+
+            // Destroy the body
+            world.destroyBody(request.getBody());
+
+            // Notify listener if provided
+            if (request.getRemovalListener() != null) {
+                request.getRemovalListener().onEntityRemove(request.getEntity());
+            }
+        }
+    }
+
     public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
         for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
             MovementManager manager = entry.getValue();
@@ -90,6 +118,7 @@ public class CollisionManager implements ContactListener {
                 entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
                 entry.getValue().updateMovement();
             }
+            processRemovalQueue();
         }
 
         // Handle entity updates with collision awareness
@@ -108,18 +137,18 @@ public class CollisionManager implements ContactListener {
             }
 
             if (manager != null) {
-                EntityCollisionUpdater.updateEntity(entity, manager, gameWidth, gameHeight,
+                CollisionResponseHandler.updateEntity(entity, manager, gameWidth, gameHeight,
                         pixelsToMeters, collisionMovementStrength,
                         movementThreshold);
             } else {
-                EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
+                CollisionResponseHandler.syncEntity(entity, pixelsToMeters);
             }
         }
     }
 
     public void syncEntityPositions(float pixelsToMeters) {
         for (ICollidableVisitor entity : entityMap.keySet()) {
-            EntityCollisionUpdater.syncEntity(entity, pixelsToMeters);
+            CollisionResponseHandler.syncEntity(entity, pixelsToMeters);
         }
     }
 

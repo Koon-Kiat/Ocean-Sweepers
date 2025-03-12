@@ -19,9 +19,9 @@ import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.core.CustomAssetManager;
-import project.game.engine.entitysystem.entity.CollidableEntity;
-import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.core.CollidableEntity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 public class Rock extends CollidableEntity implements IRenderable {

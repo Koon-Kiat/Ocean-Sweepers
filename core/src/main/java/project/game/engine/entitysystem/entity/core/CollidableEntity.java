@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.entity;
+package project.game.engine.entitysystem.entity.core;
 
 import java.util.List;
 import java.util.Map;
@@ -12,6 +12,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionOperation;
 

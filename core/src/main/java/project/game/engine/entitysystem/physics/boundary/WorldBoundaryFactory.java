@@ -10,9 +10,9 @@ import com.badlogic.gdx.physics.box2d.World;
  * BoundaryFactory is a factory class that creates screen boundaries for a Box2D
  * world.
  */
-public class BoundaryFactory {
+public class WorldBoundaryFactory {
 
-    private BoundaryFactory() {
+    private WorldBoundaryFactory() {
         // Private constructor to prevent instantiation
     }
 

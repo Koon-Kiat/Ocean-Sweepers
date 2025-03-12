@@ -9,7 +9,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.pool.ObjectPool;
 import project.game.application.entity.obstacle.Rock;
-import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.base.Entity;
 
 public class RockFactory implements ObjectPool.ObjectFactory<Rock> {
 

@@ -7,13 +7,13 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.application.movement.strategy.FollowMovementStrategy;
 import project.game.common.exception.MovementException;
-import project.game.engine.entitysystem.entity.Entity;
-import project.game.engine.entitysystem.entity.MovableEntity;
+import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.core.MovableEntity;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 import project.game.engine.entitysystem.movement.api.IPositionable;
-import project.game.engine.entitysystem.movement.type.NPCMovementManager;
+import project.game.engine.entitysystem.movement.controller.NPCMovementManager;
 
 /**
  * Builder class for creating NPCMovementManager objects.

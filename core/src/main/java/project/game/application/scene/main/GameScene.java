@@ -42,13 +42,13 @@ import project.game.engine.audio.config.AudioConfig;
 import project.game.engine.audio.core.AudioManager;
 import project.game.engine.audio.music.MusicManager;
 import project.game.engine.audio.sound.SoundManager;
-import project.game.engine.entitysystem.entity.Entity;
-import project.game.engine.entitysystem.entity.EntityManager;
 import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
-import project.game.engine.entitysystem.movement.type.NPCMovementManager;
-import project.game.engine.entitysystem.movement.type.PlayerMovementManager;
-import project.game.engine.entitysystem.physics.boundary.BoundaryFactory;
+import project.game.engine.entitysystem.movement.controller.NPCMovementManager;
+import project.game.engine.entitysystem.movement.controller.PlayerMovementManager;
+import project.game.engine.entitysystem.physics.boundary.WorldBoundaryFactory;
 import project.game.engine.entitysystem.physics.core.CollisionManager;
 import project.game.engine.io.scene.SceneIOManager;
 import project.game.engine.scene.core.Scene;
@@ -291,14 +291,14 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         displayMessage();
 
         try {
-            // Initialize game assets using the enhanced asset manager
+            // Initialize game assets
             initializeGameAssets();
 
-            // Get the pre-created rock regions from the asset manager
             TextureRegion[] rockRegions = CustomAssetManager.getInstance().getSpriteSheet(ROCK_SPRITESHEET);
 
             entityManager = new EntityManager();
 
+            // Initialize entities and movement managers
             Entity boatEntity = new Entity(
                     constants.PLAYER_START_X(),
                     constants.PLAYER_START_Y(),
@@ -323,19 +323,25 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
             strategyPool = new ArrayList<>();
             strategyPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
-            LOGGER.info("Configured NPC movement strategys: {0}", strategyPool.size());
 
             List<Entity> rockEntities = new ArrayList<>();
             rocks = new ArrayList<>();
             trashes = new ArrayList<>();
             existingEntities = new ArrayList<>();
 
-            // Pass the rockRegions array to your RockFactory
+            camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+            camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
+            camera.update();
+
+            // Initialize CollisionManager
+            collisionManager = new CollisionManager(world, inputManager);
+            collisionManager.init();
+
             rockFactory = new RockFactory(constants, world, existingEntities, rockRegions);
-            trashFactory = new TrashFactory(constants, world, existingEntities, trashTextures);
+            trashFactory = new TrashFactory(constants, world, existingEntities, trashTextures, collisionManager);
+            trashFactory.setRemovalListener(this);
 
-            Random random = new Random();
-
+            // Create entities
             for (int i = 0; i < constants.NUM_ROCKS(); i++) {
                 Rock rock = rockFactory.createObject();
                 rocks.add(rock);
@@ -400,7 +406,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             }
 
             // Create boundaries
-            BoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
+            WorldBoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
                     constants.PIXELS_TO_METERS());
 
             // Initialize AudioManager and AudioUI

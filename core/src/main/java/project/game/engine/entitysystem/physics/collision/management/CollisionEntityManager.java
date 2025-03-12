@@ -1,11 +1,11 @@
-package project.game.engine.entitysystem.physics;
+package project.game.engine.entitysystem.physics.collision.management;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionOperation;
 
@@ -14,7 +14,7 @@ import project.game.engine.entitysystem.physics.api.ICollisionOperation;
  * This class adapts the ICollidable interface to the ICollisionHandler
  * interface
  */
-public class CollidableEntityHandler implements ICollisionOperation {
+public class CollisionEntityManager implements ICollisionOperation {
 
     private static final Map<Class<?>, Function<Object, ICollidableVisitor>> CONVERTERS = new ConcurrentHashMap<>();
     private final ICollidableVisitor collidable;
@@ -24,7 +24,7 @@ public class CollidableEntityHandler implements ICollisionOperation {
         registerConverter(ICollidableVisitor.class, o -> (ICollidableVisitor) o);
     }
 
-    public CollidableEntityHandler(ICollidableVisitor collidable) {
+    public CollisionEntityManager(ICollidableVisitor collidable) {
         this.collidable = collidable;
     }
 

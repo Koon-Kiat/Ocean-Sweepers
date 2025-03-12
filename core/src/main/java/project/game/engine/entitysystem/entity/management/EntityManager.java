@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.entity;
+package project.game.engine.entitysystem.entity.management;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 /**

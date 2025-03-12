@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.entity;
+package project.game.engine.entitysystem.entity.base;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

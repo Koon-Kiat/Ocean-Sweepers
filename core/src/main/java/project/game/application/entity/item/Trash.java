@@ -18,10 +18,11 @@ import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.core.CustomAssetManager;
-import project.game.engine.entitysystem.entity.CollidableEntity;
-import project.game.engine.entitysystem.entity.Entity;
 import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.core.CollidableEntity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.core.CollisionManager;
 
 public class Trash extends CollidableEntity implements IRenderable {
 
@@ -30,6 +31,7 @@ public class Trash extends CollidableEntity implements IRenderable {
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private IEntityRemovalListener removalListener;
+    private CollisionManager collisionManager;
 
     // Type-based collision handler registry
     private static final Map<Class<?>, BiConsumer<Trash, ICollidableVisitor>> TRASH_COLLISION_HANDLERS = new ConcurrentHashMap<>();
@@ -63,6 +65,10 @@ public class Trash extends CollidableEntity implements IRenderable {
     public void setCollisionActive(long durationMillis) {
         collisionActive = true;
         collisionEndTime = System.currentTimeMillis() + durationMillis;
+    }
+
+    public void setCollisionManager(CollisionManager collisionManager) {
+        this.collisionManager = collisionManager;
     }
 
     @Override
@@ -188,12 +194,18 @@ public class Trash extends CollidableEntity implements IRenderable {
                 (boatY < trashY + trashHeight / 2 && boatY + boatHeight > trashY + trashHeight / 2);
 
         if (isCovered) {
-            // Dispose of the trash or make it disappear
-            super.getEntity().setActive(false);
-            getWorld().destroyBody(getBody());
+            // Schedule body for removal instead of immediate destruction
+            if (collisionManager != null) {
+                collisionManager.scheduleBodyRemoval(getBody(), getEntity(), removalListener);
+            } else {
+                // Fallback to old behavior, but this should be avoided
+                LOGGER.warn("CollisionManager not set in Trash object - using unsafe body destruction");
+                super.getEntity().setActive(false);
+                getWorld().destroyBody(getBody());
 
-            if (removalListener != null) {
-                removalListener.onEntityRemove(getEntity());
+                if (removalListener != null) {
+                    removalListener.onEntityRemove(getEntity());
+                }
             }
         }
     }

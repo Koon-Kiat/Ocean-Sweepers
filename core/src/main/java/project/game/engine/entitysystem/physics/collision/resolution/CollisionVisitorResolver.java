@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.physics;
+package project.game.engine.entitysystem.physics.collision.resolution;
 
 import java.util.List;
 import java.util.Map;
@@ -9,13 +9,14 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionElement;
 import project.game.engine.entitysystem.physics.boundary.BoundaryCollisionElement;
+import project.game.engine.entitysystem.physics.collision.detection.CollisionContact;
 
 /**
  * A resolver class that handles collisions using the visitor pattern.
  */
-public class CollisionVisitorHandler {
+public class CollisionVisitorResolver {
 
-    private static final GameLogger LOGGER = new GameLogger(CollisionVisitorHandler.class);
+    private static final GameLogger LOGGER = new GameLogger(CollisionVisitorResolver.class);
 
     // Registry of objects that can be collided with (target registry)
     private final Map<Object, ICollisionElement> collisionTargets = new ConcurrentHashMap<>();
@@ -37,7 +38,7 @@ public class CollisionVisitorHandler {
      */
     public void registerCollidable(ICollidableVisitor collidable) {
         // Register as a target
-        collisionTargets.put(collidable, new EntityCollisionElement(collidable));
+        collisionTargets.put(collidable, new CollisionContact(collidable));
 
         // Register as a visitor
         collisionVisitors.put(collidable, target -> {

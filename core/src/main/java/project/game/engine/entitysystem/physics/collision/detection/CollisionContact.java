@@ -1,17 +1,17 @@
-package project.game.engine.entitysystem.physics;
+package project.game.engine.entitysystem.physics.collision.detection;
 
-import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionElement;
 
 /**
  * A collision target implementation for collidable entities.
  */
-public class EntityCollisionElement implements ICollisionElement {
+public class CollisionContact implements ICollisionElement {
 
     private final ICollidableVisitor collidable;
 
-    public EntityCollisionElement(ICollidableVisitor collidable) {
+    public CollisionContact(ICollidableVisitor collidable) {
         this.collidable = collidable;
     }
 

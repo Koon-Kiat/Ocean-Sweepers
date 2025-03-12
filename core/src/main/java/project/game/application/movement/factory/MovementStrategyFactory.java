@@ -16,7 +16,7 @@ import project.game.application.movement.strategy.ZigZagMovemenStrategy;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.entitysystem.entity.Entity;
+import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;

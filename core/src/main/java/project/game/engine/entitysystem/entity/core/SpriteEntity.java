@@ -1,4 +1,4 @@
-package project.game.engine.entitysystem.entity;
+package project.game.engine.entitysystem.entity.core;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.engine.asset.core.CustomAssetManager;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
+import project.game.engine.entitysystem.entity.base.Entity;
 
 /**
  * SpriteEntity extends CollidableEntity to provide support for sprite-based
