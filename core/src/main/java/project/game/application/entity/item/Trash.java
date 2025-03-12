@@ -1,5 +1,9 @@
 package project.game.application.entity.item;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -26,6 +30,26 @@ public class Trash extends CollidableEntity implements IRenderable {
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private IEntityRemovalListener removalListener;
+
+    // Type-based collision handler registry
+    private static final Map<Class<?>, BiConsumer<Trash, ICollidableVisitor>> TRASH_COLLISION_HANDLERS = new ConcurrentHashMap<>();
+
+    static {
+        // Register collision handler for Boat
+        registerTrashCollisionHandler(Boat.class, Trash::handleBoatCollision);
+    }
+
+    /**
+     * Register a handler for a specific type of collidable entity for Trash
+     * 
+     * @param <T>     Type of collidable
+     * @param clazz   Class of collidable
+     * @param handler Function to handle collision with the collidable
+     */
+    public static <T extends ICollidableVisitor> void registerTrashCollisionHandler(
+            Class<T> clazz, BiConsumer<Trash, ICollidableVisitor> handler) {
+        TRASH_COLLISION_HANDLERS.put(clazz, handler);
+    }
 
     public Trash(Entity entity, World world, String texturePath) {
         super(entity, world);
@@ -121,29 +145,55 @@ public class Trash extends CollidableEntity implements IRenderable {
                 new Object[] { getEntity().getClass().getSimpleName(),
                         other == null ? "boundary" : other.getClass().getSimpleName() });
 
-        if (other != null && other instanceof Boat) {
-            // Check if the boat covers up half of the trash
-            float boatX = other.getEntity().getX();
-            float boatY = other.getEntity().getY();
-            float boatWidth = other.getEntity().getWidth();
-            float boatHeight = other.getEntity().getHeight();
+        if (other != null) {
+            // Dispatch to appropriate collision handler based on entity type
+            dispatchCollisionHandling(other);
+        }
+    }
 
-            float trashX = getEntity().getX();
-            float trashY = getEntity().getY();
-            float trashWidth = getEntity().getWidth();
-            float trashHeight = getEntity().getHeight();
+    /**
+     * Dispatches collision handling to the appropriate registered handler
+     * 
+     * @param other The other entity involved in the collision
+     */
+    private void dispatchCollisionHandling(ICollidableVisitor other) {
+        // Get other entity's class and find a matching handler
+        Class<?> otherClass = other.getClass();
 
-            boolean isCovered = (boatX < trashX + trashWidth / 2 && boatX + boatWidth > trashX + trashWidth / 2) &&
-                    (boatY < trashY + trashHeight / 2 && boatY + boatHeight > trashY + trashHeight / 2);
+        // Look for a handler for this specific class or its superclasses
+        for (Map.Entry<Class<?>, BiConsumer<Trash, ICollidableVisitor>> entry : TRASH_COLLISION_HANDLERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(otherClass)) {
+                entry.getValue().accept(this, other);
+                return;
+            }
+        }
+    }
 
-            if (isCovered) {
-                // Dispose of the trash or make it disappear
-                super.getEntity().setActive(false);
-                getWorld().destroyBody(getBody());
+    /**
+     * Handle collision with a boat
+     */
+    private void handleBoatCollision(ICollidableVisitor boat) {
+        // Check if the boat covers up half of the trash
+        float boatX = boat.getEntity().getX();
+        float boatY = boat.getEntity().getY();
+        float boatWidth = boat.getEntity().getWidth();
+        float boatHeight = boat.getEntity().getHeight();
 
-                if (removalListener != null) {
-                    removalListener.onEntityRemove(getEntity());
-                }
+        float trashX = getEntity().getX();
+        float trashY = getEntity().getY();
+        float trashWidth = getEntity().getWidth();
+        float trashHeight = getEntity().getHeight();
+
+        boolean isCovered = (boatX < trashX + trashWidth / 2 && boatX + boatWidth > trashX + trashWidth / 2) &&
+                (boatY < trashY + trashHeight / 2 && boatY + boatHeight > trashY + trashHeight / 2);
+
+        if (isCovered) {
+            // Dispose of the trash or make it disappear
+            super.getEntity().setActive(false);
+            getWorld().destroyBody(getBody());
+
+            if (removalListener != null) {
+                removalListener.onEntityRemove(getEntity());
             }
         }
     }

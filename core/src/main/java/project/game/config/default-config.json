@@ -2,7 +2,7 @@
     "floats": {
         "PIXELS_TO_METERS": 32.0,
         "MONSTER_BASE_IMPULSE": 200.0,
-        "ROCK_BASE_IMPULSE": 50.0,
+        "ROCK_BASE_IMPULSE": 250.0,
         "BOAT_BOUNCE_FORCE": 10.0,
         "GAME_WIDTH": 1920.0,
         "GAME_HEIGHT": 1080.0,

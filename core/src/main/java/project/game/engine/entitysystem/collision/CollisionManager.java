@@ -174,7 +174,7 @@ public class CollisionManager implements ContactListener {
         // No implementation required
     }
 
-    // Use reflection to refresh collision state, avoiding the need for instanceof
+    // Use reflection to refresh collision state.
     private void refreshEntityCollisionState(ICollidableVisitor entity) {
         try {
             java.lang.reflect.Method method = entity.getClass().getMethod("setCollisionActive", long.class);

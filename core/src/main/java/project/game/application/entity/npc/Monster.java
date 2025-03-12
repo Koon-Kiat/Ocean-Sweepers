@@ -1,5 +1,9 @@
 package project.game.application.entity.npc;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -31,6 +35,29 @@ public class Monster extends CollidableEntity implements IRenderable {
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
+
+    // Type-based collision handler registry
+    private static final Map<Class<?>, BiConsumer<Monster, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = new ConcurrentHashMap<>();
+
+    static {
+        // Register collision handlers for specific entity types
+        registerMonsterCollisionHandler(Boat.class, Monster::handleBoatCollision);
+        registerMonsterCollisionHandler(Rock.class, Monster::handleRockCollision);
+        registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {
+            /* Ignore trash collisions */});
+    }
+
+    /**
+     * Register a handler for a specific type of collidable entity
+     * 
+     * @param <T>     Type of collidable
+     * @param clazz   Class of collidable
+     * @param handler Function to handle collision with the collidable
+     */
+    public static <T extends ICollidableVisitor> void registerMonsterCollisionHandler(
+            Class<T> clazz, BiConsumer<Monster, ICollidableVisitor> handler) {
+        MONSTER_COLLISION_HANDLERS.put(clazz, handler);
+    }
 
     public Monster(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
         super(entity, world);
@@ -140,7 +167,7 @@ public class Monster extends CollidableEntity implements IRenderable {
     @Override
     public void onCollision(ICollidableVisitor other) {
         long currentTime = System.currentTimeMillis();
-        long cooldownTime = (other instanceof Boat) ? 300 : 100;
+        long cooldownTime = shouldApplyCooldown(other) ? 300 : 100;
 
         if (currentTime - lastCollisionTime < cooldownTime) {
             return;
@@ -151,60 +178,50 @@ public class Monster extends CollidableEntity implements IRenderable {
                     new Object[] { getEntity().getClass().getSimpleName(),
                             other.getClass().getSimpleName() });
 
-            if (!(other instanceof Trash)) {
-                setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-            }
+            dispatchCollisionHandling(other);
+        }
+    }
 
-            if (other instanceof Boat) {
-                // Calculate direction from monster to boat
-                float monsterX = getEntity().getX();
-                float monsterY = getEntity().getY();
-                handleBoatCollision(other, monsterX, monsterY);
-            } else if (other instanceof Rock) {
-                // Calculate direction from rock to monster
-                float monsterX = getEntity().getX();
-                float monsterY = getEntity().getY();
-                float rockX = other.getEntity().getX();
-                float rockY = other.getEntity().getY();
+    /**
+     * Determine if a cooldown should be applied based on entity type
+     */
+    private boolean shouldApplyCooldown(ICollidableVisitor other) {
+        return other != null && other.getClass() == Boat.class;
+    }
 
-                float dx = monsterX - rockX; // Reversed direction (rock pushing monster)
-                float dy = monsterY - rockY;
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+    /**
+     * Dispatches collision handling to the appropriate registered handler
+     * 
+     * @param other The other entity involved in the collision
+     */
+    private void dispatchCollisionHandling(ICollidableVisitor other) {
+        // Skip trash collisions
+        if (other.getClass() == Trash.class) {
+            return;
+        }
 
-                if (distance > 0.0001f) {
-                    // Normalize direction
-                    dx /= distance;
-                    dy /= distance;
+        // Set collision active by default for non-trash entities
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
 
-                    // Apply impulse to monster (being pushed by rock)
-                    float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE();
-                    getBody().applyLinearImpulse(
-                            dx * rockImpulse,
-                            dy * rockImpulse,
-                            getBody().getWorldCenter().x,
-                            getBody().getWorldCenter().y,
-                            true);
+        // Get other entity's class and find a matching handler
+        Class<?> otherClass = other.getClass();
 
-                    // Reduce damping to allow movement
-                    getBody().setLinearDamping(0.5f);
-                }
+        // Look for a handler for this specific class or its superclasses
+        for (Map.Entry<Class<?>, BiConsumer<Monster, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS
+                .entrySet()) {
+            if (entry.getKey().isAssignableFrom(otherClass)) {
+                entry.getValue().accept(this, other);
+                return;
             }
         }
     }
 
-    @Override
-    public boolean isInCollision() {
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-            collisionActive = false;
-            // Reset damping when collision ends
-            getBody().setLinearDamping(0.2f);
-            // Clear any lingering velocity when exiting collision state
-            getBody().setLinearVelocity(0, 0);
-        }
-        return collisionActive;
-    }
-
-    private void handleBoatCollision(ICollidableVisitor boat, float monsterX, float monsterY) {
+    /**
+     * Handle collision with a boat
+     */
+    private void handleBoatCollision(ICollidableVisitor boat) {
+        float monsterX = getEntity().getX();
+        float monsterY = getEntity().getY();
         float boatX = boat.getEntity().getX();
         float boatY = boat.getEntity().getY();
 
@@ -240,8 +257,60 @@ public class Monster extends CollidableEntity implements IRenderable {
 
             // High damping for better control after impact
             boat.getBody().setLinearDamping(3.0f);
-            ((Boat) boat).setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+
+            // Access the boat's setCollisionActive method through reflection
+            try {
+                java.lang.reflect.Method method = boat.getClass().getMethod("setCollisionActive", long.class);
+                method.invoke(boat, GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+            } catch (Exception e) {
+                // If we can't invoke the method, just log it
+                LOGGER.warn("Could not set collision active state on boat: {0}", e.getMessage());
+            }
         }
+    }
+
+    /**
+     * Handle collision with a rock
+     */
+    private void handleRockCollision(ICollidableVisitor rock) {
+        float monsterX = getEntity().getX();
+        float monsterY = getEntity().getY();
+        float rockX = rock.getEntity().getX();
+        float rockY = rock.getEntity().getY();
+
+        float dx = monsterX - rockX; // Reversed direction (rock pushing monster)
+        float dy = monsterY - rockY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 0.0001f) {
+            // Normalize direction
+            dx /= distance;
+            dy /= distance;
+
+            // Apply impulse to monster (being pushed by rock)
+            float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE();
+            getBody().applyLinearImpulse(
+                    dx * rockImpulse,
+                    dy * rockImpulse,
+                    getBody().getWorldCenter().x,
+                    getBody().getWorldCenter().y,
+                    true);
+
+            // Reduce damping to allow movement
+            getBody().setLinearDamping(0.5f);
+        }
+    }
+
+    @Override
+    public boolean isInCollision() {
+        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+            collisionActive = false;
+            // Reset damping when collision ends
+            getBody().setLinearDamping(0.2f);
+            // Clear any lingering velocity when exiting collision state
+            getBody().setLinearVelocity(0, 0);
+        }
+        return collisionActive;
     }
 
     private float entityX() {

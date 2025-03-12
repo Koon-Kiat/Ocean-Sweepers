@@ -1,6 +1,9 @@
 package project.game.engine.entitysystem.collision;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import project.game.engine.api.collision.ICollidableVisitor;
 import project.game.engine.api.collision.ICollisionOperation;
@@ -14,6 +17,25 @@ import project.game.engine.entitysystem.entity.Entity;
 public class CollidableEntityHandler implements ICollisionOperation {
 
     private final ICollidableVisitor collidable;
+    private static final Map<Class<?>, Function<Object, ICollidableVisitor>> CONVERTERS = new ConcurrentHashMap<>();
+
+    static {
+        // Register default converter for ICollidableVisitor
+        registerConverter(ICollidableVisitor.class, o -> (ICollidableVisitor) o);
+    }
+
+    /**
+     * Register a converter for a specific type to enable polymorphic dispatch
+     * 
+     * @param <T>       Type of object to convert
+     * @param clazz     Class of object to convert
+     * @param converter Function to convert to ICollidableVisitor
+     */
+    public static <T> void registerConverter(Class<T> clazz, Function<T, ICollidableVisitor> converter) {
+        @SuppressWarnings("unchecked")
+        Function<Object, ICollidableVisitor> castedConverter = obj -> converter.apply((T) obj);
+        CONVERTERS.put(clazz, castedConverter);
+    }
 
     public CollidableEntityHandler(ICollidableVisitor collidable) {
         this.collidable = collidable;
@@ -26,11 +48,20 @@ public class CollidableEntityHandler implements ICollisionOperation {
             return;
         }
 
-        // Handle other collidables through double dispatch
-        if (other instanceof ICollidableVisitor) {
-            ICollidableVisitor otherCollidable = (ICollidableVisitor) other;
-            Entity otherEntity = otherCollidable.getEntity();
+        // Try to handle via double dispatch with another collidable
+        tryHandleCollidable(other, collisionQueue);
+    }
 
+    /**
+     * Tries to handle a collision with another potentially collidable object
+     * 
+     * @param other          The other object involved in the collision
+     * @param collisionQueue Queue to add collision actions to
+     */
+    private void tryHandleCollidable(Object other, List<Runnable> collisionQueue) {
+        ICollidableVisitor otherCollidable = getCollidableVisitor(other);
+        if (otherCollidable != null) {
+            Entity otherEntity = otherCollidable.getEntity();
             if (collidable.checkCollision(otherEntity)) {
                 final ICollidableVisitor otherFinal = otherCollidable;
                 collisionQueue.add(() -> collidable.collideWith(otherFinal));
@@ -38,9 +69,41 @@ public class CollidableEntityHandler implements ICollisionOperation {
         }
     }
 
+    /**
+     * Attempts to get an ICollidableVisitor from an object using registered
+     * converters
+     * 
+     * @param object The object to convert
+     * @return The ICollidableVisitor or null if not convertible
+     */
+    private ICollidableVisitor getCollidableVisitor(Object object) {
+        if (object == null) {
+            return null;
+        }
+
+        for (Map.Entry<Class<?>, Function<Object, ICollidableVisitor>> entry : CONVERTERS.entrySet()) {
+            if (entry.getKey().isInstance(object)) {
+                try {
+                    return entry.getValue().apply(object);
+                } catch (Exception e) {
+                    // Failed to convert, try next converter
+                }
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public boolean handlesCollisionWith(Class<?> clazz) {
-        return ICollidableVisitor.class.isAssignableFrom(clazz) ||
-                String.class.equals(clazz);
+        // Check if we have a converter for this class or any of its superclasses
+        for (Class<?> registeredClass : CONVERTERS.keySet()) {
+            if (registeredClass.isAssignableFrom(clazz)) {
+                return true;
+            }
+        }
+
+        // Also handle strings (for boundary collisions)
+        return String.class.equals(clazz);
     }
 }

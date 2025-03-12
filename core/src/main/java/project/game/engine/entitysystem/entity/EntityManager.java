@@ -3,7 +3,10 @@ package project.game.engine.entitysystem.entity;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -21,11 +24,46 @@ public class EntityManager {
 	private final List<Entity> entityList;
 	private final Set<String> entityIDs;
 
+	// Type conversion registry
+	private static final Map<Class<?>, Function<Object, Entity>> ENTITY_EXTRACTORS = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, Function<Object, ICollidableVisitor>> COLLIDABLE_EXTRACTORS = new ConcurrentHashMap<>();
+
+	static {
+		// Register default converters
+		registerEntityExtractor(Entity.class, obj -> (Entity) obj);
+		registerCollidableExtractor(ICollidableVisitor.class, obj -> (ICollidableVisitor) obj);
+	}
+
+	/**
+	 * Register an entity extractor for a specific type
+	 * 
+	 * @param <T>       Type of object to extract from
+	 * @param clazz     Class of object
+	 * @param extractor Function to extract the Entity from the object
+	 */
+	public static <T> void registerEntityExtractor(Class<T> clazz, Function<T, Entity> extractor) {
+		@SuppressWarnings("unchecked")
+		Function<Object, Entity> castedExtractor = obj -> extractor.apply((T) obj);
+		ENTITY_EXTRACTORS.put(clazz, castedExtractor);
+	}
+
+	/**
+	 * Register a collidable extractor for a specific type
+	 * 
+	 * @param <T>       Type of object to extract from
+	 * @param clazz     Class of object
+	 * @param extractor Function to extract the ICollidableVisitor from the object
+	 */
+	public static <T> void registerCollidableExtractor(Class<T> clazz, Function<T, ICollidableVisitor> extractor) {
+		@SuppressWarnings("unchecked")
+		Function<Object, ICollidableVisitor> castedExtractor = obj -> extractor.apply((T) obj);
+		COLLIDABLE_EXTRACTORS.put(clazz, castedExtractor);
+	}
+
 	public EntityManager() {
 		this.renderables = new ArrayList<>();
 		this.entityList = new ArrayList<>();
 		this.entityIDs = new HashSet<>();
-
 	}
 
 	public List<Entity> getEntities() {
@@ -35,8 +73,8 @@ public class EntityManager {
 	public boolean addRenderableEntity(IRenderable renderable) {
 		renderables.add(renderable);
 
-		if (renderable instanceof Entity) {
-			Entity entity = (Entity) renderable;
+		Entity entity = extractEntity(renderable);
+		if (entity != null) {
 			if (entityIDs.contains(entity.getID())) {
 				LOGGER.warn("Duplicate ID: {0}", entity.getID());
 				return false;
@@ -50,8 +88,8 @@ public class EntityManager {
 	public void removeRenderableEntity(IRenderable renderable) {
 		renderables.remove(renderable);
 
-		if (renderable instanceof Entity) {
-			Entity entity = (Entity) renderable;
+		Entity entity = extractEntity(renderable);
+		if (entity != null) {
 			entityIDs.remove(entity.getID());
 			entityList.remove(entity);
 		}
@@ -82,20 +120,68 @@ public class EntityManager {
 	public void checkCollision() {
 		for (int i = 0; i < entityList.size(); i++) {
 			Entity entityA = entityList.get(i);
-			if (entityA instanceof ICollidableVisitor) {
-				ICollidableVisitor collidableA = (ICollidableVisitor) entityA;
+			ICollidableVisitor collidableA = extractCollidable(entityA);
+
+			if (collidableA != null) {
 				for (int j = i + 1; j < entityList.size(); j++) {
 					Entity entityB = entityList.get(j);
-					if (entityB instanceof ICollidableVisitor) {
-						ICollidableVisitor collidableB = (ICollidableVisitor) entityB;
-						if (collidableA.checkCollision(entityB)) {
-							collidableA.onCollision(collidableB);
-							collidableB.onCollision(collidableA);
+					ICollidableVisitor collidableB = extractCollidable(entityB);
 
-						}
+					if (collidableB != null && collidableA.checkCollision(entityB)) {
+						collidableA.onCollision(collidableB);
+						collidableB.onCollision(collidableA);
 					}
 				}
 			}
 		}
+	}
+
+	/**
+	 * Extract an Entity object from any object using registered extractors
+	 * 
+	 * @param object The object to extract from
+	 * @return The extracted Entity or null if not extractable
+	 */
+	private Entity extractEntity(Object object) {
+		if (object == null) {
+			return null;
+		}
+
+		for (Map.Entry<Class<?>, Function<Object, Entity>> entry : ENTITY_EXTRACTORS.entrySet()) {
+			if (entry.getKey().isInstance(object)) {
+				try {
+					return entry.getValue().apply(object);
+				} catch (Exception e) {
+					// Failed to extract, try next extractor
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Extract an ICollidableVisitor object from any object using registered
+	 * extractors
+	 * 
+	 * @param object The object to extract from
+	 * @return The extracted ICollidableVisitor or null if not extractable
+	 */
+	private ICollidableVisitor extractCollidable(Object object) {
+		if (object == null) {
+			return null;
+		}
+
+		for (Map.Entry<Class<?>, Function<Object, ICollidableVisitor>> entry : COLLIDABLE_EXTRACTORS.entrySet()) {
+			if (entry.getKey().isInstance(object)) {
+				try {
+					return entry.getValue().apply(object);
+				} catch (Exception e) {
+					// Failed to extract, try next extractor
+				}
+			}
+		}
+
+		return null;
 	}
 }

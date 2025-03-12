@@ -17,7 +17,7 @@ public class TrashFactory implements ObjectPool.ObjectFactory<Trash> {
     private final World world;
     private final Random random;
     private final List<Entity> existingEntities;
-    private Texture[] trashTextures;
+    private final Texture[] trashTextures;
 
     // Add texture array to constructor
     public TrashFactory(IGameConstants constants, World world, List<Entity> existingEntities, Texture[] trashTextures) {

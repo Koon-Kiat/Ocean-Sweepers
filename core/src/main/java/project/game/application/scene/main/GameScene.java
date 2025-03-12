@@ -64,7 +64,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private NPCMovementManager npcMovementManager;
     private SpriteBatch batch;
     private Texture rockImage;
-    private Texture boatImage;
     private Texture boatSpritesheet;
     private Texture rockSpritesheet;
     private Texture trashImage;
@@ -198,7 +197,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     @Override
     public void dispose() {
         batch.dispose();
-        boatImage.dispose();
+        boatSpritesheet.dispose();
         trashImage.dispose();
         rockImage.dispose();
         debugRenderer.dispose();
@@ -228,8 +227,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             CustomAssetManager.getInstance().loadTextureAssets("trash1.png");
             CustomAssetManager.getInstance().loadTextureAssets("trash2.png");
             CustomAssetManager.getInstance().loadTextureAssets("trash3.png");
-            // CustomAssetManager.getInstance().loadTextureAssets("bucket.png");
-            CustomAssetManager.getInstance().loadTextureAssets("steamboat_black_0001-sheet.png");
+            CustomAssetManager.getInstance().loadTextureAssets("steamboat.png");
             CustomAssetManager.getInstance().loadTextureAssets("rock.png");
             CustomAssetManager.getInstance().loadTextureAssets("Rocks.png");
             CustomAssetManager.getInstance().loadTextureAssets("monster.png");
@@ -237,12 +235,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             CustomAssetManager.getInstance().update();
             CustomAssetManager.getInstance().getasset_Manager().finishLoading();
             if (CustomAssetManager.getInstance().isLoaded()) {
-                // boatImage = CustomAssetManager.getInstance().getAsset("bucket.png",
-                // Texture.class);
-                boatSpritesheet = CustomAssetManager.getInstance().getAsset("steamboat_black_0001-sheet.png",
+
+                boatSpritesheet = CustomAssetManager.getInstance().getAsset("steamboat.png",
                         Texture.class);
-                // rockImage = CustomAssetManager.getInstance().getAsset("rock.png",
-                // Texture.class);
                 rockImage = CustomAssetManager.getInstance().getAsset("Rocks.png", Texture.class);
                 monsterImage = CustomAssetManager.getInstance().getAsset("monster.png", Texture.class);
                 backgroundTexture = CustomAssetManager.getInstance().getAsset("ocean_background.jpg", Texture.class);
@@ -286,9 +281,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.info("Loaded bucket.png successfully.");
             LOGGER.info("Loaded rock.png successfully.");
             LOGGER.info("Loaded monster.png successfully.");
-            if (boatImage == null) {
-                LOGGER.error("boatImage is null after loading!");
-            }
             if (trashImage == null) {
                 LOGGER.error("trashImage is null after loading!");
             }
@@ -371,8 +363,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 .setLenientMode(true)
                 .build();
 
-        // Initialize entities
-        // boat = new Boat(boatEntity, world, playerMovementManager, "bucket.png");
         boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
         monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
 

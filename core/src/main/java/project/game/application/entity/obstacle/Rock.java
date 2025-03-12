@@ -1,6 +1,9 @@
 package project.game.application.entity.obstacle;
 
-import com.badlogic.gdx.graphics.Texture;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -29,16 +32,37 @@ public class Rock extends CollidableEntity implements IRenderable {
 	private boolean collisionActive = false;
 	private long collisionEndTime = 0;
 
+	// Type-based collision handler registry
+	private static final Map<Class<?>, BiConsumer<Rock, ICollidableVisitor>> ROCK_COLLISION_HANDLERS = new ConcurrentHashMap<>();
+
+	static {
+		// Register collision handlers for different entity types
+		registerRockCollisionHandler(Boat.class, Rock::handleBoatCollision);
+		registerRockCollisionHandler(Monster.class, Rock::handleMonsterCollision);
+	}
+
+	/**
+	 * Register a handler for a specific type of collidable entity
+	 * 
+	 * @param <T>     Type of collidable
+	 * @param clazz   Class of collidable
+	 * @param handler Function to handle collision with the collidable
+	 */
+	public static <T extends ICollidableVisitor> void registerRockCollisionHandler(
+			Class<T> clazz, BiConsumer<Rock, ICollidableVisitor> handler) {
+		ROCK_COLLISION_HANDLERS.put(clazz, handler);
+	}
+
 	public Rock(Entity entity, World world, String texturePath) {
 		super(entity, world);
 		this.texturePath = texturePath;
 	}
 
 	// New constructor for a rock with a given region
-    public Rock(Entity entity, World world, TextureRegion rockRegion) {
-        super(entity, world);
-        this.rockRegion = rockRegion;
-    }
+	public Rock(Entity entity, World world, TextureRegion rockRegion) {
+		super(entity, world);
+		this.rockRegion = rockRegion;
+	}
 
 	public void setCollisionActive(long durationMillis) {
 		collisionActive = true;
@@ -100,13 +124,13 @@ public class Rock extends CollidableEntity implements IRenderable {
 	}
 
 	@Override
-    public void render(SpriteBatch batch) {
-        if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
-            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
-            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
-            batch.draw(rockRegion, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
-        }
-    }
+	public void render(SpriteBatch batch) {
+		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+			float renderX = getEntity().getX() - getEntity().getWidth() / 2;
+			float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+			batch.draw(rockRegion, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
+		}
+	}
 
 	@Override
 	public boolean checkCollision(Entity other) {
@@ -121,44 +145,91 @@ public class Rock extends CollidableEntity implements IRenderable {
 						other == null ? "boundary" : other.getClass().getSimpleName() });
 
 		if (other != null) {
-			// Apply strong repulsion force to any colliding entity
-			float rockX = getEntity().getX();
-			float rockY = getEntity().getY();
-			float otherX = other.getEntity().getX();
-			float otherY = other.getEntity().getY();
+			// Dispatch to appropriate collision handler based on entity type
+			dispatchCollisionHandling(other);
+		}
+	}
 
-			// Calculate direction vector from rock to other entity
-			float dx = otherX - rockX;
-			float dy = otherY - rockY;
-			float distance = (float) Math.sqrt(dx * dx + dy * dy);
+	/**
+	 * Dispatches collision handling to the appropriate registered handler
+	 * 
+	 * @param other The other entity involved in the collision
+	 */
+	private void dispatchCollisionHandling(ICollidableVisitor other) {
+		// Get other entity's class and find a matching handler
+		Class<?> otherClass = other.getClass();
 
-			if (distance > 0.0001f) {
-				// Normalize direction
-				dx /= distance;
-				dy /= distance;
-
-				// Calculate repulsion force based on entity type
-				float repulsionForce = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE();
-				if (other instanceof Boat) {
-					repulsionForce *= 1.5f;
-				} else if (other instanceof Monster) {
-					repulsionForce *= 15.0f;
-				}
-
-				// Apply impulse to push the other entity away
-				other.getBody().applyLinearImpulse(
-						dx * repulsionForce,
-						dy * repulsionForce,
-						other.getBody().getWorldCenter().x,
-						other.getBody().getWorldCenter().y,
-						true);
+		// Look for a handler for this specific class or its superclasses
+		for (Map.Entry<Class<?>, BiConsumer<Rock, ICollidableVisitor>> entry : ROCK_COLLISION_HANDLERS.entrySet()) {
+			if (entry.getKey().isAssignableFrom(otherClass)) {
+				entry.getValue().accept(this, other);
+				return;
 			}
+		}
 
-			// Set collision states
-			setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-			if (other.getBody() != null) {
-				other.getBody().setLinearDamping(3.0f);
-			}
+		// Default handler for any entity (apply general repulsion)
+		handleDefaultCollision(other);
+	}
+
+	/**
+	 * Handle collision with a boat
+	 */
+	private void handleBoatCollision(ICollidableVisitor other) {
+		// Apply strong repulsion force to boat
+		applyRepulsionForce(other, 1.5f);
+	}
+
+	/**
+	 * Handle collision with a monster
+	 */
+	private void handleMonsterCollision(ICollidableVisitor other) {
+		// Apply very strong repulsion force to monster
+		applyRepulsionForce(other, 15.0f);
+	}
+
+	/**
+	 * Handle collision with any other entity
+	 */
+	private void handleDefaultCollision(ICollidableVisitor other) {
+		// Apply standard repulsion force
+		applyRepulsionForce(other, 1.0f);
+	}
+
+	/**
+	 * Apply a repulsion force to the other entity
+	 */
+	private void applyRepulsionForce(ICollidableVisitor other, float multiplier) {
+		float rockX = getEntity().getX();
+		float rockY = getEntity().getY();
+		float otherX = other.getEntity().getX();
+		float otherY = other.getEntity().getY();
+
+		// Calculate direction vector from rock to other entity
+		float dx = otherX - rockX;
+		float dy = otherY - rockY;
+		float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+		if (distance > 0.0001f) {
+			// Normalize direction
+			dx /= distance;
+			dy /= distance;
+
+			// Calculate repulsion force based on entity type
+			float repulsionForce = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE() * multiplier;
+
+			// Apply impulse to push the other entity away
+			other.getBody().applyLinearImpulse(
+					dx * repulsionForce,
+					dy * repulsionForce,
+					other.getBody().getWorldCenter().x,
+					other.getBody().getWorldCenter().y,
+					true);
+		}
+
+		// Set collision states
+		setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+		if (other.getBody() != null) {
+			other.getBody().setLinearDamping(3.0f);
 		}
 	}
 
@@ -168,21 +239,5 @@ public class Rock extends CollidableEntity implements IRenderable {
 			collisionActive = false;
 		}
 		return collisionActive;
-	}
-
-	private float entityX() {
-		return super.getEntity().getX();
-	}
-
-	private float entityY() {
-		return super.getEntity().getY();
-	}
-
-	private float entityWidth() {
-		return super.getEntity().getWidth();
-	}
-
-	private float entityHeight() {
-		return super.getEntity().getHeight();
 	}
 }

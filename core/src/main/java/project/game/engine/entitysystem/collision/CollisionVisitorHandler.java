@@ -11,7 +11,6 @@ import project.game.engine.api.collision.ICollisionElement;
 
 /**
  * A resolver class that handles collisions using the visitor pattern.
- * This completely eliminates instanceof checks by using a registry approach.
  */
 public class CollisionVisitorHandler {
 
@@ -67,7 +66,7 @@ public class CollisionVisitorHandler {
     }
 
     /**
-     * Resolve collision between two objects without any instanceof checks
+     * Resolve collision between two objects
      * 
      * @param objectA        First object in the collision
      * @param objectB        Second object in the collision

@@ -6,8 +6,7 @@ import project.game.engine.api.collision.ICollisionElement;
 /**
  * Represents a boundary in the game world that can be collided with.
  * This implementation uses the visitor pattern to handle collisions with
- * boundaries
- * without instanceof checks.
+ * boundaries.
  */
 public class BoundaryCollisionElement implements ICollisionElement {
 

@@ -1,5 +1,9 @@
 package project.game.application.entity.player;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -26,14 +30,39 @@ public class Boat extends CollidableEntity implements IRenderable {
 
     private static final GameLogger LOGGER = new GameLogger(Boat.class);
     private final PlayerMovementManager movementManager;
-    private String texturePath;
+    private final String texturePath;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
-	private int lastDirectionIndex = 2; // Default to DOWN (index 2)
-    
+    private int lastDirectionIndex = 2; // Default to DOWN (index 2)
+
+    // Type handler registry for collision handling
+    private static final Map<Class<?>, Consumer<Boat>> COLLISION_HANDLERS = new ConcurrentHashMap<>();
+
+    static {
+        // Register collision handlers for different entity types using lambda
+        // expressions
+        registerCollisionHandler(Rock.class, boat -> boat.handleRockCollision());
+        registerCollisionHandler(Trash.class, boat -> boat.handleTrashCollision());
+    }
+
+    /**
+     * Register a handler for a specific type of collidable entity
+     * 
+     * @param <T>     Type of collidable
+     * @param clazz   Class of collidable
+     * @param handler Function to handle collision with the collidable
+     */
+    public static <T extends ICollidableVisitor> void registerCollisionHandler(
+            Class<T> clazz, Consumer<Boat> handler) {
+        COLLISION_HANDLERS.put(clazz, handler);
+    }
+
     // New fields for directional sprites
     private TextureRegion[] directionalSprites;
     private boolean useDirectionalSprites = false;
+
+    // Track the current collision entity
+    private ICollidableVisitor currentCollisionEntity;
 
     /**
      * Constructor for single texture boat
@@ -44,7 +73,7 @@ public class Boat extends CollidableEntity implements IRenderable {
         this.texturePath = texturePath;
         this.useDirectionalSprites = false;
     }
-    
+
     /**
      * Constructor for directional sprites boat
      */
@@ -140,20 +169,21 @@ public class Boat extends CollidableEntity implements IRenderable {
 
     @Override
     public void render(SpriteBatch batch) {
-        if (!isActive()) return;
-        
+        if (!isActive())
+            return;
+
         // Calculate render coordinates (centered on Box2D body)
-        float renderX = entityX() - entityWidth() / 2;
-        float renderY = entityY() - entityHeight() / 2;
-        
+        float renderX = getEntity().getX() - getEntity().getWidth() / 2;
+        float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+
         if (useDirectionalSprites && directionalSprites != null) {
             // Use directional sprites
             TextureRegion currentSprite = getDirectionalSprite();
-            batch.draw(currentSprite, renderX, renderY, entityWidth(), entityHeight());
+            batch.draw(currentSprite, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
         } else if (CustomAssetManager.getInstance().isLoaded()) {
             // Use single texture
             Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
-            batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
+            batch.draw(texture, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
         }
     }
 
@@ -163,7 +193,7 @@ public class Boat extends CollidableEntity implements IRenderable {
     private TextureRegion getDirectionalSprite() {
         // Get velocity from movement manager
         Vector2 velocity = movementManager.getVelocity();
-        
+
         // Only update direction if actually moving
         if (velocity.x != 0 || velocity.y != 0) {
             // Determine predominant direction
@@ -183,12 +213,12 @@ public class Boat extends CollidableEntity implements IRenderable {
                 }
             }
         }
-        
-        // Return the last direction sprite (either just updated or preserved from before)
+
+        // Return the last direction sprite (either just updated or preserved from
+        // before)
         return directionalSprites[lastDirectionIndex];
     }
-    
-    
+
     @Override
     public boolean checkCollision(Entity other) {
         // Use Box2D for collision detection
@@ -199,62 +229,81 @@ public class Boat extends CollidableEntity implements IRenderable {
     public void onCollision(ICollidableVisitor other) {
         // Only handle collisions with actual entities, not boundaries
         if (other != null) {
+            // Store the current collision entity
+            this.currentCollisionEntity = other;
+
             // Log normal entity collisions
             LOGGER.info("{0} collided with {1}",
                     new Object[] { getEntity().getClass().getSimpleName(),
                             other.getClass().getSimpleName() });
 
-            if (other instanceof Rock) {
-                setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-                float boatX = getBody().getPosition().x;
-                float boatY = getBody().getPosition().y;
-                float rockX = other.getBody().getPosition().x;
-                float rockY = other.getBody().getPosition().y;
+            // Dispatch to appropriate handler based on the other entity's type
+            dispatchCollisionHandling(other);
+        }
+    }
 
-                float dx = boatX - rockX;
-                float dy = boatY - rockY;
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                LOGGER.info("go distance: " + distance);
-
-                if (distance > 0.0001f) {
-                    dx /= distance;
-                    dy /= distance;
-                    float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE();
-                    LOGGER.info("boat bounce force: " + bounceForce);
-                    LOGGER.info("dy dx: " + dx);
-                    getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);
-                }
-            } else if (other instanceof Trash) {
-                Trash trash = (Trash) other;
-                trash.getEntity().setActive(false);
-                getWorld().destroyBody(trash.getBody());
+    /**
+     * Dispatches collision handling to the appropriate registered handler
+     * 
+     * @param other The other entity involved in the collision
+     */
+    private void dispatchCollisionHandling(ICollidableVisitor other) {
+        Class<?> otherClass = other.getClass();
+        // Look for a handler for this specific class
+        for (Map.Entry<Class<?>, Consumer<Boat>> entry : COLLISION_HANDLERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(otherClass)) {
+                entry.getValue().accept(this);
+                return;
             }
         }
+    }
+
+    /**
+     * Handle collision with a rock
+     */
+    private void handleRockCollision() {
+        if (currentCollisionEntity == null)
+            return;
+
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+        float boatX = getBody().getPosition().x;
+        float boatY = getBody().getPosition().y;
+        float rockX = currentCollisionEntity.getBody().getPosition().x;
+        float rockY = currentCollisionEntity.getBody().getPosition().y;
+
+        float dx = boatX - rockX;
+        float dy = boatY - rockY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        LOGGER.info("go distance: " + distance);
+
+        if (distance > 0.0001f) {
+            dx /= distance;
+            dy /= distance;
+            float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE();
+            LOGGER.info("boat bounce force: " + bounceForce);
+            LOGGER.info("dy dx: " + dx);
+            getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);
+        }
+    }
+
+    /**
+     * Handle collision with trash
+     */
+    private void handleTrashCollision() {
+        if (currentCollisionEntity == null || !(currentCollisionEntity instanceof Trash))
+            return;
+
+        Trash trash = (Trash) currentCollisionEntity;
+        trash.getEntity().setActive(false);
+        getWorld().destroyBody(trash.getBody());
     }
 
     @Override
     public boolean isInCollision() {
         if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
             collisionActive = false;
-            // Important: Clear any lingering velocity when exiting collision state
             getBody().setLinearVelocity(0, 0);
         }
         return collisionActive;
-    }
-
-    private float entityX() {
-        return super.getEntity().getX();
-    }
-
-    private float entityY() {
-        return super.getEntity().getY();
-    }
-
-    private float entityWidth() {
-        return super.getEntity().getWidth();
-    }
-
-    private float entityHeight() {
-        return super.getEntity().getHeight();
     }
 }

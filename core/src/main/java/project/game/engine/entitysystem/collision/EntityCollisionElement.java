@@ -6,8 +6,6 @@ import project.game.engine.entitysystem.entity.Entity;
 
 /**
  * A collision target implementation for collidable entities.
- * This implementation eliminates the need for instanceof checks
- * by providing a visitable target for collision handling.
  */
 public class EntityCollisionElement implements ICollisionElement {
 

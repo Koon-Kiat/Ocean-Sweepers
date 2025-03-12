@@ -11,7 +11,7 @@ import project.game.engine.api.collision.ICollisionPairHandler;
 
 /**
  * A class that tracks active collision pairs using the visitor pattern.
- * This eliminates the need for instanceof checks when tracking collisions.
+ * This eliminates the need for type checks when tracking collisions.
  */
 public class CollisionPairTracker implements ICollisionPairHandler {
 
@@ -108,7 +108,7 @@ public class CollisionPairTracker implements ICollisionPairHandler {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof CollisionPair)) {
+            if (obj == null || obj.getClass() != CollisionPair.class) {
                 return false;
             }
             CollisionPair other = (CollisionPair) obj;
