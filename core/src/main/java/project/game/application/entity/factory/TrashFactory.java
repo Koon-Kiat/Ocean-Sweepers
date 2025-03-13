@@ -1,37 +1,30 @@
 package project.game.application.entity.factory;
 
 import java.util.List;
-import java.util.Random;
 
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
-import project.game.application.api.pool.ObjectPool;
 import project.game.application.entity.item.Trash;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
-public class TrashFactory implements ObjectPool.ObjectFactory<Trash> {
-
-    private final IGameConstants constants;
-    private final World world;
-    private final Random random;
-    private final List<Entity> existingEntities;
-    private final Texture[] trashTextures;
-    private final  CollisionManager collisionManager;
+public class TrashFactory extends AbstractEntityFactory<Trash> {
+    private final TextureRegion[] trashTextures;
+    private final java.util.Random random;
     private IEntityRemovalListener removalListener;
 
-    // Add texture array to constructor
-    public TrashFactory(IGameConstants constants, World world, List<Entity> existingEntities,
-            Texture[] trashTextures, CollisionManager collisionManager) {
-        this.constants = constants;
-        this.world = world;
-        this.random = new Random();
-        this.existingEntities = existingEntities;
+    public TrashFactory(
+            IGameConstants constants,
+            World world,
+            List<Entity> existingEntities,
+            CollisionManager collisionManager,
+            TextureRegion[] trashTextures) {
+        super(constants, world, existingEntities, collisionManager);
         this.trashTextures = trashTextures;
-        this.collisionManager = collisionManager;
+        this.random = new java.util.Random();
     }
 
     public void setRemovalListener(IEntityRemovalListener removalListener) {
@@ -39,37 +32,16 @@ public class TrashFactory implements ObjectPool.ObjectFactory<Trash> {
     }
 
     @Override
-    public Trash createObject() {
-        float x, y;
-        boolean overlap;
-        do {
-            x = random.nextFloat() * (constants.GAME_WIDTH() - constants.TRASH_WIDTH());
-            y = random.nextFloat() * (constants.GAME_HEIGHT() - constants.TRASH_HEIGHT());
-            overlap = false;
-            for (Entity entity : existingEntities) {
-                if (isOverlapping(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT(), entity)) {
-                    overlap = true;
-                    break;
-                }
-            }
-        } while (overlap);
+    public Trash createEntity(float x, float y) {
         Entity trashEntity = new Entity(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT(), true);
+        TextureRegion selectedTexture = trashTextures[random.nextInt(trashTextures.length)];
 
-        // Select a random texture directly from the array
-        String textureName;
-        if (trashTextures != null && trashTextures.length > 0) {
-            int randomIndex = random.nextInt(trashTextures.length);
-            textureName = "trash" + (randomIndex + 1) + ".png";
-        } else {
-            textureName = "trash1.png";
-        }
+        Trash trash = new Trash(trashEntity, world, selectedTexture);
 
-        Trash trash = new Trash(trashEntity, world, textureName);
-        trash.initBody(world);
-
-        // Set the collision manager and removal listener
         if (collisionManager != null) {
             trash.setCollisionManager(collisionManager);
+            // Add entity to collision manager's tracking
+            collisionManager.addEntity(trash, null);
         }
 
         if (removalListener != null) {
@@ -78,12 +50,5 @@ public class TrashFactory implements ObjectPool.ObjectFactory<Trash> {
 
         existingEntities.add(trashEntity);
         return trash;
-    }
-
-    private boolean isOverlapping(float x, float y, float width, float height, Entity entity) {
-        return x < entity.getX() + entity.getWidth() &&
-                x + width > entity.getX() &&
-                y < entity.getY() + entity.getHeight() &&
-                y + height > entity.getY();
     }
 }

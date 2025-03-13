@@ -10,10 +10,8 @@ import project.game.engine.entitysystem.entity.base.Entity;
 
 /**
  * SpriteEntity extends CollidableEntity to provide support for sprite-based
- * rendering
- * instead of single textures. This allows for directional sprites and
- * animations
- * while maintaining collision capabilities.
+ * rendering instead of single textures. This allows for directional sprites and
+ * animations while maintaining collision capabilities.
  */
 public abstract class SpriteEntity extends CollidableEntity implements ISpriteRenderable {
 
@@ -92,6 +90,7 @@ public abstract class SpriteEntity extends CollidableEntity implements ISpriteRe
      * 
      * @return The number of sprites, or 0 if no sprites available
      */
+    @Override
     public int getSpritesCount() {
         return (sprites != null) ? sprites.length : 0;
     }

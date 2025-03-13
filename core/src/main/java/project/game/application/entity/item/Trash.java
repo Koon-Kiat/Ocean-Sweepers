@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -17,21 +17,23 @@ import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.asset.management.CustomAssetManager;
-import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.entity.core.CollidableEntity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
-public class Trash extends CollidableEntity implements IRenderable {
+public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     private static final GameLogger LOGGER = new GameLogger(Trash.class);
-    private final String texturePath;
+    private TextureRegion[] sprites; // Removed final as it needs to be mutable
+    private int currentSpriteIndex;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private IEntityRemovalListener removalListener;
     private CollisionManager collisionManager;
+    private final Entity entity;
+    private final World world;
+    private final Body body;
 
     // Type-based collision handler registry
     private static final Map<Class<?>, BiConsumer<Trash, ICollidableVisitor>> TRASH_COLLISION_HANDLERS = new ConcurrentHashMap<>();
@@ -53,9 +55,12 @@ public class Trash extends CollidableEntity implements IRenderable {
         TRASH_COLLISION_HANDLERS.put(clazz, handler);
     }
 
-    public Trash(Entity entity, World world, String texturePath) {
-        super(entity, world);
-        this.texturePath = texturePath;
+    public Trash(Entity entity, World world, TextureRegion sprite) {
+        this.entity = entity;
+        this.world = world;
+        this.sprites = new TextureRegion[] { sprite };
+        this.currentSpriteIndex = 0;
+        this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
     }
 
     public void setRemovalListener(IEntityRemovalListener removalListener) {
@@ -72,71 +77,24 @@ public class Trash extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public boolean isActive() {
-        return super.getEntity().isActive();
-    }
-
-    @Override
-    public Entity getEntity() {
-        return super.getEntity();
-    }
-
-    @Override
-    public Body getBody() {
-        return super.getBody();
-    }
-
-    @Override
-    public final Body createBody(World world, float x, float y, float width, float height) {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        float centerX = (x + width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float centerY = (y + height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        bodyDef.position.set(centerX, centerY);
-        bodyDef.fixedRotation = true;
-        bodyDef.allowSleep = false;
-
-        Body newBody = world.createBody(bodyDef);
-
-        CircleShape shape = new CircleShape();
-        float radius = Math.min(width, height) / 1.8f / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        shape.setRadius(radius);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = shape;
-        fixtureDef.friction = 0.4f;
-        fixtureDef.restitution = 0.5f;
-
-        // Set up collision filtering
-        Filter filter = new Filter();
-        filter.categoryBits = 0x0004;
-        filter.maskBits = -1 & ~0x0008;
-        fixtureDef.filter.categoryBits = filter.categoryBits;
-        fixtureDef.filter.maskBits = filter.maskBits;
-
-        newBody.createFixture(fixtureDef);
-        shape.dispose();
-        newBody.setUserData(this);
-        return newBody;
-    }
-
-    @Override
     public String getTexturePath() {
-        return texturePath;
+        return "trash1.png"; // Default texture path for fallback
+    }
+
+    public boolean isActive() {
+        return entity.isActive();
     }
 
     @Override
-    public void render(SpriteBatch batch) {
-        if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
-            // Render the entity using offset for BOX2D body
-            float renderX = entityX() - entityWidth() / 2;
-            float renderY = entityY() - entityHeight() / 2;
-            Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
-            if (texture != null) {
-                batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
-            }
-
+    public void collideWith(Object other) {
+        if (other instanceof ICollidableVisitor) {
+            onCollision((ICollidableVisitor) other);
         }
+    }
+
+    @Override
+    public void collideWithBoundary() {
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
     }
 
     @Override
@@ -175,41 +133,6 @@ public class Trash extends CollidableEntity implements IRenderable {
         }
     }
 
-    /**
-     * Handle collision with a boat
-     */
-    private void handleBoatCollision(ICollidableVisitor boat) {
-        // Check if the boat covers up half of the trash
-        float boatX = boat.getEntity().getX();
-        float boatY = boat.getEntity().getY();
-        float boatWidth = boat.getEntity().getWidth();
-        float boatHeight = boat.getEntity().getHeight();
-
-        float trashX = getEntity().getX();
-        float trashY = getEntity().getY();
-        float trashWidth = getEntity().getWidth();
-        float trashHeight = getEntity().getHeight();
-
-        boolean isCovered = (boatX < trashX + trashWidth / 2 && boatX + boatWidth > trashX + trashWidth / 2) &&
-                (boatY < trashY + trashHeight / 2 && boatY + boatHeight > trashY + trashHeight / 2);
-
-        if (isCovered) {
-            // Schedule body for removal instead of immediate destruction
-            if (collisionManager != null) {
-                collisionManager.scheduleBodyRemoval(getBody(), getEntity(), removalListener);
-            } else {
-                // Fallback to old behavior, but this should be avoided
-                LOGGER.warn("CollisionManager not set in Trash object - using unsafe body destruction");
-                super.getEntity().setActive(false);
-                getWorld().destroyBody(getBody());
-
-                if (removalListener != null) {
-                    removalListener.onEntityRemove(getEntity());
-                }
-            }
-        }
-    }
-
     @Override
     public boolean isInCollision() {
         if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
@@ -218,19 +141,150 @@ public class Trash extends CollidableEntity implements IRenderable {
         return collisionActive;
     }
 
+    @Override
+    public TextureRegion getCurrentSprite() {
+        if (!hasSprites()) {
+            return null;
+        }
+        return sprites[currentSpriteIndex];
+    }
+
+    @Override
+    public void updateSpriteIndex() {
+        // Trash currently uses a single sprite
+    }
+
+    @Override
+    public void setSprites(TextureRegion[] sprites) {
+        this.sprites = sprites;
+    }
+
+    @Override
+    public void setCurrentSpriteIndex(int index) {
+        if (hasSprites() && index >= 0 && index < sprites.length) {
+            this.currentSpriteIndex = index;
+        }
+    }
+
+    @Override
+    public boolean hasSprites() {
+        return sprites != null && sprites.length > 0;
+    }
+
+    @Override
+    public int getSpritesCount() {
+        return hasSprites() ? sprites.length : 0;
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        if (isActive() && getCurrentSprite() != null) {
+            float renderX = entityX() - entityWidth() / 2;
+            float renderY = entityY() - entityHeight() / 2;
+            batch.draw(getCurrentSprite(), renderX, renderY, entityWidth(), entityHeight());
+        }
+    }
+
+    @Override
+    public Entity getEntity() {
+        return entity;
+    }
+
+    @Override
+    public Body getBody() {
+        return body;
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
+    }
+
+    @Override
+    public final Body createBody(World world, float x, float y, float width, float height) {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+        float centerX = (x + width / 2) / pixelsToMeters;
+        float centerY = (y + height / 2) / pixelsToMeters;
+        bodyDef.position.set(centerX, centerY);
+        bodyDef.fixedRotation = true;
+        bodyDef.bullet = true;
+        bodyDef.linearDamping = 0.8f;
+
+        Body newBody = world.createBody(bodyDef);
+        CircleShape shape = new CircleShape();
+        shape.setRadius((width / 2) / pixelsToMeters);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 0.5f;
+        fixtureDef.friction = 0.2f;
+        fixtureDef.restitution = 0.1f;
+
+        Filter filter = new Filter();
+        filter.categoryBits = 0x0004; // Trash category
+        filter.maskBits = -1; // Collide with everything
+        fixtureDef.filter.categoryBits = filter.categoryBits;
+        fixtureDef.filter.maskBits = filter.maskBits;
+
+        newBody.createFixture(fixtureDef);
+        shape.dispose();
+        newBody.setUserData(this);
+        return newBody;
+    }
+
+    private void handleBoatCollision(ICollidableVisitor boat) {
+        // Check if the boat covers up half of the trash
+        float boatX = boat.getEntity().getX();
+        float boatY = boat.getEntity().getY();
+        float boatWidth = boat.getEntity().getWidth();
+        float boatHeight = boat.getEntity().getHeight();
+
+        float trashX = entity.getX();
+        float trashY = entity.getY();
+        float trashWidth = entity.getWidth();
+        float trashHeight = entity.getHeight();
+
+        boolean isCovered = (boatX < trashX + trashWidth / 2 && boatX + boatWidth > trashX + trashWidth / 2) &&
+                (boatY < trashY + trashHeight / 2 && boatY + boatHeight > trashY + trashHeight / 2);
+
+        if (isCovered) {
+            // Always mark as inactive regardless of collisionManager availability
+            // to prevent further collision processing
+            entity.setActive(false);
+
+            // Check if this entity should be removed
+            String entityType = this.getClass().getSimpleName();
+            if (!Boat.isEntityPermanent(entityType)) {
+                if (collisionManager != null) {
+                    collisionManager.scheduleBodyRemoval(getBody(), entity, removalListener);
+                } else {
+                    // If collisionManager isn't available, just log an error
+                    // but don't try to destroy the body directly
+                    LOGGER.error("CollisionManager not set in Trash object - cannot safely remove trash");
+                    // Still notify the removal listener if available
+                    if (removalListener != null) {
+                        removalListener.onEntityRemove(entity);
+                    }
+                }
+            }
+        }
+    }
+
     private float entityX() {
-        return super.getEntity().getX();
+        return entity.getX();
     }
 
     private float entityY() {
-        return super.getEntity().getY();
+        return entity.getY();
     }
 
     private float entityWidth() {
-        return super.getEntity().getWidth();
+        return entity.getWidth();
     }
 
     private float entityHeight() {
-        return super.getEntity().getHeight();
+        return entity.getHeight();
     }
 }

@@ -18,19 +18,20 @@ import project.game.application.entity.npc.Monster;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.asset.management.CustomAssetManager;
-import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.entity.core.CollidableEntity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
-public class Rock extends CollidableEntity implements IRenderable {
+public class Rock implements ISpriteRenderable, ICollidableVisitor {
 
 	private static final GameLogger LOGGER = new GameLogger(Main.class);
-	private String texturePath;
-	private TextureRegion rockRegion;
+	private TextureRegion[] sprites; // Removed final modifier
+	private int currentSpriteIndex;
 	private boolean collisionActive = false;
 	private long collisionEndTime = 0;
+	private final Entity entity;
+	private final World world;
+	private final Body body;
 
 	// Type-based collision handler registry
 	private static final Map<Class<?>, BiConsumer<Rock, ICollidableVisitor>> ROCK_COLLISION_HANDLERS = new ConcurrentHashMap<>();
@@ -53,15 +54,12 @@ public class Rock extends CollidableEntity implements IRenderable {
 		ROCK_COLLISION_HANDLERS.put(clazz, handler);
 	}
 
-	public Rock(Entity entity, World world, String texturePath) {
-		super(entity, world);
-		this.texturePath = texturePath;
-	}
-
-	// New constructor for a rock with a given region
-	public Rock(Entity entity, World world, TextureRegion rockRegion) {
-		super(entity, world);
-		this.rockRegion = rockRegion;
+	public Rock(Entity entity, World world, TextureRegion sprite) {
+		this.entity = entity;
+		this.world = world;
+		this.sprites = new TextureRegion[] { sprite };
+		this.currentSpriteIndex = 0;
+		this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
 	}
 
 	public void setCollisionActive(long durationMillis) {
@@ -69,19 +67,35 @@ public class Rock extends CollidableEntity implements IRenderable {
 		collisionEndTime = System.currentTimeMillis() + durationMillis;
 	}
 
-	@Override
 	public boolean isActive() {
-		return super.getEntity().isActive();
+		return entity.isActive();
 	}
 
 	@Override
 	public Entity getEntity() {
-		return super.getEntity();
+		return entity;
 	}
 
 	@Override
 	public Body getBody() {
-		return super.getBody();
+		return body;
+	}
+
+	@Override
+	public World getWorld() {
+		return world;
+	}
+
+	@Override
+	public void collideWith(Object other) {
+		if (other instanceof ICollidableVisitor) {
+			onCollision((ICollidableVisitor) other);
+		}
+	}
+
+	@Override
+	public void collideWithBoundary() {
+		setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
 	}
 
 	@Override
@@ -118,17 +132,53 @@ public class Rock extends CollidableEntity implements IRenderable {
 		return newBody;
 	}
 
+	// ISpriteRenderable implementation
 	@Override
 	public String getTexturePath() {
-		return texturePath;
+		return "Rocks.png"; // Default texture path for fallback
+	}
+
+	@Override
+	public TextureRegion getCurrentSprite() {
+		if (!hasSprites()) {
+			return null;
+		}
+		return sprites[currentSpriteIndex];
+	}
+
+	@Override
+	public void updateSpriteIndex() {
+		// Rocks don't change sprites, they're static
+	}
+
+	@Override
+	public void setSprites(TextureRegion[] sprites) {
+		this.sprites = sprites;
+	}
+
+	@Override
+	public void setCurrentSpriteIndex(int index) {
+		if (hasSprites() && index >= 0 && index < sprites.length) {
+			this.currentSpriteIndex = index;
+		}
+	}
+
+	@Override
+	public boolean hasSprites() {
+		return sprites != null && sprites.length > 0;
+	}
+
+	@Override
+	public int getSpritesCount() {
+		return hasSprites() ? sprites.length : 0;
 	}
 
 	@Override
 	public void render(SpriteBatch batch) {
-		if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
+		if (isActive() && getCurrentSprite() != null) {
 			float renderX = getEntity().getX() - getEntity().getWidth() / 2;
 			float renderY = getEntity().getY() - getEntity().getHeight() / 2;
-			batch.draw(rockRegion, renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
+			batch.draw(getCurrentSprite(), renderX, renderY, getEntity().getWidth(), getEntity().getHeight());
 		}
 	}
 

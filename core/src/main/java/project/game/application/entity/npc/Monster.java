@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -20,37 +20,42 @@ import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.asset.management.CustomAssetManager;
-import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.entity.core.CollidableEntity;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
-public class Monster extends CollidableEntity implements IRenderable {
-
+public class Monster implements ISpriteRenderable, ICollidableVisitor {
     private static final GameLogger LOGGER = new GameLogger(Main.class);
+
     private final NPCMovementManager movementManager;
-    private final String texturePath;
+    private TextureRegion[] sprites; // Removed final
+    private int currentSpriteIndex;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
 
     // Type-based collision handler registry
-    private static final Map<Class<?>, BiConsumer<Monster, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = 
-        new ConcurrentHashMap<>();
-    
+    private final Entity entity;
+    private final World world;
+    private final Body body;
+
+    // Type-based collision handler registry
+    private static final Map<Class<?>, BiConsumer<Monster, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = new ConcurrentHashMap<>();
+
     static {
         // Register collision handlers for specific entity types
         registerMonsterCollisionHandler(Boat.class, Monster::handleBoatCollision);
         registerMonsterCollisionHandler(Rock.class, Monster::handleRockCollision);
-        registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {/* Ignore trash collisions */});
+        registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {
+            /* Ignore trash collisions */});
     }
-    
+
     /**
      * Register a handler for a specific type of collidable entity
-     * @param <T> Type of collidable
-     * @param clazz Class of collidable
+     * 
+     * @param <T>     Type of collidable
+     * @param clazz   Class of collidable
      * @param handler Function to handle collision with the collidable
      */
     public static <T extends ICollidableVisitor> void registerMonsterCollisionHandler(
@@ -58,10 +63,13 @@ public class Monster extends CollidableEntity implements IRenderable {
         MONSTER_COLLISION_HANDLERS.put(clazz, handler);
     }
 
-    public Monster(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
-        super(entity, world);
+    public Monster(Entity entity, World world, NPCMovementManager movementManager, TextureRegion sprite) {
+        this.entity = entity;
+        this.world = world;
         this.movementManager = movementManager;
-        this.texturePath = texturePath;
+        this.sprites = new TextureRegion[] { sprite };
+        this.currentSpriteIndex = 0;
+        this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
     }
 
     public NPCMovementManager getMovementManager() {
@@ -89,19 +97,18 @@ public class Monster extends CollidableEntity implements IRenderable {
         getBody().setLinearDamping(3.0f);
     }
 
-    @Override
     public boolean isActive() {
-        return super.getEntity().isActive();
+        return entity.isActive();
     }
 
     @Override
     public Entity getEntity() {
-        return super.getEntity();
+        return entity;
     }
 
     @Override
     public Body getBody() {
-        return super.getBody();
+        return body;
     }
 
     @Override
@@ -142,27 +149,20 @@ public class Monster extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public String getTexturePath() {
-        return texturePath;
-    }
-
-    @Override
-    public void render(SpriteBatch batch) {
-        if (isActive() && CustomAssetManager.getInstance().isLoaded()) {
-            // Render the entity using offset for BOX2D body
-            float renderX = entityX() - entityWidth() / 2;
-            float renderY = entityY() - entityHeight() / 2;
-            Texture texture = CustomAssetManager.getInstance().getAsset(texturePath, Texture.class);
-            batch.draw(texture, renderX, renderY, entityWidth(), entityHeight());
+    public boolean isInCollision() {
+        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+            collisionActive = false;
+            // Reset damping when collision ends
+            getBody().setLinearDamping(0.2f);
+            // Clear any lingering velocity when exiting collision state
+            getBody().setLinearVelocity(0, 0);
         }
+        return collisionActive;
     }
 
-    @Override
-    public boolean checkCollision(Entity other) {
-        // Use Box2D for collision detection
-        return true;
-    }
-
+    /**
+     * Handle monster collisions with other entities
+     */
     @Override
     public void onCollision(ICollidableVisitor other) {
         long currentTime = System.currentTimeMillis();
@@ -190,6 +190,7 @@ public class Monster extends CollidableEntity implements IRenderable {
 
     /**
      * Dispatches collision handling to the appropriate registered handler
+     * 
      * @param other The other entity involved in the collision
      */
     private void dispatchCollisionHandling(ICollidableVisitor other) {
@@ -205,7 +206,8 @@ public class Monster extends CollidableEntity implements IRenderable {
         Class<?> otherClass = other.getClass();
 
         // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<Monster, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS.entrySet()) {
+        for (Map.Entry<Class<?>, BiConsumer<Monster, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS
+                .entrySet()) {
             if (entry.getKey().isAssignableFrom(otherClass)) {
                 entry.getValue().accept(this, other);
                 return;
@@ -259,8 +261,7 @@ public class Monster extends CollidableEntity implements IRenderable {
             try {
                 java.lang.reflect.Method method = boat.getClass().getMethod("setCollisionActive", long.class);
                 method.invoke(boat, GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-            } catch (Exception e) {
-                // If we can't invoke the method, just log it
+            } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
                 LOGGER.warn("Could not set collision active state on boat: {0}", e.getMessage());
             }
         }
@@ -299,30 +300,90 @@ public class Monster extends CollidableEntity implements IRenderable {
     }
 
     @Override
-    public boolean isInCollision() {
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-            collisionActive = false;
-            // Reset damping when collision ends
-            getBody().setLinearDamping(0.2f);
-            // Clear any lingering velocity when exiting collision state
-            getBody().setLinearVelocity(0, 0);
+    public TextureRegion getCurrentSprite() {
+        if (!hasSprites()) {
+            return null;
         }
-        return collisionActive;
+        return sprites[currentSpriteIndex];
+    }
+
+    @Override
+    public void updateSpriteIndex() {
+        // Monster currently uses a single sprite, but could be extended for animations
+    }
+
+    @Override
+    public void setSprites(TextureRegion[] sprites) {
+        this.sprites = sprites;
+    }
+
+    @Override
+    public void setCurrentSpriteIndex(int index) {
+        if (hasSprites() && index >= 0 && index < sprites.length) {
+            this.currentSpriteIndex = index;
+        }
+    }
+
+    @Override
+    public boolean hasSprites() {
+        return sprites != null && sprites.length > 0;
+    }
+
+    @Override
+    public int getSpritesCount() {
+        return hasSprites() ? sprites.length : 0;
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        if (isActive() && getCurrentSprite() != null) {
+            float renderX = entityX() - entityWidth() / 2;
+            float renderY = entityY() - entityHeight() / 2;
+            batch.draw(getCurrentSprite(), renderX, renderY, entityWidth(), entityHeight());
+        }
     }
 
     private float entityX() {
-        return super.getEntity().getX();
+        return entity.getX();
     }
 
     private float entityY() {
-        return super.getEntity().getY();
+        return entity.getY();
     }
 
     private float entityWidth() {
-        return super.getEntity().getWidth();
+        return entity.getWidth();
     }
 
     private float entityHeight() {
-        return super.getEntity().getHeight();
+        return entity.getHeight();
+    }
+
+    @Override
+    public String getTexturePath() {
+        return "monster.png"; // Default texture path for fallback
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
+    }
+
+    @Override
+    public void collideWith(Object other) {
+        if (other instanceof ICollidableVisitor) {
+            onCollision((ICollidableVisitor) other);
+        }
+    }
+
+    @Override
+    public void collideWithBoundary() {
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+    }
+
+    @Override
+    public boolean checkCollision(Entity other) {
+        // Always use Box2D for collision detection
+        return true;
     }
 }

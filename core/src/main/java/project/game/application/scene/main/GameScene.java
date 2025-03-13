@@ -2,7 +2,6 @@ package project.game.application.scene.main;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -13,19 +12,19 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.utils.Array;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
-import project.game.application.entity.factory.RockFactory;
-import project.game.application.entity.factory.TrashFactory;
+import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.Monster;
 import project.game.application.entity.obstacle.Rock;
@@ -54,56 +53,66 @@ import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 
-@SuppressWarnings("unused")
 public class GameScene extends Scene implements IEntityRemovalListener {
 
-    public static List<Entity> existingEntities;
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
-    private EntityManager entityManager;
-    private PlayerMovementManager playerMovementManager;
-    private NPCMovementManager npcMovementManager;
-    private SpriteBatch batch;
-    private Texture rockImage;
-    private Texture boatSpritesheet;
-    private Texture rockSpritesheet;
-    private Texture trashImage;
-    private Texture monsterImage;
-    private RockFactory rockFactory;
-    private TrashFactory trashFactory;
-    private List<Rock> rocks;
-    private List<Trash> trashes;
-    private Boat boat;
-    private TextureRegion[] boatDirectionalSprites;
-    private Texture[] trashTextures;
-    private Texture backgroundTexture;
-    private Monster monster;
-    private Window popupMenu;
-    private Skin skin;
-    private Table table;
-    private World world;
-    private Box2DDebugRenderer debugRenderer;
-    private OrthographicCamera camera;
-    private Matrix4 debugMatrix;
-    private CollisionManager collisionManager;
-    private boolean isPaused = false;
+
+    // Menu
     private boolean isVolumePopupOpen = false;
     private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
+    private Window popupMenu;
+    private Skin skin;
+    private OrthographicCamera camera;
+
+    // Audio
     private AudioManager audioManager;
     private AudioConfig config;
     private AudioUI audioUI;
+
+    // Constants
     private IGameConstants constants;
+
+    // Movement
+    private PlayerMovementManager playerMovementManager;
+    private NPCMovementManager npcMovementManager;
     List<IMovementStrategy> strategyPool = new ArrayList<>();
+
+    // Entities
+    public static List<Entity> existingEntities;
+    private EntityManager entityManager;
+    private Boat boat;
+    private Monster monster;
+    private List<Rock> rocks;
+    private List<Trash> trashes;
+
+    // Factories
+    private EntityFactoryManager entityFactoryManager;
+
+    // Physics
+    private World world;
+    private Matrix4 debugMatrix;
+    private Box2DDebugRenderer debugRenderer;
+    private CollisionManager collisionManager;
 
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";
     private static final String ROCK_SPRITESHEET = "rock_sprites";
-    private static final String MONSTER_SPRITESHEET = "monster_sprites";
 
     // Entity type identifiers for directional sprites
     private static final String BOAT_ENTITY = "boat";
-    private static final String MONSTER_ENTITY = "monster";
+    private SpriteBatch batch;
+    private Texture rockImage;
+    private Texture boatSpritesheet;
+    private Texture trashImage;
+    private Texture monsterImage;
+    private TextureRegion[] boatDirectionalSprites;
+    private TextureRegion[] rockRegions;
+    private Texture[] trashTextures;
+    private TextureRegion[] trashRegions;
+    private TextureRegion monsterRegion;
+    private Texture backgroundTexture;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
@@ -138,7 +147,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
      */
     public void closePopupMenu() {
         isMenuOpen = false;
-        isPaused = false;
         options.getPopupMenu().setVisible(false);
         inputMultiplexer.removeProcessor(sceneUIManager.getStage());
         inputMultiplexer.addProcessor(inputManager);
@@ -155,6 +163,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
 
+        // Regular rendering code
         batch.begin();
         batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
         batch.end();
@@ -172,18 +181,36 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
         debugRenderer.render(world, debugMatrix);
 
-        float timeStep = 1 / 300f;
-        int velocityIterations = 8;
-        int positionIterations = 3;
-        world.step(timeStep, velocityIterations, positionIterations);
+        // Only step the physics if we have active bodies
+        int activeBodyCount = 0;
+        Array<Body> bodies = new Array<>();
+        world.getBodies(bodies);
+        for (Body body : bodies) {
+            if (body.isActive()) {
+                activeBodyCount++;
+            }
+        }
 
-        // Process collisions
-        collisionManager.processCollisions();
-        collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
+        // Ensure we have enough bodies for physics to work
+        if (activeBodyCount > 1) {
+            // Step the world
+            float timeStep = 1.0f / 60.0f;
+            int velocityIterations = 6;
+            int positionIterations = 2;
+            world.step(timeStep, velocityIterations, positionIterations);
 
-        // Play sound effect on collision
-        if (collisionManager.collision() && audioManager != null) {
-            audioManager.playSoundEffect("drophit");
+            // Now it's safe to remove bodies
+            collisionManager.processRemovalQueue();
+            collisionManager.processCollisions();
+            collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
+
+            // Play sound effect on collision
+            if (collisionManager.collision() && audioManager != null) {
+                audioManager.playSoundEffect("drophit");
+            }
+        } else {
+            // Process removal queue to prevent leaks
+            LOGGER.warn("Not enough active bodies for physics simulation");
         }
     }
 
@@ -205,6 +232,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     @Override
     public void dispose() {
+        // Log world state before disposal
+        LOGGER.info("Before GameScene disposal:");
+
         batch.dispose();
         boatSpritesheet.dispose();
         trashImage.dispose();
@@ -213,73 +243,17 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (audioManager != null) {
             audioManager.dispose();
         }
+
         LOGGER.info("GameScene disposed");
-    }
-
-    /**
-     * Initializes game assets including sprites and textures
-     */
-    private void initializeGameAssets() {
-        CustomAssetManager assetManager = CustomAssetManager.getInstance();
-
-        // Load all texture assets first
-        assetManager.loadTextureAssets("trash1.png");
-        assetManager.loadTextureAssets("trash2.png");
-        assetManager.loadTextureAssets("trash3.png");
-        assetManager.loadTextureAssets("steamboat.png");
-        assetManager.loadTextureAssets("rock.png");
-        assetManager.loadTextureAssets("Rocks.png");
-        assetManager.loadTextureAssets("monster.png");
-        assetManager.loadTextureAssets("ocean_background.jpg");
-        assetManager.update();
-        assetManager.loadAndFinish();
-
-        // Get background texture directly
-        backgroundTexture = assetManager.getAsset("ocean_background.jpg", Texture.class);
-
-        // Create and store boat sprite sheet (7x7)
-        boatSpritesheet = assetManager.getAsset("steamboat.png", Texture.class);
-        TextureRegion[] boatSheet = assetManager.createSpriteSheet(BOAT_SPRITESHEET, "steamboat.png", 7, 7);
-
-        // Create boat directional sprites for all 8 directions
-        // Note: These indices are specific to your steamboat.png layout
-        TextureRegion[] eightDirectionalSprites = new TextureRegion[8];
-        eightDirectionalSprites[Boat.DIRECTION_UP] = boatSheet[0]; // UP
-        eightDirectionalSprites[Boat.DIRECTION_RIGHT] = boatSheet[11]; // RIGHT
-        eightDirectionalSprites[Boat.DIRECTION_DOWN] = boatSheet[23]; // DOWN
-        eightDirectionalSprites[Boat.DIRECTION_LEFT] = boatSheet[35]; // LEFT
-        eightDirectionalSprites[Boat.DIRECTION_UP_RIGHT] = boatSheet[7]; // UP-RIGHT
-        eightDirectionalSprites[Boat.DIRECTION_DOWN_RIGHT] = boatSheet[14]; // DOWN-RIGHT
-        eightDirectionalSprites[Boat.DIRECTION_DOWN_LEFT] = boatSheet[28]; // DOWN-LEFT
-        eightDirectionalSprites[Boat.DIRECTION_UP_LEFT] = boatSheet[42]; // UP-LEFT
-
-        // Register the directional sprites with the asset manager
-        assetManager.registerDirectionalSprites(BOAT_ENTITY, eightDirectionalSprites);
-        boatDirectionalSprites = eightDirectionalSprites;
-
-        // Create rock sprite sheet (3x3)
-        rockImage = assetManager.getAsset("Rocks.png", Texture.class);
-        TextureRegion[] rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
-
-        // Load monster texture
-        monsterImage = assetManager.getAsset("monster.png", Texture.class);
-
-        // Load trash textures
-        trashTextures = new Texture[3];
-        trashTextures[0] = assetManager.getAsset("trash1.png", Texture.class);
-        trashTextures[1] = assetManager.getAsset("trash2.png", Texture.class);
-        trashTextures[2] = assetManager.getAsset("trash3.png", Texture.class);
-
-        // Keep this for backward compatibility
-        trashImage = trashTextures[0];
-
-        LOGGER.info("Game assets initialized successfully");
     }
 
     @Override
     public void create() {
         batch = new SpriteBatch();
+
+        // Initialize Box2D world with gravity vector (0,0) and sleep enabled
         world = new World(new Vector2(0, 0), true);
+
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         inputManager.enableMovementControls();
@@ -293,8 +267,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         try {
             // Initialize game assets
             initializeGameAssets();
-
-            TextureRegion[] rockRegions = CustomAssetManager.getInstance().getSpriteSheet(ROCK_SPRITESHEET);
 
             entityManager = new EntityManager();
 
@@ -337,31 +309,39 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             collisionManager = new CollisionManager(world, inputManager);
             collisionManager.init();
 
-            rockFactory = new RockFactory(constants, world, existingEntities, rockRegions);
-            trashFactory = new TrashFactory(constants, world, existingEntities, trashTextures, collisionManager);
-            trashFactory.setRemovalListener(this);
+            // Initialize EntityFactoryManager
+            entityFactoryManager = new EntityFactoryManager(
+                    constants,
+                    world,
+                    existingEntities,
+                    collisionManager,
+                    monsterRegion,
+                    rockRegions,
+                    trashRegions);
+            entityFactoryManager.setTrashRemovalListener(this);
 
-            // Create entities
+            // Create entities using factory manager
+            boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
+            monster = new Monster(monsterEntity, world, npcMovementManager, monsterRegion);
+
+            // Set collision manager on boat to enable safe body removal
+            boat.setCollisionManager(collisionManager);
+
+            // Create rocks and trash
             for (int i = 0; i < constants.NUM_ROCKS(); i++) {
-                Rock rock = rockFactory.createObject();
+                Rock rock = entityFactoryManager.createRock();
                 rocks.add(rock);
                 entityManager.addRenderableEntity(rock);
-                existingEntities.add(rock.getEntity());
-            }
-
-            for (int i = 0; i < constants.NUM_TRASHES(); i++) {
-                Trash trash = trashFactory.createObject();
-                trash.setRemovalListener(this);
-                trashes.add(trash);
-                entityManager.addRenderableEntity(trash);
-                existingEntities.add(trash.getEntity());
-            }
-
-            // Convert rocks to Entity objects for obstacle avoidance
-            for (Rock rock : rocks) {
                 rockEntities.add(rock.getEntity());
             }
 
+            for (int i = 0; i < constants.NUM_TRASHES(); i++) {
+                Trash trash = entityFactoryManager.createTrash();
+                trashes.add(trash);
+                entityManager.addRenderableEntity(trash);
+            }
+
+            // Set up NPC movement with obstacle avoidance
             float[] customWeights = { 0.30f, 0.70f };
             npcMovementManager = new NPCMovementBuilder()
                     .withEntity(monsterEntity)
@@ -371,43 +351,24 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     .setLenientMode(true)
                     .build();
 
-            // Use the directional sprites from the asset manager
-            boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            monster = new Monster(monsterEntity, world, npcMovementManager, "monster.png");
-
-            // Initialize bodies
-            boat.initBody(world);
-            monster.initBody(world);
-
             // Add entities to the entity manager
             entityManager.addRenderableEntity(boat);
             entityManager.addRenderableEntity(monster);
 
-            LOGGER.info("Monster is using composite strategy to follow boat while avoiding {0} rocks",
-                    rockEntities.size());
-
-            camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
-            camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
-            camera.update();
-
-            // Initialize CollisionManager
-            collisionManager = new CollisionManager(world, inputManager);
-            collisionManager.init();
-
-            // Add entities to the collision manager
+            // Add entities to collision manager
             collisionManager.addEntity(boat, playerMovementManager);
             collisionManager.addEntity(monster, npcMovementManager);
 
             for (Rock rock : rocks) {
                 collisionManager.addEntity(rock, null);
             }
-            for (Trash trash : trashes) {
-                collisionManager.addEntity(trash, null);
-            }
 
             // Create boundaries
             WorldBoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
                     constants.PIXELS_TO_METERS());
+
+            // Log world status after initialization
+            LOGGER.info("Physics world initialization complete");
 
             // Initialize AudioManager and AudioUI
             audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
@@ -426,12 +387,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         } catch (Exception e) {
             LOGGER.error("Exception during game creation: {0}", e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Stack trace: {0}", (Object) e.getStackTrace());
         }
 
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
-
     }
 
     @Override
@@ -442,6 +402,69 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         }
     }
 
+    /**
+     * Initializes game assets including sprites and textures
+     */
+    private void initializeGameAssets() {
+        CustomAssetManager assetManager = CustomAssetManager.getInstance();
+
+        // Load all texture assets first
+        assetManager.loadTextureAssets("trash1.png");
+        assetManager.loadTextureAssets("trash2.png");
+        assetManager.loadTextureAssets("trash3.png");
+        assetManager.loadTextureAssets("steamboat.png");
+        assetManager.loadTextureAssets("Rocks.png");
+        assetManager.loadTextureAssets("monster.png");
+        assetManager.loadTextureAssets("ocean_background.jpg");
+        assetManager.update();
+        assetManager.loadAndFinish();
+
+        // Get background texture directly
+        backgroundTexture = assetManager.getAsset("ocean_background.jpg", Texture.class);
+
+        // Create and store boat sprite sheet (7x7)
+        boatSpritesheet = assetManager.getAsset("steamboat.png", Texture.class);
+        TextureRegion[] boatSheet = assetManager.createSpriteSheet(BOAT_SPRITESHEET, "steamboat.png", 7, 7);
+
+        // Create boat directional sprites for all 8 directions
+        TextureRegion[] eightDirectionalSprites = new TextureRegion[8];
+        eightDirectionalSprites[Boat.DIRECTION_UP] = boatSheet[0]; // UP
+        eightDirectionalSprites[Boat.DIRECTION_RIGHT] = boatSheet[11]; // RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN] = boatSheet[23]; // DOWN
+        eightDirectionalSprites[Boat.DIRECTION_LEFT] = boatSheet[35]; // LEFT
+        eightDirectionalSprites[Boat.DIRECTION_UP_RIGHT] = boatSheet[7]; // UP-RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_RIGHT] = boatSheet[14]; // DOWN-RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_LEFT] = boatSheet[28]; // DOWN-LEFT
+        eightDirectionalSprites[Boat.DIRECTION_UP_LEFT] = boatSheet[42]; // UP-LEFT
+
+        // Register the directional sprites with the asset manager
+        assetManager.registerDirectionalSprites(BOAT_ENTITY, eightDirectionalSprites);
+        boatDirectionalSprites = eightDirectionalSprites;
+
+        // Create rock sprite sheet (3x3)
+        rockImage = assetManager.getAsset("Rocks.png", Texture.class);
+        rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
+
+        // Load monster texture and create TextureRegion
+        monsterImage = assetManager.getAsset("monster.png", Texture.class);
+        monsterRegion = new TextureRegion(monsterImage);
+
+        // Load trash textures and create TextureRegions
+        trashTextures = new Texture[3];
+        trashRegions = new TextureRegion[3];
+        String[] trashPaths = { "trash1.png", "trash2.png", "trash3.png" };
+
+        for (int i = 0; i < trashPaths.length; i++) {
+            trashTextures[i] = assetManager.getAsset(trashPaths[i], Texture.class);
+            trashRegions[i] = new TextureRegion(trashTextures[i]);
+        }
+
+        // Store first trash texture for reference
+        trashImage = trashTextures[0];
+
+        LOGGER.info("Game assets initialized successfully");
+    }
+
     private void handleAudioInput() {
         if (inputManager.isKeyJustPressed(Input.Keys.V)) {
             LOGGER.info("Key V detected!");
@@ -449,7 +472,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // If pause menu is open, close it before opening volume settings
             if (isMenuOpen) {
                 isMenuOpen = false;
-                isPaused = false;
                 options.getRebindMenu().setVisible(false);
                 inputMultiplexer.clear();
                 inputMultiplexer.addProcessor(inputManager); // Restore game input
@@ -520,14 +542,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             hideDisplayMessage();
             options.getRebindMenu().setVisible(isMenuOpen);
             if (isMenuOpen) {
-                isPaused = true;
                 inputMultiplexer.clear();
                 inputMultiplexer.addProcessor(sceneUIManager.getStage());
                 inputMultiplexer.addProcessor(inputManager);
                 Gdx.input.setInputProcessor(inputMultiplexer);
                 LOGGER.info("InputProcessor set to stage");
             } else {
-                isPaused = false;
                 inputMultiplexer.removeProcessor(sceneUIManager.getStage());
                 inputMultiplexer.addProcessor(inputManager);
                 sceneUIManager.getStage().setKeyboardFocus(null);

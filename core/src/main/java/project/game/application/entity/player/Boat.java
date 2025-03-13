@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -17,18 +18,29 @@ import project.game.application.entity.item.Trash;
 import project.game.application.entity.obstacle.Rock;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.entity.core.SpriteEntity;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.management.CollisionManager;
 
-public class Boat extends SpriteEntity implements IRenderable {
+public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
     private static final GameLogger LOGGER = new GameLogger(Boat.class);
+
+    // Threshold to determine if we should consider movement on an axis
+    private static final float MOVEMENT_THRESHOLD = 0.01f;
+
+    // Type handler registry for collision handling
+    private static final Map<Class<?>, Consumer<Boat>> COLLISION_HANDLERS = new ConcurrentHashMap<>();
+
+    // Player movement manager
     private final PlayerMovementManager movementManager;
+
+    // Collision state
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
+    private ICollidableVisitor currentCollisionEntity;
 
     // Direction constants - used as indices in directional sprite arrays
     public static final int DIRECTION_UP = 0;
@@ -40,14 +52,18 @@ public class Boat extends SpriteEntity implements IRenderable {
     public static final int DIRECTION_DOWN_LEFT = 6;
     public static final int DIRECTION_UP_LEFT = 7;
 
-    // Current direction index - default to DOWN
-    private int currentDirectionIndex = DIRECTION_DOWN;
+    // Current direction index
+    private int currentDirectionIndex;
 
-    // Threshold to determine if we should consider movement on an axis
-    private static final float MOVEMENT_THRESHOLD = 0.01f;
+    // Sprite rendering fields
+    private TextureRegion[] sprites;
+    private String texturePath;
+    private final Entity entity;
+    private final World world;
+    private final Body body;
 
-    // Type handler registry for collision handling
-    private static final Map<Class<?>, Consumer<Boat>> COLLISION_HANDLERS = new ConcurrentHashMap<>();
+    // New field for collision manager
+    private CollisionManager collisionManager;
 
     static {
         // Register collision handlers for different entity types using lambda
@@ -68,27 +84,49 @@ public class Boat extends SpriteEntity implements IRenderable {
         COLLISION_HANDLERS.put(clazz, handler);
     }
 
-    // Track the current collision entity
-    private ICollidableVisitor currentCollisionEntity;
-
     /**
      * Constructor for single texture boat
      */
     public Boat(Entity entity, World world, PlayerMovementManager movementManager, String texturePath) {
-        super(entity, world, texturePath, null);
+        this.entity = entity;
+        this.world = world;
         this.movementManager = movementManager;
+        this.texturePath = texturePath;
+        this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
     }
 
     /**
      * Constructor for directional sprites boat
      */
     public Boat(Entity entity, World world, PlayerMovementManager movementManager, TextureRegion[] directionalSprites) {
-        super(entity, world, null, directionalSprites);
+        this.entity = entity;
+        this.world = world;
         this.movementManager = movementManager;
+        this.sprites = directionalSprites;
+        this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
     }
 
     public PlayerMovementManager getMovementManager() {
         return this.movementManager;
+    }
+
+    @Override
+    public Entity getEntity() {
+        return entity;
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
+    }
+
+    @Override
+    public String getTexturePath() {
+        return texturePath;
+    }
+
+    public void setCollisionManager(CollisionManager collisionManager) {
+        this.collisionManager = collisionManager;
     }
 
     /**
@@ -109,6 +147,56 @@ public class Boat extends SpriteEntity implements IRenderable {
         if (movementManager != null) {
             movementManager.setX(physX);
             movementManager.setY(physY);
+        }
+    }
+
+    // ISpriteRenderable implementation methods
+    @Override
+    public TextureRegion getCurrentSprite() {
+        if (!hasSprites()) {
+            return null;
+        }
+        return sprites[currentDirectionIndex];
+    }
+
+    @Override
+    public void setSprites(TextureRegion[] sprites) {
+        this.sprites = sprites;
+    }
+
+    @Override
+    public void setCurrentSpriteIndex(int index) {
+        if (hasSprites() && index >= 0 && index < sprites.length) {
+            currentDirectionIndex = index;
+        }
+    }
+
+    @Override
+    public boolean hasSprites() {
+        return sprites != null && sprites.length > 0;
+    }
+
+    @Override
+    public int getSpritesCount() {
+        return hasSprites() ? sprites.length : 0;
+    }
+
+    @Override
+    public Body getBody() {
+        return body;
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        // Update sprite direction before rendering
+        updateSpriteIndex();
+
+        if (getCurrentSprite() != null) {
+            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
+            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+            float width = entity.getWidth();
+            float height = entity.getHeight();
+            batch.draw(getCurrentSprite(), renderX, renderY, width, height);
         }
     }
 
@@ -290,6 +378,38 @@ public class Boat extends SpriteEntity implements IRenderable {
         }
     }
 
+    @Override
+    public boolean isInCollision() {
+        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+            collisionActive = false;
+            getBody().setLinearVelocity(0, 0);
+        }
+        return collisionActive;
+    }
+
+    @Override
+    public void collideWith(Object other) {
+        // Handle collision with generic objects
+        if (other instanceof ICollidableVisitor) {
+            onCollision((ICollidableVisitor) other);
+        }
+    }
+
+    @Override
+    public void collideWithBoundary() {
+        // Handle collision with world boundaries
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+    }
+
+    /**
+     * Checks if this entity should be considered permanent in the game world
+     */
+    public static boolean isEntityPermanent(String entityType) {
+        return entityType.equals("Boat") ||
+                entityType.equals("Monster") ||
+                entityType.equals("boundary");
+    }
+
     /**
      * Dispatches collision handling to the appropriate registered handler
      * 
@@ -342,16 +462,15 @@ public class Boat extends SpriteEntity implements IRenderable {
             return;
 
         Trash trash = (Trash) currentCollisionEntity;
-        trash.getEntity().setActive(false);
-        getWorld().destroyBody(trash.getBody());
-    }
 
-    @Override
-    public boolean isInCollision() {
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-            collisionActive = false;
-            getBody().setLinearVelocity(0, 0);
+        // Check if either entity is permanent before scheduling removal
+        String entityType = trash.getClass().getSimpleName();
+        if (!isEntityPermanent(entityType)) {
+            if (collisionManager != null) {
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
+            } else {
+                LOGGER.warn("CollisionManager not set in Boat object - cannot safely remove trash");
+            }
         }
-        return collisionActive;
     }
 }
