@@ -25,7 +25,7 @@ import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
-public class Monster implements ISpriteRenderable, ICollidableVisitor {
+public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private static final GameLogger LOGGER = new GameLogger(Main.class);
 
     private final NPCMovementManager movementManager;
@@ -41,12 +41,12 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
     private final Body body;
 
     // Type-based collision handler registry
-    private static final Map<Class<?>, BiConsumer<Monster, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = new ConcurrentHashMap<>();
 
     static {
         // Register collision handlers for specific entity types
-        registerMonsterCollisionHandler(Boat.class, Monster::handleBoatCollision);
-        registerMonsterCollisionHandler(Rock.class, Monster::handleRockCollision);
+        registerMonsterCollisionHandler(Boat.class, SeaTurtle::handleBoatCollision);
+        registerMonsterCollisionHandler(Rock.class, SeaTurtle::handleRockCollision);
         registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {
             /* Ignore trash collisions */});
     }
@@ -59,11 +59,11 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
      * @param handler Function to handle collision with the collidable
      */
     public static <T extends ICollidableVisitor> void registerMonsterCollisionHandler(
-            Class<T> clazz, BiConsumer<Monster, ICollidableVisitor> handler) {
+            Class<T> clazz, BiConsumer<SeaTurtle, ICollidableVisitor> handler) {
         MONSTER_COLLISION_HANDLERS.put(clazz, handler);
     }
 
-    public Monster(Entity entity, World world, NPCMovementManager movementManager, TextureRegion sprite) {
+    public SeaTurtle(Entity entity, World world, NPCMovementManager movementManager, TextureRegion sprite) {
         this.entity = entity;
         this.world = world;
         this.movementManager = movementManager;
@@ -206,7 +206,7 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
         Class<?> otherClass = other.getClass();
 
         // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<Monster, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS
+        for (Map.Entry<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS
                 .entrySet()) {
             if (entry.getKey().isAssignableFrom(otherClass)) {
                 entry.getValue().accept(this, other);

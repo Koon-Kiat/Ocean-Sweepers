@@ -14,7 +14,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.application.entity.npc.Monster;
+import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
@@ -39,7 +39,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	static {
 		// Register collision handlers for different entity types
 		registerRockCollisionHandler(Boat.class, Rock::handleBoatCollision);
-		registerRockCollisionHandler(Monster.class, Rock::handleMonsterCollision);
+		registerRockCollisionHandler(SeaTurtle.class, Rock::handleMonsterCollision);
 	}
 
 	/**

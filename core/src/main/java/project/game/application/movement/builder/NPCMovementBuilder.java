@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.application.movement.strategy.FollowMovementStrategy;
 import project.game.common.exception.MovementException;
+import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.MovableEntity;
 import project.game.engine.entitysystem.movement.api.IMovable;
@@ -21,6 +22,7 @@ import project.game.engine.entitysystem.movement.core.NPCMovementManager;
  */
 public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuilder> {
 
+    private static final GameLogger LOGGER = new GameLogger(NPCMovementBuilder.class);
     private IMovementStrategyFactory movementStrategyFactory;
 
     public NPCMovementBuilder() {
@@ -256,6 +258,34 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     }
 
     /**
+     * Creates a composite movement strategy combining multiple strategies.
+     * 
+     * @param baseStrategy         The primary strategy
+     * @param additionalStrategies Additional strategies to apply
+     * @param weights              The relative weights for each strategy
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withCompositeMovement(
+            IMovementStrategy baseStrategy,
+            List<IMovementStrategy> additionalStrategies,
+            float[] weights) {
+
+        try {
+            this.movementStrategy = MovementStrategyFactory.createCompositeMovementStrategy(
+                    baseStrategy, additionalStrategies, weights);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating CompositeMovementStrategy: " + e.getMessage()
+                        + ". Using base strategy as fallback.");
+                this.movementStrategy = baseStrategy;
+            } else {
+                throw e;
+            }
+        }
+        return this;
+    }
+
+    /**
      * Creates a combined interceptor with obstacle avoidance movement strategy.
      * This makes the NPC follow/intercept a target while avoiding obstacles.
      * 
@@ -306,29 +336,77 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     }
 
     /**
-     * Creates a composite movement strategy combining multiple strategies.
+     * Creates an ocean current movement strategy for simulating realistic floating
+     * debris motion.
+     * The movement combines constant directional flow with zigzag oscillation.
      * 
-     * @param baseStrategy         The primary strategy
-     * @param additionalStrategies Additional strategies to apply
-     * @param weights              The relative weights for each strategy
+     * @param baseSpeed      Speed for constant directional movement
+     * @param zigSpeed       Speed for zigzag oscillation component
+     * @param amplitude      Amplitude of zigzag oscillation
+     * @param frequency      Frequency of zigzag oscillation
+     * @param constantWeight Weight for constant movement (0.0-1.0)
+     * @param zigzagWeight   Weight for zigzag movement (0.0-1.0)
      * @return This builder for method chaining
      */
-    public NPCMovementBuilder withCompositeMovement(
-            IMovementStrategy baseStrategy,
-            List<IMovementStrategy> additionalStrategies,
-            float[] weights) {
+    public NPCMovementBuilder withOceanCurrentMovement(
+            float baseSpeed, float zigSpeed, float amplitude, float frequency,
+            float constantWeight, float zigzagWeight) {
 
         try {
-            this.movementStrategy = MovementStrategyFactory.createCompositeMovementStrategy(
-                    baseStrategy, additionalStrategies, weights);
+            this.movementStrategy = MovementStrategyFactory.createOceanCurrentMovement(
+                    baseSpeed, zigSpeed, amplitude, frequency,
+                    constantWeight, zigzagWeight, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating CompositeMovementStrategy: " + e.getMessage()
-                        + ". Using base strategy as fallback.");
-                this.movementStrategy = baseStrategy;
-            } else {
-                throw e;
+                LOGGER.warn("Error creating OceanCurrentMovement in lenient mode: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
             }
+            LOGGER.fatal("Error in OceanCurrentMovement: " + e.getMessage(), e);
+            throw new MovementException("Error in OceanCurrentMovement: " + e.getMessage(), e);
+        }
+        return this;
+    }
+
+    /**
+     * Creates a randomized ocean current movement with parameters within specified
+     * ranges.
+     * 
+     * @param minBaseSpeed   Minimum constant speed
+     * @param maxBaseSpeed   Maximum constant speed
+     * @param minZigSpeed    Minimum zigzag speed
+     * @param maxZigSpeed    Maximum zigzag speed
+     * @param minAmplitude   Minimum zigzag amplitude
+     * @param maxAmplitude   Maximum zigzag amplitude
+     * @param minFrequency   Minimum zigzag frequency
+     * @param maxFrequency   Maximum zigzag frequency
+     * @param constantWeight Weight for constant movement
+     * @param zigzagWeight   Weight for zigzag movement
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withRandomizedOceanCurrentMovement(
+            float minBaseSpeed, float maxBaseSpeed,
+            float minZigSpeed, float maxZigSpeed,
+            float minAmplitude, float maxAmplitude,
+            float minFrequency, float maxFrequency,
+            float constantWeight, float zigzagWeight) {
+
+        try {
+            this.movementStrategy = MovementStrategyFactory.createRandomizedOceanCurrentMovement(
+                    minBaseSpeed, maxBaseSpeed,
+                    minZigSpeed, maxZigSpeed,
+                    minAmplitude, maxAmplitude,
+                    minFrequency, maxFrequency,
+                    constantWeight, zigzagWeight,
+                    this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating RandomizedOceanCurrentMovement in lenient mode: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            LOGGER.fatal("Error in RandomizedOceanCurrentMovement: " + e.getMessage(), e);
+            throw new MovementException("Error in RandomizedOceanCurrentMovement: " + e.getMessage(), e);
         }
         return this;
     }

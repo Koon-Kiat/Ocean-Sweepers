@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.movement.management.MovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionPairHandler;
@@ -40,6 +41,7 @@ public class CollisionManager implements ContactListener {
     private final CollisionVisitorResolver collisionResolver;
     private final ICollisionPairHandler collisionPairTracker;
     private final Map<ICollidableVisitor, MovementManager> entityMap;
+    private final Map<MovementManager, Boolean> playerControlledMap; // Tracks which managers are player-controlled
     private boolean collided = false;
     private float collisionMovementStrength;
     private float movementThreshold;
@@ -51,6 +53,7 @@ public class CollisionManager implements ContactListener {
         this.inputManager = inputManager;
         this.collisionQueue = new ArrayList<>();
         this.entityMap = new HashMap<>();
+        this.playerControlledMap = new HashMap<>();
         this.collisionResolver = new CollisionVisitorResolver();
         this.collisionPairTracker = new CollisionPairTracker();
         collisionResolver.registerBoundary();
@@ -76,11 +79,22 @@ public class CollisionManager implements ContactListener {
         world.setContactListener(this);
     }
 
+    /**
+     * Add an entity to the collision manager with its associated movement manager.
+     * If the movement manager is a PlayerMovementManager, it will be marked as
+     * player-controlled for input handling.
+     */
     public void addEntity(ICollidableVisitor entity, MovementManager movementManager) {
         entityMap.put(entity, movementManager);
 
         // Register entity with the collision resolver
         collisionResolver.registerCollidable(entity);
+
+        // Track whether this is a player-controlled movement manager
+        if (movementManager != null) {
+            boolean isPlayerControlled = movementManager.getClass().equals(PlayerMovementManager.class);
+            playerControlledMap.put(movementManager, isPlayerControlled);
+        }
     }
 
     public void processCollisions() {
@@ -111,12 +125,25 @@ public class CollisionManager implements ContactListener {
         }
     }
 
+    /**
+     * Check if a movement manager is player-controlled
+     */
+    private boolean isPlayerControlled(MovementManager manager) {
+        Boolean isPlayerControlled = playerControlledMap.get(manager);
+        return isPlayerControlled != null && isPlayerControlled;
+    }
+
     public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
         for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
             MovementManager manager = entry.getValue();
             if (manager != null) {
-                entry.getValue().updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
-                entry.getValue().updateMovement();
+                // Only apply keyboard input to player-controlled movement managers
+                if (isPlayerControlled(manager)) {
+                    manager.updateVelocity(inputManager.getPressedKeys(), inputManager.getKeyBindings());
+                }
+
+                // Update all movement managers, regardless of type
+                manager.updateMovement();
             }
             processRemovalQueue();
         }

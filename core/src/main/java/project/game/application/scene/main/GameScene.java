@@ -26,7 +26,7 @@ import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
-import project.game.application.entity.npc.Monster;
+import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.application.movement.builder.NPCMovementBuilder;
@@ -83,7 +83,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     public static List<Entity> existingEntities;
     private EntityManager entityManager;
     private Boat boat;
-    private Monster monster;
+    private SeaTurtle monster;
     private List<Rock> rocks;
     private List<Trash> trashes;
 
@@ -158,6 +158,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         input();
 
         try {
+            // Update movement for all entities
+            playerMovementManager.updateMovement();
+            npcMovementManager.updateMovement();
+
+            // Make sure collision handling catches up with new positions
             collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(), constants.PIXELS_TO_METERS());
         } catch (Exception e) {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
@@ -322,7 +327,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
             // Create entities using factory manager
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            monster = new Monster(monsterEntity, world, npcMovementManager, monsterRegion);
+            monster = new SeaTurtle(monsterEntity, world, npcMovementManager, monsterRegion);
 
             // Set collision manager on boat to enable safe body removal
             boat.setCollisionManager(collisionManager);

@@ -3,6 +3,8 @@ package project.game.application.movement.factory;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.badlogic.gdx.math.MathUtils;
+
 import project.game.application.movement.strategy.AcceleratedMovementStrategy;
 import project.game.application.movement.strategy.ConstantMovementStrategy;
 import project.game.application.movement.strategy.FollowMovementStrategy;
@@ -24,7 +26,7 @@ import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrategy;
 
 /**
- * Factory class for creating movement strategys.
+ * Factory class for creating movement strategies.
  * This helps avoid direct instantiation of dependencies and follows the
  * Dependency Inversion Principle.
  */
@@ -327,6 +329,85 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
             float speed,
             boolean lenientMode) {
         return createInterceptorWithObstacleAvoidance(target, obstacles, speed, null, lenientMode);
+    }
+
+    /**
+     * Creates an ocean current movement strategy combining constant and zigzag
+     * movements
+     * for realistic floating debris simulation.
+     * 
+     * @param baseSpeed      Speed for constant component
+     * @param zigSpeed       Speed for zigzag component
+     * @param amplitude      Zigzag amplitude
+     * @param frequency      Zigzag frequency
+     * @param constantWeight Weight for constant movement (0.0-1.0)
+     * @param zigzagWeight   Weight for zigzag movement (0.0-1.0)
+     * @param lenientMode    Whether to use lenient mode
+     * @return A composite strategy that simulates ocean current effects
+     */
+    public static IMovementStrategy createOceanCurrentMovement(
+            float baseSpeed, float zigSpeed, float amplitude, float frequency,
+            float constantWeight, float zigzagWeight, boolean lenientMode) {
+
+        try {
+            // Create constant movement for directional flow
+            IMovementStrategy constantMovement = createConstantMovement(baseSpeed, lenientMode);
+
+            // Create zigzag movement for wave oscillation
+            IMovementStrategy zigzagMovement = createZigZagMovement(zigSpeed, amplitude, frequency, lenientMode);
+
+            // Combine them with specified weights
+            List<IMovementStrategy> additionalStrategies = new ArrayList<>();
+            additionalStrategies.add(zigzagMovement);
+            float[] weights = new float[] { constantWeight, zigzagWeight };
+
+            return createCompositeMovementStrategy(constantMovement, additionalStrategies, weights);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create OceanCurrentMovement: " + e.getMessage());
+            throw new MovementException("Failed to create OceanCurrentMovement", e);
+        }
+    }
+
+    /**
+     * Creates a randomized ocean current movement with parameters within specified
+     * ranges.
+     * 
+     * @param minBaseSpeed   Minimum constant speed
+     * @param maxBaseSpeed   Maximum constant speed
+     * @param minZigSpeed    Minimum zigzag speed
+     * @param maxZigSpeed    Maximum zigzag speed
+     * @param minAmplitude   Minimum zigzag amplitude
+     * @param maxAmplitude   Maximum zigzag amplitude
+     * @param minFrequency   Minimum zigzag frequency
+     * @param maxFrequency   Maximum zigzag frequency
+     * @param constantWeight Weight for constant movement
+     * @param zigzagWeight   Weight for zigzag movement
+     * @param lenientMode    Whether to use lenient mode
+     * @return A randomized ocean current movement strategy
+     */
+    public static IMovementStrategy createRandomizedOceanCurrentMovement(
+            float minBaseSpeed, float maxBaseSpeed,
+            float minZigSpeed, float maxZigSpeed,
+            float minAmplitude, float maxAmplitude,
+            float minFrequency, float maxFrequency,
+            float constantWeight, float zigzagWeight,
+            boolean lenientMode) {
+
+        try {
+            // Generate random parameters within specified ranges
+            float baseSpeed = MathUtils.random(minBaseSpeed, maxBaseSpeed);
+            float zigSpeed = MathUtils.random(minZigSpeed, maxZigSpeed);
+            float amplitude = MathUtils.random(minAmplitude, maxAmplitude);
+            float frequency = MathUtils.random(minFrequency, maxFrequency);
+
+            // Create the ocean current movement with randomized parameters
+            return createOceanCurrentMovement(
+                    baseSpeed, zigSpeed, amplitude, frequency,
+                    constantWeight, zigzagWeight, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create RandomizedOceanCurrentMovement: " + e.getMessage());
+            throw new MovementException("Failed to create RandomizedOceanCurrentMovement", e);
+        }
     }
 
     /**
