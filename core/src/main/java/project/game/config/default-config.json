@@ -1,0 +1,36 @@
+{
+    "floats": {
+        "PIXELS_TO_METERS": 32.0,
+        "MONSTER_BASE_IMPULSE": 200.0,
+        "ROCK_BASE_IMPULSE": 250.0,
+        "BOAT_BOUNCE_FORCE": 10.0,
+        "GAME_WIDTH": 1920.0,
+        "GAME_HEIGHT": 1080.0,
+        "PLAYER_START_X": 400.0,
+        "PLAYER_START_Y": 400.0,
+        "PLAYER_WIDTH": 100.0,
+        "PLAYER_HEIGHT": 100.0,
+        "TRASH_START_X": 30.0,
+        "TRASH_START_Y": 30.0,
+        "TRASH_WIDTH": 50.0,
+        "TRASH_HEIGHT": 50.0,
+        "NUM_TRASHES": 20.0,
+        "ROCK_WIDTH": 50.0,
+        "ROCK_HEIGHT": 50.0,
+        "NUM_ROCKS": 20.0,
+        "MONSTER_START_X": 100.0,
+        "MONSTER_START_Y": 100.0,
+        "MONSTER_WIDTH": 70.0,
+        "MONSTER_HEIGHT": 70.0,
+        "DEFAULT_SPEED": 600.0,
+        "PLAYER_SPEED": 1000.0,
+        "NPC_SPEED": 200.0,
+        "AMPLITUDE": 100.0,
+        "FREQUENCY": 5.0,
+        "MIN_DURATION": 1.0,
+        "MAX_DURATION": 3.0
+    },
+    "longs": {
+        "COLLISION_ACTIVE_DURATION": 500
+    }
+}

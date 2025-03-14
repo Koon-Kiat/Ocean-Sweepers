@@ -1,39 +1,60 @@
 package project.game;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import project.game.abstractengine.iomanager.SceneIOManager;
-import project.game.abstractengine.scenemanager.SceneFactory;
-import project.game.abstractengine.scenemanager.SceneManager;
-import project.game.logmanager.LogManager;
+import project.game.application.scene.factory.SceneFactory;
+import project.game.common.config.factory.GameConstantsFactory;
+import project.game.common.logging.core.GameLogger;
+import project.game.common.logging.util.LogPaths;
+import project.game.common.util.file.ProjectPaths;
+import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.SceneManager;
 
 public class Main extends ApplicationAdapter {
 
-    static {
-        LogManager.initialize();
-    }
-    
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final GameLogger LOGGER = new GameLogger(Main.class);
     private SceneManager sceneManager;
 
     @Override
     public void create() {
+        LOGGER.info("Application starting up");
+        LOGGER.debug("Java version: {0}", System.getProperty("java.version"));
+        LOGGER.debug("Using log directory: {0}", LogPaths.getGlobalLogDirectory());
+
+        // Find the config file - using LogPaths for consistent path resolution
+        String projectRoot = LogPaths.getProjectRoot();
+        String configFile = ProjectPaths.findConfigFile("default-config.json", projectRoot);
+
+        if (configFile == null) {
+            LOGGER.error("Could not find default-config.json in any config locations");
+            throw new RuntimeException("Missing required configuration file");
+        }
+
+        LOGGER.info("Loading game constants from: {0}", configFile);
+
+        try {
+            GameConstantsFactory.initialize(configFile);
+            LOGGER.info("Game constants loaded successfully");
+        } catch (Exception e) {
+            LOGGER.error("Failed to load game constants", e);
+            throw new RuntimeException("Failed to initialize game constants", e);
+        }
+
         // Scene Manager setup
+        LOGGER.debug("Creating scene manager");
         sceneManager = new SceneManager();
-        SceneIOManager sharedInputManager = sceneManager.getInputManager();
+        SceneInputManager sharedInputManager = sceneManager.getInputManager();
 
         // Initializing and registering scenes now done in Scene Factory
+        LOGGER.info("Initializing scene factory");
         SceneFactory sceneFactory = new SceneFactory(sceneManager, sharedInputManager);
         sceneFactory.createAndRegisterScenes();
 
-        LOGGER.log(Level.INFO, "Available scenes: {0}", sceneManager.getSceneList());
+        LOGGER.info("Available scenes: {0}", sceneManager.getSceneList());
         sceneManager.setScene("menu");
-        LOGGER.log(Level.INFO, "Current scene: {0}", sceneManager.getCurrentScene());
+        LOGGER.info("Current scene: {0}", sceneManager.getCurrentScene());
     }
 
     @Override
@@ -46,6 +67,17 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
+        LOGGER.debug("Resizing window to {0}×{1}", width, height);
         sceneManager.resize(width, height);
+    }
+
+    @Override
+    public void dispose() {
+        LOGGER.info("Application shutting down");
+        if (sceneManager != null) {
+            sceneManager.dispose();
+            sceneManager = null;
+        }
+        
     }
 }
