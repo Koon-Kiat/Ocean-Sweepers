@@ -50,8 +50,10 @@ import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.boundary.WorldBoundaryFactory;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
+import project.game.engine.scene.management.ScoreManager;
 
 public class GameScene extends Scene implements IEntityRemovalListener {
 
@@ -113,9 +115,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] trashRegions;
     private TextureRegion monsterRegion;
     private Texture backgroundTexture;
+    private HealthManager healthManager;
+    private ScoreManager scoreManager;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
+        this.healthManager = HealthManager.getInstance();
+        this.scoreManager = ScoreManager.getInstance();
     }
 
     /**
@@ -171,6 +177,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Draw entities
         batch.begin();
         entityManager.draw(batch);
+        healthManager.draw(batch); // Draws health (now droplet asset)
+        // SCORE DRAWN HERE
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200, sceneUIManager.getStage().getHeight() - 30);
         batch.end();
 
         // Draw stage
@@ -207,6 +216,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Play sound effect on collision
             if (collisionManager.collision() && audioManager != null) {
                 audioManager.playSoundEffect("drophit");
+                // SCORE SYSTEM IMPLEMENTED HERE
+                // scoreManager.addScore(10);
+                // LOGGER.log(Level.INFO, "Score: {0}", scoreManager.getScore());
+
             }
         } else {
             // Process removal queue to prevent leaks
@@ -590,5 +603,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 actor.remove();
             }
         }
+    }
+
+    public void loseLife() {
+        healthManager.loseLife();
     }
 }
