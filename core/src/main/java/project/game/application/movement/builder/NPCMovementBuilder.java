@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.entity.item.Trash;
 import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.application.movement.strategy.FollowMovementStrategy;
 import project.game.common.exception.MovementException;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.MovableEntity;
 import project.game.engine.entitysystem.movement.api.IMovable;
@@ -22,7 +22,6 @@ import project.game.engine.entitysystem.movement.core.NPCMovementManager;
  */
 public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuilder> {
 
-    private static final GameLogger LOGGER = new GameLogger(NPCMovementBuilder.class);
     private IMovementStrategyFactory movementStrategyFactory;
 
     public NPCMovementBuilder() {
@@ -407,6 +406,46 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             }
             LOGGER.fatal("Error in RandomizedOceanCurrentMovement: " + e.getMessage(), e);
             throw new MovementException("Error in RandomizedOceanCurrentMovement: " + e.getMessage(), e);
+        }
+        return this;
+    }
+
+    /**
+     * Creates a trash collector movement strategy for the entity.
+     * This combines trash targeting with obstacle avoidance for intelligent trash
+     * collection behavior.
+     * 
+     * @param trashEntities The list of trash entities to target
+     * @param obstacles     The list of obstacles to avoid
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withTrashCollector(List<Trash> trashEntities, List<Entity> obstacles) {
+        return withTrashCollector(trashEntities, obstacles, null);
+    }
+
+    /**
+     * Creates a trash collector movement strategy for the entity with custom
+     * weights.
+     * This combines trash targeting with obstacle avoidance for intelligent trash
+     * collection behavior.
+     * 
+     * @param trashEntities The list of trash entities to target
+     * @param obstacles     The list of obstacles to avoid
+     * @param weights       The weights for trash targeting and obstacle avoidance
+     *                      [targetWeight, avoidanceWeight]
+     * @return This builder for method chaining
+     */
+    public NPCMovementBuilder withTrashCollector(List<Trash> trashEntities, List<Entity> obstacles, float[] weights) {
+        try {
+            this.movementStrategy = MovementStrategyFactory.createTrashCollectorStrategy(
+                    this.speed, trashEntities, obstacles, weights, this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating TrashCollectorStrategy: " + e.getMessage() +
+                        ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            throw e;
         }
         return this;
     }

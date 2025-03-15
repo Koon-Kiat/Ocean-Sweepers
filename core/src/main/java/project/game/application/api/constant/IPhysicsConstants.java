@@ -9,7 +9,7 @@ public interface IPhysicsConstants {
 
     long COLLISION_ACTIVE_DURATION();
 
-    float MONSTER_BASE_IMPULSE();
+    float SEA_TURTLE_BASE_IMPULSE();
 
     float ROCK_BASE_IMPULSE();
 

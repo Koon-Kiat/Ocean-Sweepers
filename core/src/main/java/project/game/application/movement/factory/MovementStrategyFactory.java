@@ -1,14 +1,16 @@
 package project.game.application.movement.factory;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.badlogic.gdx.math.MathUtils;
-
+import project.game.application.entity.item.Trash;
+import project.game.application.movement.composite.InterceptorAvoidanceStrategy;
+import project.game.application.movement.composite.OceanCurrentStrategy;
+import project.game.application.movement.composite.TrashCollectorStrategy;
 import project.game.application.movement.strategy.AcceleratedMovementStrategy;
 import project.game.application.movement.strategy.ConstantMovementStrategy;
 import project.game.application.movement.strategy.FollowMovementStrategy;
 import project.game.application.movement.strategy.InterceptorMovementStrategy;
+import project.game.application.movement.strategy.NearestTrashStrategy;
 import project.game.application.movement.strategy.ObstacleAvoidanceStrategy;
 import project.game.application.movement.strategy.OrbitalMovementStrategy;
 import project.game.application.movement.strategy.RandomisedMovementStrategy;
@@ -276,7 +278,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
      * @param weights     Optional custom weights for interceptor and avoidance
      *                    (first for interceptor, second for avoidance)
      * @param lenientMode Whether to use lenient mode
-     * @return A CompositeMovementStrategy that combines interception and obstacle
+     * @return An InterceptorAvoidanceStrategy that combines interception and
+     *         obstacle
      *         avoidance
      */
     public static IMovementStrategy createInterceptorWithObstacleAvoidance(
@@ -287,25 +290,7 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
             boolean lenientMode) {
 
         try {
-            // Create the base interceptor strategy
-            IMovementStrategy interceptor = createInterceptorMovement(target, speed, lenientMode);
-
-            // Create obstacle avoidance strategy
-            IMovementStrategy avoidance = createObstacleAvoidanceStrategy(speed, obstacles, lenientMode);
-
-            // Use provided weights or default if not provided
-            float[] finalWeights = weights;
-            if (weights == null || weights.length != 2) {
-                // Default weights: 60% interception, 40% avoidance
-                finalWeights = new float[] { 0.6f, 0.4f };
-                LOGGER.debug("Using default weights for interceptor with obstacle avoidance: {0}, {1}",
-                        finalWeights[0], finalWeights[1]);
-            }
-
-            List<IMovementStrategy> additionalStrategies = new ArrayList<>();
-            additionalStrategies.add(avoidance);
-
-            return createCompositeMovementStrategy(interceptor, additionalStrategies, finalWeights);
+            return new InterceptorAvoidanceStrategy(target, obstacles, speed, weights, lenientMode);
         } catch (Exception e) {
             LOGGER.error("Failed to create interceptor with obstacle avoidance: " + e.getMessage());
             throw new MovementException("Failed to create interceptor with obstacle avoidance", e);
@@ -320,7 +305,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
      * @param obstacles   The obstacles to avoid
      * @param speed       The movement speed
      * @param lenientMode Whether to use lenient mode
-     * @return A CompositeMovementStrategy that combines interception and obstacle
+     * @return An InterceptorAvoidanceStrategy that combines interception and
+     *         obstacle
      *         avoidance
      */
     public static IMovementStrategy createInterceptorWithObstacleAvoidance(
@@ -333,8 +319,7 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
 
     /**
      * Creates an ocean current movement strategy combining constant and zigzag
-     * movements
-     * for realistic floating debris simulation.
+     * movements for realistic floating debris simulation.
      * 
      * @param baseSpeed      Speed for constant component
      * @param zigSpeed       Speed for zigzag component
@@ -343,25 +328,16 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
      * @param constantWeight Weight for constant movement (0.0-1.0)
      * @param zigzagWeight   Weight for zigzag movement (0.0-1.0)
      * @param lenientMode    Whether to use lenient mode
-     * @return A composite strategy that simulates ocean current effects
+     * @return An OceanCurrentStrategy that simulates ocean current effects
      */
     public static IMovementStrategy createOceanCurrentMovement(
             float baseSpeed, float zigSpeed, float amplitude, float frequency,
             float constantWeight, float zigzagWeight, boolean lenientMode) {
 
         try {
-            // Create constant movement for directional flow
-            IMovementStrategy constantMovement = createConstantMovement(baseSpeed, lenientMode);
-
-            // Create zigzag movement for wave oscillation
-            IMovementStrategy zigzagMovement = createZigZagMovement(zigSpeed, amplitude, frequency, lenientMode);
-
-            // Combine them with specified weights
-            List<IMovementStrategy> additionalStrategies = new ArrayList<>();
-            additionalStrategies.add(zigzagMovement);
-            float[] weights = new float[] { constantWeight, zigzagWeight };
-
-            return createCompositeMovementStrategy(constantMovement, additionalStrategies, weights);
+            return new OceanCurrentStrategy(
+                    baseSpeed, zigSpeed, amplitude, frequency,
+                    constantWeight, zigzagWeight, lenientMode);
         } catch (Exception e) {
             LOGGER.error("Failed to create OceanCurrentMovement: " + e.getMessage());
             throw new MovementException("Failed to create OceanCurrentMovement", e);
@@ -383,7 +359,7 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
      * @param constantWeight Weight for constant movement
      * @param zigzagWeight   Weight for zigzag movement
      * @param lenientMode    Whether to use lenient mode
-     * @return A randomized ocean current movement strategy
+     * @return A randomized OceanCurrentStrategy
      */
     public static IMovementStrategy createRandomizedOceanCurrentMovement(
             float minBaseSpeed, float maxBaseSpeed,
@@ -394,20 +370,81 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
             boolean lenientMode) {
 
         try {
-            // Generate random parameters within specified ranges
-            float baseSpeed = MathUtils.random(minBaseSpeed, maxBaseSpeed);
-            float zigSpeed = MathUtils.random(minZigSpeed, maxZigSpeed);
-            float amplitude = MathUtils.random(minAmplitude, maxAmplitude);
-            float frequency = MathUtils.random(minFrequency, maxFrequency);
-
-            // Create the ocean current movement with randomized parameters
-            return createOceanCurrentMovement(
-                    baseSpeed, zigSpeed, amplitude, frequency,
-                    constantWeight, zigzagWeight, lenientMode);
+            return OceanCurrentStrategy.createRandomized(
+                    minBaseSpeed, maxBaseSpeed,
+                    minZigSpeed, maxZigSpeed,
+                    minAmplitude, maxAmplitude,
+                    minFrequency, maxFrequency,
+                    constantWeight, zigzagWeight,
+                    lenientMode);
         } catch (Exception e) {
             LOGGER.error("Failed to create RandomizedOceanCurrentMovement: " + e.getMessage());
             throw new MovementException("Failed to create RandomizedOceanCurrentMovement", e);
         }
+    }
+
+    /**
+     * Creates a movement strategy for targeting the nearest trash entity.
+     * 
+     * @param speed         The movement speed
+     * @param trashEntities The list of trash entities to target
+     * @param lenientMode   Whether to use lenient mode for error handling
+     * @return A new NearestTrashStrategy instance
+     */
+    public static IMovementStrategy createNearestTrashStrategy(float speed, List<Trash> trashEntities,
+            boolean lenientMode) {
+        try {
+            return new NearestTrashStrategy(speed, trashEntities, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create NearestTrashStrategy: " + e.getMessage());
+            if (lenientMode) {
+                LOGGER.warn("Using constant movement as fallback");
+                return createConstantMovement(speed, lenientMode);
+            }
+            throw new MovementException("Failed to create NearestTrashStrategy", e);
+        }
+    }
+
+    /**
+     * Creates a trash collector strategy that combines nearest trash targeting with
+     * obstacle avoidance.
+     * 
+     * @param speed         The movement speed
+     * @param trashEntities The list of trash entities to target
+     * @param obstacles     The list of obstacles to avoid
+     * @param weights       The weights for trash targeting and obstacle avoidance
+     *                      (or null for defaults)
+     * @param lenientMode   Whether to use lenient mode for error handling
+     * @return A new TrashCollectorStrategy instance
+     */
+    public static IMovementStrategy createTrashCollectorStrategy(float speed, List<Trash> trashEntities,
+            List<Entity> obstacles, float[] weights,
+            boolean lenientMode) {
+        try {
+            return new TrashCollectorStrategy(speed, trashEntities, obstacles, weights, lenientMode);
+        } catch (Exception e) {
+            LOGGER.error("Failed to create TrashCollectorStrategy: " + e.getMessage());
+            if (lenientMode) {
+                LOGGER.warn("Using nearest trash strategy as fallback");
+                return createNearestTrashStrategy(speed, trashEntities, lenientMode);
+            }
+            throw new MovementException("Failed to create TrashCollectorStrategy", e);
+        }
+    }
+
+    /**
+     * Creates a trash collector strategy with default weights (70% targeting, 30%
+     * avoidance).
+     * 
+     * @param speed         The movement speed
+     * @param trashEntities The list of trash entities to target
+     * @param obstacles     The list of obstacles to avoid
+     * @param lenientMode   Whether to use lenient mode for error handling
+     * @return A new TrashCollectorStrategy instance with default weights
+     */
+    public static IMovementStrategy createTrashCollectorStrategy(float speed, List<Trash> trashEntities,
+            List<Entity> obstacles, boolean lenientMode) {
+        return createTrashCollectorStrategy(speed, trashEntities, obstacles, null, lenientMode);
     }
 
     /**

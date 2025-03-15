@@ -43,7 +43,7 @@ public class CollisionManager implements ContactListener {
     private final CollisionVisitorResolver collisionResolver;
     private final ICollisionPairHandler collisionPairTracker;
     private final Map<ICollidableVisitor, MovementManager> entityMap;
-    private final Map<MovementManager, Boolean> playerControlledMap; // Tracks which managers are player-controlled
+    private final Map<MovementManager, Boolean> playerControlledMap;
     private boolean collided = false;
     private float collisionMovementStrength;
     private float movementThreshold;
