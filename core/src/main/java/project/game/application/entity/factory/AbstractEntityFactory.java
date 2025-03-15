@@ -29,10 +29,11 @@ public abstract class AbstractEntityFactory<T> implements IEntityFactory<T> {
     }
 
     protected boolean isOverlapping(float x, float y, float width, float height, Entity entity) {
-        return x < entity.getX() + entity.getWidth() &&
-                x + width > entity.getX() &&
-                y < entity.getY() + entity.getHeight() &&
-                y + height > entity.getY();
+        boolean overlap = x < entity.getX() + entity.getWidth() &&
+                          x + width > entity.getX() &&
+                          y < entity.getY() + entity.getHeight() &&
+                          y + height > entity.getY();
+        return overlap;
     }
 
     protected boolean checkCollisionWithExisting(float x, float y, float width, float height) {

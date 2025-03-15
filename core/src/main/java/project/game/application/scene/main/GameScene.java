@@ -405,6 +405,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (entity instanceof IRenderable) {
             entityManager.removeRenderableEntity((IRenderable) entity);
         }
+        for (Trash trash: new ArrayList<>(trashes)) {
+            if (trash.getEntity().equals(entity)) {
+                trashes.remove(trash);
+                break;
+            }
+        }
     }
 
     /**

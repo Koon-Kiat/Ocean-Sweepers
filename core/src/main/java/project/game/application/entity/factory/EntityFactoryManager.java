@@ -40,7 +40,9 @@ public class EntityFactoryManager {
             y = random.nextFloat() * (constants.GAME_HEIGHT() - constants.ROCK_HEIGHT());
         } while (rockFactory.checkCollisionWithExisting(x, y, constants.ROCK_WIDTH(), constants.ROCK_HEIGHT()));
 
-        return rockFactory.createEntity(x, y);
+        Rock rock = rockFactory.createEntity(x, y);
+        System.out.println("Created Rock at: x=" + x + ", y=" + y);
+        return rock;
     }
 
     public Trash createTrash() {
@@ -50,7 +52,9 @@ public class EntityFactoryManager {
             y = random.nextFloat() * (constants.GAME_HEIGHT() - constants.TRASH_HEIGHT());
         } while (trashFactory.checkCollisionWithExisting(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT()));
 
-        return trashFactory.createEntity(x, y);
+        Trash trash = trashFactory.createEntity(x, y);
+        System.out.println("Created Trash at: x=" + x + ", y=" + y);
+        return trash;
     }
 
     public void setTrashRemovalListener(IEntityRemovalListener listener) {

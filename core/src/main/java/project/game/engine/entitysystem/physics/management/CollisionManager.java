@@ -2,10 +2,12 @@ package project.game.engine.entitysystem.physics.management;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -47,6 +49,7 @@ public class CollisionManager implements ContactListener {
     private float movementThreshold;
     private long defaultCollisionDuration;
     private Queue<PhysicsBodyRemovalRequest> removalQueue = new LinkedList<>();
+    private Set<Entity> entitiesScheduledForRemoval = new HashSet<>();
 
     public CollisionManager(World world, SceneInputManager inputManager) {
         this.world = world;
@@ -105,12 +108,19 @@ public class CollisionManager implements ContactListener {
     }
 
     public void scheduleBodyRemoval(Body body, Entity entity, IEntityRemovalListener removalListener) {
-        removalQueue.add(new PhysicsBodyRemovalRequest(body, entity, removalListener));
+        if (!entitiesScheduledForRemoval.contains(entity)) {
+            removalQueue.add(new PhysicsBodyRemovalRequest(body, entity, removalListener));
+            entitiesScheduledForRemoval.add(entity);
+            System.out.println("Scheduled removal for entity: " + entity);
+        } else {
+            System.out.println("Entity already scheduled for removal: " + entity);
+        }
     }
 
     public void processRemovalQueue() {
         while (!removalQueue.isEmpty()) {
             PhysicsBodyRemovalRequest request = removalQueue.poll();
+            entitiesScheduledForRemoval.remove(request.getEntity());
 
             // Set entity as inactive
             request.getEntity().setActive(false);
