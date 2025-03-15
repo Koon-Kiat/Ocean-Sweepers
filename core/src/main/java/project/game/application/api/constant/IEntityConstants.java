@@ -32,14 +32,14 @@ public interface IEntityConstants {
 
     int NUM_ROCKS();
 
-    // Monster constants
-    float MONSTER_START_X();
+    // SEA_TURTLE constants
+    float SEA_TURTLE_START_X();
 
-    float MONSTER_START_Y();
+    float SEA_TURTLE_START_Y();
 
-    float MONSTER_WIDTH();
+    float SEA_TURTLE_WIDTH();
 
-    float MONSTER_HEIGHT();
+    float SEA_TURTLE_HEIGHT();
 
     float BOAT_BOUNCE_FORCE();
 

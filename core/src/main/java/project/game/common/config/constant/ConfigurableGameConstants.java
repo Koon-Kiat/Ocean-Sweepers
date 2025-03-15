@@ -39,8 +39,8 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
     }
 
     @Override
-    public float MONSTER_BASE_IMPULSE() {
-        return getFloatValue("MONSTER_BASE_IMPULSE");
+    public float SEA_TURTLE_BASE_IMPULSE() {
+        return getFloatValue("SEA_TURTLE_BASE_IMPULSE");
     }
 
     @Override
@@ -125,23 +125,23 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
     }
 
     @Override
-    public float MONSTER_START_X() {
-        return getFloatValue("MONSTER_START_X");
+    public float SEA_TURTLE_START_X() {
+        return getFloatValue("SEA_TURTLE_START_X");
     }
 
     @Override
-    public float MONSTER_START_Y() {
-        return getFloatValue("MONSTER_START_Y");
+    public float SEA_TURTLE_START_Y() {
+        return getFloatValue("SEA_TURTLE_START_Y");
     }
 
     @Override
-    public float MONSTER_WIDTH() {
-        return getFloatValue("MONSTER_WIDTH");
+    public float SEA_TURTLE_WIDTH() {
+        return getFloatValue("SEA_TURTLE_WIDTH");
     }
 
     @Override
-    public float MONSTER_HEIGHT() {
-        return getFloatValue("MONSTER_HEIGHT");
+    public float SEA_TURTLE_HEIGHT() {
+        return getFloatValue("SEA_TURTLE_HEIGHT");
     }
 
     @Override

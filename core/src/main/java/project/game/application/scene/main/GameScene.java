@@ -83,7 +83,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     public static List<Entity> existingEntities;
     private EntityManager entityManager;
     private Boat boat;
-    private SeaTurtle monster;
+    private SeaTurtle seaTurtle;
     private List<Rock> rocks;
     private List<Trash> trashes;
 
@@ -284,10 +284,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     true);
 
             Entity monsterEntity = new Entity(
-                    constants.MONSTER_START_X(),
-                    constants.MONSTER_START_Y(),
-                    constants.MONSTER_WIDTH(),
-                    constants.MONSTER_HEIGHT(),
+                    constants.SEA_TURTLE_START_X(),
+                    constants.SEA_TURTLE_START_Y(),
+                    constants.SEA_TURTLE_WIDTH(),
+                    constants.SEA_TURTLE_HEIGHT(),
                     true);
 
             playerMovementManager = new PlayerMovementBuilder()
@@ -327,9 +327,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
             // Create entities using factory manager
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            monster = new SeaTurtle(monsterEntity, world, npcMovementManager, monsterRegion);
+            seaTurtle = new SeaTurtle(monsterEntity, world, npcMovementManager, monsterRegion);
 
-            // Set collision manager on boat to enable safe body removal
             boat.setCollisionManager(collisionManager);
 
             // Create rocks and trash
@@ -346,23 +345,22 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 entityManager.addRenderableEntity(trash);
             }
 
-            // Set up NPC movement with obstacle avoidance
-            float[] customWeights = { 0.30f, 0.70f };
+            float[] customWeights = { 0.70f, 0.30f };
             npcMovementManager = new NPCMovementBuilder()
                     .withEntity(monsterEntity)
                     .setSpeed(constants.NPC_SPEED())
                     .setInitialVelocity(1, 1)
-                    .withInterceptorAndObstacleAvoidance(playerMovementManager, rockEntities, customWeights)
+                    .withTrashCollector(trashes, rockEntities, customWeights)
                     .setLenientMode(true)
                     .build();
 
             // Add entities to the entity manager
             entityManager.addRenderableEntity(boat);
-            entityManager.addRenderableEntity(monster);
+            entityManager.addRenderableEntity(seaTurtle);
 
             // Add entities to collision manager
             collisionManager.addEntity(boat, playerMovementManager);
-            collisionManager.addEntity(monster, npcMovementManager);
+            collisionManager.addEntity(seaTurtle, npcMovementManager);
 
             for (Rock rock : rocks) {
                 collisionManager.addEntity(rock, null);

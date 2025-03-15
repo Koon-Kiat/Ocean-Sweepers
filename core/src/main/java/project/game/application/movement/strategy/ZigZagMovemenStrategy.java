@@ -21,7 +21,7 @@ public class ZigZagMovemenStrategy extends AbstractMovementStrategy {
     private float elapsedTime;
 
     // Enhanced parameters for realistic water movement
-    private float driftFactor = 1.5f; // Increases the overall drift distance
+    private final float driftFactor = 1.5f; // Increases the overall drift distance
     private float wavePhase = 0f; // Used for more natural wave-like motion
     private float waveAmplitude = 0f; // Additional amplitude for secondary waves
 

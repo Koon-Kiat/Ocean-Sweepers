@@ -29,7 +29,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private static final GameLogger LOGGER = new GameLogger(Main.class);
 
     private final NPCMovementManager movementManager;
-    private TextureRegion[] sprites; // Removed final
+    private TextureRegion[] sprites;
     private int currentSpriteIndex;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
@@ -41,13 +41,13 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private final Body body;
 
     // Type-based collision handler registry
-    private static final Map<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> SEA_TURTLE_COLLISION_HANDLERS = new ConcurrentHashMap<>();
 
     static {
         // Register collision handlers for specific entity types
-        registerMonsterCollisionHandler(Boat.class, SeaTurtle::handleBoatCollision);
-        registerMonsterCollisionHandler(Rock.class, SeaTurtle::handleRockCollision);
-        registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {
+        registerSeaTurtleCollisionHandler(Boat.class, SeaTurtle::handleBoatCollision);
+        registerSeaTurtleCollisionHandler(Rock.class, SeaTurtle::handleRockCollision);
+        registerSeaTurtleCollisionHandler(Trash.class, (seaTurtle, trash) -> {
             /* Ignore trash collisions */});
     }
 
@@ -58,9 +58,9 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * @param clazz   Class of collidable
      * @param handler Function to handle collision with the collidable
      */
-    public static <T extends ICollidableVisitor> void registerMonsterCollisionHandler(
+    public static <T extends ICollidableVisitor> void registerSeaTurtleCollisionHandler(
             Class<T> clazz, BiConsumer<SeaTurtle, ICollidableVisitor> handler) {
-        MONSTER_COLLISION_HANDLERS.put(clazz, handler);
+        SEA_TURTLE_COLLISION_HANDLERS.put(clazz, handler);
     }
 
     public SeaTurtle(Entity entity, World world, NPCMovementManager movementManager, TextureRegion sprite) {
@@ -161,7 +161,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     }
 
     /**
-     * Handle monster collisions with other entities
+     * Handle sea turtle collisions with other entities
      */
     @Override
     public void onCollision(ICollidableVisitor other) {
@@ -206,7 +206,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         Class<?> otherClass = other.getClass();
 
         // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS
+        for (Map.Entry<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> entry : SEA_TURTLE_COLLISION_HANDLERS
                 .entrySet()) {
             if (entry.getKey().isAssignableFrom(otherClass)) {
                 entry.getValue().accept(this, other);
@@ -219,13 +219,13 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * Handle collision with a boat
      */
     private void handleBoatCollision(ICollidableVisitor boat) {
-        float monsterX = getEntity().getX();
-        float monsterY = getEntity().getY();
+        float seaTurtleX = getEntity().getX();
+        float seaTurtleY = getEntity().getY();
         float boatX = boat.getEntity().getX();
         float boatY = boat.getEntity().getY();
 
-        float dx = monsterX - boatX;
-        float dy = monsterY - boatY;
+        float dx = seaTurtleX - boatX;
+        float dy = seaTurtleY - boatY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
@@ -233,16 +233,16 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             dx /= distance;
             dy /= distance;
 
-            // Reverse the direction to push the boat AWAY from monster
+            // Reverse the direction to push the boat AWAY from sea turtle
             dx = -dx;
             dy = -dy;
 
             // Apply scaled impulse force with improved physics
-            float baseImpulse = GameConstantsFactory.getConstants().MONSTER_BASE_IMPULSE();
-            Vector2 monsterVel = getBody().getLinearVelocity();
+            float baseImpulse = GameConstantsFactory.getConstants().SEA_TURTLE_BASE_IMPULSE();
+            Vector2 seaTurtleVel = getBody().getLinearVelocity();
 
             // Add velocity component to the impulse
-            float velMagnitude = (float) Math.sqrt(monsterVel.x * monsterVel.x + monsterVel.y * monsterVel.y);
+            float velMagnitude = (float) Math.sqrt(seaTurtleVel.x * seaTurtleVel.x + seaTurtleVel.y * seaTurtleVel.y);
             float impactMultiplier = Math.min(0.5f + velMagnitude * 0.01f, 2.0f);
 
             // Apply impulse to push the boat away
@@ -271,13 +271,13 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * Handle collision with a rock
      */
     private void handleRockCollision(ICollidableVisitor rock) {
-        float monsterX = getEntity().getX();
-        float monsterY = getEntity().getY();
+        float seaTurtleX = getEntity().getX();
+        float seaTurtleY = getEntity().getY();
         float rockX = rock.getEntity().getX();
         float rockY = rock.getEntity().getY();
 
-        float dx = monsterX - rockX; // Reversed direction (rock pushing monster)
-        float dy = monsterY - rockY;
+        float dx = seaTurtleX - rockX; // Reversed direction (rock pushing sea turtle)
+        float dy = seaTurtleY - rockY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
@@ -285,7 +285,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             dx /= distance;
             dy /= distance;
 
-            // Apply impulse to monster (being pushed by rock)
+            // Apply impulse to sea turtle (being pushed by rock)
             float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE();
             getBody().applyLinearImpulse(
                     dx * rockImpulse,
@@ -309,7 +309,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public void updateSpriteIndex() {
-        // Monster currently uses a single sprite, but could be extended for animations
+        // Sea turtle currently uses a single sprite, but could be extended for animations
     }
 
     @Override

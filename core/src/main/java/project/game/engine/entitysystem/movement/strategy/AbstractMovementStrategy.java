@@ -25,6 +25,8 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
     protected AbstractMovementStrategy(Class<?> clazz, boolean lenientMode) {
         this.logger = new GameLogger(clazz);
         this.lenientMode = lenientMode;
+        logger.info("MOVEMENT BASE INSTANTIATED: {0} created with lenient={1}",
+                clazz.getSimpleName(), lenientMode);
     }
 
     /**
@@ -201,5 +203,12 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
             }
         }
         return new float[] { validMin, validMax };
+    }
+
+    protected void logFirstMovement(IMovable movable, boolean isFirst) {
+        if (isFirst) {
+            logger.info("MOVEMENT BASE STARTED: {0} first movement applied to entity at ({1},{2})",
+                    this.getClass().getSimpleName(), movable.getX(), movable.getY());
+        }
     }
 }

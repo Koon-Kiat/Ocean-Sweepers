@@ -44,7 +44,7 @@ public class ConstantsRegistry extends AbstractConstantsRegistry {
         register(def.getKey(), def);
 
         // Entity-specific impulse strength constants
-        def = new ConstantDefinition("MONSTER_BASE_IMPULSE", CATEGORY_PHYSICS, Float.class, 1.0f);
+        def = new ConstantDefinition("SEA_TURTLE_BASE_IMPULSE", CATEGORY_PHYSICS, Float.class, 1.0f);
         register(def.getKey(), def);
 
         def = new ConstantDefinition("ROCK_BASE_IMPULSE", CATEGORY_PHYSICS, Float.class, 2.0f);
@@ -103,16 +103,16 @@ public class ConstantsRegistry extends AbstractConstantsRegistry {
         def = new ConstantDefinition("NUM_ROCKS", CATEGORY_ENTITY, Integer.class, 10);
         register(def.getKey(), def);
 
-        def = new ConstantDefinition("MONSTER_START_X", CATEGORY_ENTITY, Float.class, 0.0f);
+        def = new ConstantDefinition("SEA_TURTLE_START_X", CATEGORY_ENTITY, Float.class, 0.0f);
         register(def.getKey(), def);
 
-        def = new ConstantDefinition("MONSTER_START_Y", CATEGORY_ENTITY, Float.class, 0.0f);
+        def = new ConstantDefinition("SEA_TURTLE_START_Y", CATEGORY_ENTITY, Float.class, 0.0f);
         register(def.getKey(), def);
 
-        def = new ConstantDefinition("MONSTER_WIDTH", CATEGORY_ENTITY, Float.class, 50.0f);
+        def = new ConstantDefinition("SEA_TURTLE_WIDTH", CATEGORY_ENTITY, Float.class, 50.0f);
         register(def.getKey(), def);
 
-        def = new ConstantDefinition("MONSTER_HEIGHT", CATEGORY_ENTITY, Float.class, 50.0f);
+        def = new ConstantDefinition("SEA_TURTLE_HEIGHT", CATEGORY_ENTITY, Float.class, 50.0f);
         register(def.getKey(), def);
 
     }
