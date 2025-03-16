@@ -17,11 +17,6 @@ import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class TrashFactory extends AbstractEntityFactory<Trash> {
     private static final GameLogger LOGGER = new GameLogger(TrashFactory.class);
-    private final TextureRegion[] trashTextures;
-    private final java.util.Random random;
-    private IEntityRemovalListener removalListener;
-
-    // Constants for ocean current movement - moved from MovementStrategyFactory
     private static final float BASE_SPEED_MIN = 50f;
     private static final float BASE_SPEED_MAX = 100f;
     private static final float ZIG_SPEED_MIN = 30f;
@@ -30,10 +25,11 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
     private static final float MAX_AMPLITUDE = 15f;
     private static final float MIN_FREQUENCY = 0.2f;
     private static final float MAX_FREQUENCY = 0.5f;
-
-    // Default weights for ocean current movement
-    private static final float DEFAULT_CONSTANT_WEIGHT = 0.9f; // 80% constant directional movement
-    private static final float DEFAULT_ZIGZAG_WEIGHT = 0.1f; // 20% zigzag oscillation
+    private static final float DEFAULT_CONSTANT_WEIGHT = 0.9f;
+    private static final float DEFAULT_ZIGZAG_WEIGHT = 0.1f;
+    private final TextureRegion[] trashTextures;
+    private final java.util.Random random;
+    private IEntityRemovalListener removalListener;
 
     public TrashFactory(
             IGameConstants constants,
