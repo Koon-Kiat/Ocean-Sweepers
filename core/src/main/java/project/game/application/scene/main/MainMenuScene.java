@@ -2,7 +2,9 @@ package project.game.application.scene.main;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -79,6 +81,10 @@ public class MainMenuScene extends Scene {
         sceneUIManager.getStage().setViewport(viewport);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+        Texture titleTexture = new Texture(Gdx.files.internal("gametitle.png"));
+        Image titleImage = new Image(titleTexture);
+
         playButton = new TextButton("PLAY", skin);
         optionsButton = new TextButton("OPTIONS", skin);
 
@@ -118,6 +124,10 @@ public class MainMenuScene extends Scene {
 
         Table table = new Table();
         table.setFillParent(true);
+
+        table.add(titleImage).padBottom(20).padTop(50);
+        table.row();
+
         table.add(playButton).padBottom(10);
         table.row();
         table.add(optionsButton).padBottom(10);
