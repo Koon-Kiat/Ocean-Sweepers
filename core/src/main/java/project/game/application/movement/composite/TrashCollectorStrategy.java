@@ -6,6 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.application.entity.item.Trash;
+import project.game.application.movement.api.StrategyType;
 import project.game.application.movement.strategy.NearestTrashStrategy;
 import project.game.application.movement.strategy.ObstacleAvoidanceStrategy;
 import project.game.common.exception.MovementException;
@@ -111,6 +112,16 @@ public class TrashCollectorStrategy extends AbstractMovementStrategy {
     }
 
     /**
+     * Gets the strategy type for this movement strategy.
+     * 
+     * @return The strategy type enum value
+     */
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.TRASH_COLLECTOR;
+    }
+
+    /**
      * Move the entity using the composite strategy.
      */
     @Override
@@ -152,8 +163,9 @@ public class TrashCollectorStrategy extends AbstractMovementStrategy {
             // Base strategy is at index 0
             if (!strategies.isEmpty()) {
                 // Handle the trash targeting strategy
-                if (compositeStrategy.getBaseStrategy() instanceof NearestTrashStrategy) {
-                    NearestTrashStrategy trashStrategy = (NearestTrashStrategy) compositeStrategy.getBaseStrategy();
+                IMovementStrategy baseStrategy = compositeStrategy.getBaseStrategy();
+                if (baseStrategy.isStrategyType(StrategyType.NEAREST_TRASH)) {
+                    NearestTrashStrategy trashStrategy = (NearestTrashStrategy) baseStrategy;
                     Vector2 trashVelocity = trashStrategy.getVelocityVector(movable);
                     velocity.add(
                             trashVelocity.x * compositeStrategy.getWeight(0),

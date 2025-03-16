@@ -2,6 +2,7 @@ package project.game.engine.entitysystem.movement.strategy;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.movement.api.IMovable;
@@ -37,6 +38,27 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
      */
     @Override
     public abstract void move(IMovable movable, float deltaTime);
+
+    /**
+     * Gets the strategy type for this movement strategy.
+     * 
+     * @return The strategy type enum value
+     */
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.UNKNOWN;
+    }
+
+    /**
+     * Checks if the strategy is of a specified type.
+     * 
+     * @param type The strategy type to check for
+     * @return true if this strategy is of the specified type
+     */
+    @Override
+    public boolean isStrategyType(StrategyType type) {
+        return getStrategyType() == type;
+    }
 
     /**
      * Validates that a target is not null

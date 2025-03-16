@@ -2,6 +2,7 @@ package project.game.application.movement.strategy;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
@@ -32,6 +33,11 @@ public class SpringFollowStrategy extends AbstractMovementStrategy {
         this.damping = validateNonNegative(damping, "Damping", 0.5f);
 
         this.velocity = new Vector2(0, 0);
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.SPRING_FOLLOW;
     }
 
     @Override
