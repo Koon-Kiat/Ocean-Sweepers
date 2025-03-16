@@ -349,8 +349,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
             // Create entities using factory manager
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
-
             boat.setCollisionManager(collisionManager);
 
             // Create rocks and trash
@@ -371,10 +369,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             npcMovementManager = new NPCMovementBuilder()
                     .withEntity(seaTurtleEntity)
                     .setSpeed(constants.NPC_SPEED())
-                    .setInitialVelocity(1, 1)
+                    .setInitialVelocity(1, 0)
                     .withTrashCollector(trashes, rockEntities, customWeights)
                     .setLenientMode(true)
                     .build();
+
+            seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
+            seaTurtle.setCollisionManager(collisionManager);
 
             // Add entities to the entity manager
             entityManager.addRenderableEntity(boat);

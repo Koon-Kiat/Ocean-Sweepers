@@ -24,6 +24,7 @@ import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private static final GameLogger LOGGER = new GameLogger(Main.class);
@@ -34,6 +35,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
+    private CollisionManager collisionManager;
 
     // Threshold to determine if we should consider movement on an axis
     private static final float MOVEMENT_THRESHOLD = 0.01f;
@@ -99,6 +101,10 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
     public NPCMovementManager getMovementManager() {
         return this.movementManager;
+    }
+
+    public void setCollisionManager(CollisionManager collisionManager) {
+        this.collisionManager = collisionManager;
     }
 
     /**
