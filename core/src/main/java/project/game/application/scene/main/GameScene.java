@@ -87,7 +87,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     public static List<Entity> existingEntities;
     private EntityManager entityManager;
     private Boat boat;
-    // private SeaTurtle monster;
+    private SeaTurtle seaTurtle;
     private List<Rock> rocks;
     private List<Trash> trashes;
 
@@ -110,12 +110,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private Texture rockImage;
     private Texture boatSpritesheet;
     private Texture trashImage;
-    // private Texture monsterImage;
+    private Texture monsterImage;
     private TextureRegion[] boatDirectionalSprites;
     private TextureRegion[] rockRegions;
     private Texture[] trashTextures;
     private TextureRegion[] trashRegions;
-    // private TextureRegion monsterRegion;
+    private TextureRegion monsterRegion;
     private Texture backgroundTexture;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
@@ -171,7 +171,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         try {
             // Update movement for all entities
             playerMovementManager.updateMovement();
-            // npcMovementManager.updateMovement();
+            npcMovementManager.updateMovement();
 
             // Make sure collision handling catches up with new positions
             collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(), constants.PIXELS_TO_METERS());
@@ -301,12 +301,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     constants.PLAYER_HEIGHT(),
                     true);
 
-            // Entity monsterEntity = new Entity(
-            //         constants.MONSTER_START_X(),
-            //         constants.MONSTER_START_Y(),
-            //         constants.MONSTER_WIDTH(),
-            //         constants.MONSTER_HEIGHT(),
-            //         true);
+            Entity monsterEntity = new Entity(
+                    constants.SEA_TURTLE_START_X(),
+                    constants.SEA_TURTLE_START_Y(),
+                    constants.SEA_TURTLE_WIDTH(),
+                    constants.SEA_TURTLE_HEIGHT(),
+                    true);
 
             playerMovementManager = new PlayerMovementBuilder()
                     .withEntity(boatEntity)
@@ -338,14 +338,14 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     world,
                     existingEntities,
                     collisionManager,
-                    null,
+                    monsterRegion,
                     rockRegions,
                     trashRegions);
             entityFactoryManager.setTrashRemovalListener(this);
 
             // Create entities using factory manager
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            // monster = new SeaTurtle(monsterEntity, world, npcMovementManager, monsterRegion);
+            seaTurtle = new SeaTurtle(monsterEntity, world, npcMovementManager, monsterRegion);
 
             boat.setCollisionManager(collisionManager);
 
@@ -363,22 +363,22 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 entityManager.addRenderableEntity(trash);
             }
 
-            // Set up NPC movement with obstacle avoidance
-            float[] customWeights = { 0.30f, 0.70f };
-            // npcMovementManager = new NPCMovementBuilder()
-            //         .setSpeed(constants.NPC_SPEED())
-            //         .setInitialVelocity(1, 1)
-            //         .withInterceptorAndObstacleAvoidance(playerMovementManager, rockEntities, customWeights)
-            //         .setLenientMode(true)
-            //         .build();
+            float[] customWeights = { 0.70f, 0.30f };
+            npcMovementManager = new NPCMovementBuilder()
+                    .withEntity(monsterEntity)
+                    .setSpeed(constants.NPC_SPEED())
+                    .setInitialVelocity(1, 1)
+                    .withTrashCollector(trashes, rockEntities, customWeights)
+                    .setLenientMode(true)
+                    .build();
 
             // Add entities to the entity manager
             entityManager.addRenderableEntity(boat);
-            // entityManager.addRenderableEntity(monster);
+            entityManager.addRenderableEntity(seaTurtle);
 
             // Add entities to collision manager
             collisionManager.addEntity(boat, playerMovementManager);
-            // collisionManager.addEntity(monster, npcMovementManager);
+            collisionManager.addEntity(seaTurtle, npcMovementManager);
 
             for (Rock rock : rocks) {
                 collisionManager.addEntity(rock, null);
@@ -441,7 +441,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         assetManager.loadTextureAssets("trash3.png");
         assetManager.loadTextureAssets("steamboat.png");
         assetManager.loadTextureAssets("Rocks.png");
-        // assetManager.loadTextureAssets("monster.png");
+        assetManager.loadTextureAssets("monster.png");
         assetManager.loadTextureAssets("ocean_background.jpg");
         assetManager.update();
         assetManager.loadAndFinish();
@@ -473,8 +473,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
 
         // Load monster texture and create TextureRegion
-        // monsterImage = assetManager.getAsset("monster.png", Texture.class);
-        // monsterRegion = new TextureRegion(monsterImage);
+        monsterImage = assetManager.getAsset("monster.png", Texture.class);
+        monsterRegion = new TextureRegion(monsterImage);
 
         // Load trash textures and create TextureRegions
         trashTextures = new Texture[3];
