@@ -69,6 +69,7 @@ public abstract class Scene implements Screen, IScene {
         sceneUIManager.resize(width, height);
     }
 
+    @Override
     public void resetScene() {
         create();
     }
