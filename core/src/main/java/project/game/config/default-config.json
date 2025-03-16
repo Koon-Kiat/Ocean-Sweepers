@@ -23,7 +23,7 @@
         "MONSTER_WIDTH": 70.0,
         "MONSTER_HEIGHT": 70.0,
         "DEFAULT_SPEED": 600.0,
-        "PLAYER_SPEED": 1000.0,
+        "PLAYER_SPEED": 300.0,
         "NPC_SPEED": 200.0,
         "AMPLITUDE": 100.0,
         "FREQUENCY": 5.0,
