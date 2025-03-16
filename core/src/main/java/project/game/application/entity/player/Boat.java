@@ -360,10 +360,9 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public void collideWith(Object other) {
-        // Handle collision with generic objects
-        if (other instanceof ICollidableVisitor) {
-            onCollision((ICollidableVisitor) other);
-        }
+        // Direct visitor pattern implementation
+        onCollision((ICollidableVisitor) other);
+
     }
 
     @Override

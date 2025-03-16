@@ -112,13 +112,6 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
      */
     protected void handleMovementException(Exception e, String errorMessage) {
         logger.error(errorMessage, e);
-        if (!lenientMode) {
-            if (e instanceof MovementException) {
-                throw (MovementException) e;
-            } else {
-                throw new MovementException(errorMessage, e);
-            }
-        }
     }
 
     /**

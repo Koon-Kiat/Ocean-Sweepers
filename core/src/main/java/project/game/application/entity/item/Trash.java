@@ -87,9 +87,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public void collideWith(Object other) {
-        if (other instanceof ICollidableVisitor) {
-            onCollision((ICollidableVisitor) other);
-        }
+        onCollision((ICollidableVisitor) other);
     }
 
     @Override
