@@ -50,8 +50,10 @@ import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.boundary.WorldBoundaryFactory;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
+import project.game.engine.scene.management.ScoreManager;
 
 public class GameScene extends Scene implements IEntityRemovalListener {
 
@@ -65,6 +67,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private Window popupMenu;
     private Skin skin;
     private OrthographicCamera camera;
+    private HealthManager healthManager;
+    private ScoreManager scoreManager;
 
     // Audio
     private AudioManager audioManager;
@@ -116,6 +120,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
+        this.healthManager = HealthManager.getInstance();
+        this.scoreManager = ScoreManager.getInstance();
+
     }
 
     /**
@@ -140,6 +147,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         sceneUIManager.getStage().addActor(options.getPopupMenu());
         sceneUIManager.getStage().addActor(options.getRebindMenu());
+    }
+
+    public void loseLife() {
+        healthManager.loseLife();
     }
 
     /**
@@ -176,6 +187,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Draw entities
         batch.begin();
         entityManager.draw(batch);
+        batch.end();
+
+        // Draw health and score
+        batch.begin();
+        healthManager.draw(batch);
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
+                sceneUIManager.getStage().getHeight() - 30);
         batch.end();
 
         // Draw stage
@@ -217,6 +235,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Process removal queue to prevent leaks
             LOGGER.warn("Not enough active bodies for physics simulation");
         }
+
+        scoreManager.addScore(10);
+        LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
     @Override
@@ -255,10 +276,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     @Override
     public void create() {
         batch = new SpriteBatch();
-
-        // Initialize Box2D world with gravity vector (0,0) and sleep enabled
         world = new World(new Vector2(0, 0), true);
-
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         inputManager.enableMovementControls();
@@ -367,7 +385,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             }
 
             // Create boundaries
-            WorldBoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 1f,
+            WorldBoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 0.5f,
                     constants.PIXELS_TO_METERS());
 
             // Log world status after initialization
@@ -403,7 +421,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (entity instanceof IRenderable) {
             entityManager.removeRenderableEntity((IRenderable) entity);
         }
-        for (Trash trash: new ArrayList<>(trashes)) {
+        for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
                 break;
@@ -561,6 +579,16 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 inputMultiplexer.addProcessor(inputManager);
                 sceneUIManager.getStage().setKeyboardFocus(null);
                 LOGGER.info("InputProcessor set to inputManager");
+            }
+        }
+
+        if (inputManager.isKeyJustPressed(Input.Keys.NUM_0)) {
+            loseLife();
+            if (healthManager.getLives() == 0) {
+                sceneManager.setScene("gameover");
+                audioManager.stopMusic();
+                audioManager.hideVolumeControls();
+                options.getRebindMenu().setVisible(false);
             }
         }
     }
