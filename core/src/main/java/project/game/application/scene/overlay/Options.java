@@ -2,6 +2,8 @@ package project.game.application.scene.overlay;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -77,6 +79,25 @@ public class Options extends Scene {
         LOGGER.info("Options inputManager instance: {0}", System.identityHashCode(inputManager));
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        BitmapFont customFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
+
+        // Create a custom window style with the new font
+        Window.WindowStyle customWindowStyle = new Window.WindowStyle(
+                skin.get(Window.WindowStyle.class).titleFont,
+                Color.WHITE,
+                skin.get(Window.WindowStyle.class).background);
+
+        // Create a custom button style with the new font
+        TextButton.TextButtonStyle customButtonStyle = new TextButton.TextButtonStyle(
+                skin.get(TextButton.TextButtonStyle.class).up,
+                skin.get(TextButton.TextButtonStyle.class).down,
+                skin.get(TextButton.TextButtonStyle.class).checked,
+                customFont);
+
+        // Create a custom label style with the new font
+        Label.LabelStyle customLabelStyle = new Label.LabelStyle(
+                customFont, Color.WHITE);
+
         popupMenu = new Window("Options", skin);
         popupMenu.setSize(200, 100);
         popupMenu.setPosition(400, 270);
@@ -92,8 +113,11 @@ public class Options extends Scene {
             LOGGER.info("Popup menu touched at ({0}, {1})", new Object[] { x, y });
         });
 
-        TextButton rebindButton = new TextButton("Rebind Keys", skin);
-        mainMenuButton = new TextButton("Main Menu", skin);
+        // Create buttons with custom style
+        TextButton rebindButton = new TextButton("REBIND KEYS", skin);
+        rebindButton.setStyle(customButtonStyle);
+        mainMenuButton = new TextButton("MAIN MENU", skin);
+        mainMenuButton.setStyle(customButtonStyle);
 
         inputManager.addButtonClickListener(rebindButton, () -> {
             LOGGER.info("Rebind keys selected");
@@ -112,9 +136,16 @@ public class Options extends Scene {
         sceneUIManager.getStage().addActor(popupMenu);
 
         // Rebind Menu Creation
-        rebindMenu = new Window("Rebind", skin);
-        rebindMenu.setSize(400, 400);
-        rebindMenu.setPosition(100, 200);
+        rebindMenu = new Window("REBIND", skin);
+        rebindMenu.getTitleLabel().setStyle(customLabelStyle);
+
+        rebindMenu.setSize(600, 400);
+        // Calculate center position based on screen dimensions
+        float centerX = Gdx.graphics.getWidth() / 2f - rebindMenu.getWidth() / 2f;
+        float centerY = Gdx.graphics.getHeight() / 2f - rebindMenu.getHeight() / 2f;
+
+        // Set position to center
+        rebindMenu.setPosition(centerX, centerY);
         rebindMenu.setVisible(false);
 
         // Ensure that the popup menu blocks input to other UI elements
@@ -140,6 +171,20 @@ public class Options extends Scene {
         TextButton rebindButton4 = new TextButton("Right", skin);
         TextButton confirmButton = new TextButton("Confirm", skin);
 
+        // Apply the custom style to all other buttons
+        rebindButton1.setStyle(customButtonStyle);
+        rebindButton2.setStyle(customButtonStyle);
+        rebindButton3.setStyle(customButtonStyle);
+        rebindButton4.setStyle(customButtonStyle);
+        confirmButton.setStyle(customButtonStyle);
+
+        TextField.TextFieldStyle customTextFieldStyle = new TextField.TextFieldStyle(
+                customFont,
+                Color.WHITE,
+                skin.get(TextField.TextFieldStyle.class).cursor,
+                skin.get(TextField.TextFieldStyle.class).selection,
+                skin.get(TextField.TextFieldStyle.class).background);
+
         final TextField textField1 = new TextField("", skin);
         textField1.setAlignment(1);
         textField1.setMessageText("Press a key...");
@@ -155,6 +200,11 @@ public class Options extends Scene {
         final TextField textField4 = new TextField("", skin);
         textField4.setAlignment(1);
         textField4.setMessageText("Press a key...");
+
+        textField1.setStyle(customTextFieldStyle);
+        textField2.setStyle(customTextFieldStyle);
+        textField3.setStyle(customTextFieldStyle);
+        textField4.setStyle(customTextFieldStyle);
 
         InputListener textFieldListener = new InputListener() {
             @Override
@@ -199,22 +249,24 @@ public class Options extends Scene {
 
         Table rebindTable = new Table();
         rebindTable.add(rebindButton1).fillX().pad(5);
-        rebindTable.add(textField1).width(150).pad(5);
+        rebindTable.add(textField1).width(300).pad(5);
         rebindTable.row();
         rebindTable.add(rebindButton2).fillX().pad(5);
-        rebindTable.add(textField2).width(150).pad(5);
+        rebindTable.add(textField2).width(300).pad(5);
         rebindTable.row();
         rebindTable.add(rebindButton3).fillX().pad(5);
-        rebindTable.add(textField3).width(150).pad(5);
+        rebindTable.add(textField3).width(300).pad(5);
         rebindTable.row();
         rebindTable.add(rebindButton4).fillX().pad(5);
-        rebindTable.add(textField4).width(150).pad(5);
+        rebindTable.add(textField4).width(300).pad(5);
         rebindTable.row();
         rebindTable.add(confirmButton).colspan(2).center().pad(5);
 
         Label exitHintLabel = new Label("Hit 'P' again to exit this menu", skin);
         rebindTable.row();
         rebindTable.add(exitHintLabel).colspan(2).center().pad(5);
+        // Apply custom style to exit hint label
+        exitHintLabel.setStyle(customLabelStyle);
         rebindMenu.add(rebindTable);
         sceneUIManager.getStage().addActor(rebindMenu);
     }
