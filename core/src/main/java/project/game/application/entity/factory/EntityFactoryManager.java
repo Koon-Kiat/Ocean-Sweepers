@@ -24,7 +24,7 @@ public class EntityFactoryManager {
             World world,
             List<Entity> existingEntities,
             CollisionManager collisionManager,
-            TextureRegion monsterRegion,
+            TextureRegion[] seaTurtleRegion,
             TextureRegion[] rockRegions,
             TextureRegion[] trashRegions) {
         this.constants = constants;
