@@ -261,7 +261,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             setCurrentSpriteIndex(currentDirectionIndex);
         }
     }
-    }
 
     @Override
     public boolean isRenderable() {
