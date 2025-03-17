@@ -60,6 +60,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
 
     // Menu
+    private final HealthManager healthManager;
+    private final ScoreManager scoreManager;
     private boolean isVolumePopupOpen = false;
     private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
@@ -67,8 +69,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private Window popupMenu;
     private Skin skin;
     private OrthographicCamera camera;
-    private HealthManager healthManager;
-    private ScoreManager scoreManager;
 
     // Audio
     private AudioManager audioManager;
