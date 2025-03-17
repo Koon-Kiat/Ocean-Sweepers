@@ -79,7 +79,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public String getTexturePath() {
-        return "trash1.png"; // Default texture path for fallback
+        return "trash1.png";
     }
 
     public boolean isActive() {
@@ -92,7 +92,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeRenderableEntity(this);;
+        entityManager.removeRenderableEntity(this);
 	}
 
     @Override

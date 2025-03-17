@@ -116,11 +116,10 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public boolean isRenderable() {
-        return true; // or add your logic to determine if the boat is renderable
+        return true;
     }
 
 	public void removeFromManager(EntityManager entityManager) {
-		// entityManager.removeEntity(this.getEntity());
         entityManager.removeRenderableEntity(this);
 	}
 

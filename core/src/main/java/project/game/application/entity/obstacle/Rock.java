@@ -96,7 +96,6 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 		if (entityManager == null) {
 			throw new IllegalArgumentException("EntityManager cannot be null");
 		}
-		// entityManager.removeEntity(this.getEntity());
 		entityManager.removeRenderableEntity(this);
 	}
 
@@ -147,7 +146,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	// ISpriteRenderable implementation
 	@Override
 	public String getTexturePath() {
-		return "Rocks.png"; // Default texture path for fallback
+		return "Rocks.png";
 	}
 
 	@Override

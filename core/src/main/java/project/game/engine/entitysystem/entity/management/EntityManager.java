@@ -67,11 +67,6 @@ public class EntityManager {
 		this.entityIDs = new HashSet<>();
 	}
 
-	// public List<Entity> getEntities() {
-	// 	return entityList;
-	// }
-
-
 	public boolean addRenderableEntity(IRenderable renderable) {
 		renderables.add(renderable);
 
@@ -108,9 +103,9 @@ public class EntityManager {
 
 	public void removeRenderableEntity(IRenderable renderable) {
 		if (renderable == null) {
-            LOGGER.error("Renderable is null");
-            return;
-        }
+			LOGGER.error("Renderable is null");
+			return;
+		}
 		renderables.remove(renderable);
 		Entity entity = extractEntity(renderable);
 		if (entity != null) {
@@ -133,9 +128,9 @@ public class EntityManager {
 
 	public void removeEntity(Entity entity) {
 		if (entity == null) {
-            LOGGER.error("Entity is null");
-            return;
-        }
+			LOGGER.error("Entity is null");
+			return;
+		}
 		LOGGER.info("Removing entity: {0}", entity.getID());
 		entityList.remove(entity);
 		entityIDs.remove(entity.getID());
