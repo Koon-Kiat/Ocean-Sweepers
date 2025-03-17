@@ -209,7 +209,7 @@ public class MovementManager implements IMovementManager {
         float dt = com.badlogic.gdx.Gdx.graphics.getDeltaTime();
         try {
             applyMovementUpdate(dt);
-            LOGGER.info("Movement updated successfully.");
+            // LOGGER.info("Movement updated successfully.");
         } catch (Exception e) {
             LOGGER.fatal("Error updating movement: " + e.getMessage(), e);
             if (!lenientMode) {

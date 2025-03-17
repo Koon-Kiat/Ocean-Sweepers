@@ -396,16 +396,23 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
     }
-
+    
     @Override
     public void onEntityRemove(Entity entity) {
-        existingEntities.remove(entity);
-        if (entity instanceof IRenderable) {
-            entityManager.removeRenderableEntity((IRenderable) entity);
+        if (entity == null || entityManager == null) {
+            LOGGER.error("Entity or EntityManager is null");
+            return;
         }
-        for (Trash trash: new ArrayList<>(trashes)) {
+    
+        LOGGER.info("Removing entity: {0}", entity.getID());
+        existingEntities.remove(entity);
+        entity.removeFromManager(entityManager);
+        LOGGER.info("Entity removed from manager: {0}", entity.getID());
+    
+        for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
+                LOGGER.info("Trash removed: {0}", trash.getEntity().getID());
                 break;
             }
         }

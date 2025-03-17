@@ -22,6 +22,7 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
@@ -110,6 +111,16 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     public Body getBody() {
         return body;
     }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+    public void removeFromManager(EntityManager entityManager) {
+        // entityManager.removeEntity(this.getEntity());
+        entityManager.removeRenderableEntity(this);
+	}
 
     @Override
     public final Body createBody(World world, float x, float y, float width, float height) {

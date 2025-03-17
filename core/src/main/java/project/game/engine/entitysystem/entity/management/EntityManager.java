@@ -67,9 +67,10 @@ public class EntityManager {
 		this.entityIDs = new HashSet<>();
 	}
 
-	public List<Entity> getEntities() {
-		return entityList;
-	}
+	// public List<Entity> getEntities() {
+	// 	return entityList;
+	// }
+
 
 	public boolean addRenderableEntity(IRenderable renderable) {
 		renderables.add(renderable);
@@ -86,14 +87,38 @@ public class EntityManager {
 		return true;
 	}
 
-	public void removeRenderableEntity(IRenderable renderable) {
-		renderables.remove(renderable);
+	private void printRenderableList() {
+		LOGGER.info("Current renderable entities:");
+		for (IRenderable renderable : renderables) {
+			Entity entity = extractEntity(renderable);
+			if (entity != null) {
+				LOGGER.info("Renderable entity ID: {0}", entity.getID());
+			}
+		}
+	}
 
+	private void printEntityList() {
+		LOGGER.info("Current entities:");
+		for (Entity entity : entityList) {
+			if (entity != null) {
+				LOGGER.info("Entity ID: {0}", entity.getID());
+			}
+		}
+	}
+
+	public void removeRenderableEntity(IRenderable renderable) {
+		if (renderable == null) {
+            LOGGER.error("Renderable is null");
+            return;
+        }
+		renderables.remove(renderable);
 		Entity entity = extractEntity(renderable);
 		if (entity != null) {
 			entityIDs.remove(entity.getID());
 			entityList.remove(entity);
+			LOGGER.info("Renderable entity removed: {0", entity.getID());
 		}
+		printRenderableList();
 	}
 
 	public boolean addEntity(Entity entity) {
@@ -107,8 +132,15 @@ public class EntityManager {
 	}
 
 	public void removeEntity(Entity entity) {
+		if (entity == null) {
+            LOGGER.error("Entity is null");
+            return;
+        }
+		LOGGER.info("Removing entity: {0}", entity.getID());
 		entityList.remove(entity);
 		entityIDs.remove(entity.getID());
+		LOGGER.info("Entity removed: {0}", entity.getID());
+		printEntityList();
 	}
 
 	public void draw(SpriteBatch batch) {

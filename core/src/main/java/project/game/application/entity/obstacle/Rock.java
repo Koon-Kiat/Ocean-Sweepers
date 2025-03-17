@@ -20,6 +20,7 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 public class Rock implements ISpriteRenderable, ICollidableVisitor {
@@ -84,6 +85,19 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	@Override
 	public World getWorld() {
 		return world;
+	}
+
+	@Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+	public void removeFromManager(EntityManager entityManager) {
+		if (entityManager == null) {
+			throw new IllegalArgumentException("EntityManager cannot be null");
+		}
+		// entityManager.removeEntity(this.getEntity());
+		entityManager.removeRenderableEntity(this);
 	}
 
 	@Override

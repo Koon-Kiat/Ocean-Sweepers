@@ -20,6 +20,7 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
@@ -128,6 +129,16 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     public void setCollisionManager(CollisionManager collisionManager) {
         this.collisionManager = collisionManager;
     }
+
+    @Override
+    public boolean isRenderable() {
+        return true; // or add your logic to determine if the boat is renderable
+    }
+
+	public void removeFromManager(EntityManager entityManager) {
+		// entityManager.removeEntity(this.getEntity());
+        entityManager.removeRenderableEntity(this);
+	}
 
     /**
      * Set the collision to be active for a certain duration.
