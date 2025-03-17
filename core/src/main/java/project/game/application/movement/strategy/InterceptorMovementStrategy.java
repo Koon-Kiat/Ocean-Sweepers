@@ -2,9 +2,9 @@ package project.game.application.movement.strategy;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
-
 /**
  * Advanced movement strategy that predicts where a moving target will be and
  * attempts to intercept it. Uses vector math to calculate interception points.
@@ -34,6 +34,11 @@ public class InterceptorMovementStrategy extends AbstractMovementStrategy {
         // Correctly initialize with position data, not velocity
         this.lastTargetPos = new Vector2(target.getX(), target.getY());
         this.targetVelocity = new Vector2(0, 0);
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.INTERCEPTOR;
     }
 
     @Override

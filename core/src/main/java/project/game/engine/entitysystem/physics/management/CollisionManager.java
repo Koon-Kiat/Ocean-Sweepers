@@ -44,12 +44,12 @@ public class CollisionManager implements ContactListener {
     private final ICollisionPairHandler collisionPairTracker;
     private final Map<ICollidableVisitor, MovementManager> entityMap;
     private final Map<MovementManager, Boolean> playerControlledMap;
+    private final Queue<PhysicsBodyRemovalRequest> removalQueue = new LinkedList<>();
+    private final Set<Entity> entitiesScheduledForRemoval = new HashSet<>();
     private boolean collided = false;
     private float collisionMovementStrength;
     private float movementThreshold;
     private long defaultCollisionDuration;
-    private Queue<PhysicsBodyRemovalRequest> removalQueue = new LinkedList<>();
-    private Set<Entity> entitiesScheduledForRemoval = new HashSet<>();
 
     public CollisionManager(World world, SceneInputManager inputManager) {
         this.world = world;

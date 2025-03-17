@@ -3,6 +3,7 @@ package project.game.application.movement.composite;
 import java.util.ArrayList;
 import java.util.List;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.application.movement.strategy.InterceptorMovementStrategy;
 import project.game.application.movement.strategy.ObstacleAvoidanceStrategy;
 import project.game.common.exception.MovementException;
@@ -110,6 +111,11 @@ public class InterceptorAvoidanceStrategy extends AbstractMovementStrategy {
      */
     public ObstacleAvoidanceStrategy getAvoidanceStrategy() {
         return avoidanceStrategy;
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.INTERCEPTOR_AVOIDANCE;
     }
 
     @Override

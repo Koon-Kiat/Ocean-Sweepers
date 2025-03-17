@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
@@ -94,6 +95,14 @@ public class ObstacleAvoidanceStrategy extends AbstractMovementStrategy {
      */
     public List<Entity> getObstacles() {
         return obstacles;
+    }
+
+    /**
+     * Gets the strategy type for this movement strategy.
+     */
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.OBSTACLE_AVOIDANCE;
     }
 
     @Override

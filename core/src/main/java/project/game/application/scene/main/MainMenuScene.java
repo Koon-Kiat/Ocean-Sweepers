@@ -1,11 +1,20 @@
 package project.game.application.scene.main;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -78,14 +87,53 @@ public class MainMenuScene extends Scene {
                 camera);
         sceneUIManager.getStage().setViewport(viewport);
 
+        // Load background texture
+        Texture backgroundTexture = new Texture(Gdx.files.internal("mainmenu.jpg"));
+        Image backgroundImage = new Image(backgroundTexture);
+
+        // Make background fill the entire screen
+        backgroundImage.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        backgroundImage.setPosition(0, 0);
+
+        // Add background as the first actor (bottom layer)
+        sceneUIManager.getStage().addActor(backgroundImage);
+
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        playButton = new TextButton("PLAY", skin);
-        optionsButton = new TextButton("OPTIONS", skin);
+        BitmapFont customFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
+
+        Drawable transparentDrawable = createColorDrawable(new Color(0, 0, 0, 0));
+        
+        // Create button style with custom font
+        TextButtonStyle textButtonStyle = new TextButtonStyle(
+                transparentDrawable,
+                transparentDrawable,
+                transparentDrawable,
+                customFont);
+
+        // Set normal text color
+        textButtonStyle.fontColor = Color.WHITE;
+
+        // Set different colors for different button states
+        textButtonStyle.overFontColor = Color.YELLOW; // Color when hovering
+        textButtonStyle.downFontColor = Color.GOLD; // Color when pressed
+
+        Texture titleTexture = new Texture(Gdx.files.internal("gametitle.png"));
+        Image titleImage = new Image(titleTexture);
+
+        // Create buttons with the custom style
+        playButton = new TextButton("PLAY", textButtonStyle);
+        optionsButton = new TextButton("OPTIONS", textButtonStyle);
+
+        // Add padding to the buttons themselves
+        playButton.pad(15); // Sets uniform padding on all sides
+        optionsButton.pad(15);
 
         Options options = new Options(sceneManager, gameScene, inputManager);
         options.create();
         options.setMainMenuButtonVisibility(false);
-        exitButton = new TextButton("EXIT", skin);
+        exitButton = new TextButton("EXIT", textButtonStyle);
+
+        exitButton.pad(15);
 
         audioConfig = new AudioConfig();
         audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), audioConfig);
@@ -118,6 +166,10 @@ public class MainMenuScene extends Scene {
 
         Table table = new Table();
         table.setFillParent(true);
+
+        table.add(titleImage).padBottom(20).padTop(50);
+        table.row();
+
         table.add(playButton).padBottom(10);
         table.row();
         table.add(optionsButton).padBottom(10);
@@ -129,4 +181,15 @@ public class MainMenuScene extends Scene {
         LOGGER.info("Main Menu Scene sceneManager instance: {0}", System.identityHashCode(sceneManager));
 
     }
+
+    // Add this helper method at the bottom of your MainMenuScene class
+    private Drawable createColorDrawable(Color color) {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(color);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return new TextureRegionDrawable(new TextureRegion(texture));
+    }
+
 }

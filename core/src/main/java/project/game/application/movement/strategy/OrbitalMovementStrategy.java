@@ -3,6 +3,7 @@ package project.game.application.movement.strategy;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IPositionable;
@@ -62,6 +63,11 @@ public class OrbitalMovementStrategy extends AbstractMovementStrategy {
         // Clamp eccentricity between 0 and 0.8 (high eccentricity can cause too much
         // orbit variation)
         this.eccentricity = MathUtils.clamp(eccentricity, 0, 0.8f);
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.ORBITAL;
     }
 
     @Override

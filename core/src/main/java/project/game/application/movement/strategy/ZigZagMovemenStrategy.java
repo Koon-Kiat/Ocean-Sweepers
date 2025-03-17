@@ -3,6 +3,7 @@ package project.game.application.movement.strategy;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
 
@@ -42,6 +43,11 @@ public class ZigZagMovemenStrategy extends AbstractMovementStrategy {
         // Initialize random wave phase offset and secondary wave amplitude
         this.wavePhase = MathUtils.random(0f, MathUtils.PI2);
         this.waveAmplitude = amplitude * 0.3f; // Secondary wave is 30% of primary amplitude
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.ZIGZAG;
     }
 
     @Override

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.badlogic.gdx.math.MathUtils;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.application.movement.strategy.ConstantMovementStrategy;
 import project.game.application.movement.strategy.ZigZagMovemenStrategy;
 import project.game.common.exception.MovementException;
@@ -121,6 +122,11 @@ public class OceanCurrentStrategy extends AbstractMovementStrategy {
             }
             throw new MovementException("Failed to create RandomizedOceanCurrentMovement", e);
         }
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.OCEAN_CURRENT;
     }
 
     @Override
