@@ -20,6 +20,7 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
@@ -37,10 +38,13 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     // Player movement manager
     private final PlayerMovementManager movementManager;
 
-    // Collision state
+    // Collision
+    private final World world;
+    private final Body body;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private ICollidableVisitor currentCollisionEntity;
+    private CollisionManager collisionManager;
 
     // Direction constants - used as indices in directional sprite arrays
     public static final int DIRECTION_UP = 0;
@@ -58,16 +62,12 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     // Sprite rendering fields
     private TextureRegion[] sprites;
     private String texturePath;
-    private final Entity entity;
-    private final World world;
-    private final Body body;
 
-    // New field for collision manager
-    private CollisionManager collisionManager;
+    // Entity reference
+    private final Entity entity;
 
     static {
-        // Register collision handlers for different entity types using lambda
-        // expressions
+
         registerCollisionHandler(Rock.class, boat -> boat.handleRockCollision());
         registerCollisionHandler(Trash.class, boat -> boat.handleTrashCollision());
     }
@@ -110,24 +110,18 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         return this.movementManager;
     }
 
-    @Override
-    public Entity getEntity() {
-        return entity;
-    }
-
-    @Override
-    public World getWorld() {
-        return world;
-    }
-
-    @Override
-    public String getTexturePath() {
-        return texturePath;
-    }
-
     public void setCollisionManager(CollisionManager collisionManager) {
         this.collisionManager = collisionManager;
     }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+	public void removeFromManager(EntityManager entityManager) {
+        entityManager.removeRenderableEntity(this);
+	}
 
     /**
      * Set the collision to be active for a certain duration.
@@ -150,7 +144,58 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    // ISpriteRenderable implementation methods
+    /**
+     * Checks if this entity should be considered permanent in the game world
+     */
+    public static boolean isEntityPermanent(String entityType) {
+        return entityType.equals("Boat") ||
+                entityType.equals("Monster") ||
+                entityType.equals("boundary");
+    }
+
+    public String getCurrentDirectionName() {
+        switch (currentDirectionIndex) {
+            case DIRECTION_UP:
+                return "UP";
+            case DIRECTION_RIGHT:
+                return "RIGHT";
+            case DIRECTION_DOWN:
+                return "DOWN";
+            case DIRECTION_LEFT:
+                return "LEFT";
+            case DIRECTION_UP_RIGHT:
+                return "UP_RIGHT";
+            case DIRECTION_DOWN_RIGHT:
+                return "DOWN_RIGHT";
+            case DIRECTION_DOWN_LEFT:
+                return "DOWN_LEFT";
+            case DIRECTION_UP_LEFT:
+                return "UP_LEFT";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
+    @Override
+    public Entity getEntity() {
+        return entity;
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
+    }
+
+    @Override
+    public Body getBody() {
+        return body;
+    }
+
+    @Override
+    public String getTexturePath() {
+        return texturePath;
+    }
+
     @Override
     public TextureRegion getCurrentSprite() {
         if (!hasSprites()) {
@@ -182,11 +227,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
-    public Body getBody() {
-        return body;
-    }
-
-    @Override
     public void render(SpriteBatch batch) {
         // Update sprite direction before rendering
         updateSpriteIndex();
@@ -200,10 +240,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    /**
-     * Updates the current sprite index based on movement direction.
-     * Uses vector angles to determine the most appropriate sprite direction.
-     */
     @Override
     public void updateSpriteIndex() {
         // Skip updating if no movement manager or sprites
@@ -259,63 +295,8 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    /**
-     * Maps an 8-directional index to a 4-directional index for sprite display
-     * 
-     * @param eightDirIndex The 8-directional index (0-7)
-     * @return The 4-directional index (0-3)
-     */
-    private int mapTo4DirectionalIndex(int eightDirIndex) {
-        switch (eightDirIndex) {
-            case DIRECTION_UP:
-                return DIRECTION_UP; // UP
-            case DIRECTION_RIGHT:
-                return DIRECTION_RIGHT; // RIGHT
-            case DIRECTION_DOWN:
-                return DIRECTION_DOWN; // DOWN
-            case DIRECTION_LEFT:
-                return DIRECTION_LEFT; // LEFT
-            case DIRECTION_UP_RIGHT:
-                return DIRECTION_RIGHT; // UP_RIGHT maps to RIGHT
-            case DIRECTION_DOWN_RIGHT:
-                return DIRECTION_RIGHT; // DOWN_RIGHT maps to RIGHT
-            case DIRECTION_DOWN_LEFT:
-                return DIRECTION_LEFT; // DOWN_LEFT maps to LEFT
-            case DIRECTION_UP_LEFT:
-                return DIRECTION_LEFT; // UP_LEFT maps to LEFT
-            default:
-                return DIRECTION_DOWN; // Default to DOWN
-        }
-    }
-
-    /**
-     * Get the current direction as a descriptive string (for debugging)
-     */
-    public String getCurrentDirectionName() {
-        switch (currentDirectionIndex) {
-            case DIRECTION_UP:
-                return "UP";
-            case DIRECTION_RIGHT:
-                return "RIGHT";
-            case DIRECTION_DOWN:
-                return "DOWN";
-            case DIRECTION_LEFT:
-                return "LEFT";
-            case DIRECTION_UP_RIGHT:
-                return "UP_RIGHT";
-            case DIRECTION_DOWN_RIGHT:
-                return "DOWN_RIGHT";
-            case DIRECTION_DOWN_LEFT:
-                return "DOWN_LEFT";
-            case DIRECTION_UP_LEFT:
-                return "UP_LEFT";
-            default:
-                return "UNKNOWN";
-        }
-    }
-
     @Override
-    public Body createBody(World world, float x, float y, float width, float height) {
+    public final Body createBody(World world, float x, float y, float width, float height) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
@@ -389,25 +370,15 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public void collideWith(Object other) {
-        // Handle collision with generic objects
-        if (other instanceof ICollidableVisitor) {
-            onCollision((ICollidableVisitor) other);
-        }
+        // Direct visitor pattern implementation
+        onCollision((ICollidableVisitor) other);
+
     }
 
     @Override
     public void collideWithBoundary() {
         // Handle collision with world boundaries
         setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-    }
-
-    /**
-     * Checks if this entity should be considered permanent in the game world
-     */
-    public static boolean isEntityPermanent(String entityType) {
-        return entityType.equals("Boat") ||
-                entityType.equals("Monster") ||
-                entityType.equals("boundary");
     }
 
     /**
@@ -471,6 +442,35 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             } else {
                 LOGGER.warn("CollisionManager not set in Boat object - cannot safely remove trash");
             }
+        }
+    }
+
+    /**
+     * Maps an 8-directional index to a 4-directional index for sprite display
+     * 
+     * @param eightDirIndex The 8-directional index (0-7)
+     * @return The 4-directional index (0-3)
+     */
+    private int mapTo4DirectionalIndex(int eightDirIndex) {
+        switch (eightDirIndex) {
+            case DIRECTION_UP:
+                return DIRECTION_UP; // UP
+            case DIRECTION_RIGHT:
+                return DIRECTION_RIGHT; // RIGHT
+            case DIRECTION_DOWN:
+                return DIRECTION_DOWN; // DOWN
+            case DIRECTION_LEFT:
+                return DIRECTION_LEFT; // LEFT
+            case DIRECTION_UP_RIGHT:
+                return DIRECTION_RIGHT; // UP_RIGHT maps to RIGHT
+            case DIRECTION_DOWN_RIGHT:
+                return DIRECTION_RIGHT; // DOWN_RIGHT maps to RIGHT
+            case DIRECTION_DOWN_LEFT:
+                return DIRECTION_LEFT; // DOWN_LEFT maps to LEFT
+            case DIRECTION_UP_LEFT:
+                return DIRECTION_LEFT; // UP_LEFT maps to LEFT
+            default:
+                return DIRECTION_DOWN; // Default to DOWN
         }
     }
 }

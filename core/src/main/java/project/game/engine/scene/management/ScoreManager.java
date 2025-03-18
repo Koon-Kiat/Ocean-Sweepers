@@ -3,9 +3,10 @@ package project.game.engine.scene.management;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
 public class ScoreManager {
+    
     private static ScoreManager scoreInstance;
     private int score;
-    private Label scoreLabel; // Store the score Label
+    private Label scoreLabel; 
 
     public ScoreManager() {
         score = 0;
@@ -33,13 +34,6 @@ public class ScoreManager {
     public void resetScore() {
         score = 0;
     }
-
-    // public void updateScore(int value) {
-    //     score += value;
-    //     if (scoreLabel != null) {
-    //         scoreLabel.setText("Score: " + score);
-    //     }
-    // }
 
     public int getScore() {
         return score;

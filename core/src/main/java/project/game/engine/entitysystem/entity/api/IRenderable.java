@@ -11,5 +11,7 @@ public interface IRenderable {
 
 	String getTexturePath();
 
+	public boolean isRenderable();
+
 	void render(SpriteBatch batch);
 }

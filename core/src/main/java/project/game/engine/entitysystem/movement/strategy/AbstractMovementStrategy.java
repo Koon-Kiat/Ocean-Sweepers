@@ -2,6 +2,7 @@ package project.game.engine.entitysystem.movement.strategy;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.movement.api.IMovable;
@@ -25,6 +26,8 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
     protected AbstractMovementStrategy(Class<?> clazz, boolean lenientMode) {
         this.logger = new GameLogger(clazz);
         this.lenientMode = lenientMode;
+        logger.info("MOVEMENT BASE INSTANTIATED: {0} created with lenient={1}",
+                clazz.getSimpleName(), lenientMode);
     }
 
     /**
@@ -35,6 +38,27 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
      */
     @Override
     public abstract void move(IMovable movable, float deltaTime);
+
+    /**
+     * Gets the strategy type for this movement strategy.
+     * 
+     * @return The strategy type enum value
+     */
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.UNKNOWN;
+    }
+
+    /**
+     * Checks if the strategy is of a specified type.
+     * 
+     * @param type The strategy type to check for
+     * @return true if this strategy is of the specified type
+     */
+    @Override
+    public boolean isStrategyType(StrategyType type) {
+        return getStrategyType() == type;
+    }
 
     /**
      * Validates that a target is not null
@@ -110,13 +134,6 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
      */
     protected void handleMovementException(Exception e, String errorMessage) {
         logger.error(errorMessage, e);
-        if (!lenientMode) {
-            if (e instanceof MovementException) {
-                throw (MovementException) e;
-            } else {
-                throw new MovementException(errorMessage, e);
-            }
-        }
     }
 
     /**
@@ -201,5 +218,12 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
             }
         }
         return new float[] { validMin, validMax };
+    }
+
+    protected void logFirstMovement(IMovable movable, boolean isFirst) {
+        if (isFirst) {
+            logger.info("MOVEMENT BASE STARTED: {0} first movement applied to entity at ({1},{2})",
+                    this.getClass().getSimpleName(), movable.getX(), movable.getY());
+        }
     }
 }

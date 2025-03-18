@@ -14,12 +14,13 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
-import project.game.application.entity.npc.Monster;
+import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 public class Rock implements ISpriteRenderable, ICollidableVisitor {
@@ -39,7 +40,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	static {
 		// Register collision handlers for different entity types
 		registerRockCollisionHandler(Boat.class, Rock::handleBoatCollision);
-		registerRockCollisionHandler(Monster.class, Rock::handleMonsterCollision);
+		registerRockCollisionHandler(SeaTurtle.class, Rock::handleMonsterCollision);
 	}
 
 	/**
@@ -87,10 +88,20 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	}
 
 	@Override
-	public void collideWith(Object other) {
-		if (other instanceof ICollidableVisitor) {
-			onCollision((ICollidableVisitor) other);
+    public boolean isRenderable() {
+        return true;
+    }
+
+	public void removeFromManager(EntityManager entityManager) {
+		if (entityManager == null) {
+			throw new IllegalArgumentException("EntityManager cannot be null");
 		}
+		entityManager.removeRenderableEntity(this);
+	}
+
+	@Override
+	public void collideWith(Object other) {
+		onCollision((ICollidableVisitor) other);
 	}
 
 	@Override
@@ -135,7 +146,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	// ISpriteRenderable implementation
 	@Override
 	public String getTexturePath() {
-		return "Rocks.png"; // Default texture path for fallback
+		return "Rocks.png";
 	}
 
 	@Override

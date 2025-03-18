@@ -22,32 +22,51 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.management.CollisionManager;
 
-public class Monster implements ISpriteRenderable, ICollidableVisitor {
+public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private static final GameLogger LOGGER = new GameLogger(Main.class);
 
     private final NPCMovementManager movementManager;
-    private TextureRegion[] sprites; // Removed final
+    private TextureRegion[] sprites;
     private int currentSpriteIndex;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
+    private CollisionManager collisionManager;
+
+    // Threshold to determine if we should consider movement on an axis
+    private static final float MOVEMENT_THRESHOLD = 0.01f;
+
+    // Direction constants - used as indices in directional sprite arrays
+    public static final int DIRECTION_UP = 0;
+    public static final int DIRECTION_RIGHT = 1;
+    public static final int DIRECTION_DOWN = 2;
+    public static final int DIRECTION_LEFT = 3;
+    public static final int DIRECTION_UP_RIGHT = 4;
+    public static final int DIRECTION_DOWN_RIGHT = 5;
+    public static final int DIRECTION_DOWN_LEFT = 6;
+    public static final int DIRECTION_UP_LEFT = 7;
 
     // Type-based collision handler registry
     private final Entity entity;
     private final World world;
     private final Body body;
 
+    private String texturePath;
+    private int currentDirectionIndex;
+
     // Type-based collision handler registry
-    private static final Map<Class<?>, BiConsumer<Monster, ICollidableVisitor>> MONSTER_COLLISION_HANDLERS = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> SEA_TURTLE_COLLISION_HANDLERS = new ConcurrentHashMap<>();
 
     static {
         // Register collision handlers for specific entity types
-        registerMonsterCollisionHandler(Boat.class, Monster::handleBoatCollision);
-        registerMonsterCollisionHandler(Rock.class, Monster::handleRockCollision);
-        registerMonsterCollisionHandler(Trash.class, (monster, trash) -> {
+        registerSeaTurtleCollisionHandler(Boat.class, SeaTurtle::handleBoatCollision);
+        registerSeaTurtleCollisionHandler(Rock.class, SeaTurtle::handleRockCollision);
+        registerSeaTurtleCollisionHandler(Trash.class, (seaTurtle, trash) -> {
             /* Ignore trash collisions */});
     }
 
@@ -58,22 +77,35 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
      * @param clazz   Class of collidable
      * @param handler Function to handle collision with the collidable
      */
-    public static <T extends ICollidableVisitor> void registerMonsterCollisionHandler(
-            Class<T> clazz, BiConsumer<Monster, ICollidableVisitor> handler) {
-        MONSTER_COLLISION_HANDLERS.put(clazz, handler);
+    public static <T extends ICollidableVisitor> void registerSeaTurtleCollisionHandler(
+            Class<T> clazz, BiConsumer<SeaTurtle, ICollidableVisitor> handler) {
+        SEA_TURTLE_COLLISION_HANDLERS.put(clazz, handler);
     }
 
-    public Monster(Entity entity, World world, NPCMovementManager movementManager, TextureRegion sprite) {
+    public SeaTurtle(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
         this.entity = entity;
         this.world = world;
         this.movementManager = movementManager;
-        this.sprites = new TextureRegion[] { sprite };
+        this.texturePath = texturePath;
+        this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
+    }
+
+    public SeaTurtle(Entity entity, World world, NPCMovementManager movementManager,
+            TextureRegion[] directionalSprites) {
+        this.entity = entity;
+        this.world = world;
+        this.movementManager = movementManager;
+        this.sprites = directionalSprites;
         this.currentSpriteIndex = 0;
         this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
     }
 
     public NPCMovementManager getMovementManager() {
         return this.movementManager;
+    }
+
+    public void setCollisionManager(CollisionManager collisionManager) {
+        this.collisionManager = collisionManager;
     }
 
     /**
@@ -97,8 +129,27 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
         getBody().setLinearDamping(3.0f);
     }
 
-    public boolean isActive() {
-        return entity.isActive();
+    public String getCurrentDirectionName() {
+        switch (currentDirectionIndex) {
+            case DIRECTION_UP:
+                return "UP";
+            case DIRECTION_RIGHT:
+                return "RIGHT";
+            case DIRECTION_DOWN:
+                return "DOWN";
+            case DIRECTION_LEFT:
+                return "LEFT";
+            case DIRECTION_UP_RIGHT:
+                return "UP_RIGHT";
+            case DIRECTION_DOWN_RIGHT:
+                return "DOWN_RIGHT";
+            case DIRECTION_DOWN_LEFT:
+                return "DOWN_LEFT";
+            case DIRECTION_UP_LEFT:
+                return "UP_LEFT";
+            default:
+                return "UNKNOWN";
+        }
     }
 
     @Override
@@ -107,9 +158,118 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
+    public World getWorld() {
+        return world;
+    }
+
+    @Override
     public Body getBody() {
         return body;
     }
+
+    @Override
+    public String getTexturePath() {
+        return texturePath;
+    }
+
+    public boolean isActive() {
+        return entity.isActive();
+    }
+
+    @Override
+    public TextureRegion getCurrentSprite() {
+        if (!hasSprites()) {
+            return null;
+        }
+        return sprites[currentSpriteIndex];
+    }
+
+    @Override
+    public void setSprites(TextureRegion[] sprites) {
+        this.sprites = sprites;
+    }
+
+    @Override
+    public void setCurrentSpriteIndex(int index) {
+        if (hasSprites() && index >= 0 && index < sprites.length) {
+            this.currentSpriteIndex = index;
+        }
+    }
+
+    @Override
+    public boolean hasSprites() {
+        return sprites != null && sprites.length > 0;
+    }
+
+    @Override
+    public int getSpritesCount() {
+        return hasSprites() ? sprites.length : 0;
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        updateSpriteIndex();
+
+        if (getCurrentSprite() != null) {
+            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
+            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+            float width = entity.getWidth();
+            float height = entity.getHeight();
+            batch.draw(getCurrentSprite(), renderX, renderY, width, height);
+        }
+    }
+
+    /**
+     * Updates the current sprite index based on entity state
+     * This method determines which sprite to display based on movement direction
+     */
+    @Override
+    public void updateSpriteIndex() {
+        // Skip updating if no movement manager or sprites
+        if (movementManager == null || !hasSprites()) {
+            return;
+        }
+
+        // Get velocity from movement manager
+        Vector2 velocity = movementManager.getVelocity();
+
+        // Only update direction if actually moving
+        if (Math.abs(velocity.x) > MOVEMENT_THRESHOLD || Math.abs(velocity.y) > MOVEMENT_THRESHOLD) {
+            // Calculate angle in degrees (0° is right, 90° is up)
+            float angle = (float) Math.toDegrees(Math.atan2(velocity.y, velocity.x));
+            if (angle < 0)
+                angle += 360; // Convert to 0-360 range
+
+            // Determine direction based on angle - using 4 directions only for sea turtle
+            if (angle >= 45 && angle < 135) {
+                currentDirectionIndex = DIRECTION_UP;
+            } else if (angle >= 135 && angle < 225) {
+                currentDirectionIndex = DIRECTION_LEFT;
+            } else if (angle >= 225 && angle < 315) {
+                currentDirectionIndex = DIRECTION_DOWN;
+            } else { // angle >= 315 || angle < 45
+                currentDirectionIndex = DIRECTION_RIGHT;
+            }
+
+            LOGGER.debug("SeaTurtle moving at angle: {0}, direction: {1}",
+                    angle, getCurrentDirectionName());
+        }
+
+        // Since we're using a 2x2 sprite sheet (4 sprites total),
+        // make sure we're within bounds
+        if (hasSprites() && currentDirectionIndex >= 0 && currentDirectionIndex < getSpritesCount()) {
+            setCurrentSpriteIndex(currentDirectionIndex);
+        }
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+    public void removeFromManager(EntityManager entityManager) {
+        entityManager.removeRenderableEntity(this);
+	}
 
     @Override
     public final Body createBody(World world, float x, float y, float width, float height) {
@@ -149,19 +309,13 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
-    public boolean isInCollision() {
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-            collisionActive = false;
-            // Reset damping when collision ends
-            getBody().setLinearDamping(0.2f);
-            // Clear any lingering velocity when exiting collision state
-            getBody().setLinearVelocity(0, 0);
-        }
-        return collisionActive;
+    public boolean checkCollision(Entity other) {
+        // Always use Box2D for collision detection
+        return true;
     }
 
     /**
-     * Handle monster collisions with other entities
+     * Handle sea turtle collisions with other entities
      */
     @Override
     public void onCollision(ICollidableVisitor other) {
@@ -179,6 +333,28 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
 
             dispatchCollisionHandling(other);
         }
+    }
+
+    @Override
+    public boolean isInCollision() {
+        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+            collisionActive = false;
+            // Reset damping when collision ends
+            getBody().setLinearDamping(0.2f);
+            // Clear any lingering velocity when exiting collision state
+            getBody().setLinearVelocity(0, 0);
+        }
+        return collisionActive;
+    }
+
+    @Override
+    public void collideWith(Object other) {
+        onCollision((ICollidableVisitor) other);
+    }
+
+    @Override
+    public void collideWithBoundary() {
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
     }
 
     /**
@@ -206,7 +382,7 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
         Class<?> otherClass = other.getClass();
 
         // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<Monster, ICollidableVisitor>> entry : MONSTER_COLLISION_HANDLERS
+        for (Map.Entry<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> entry : SEA_TURTLE_COLLISION_HANDLERS
                 .entrySet()) {
             if (entry.getKey().isAssignableFrom(otherClass)) {
                 entry.getValue().accept(this, other);
@@ -219,13 +395,13 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
      * Handle collision with a boat
      */
     private void handleBoatCollision(ICollidableVisitor boat) {
-        float monsterX = getEntity().getX();
-        float monsterY = getEntity().getY();
+        float seaTurtleX = getEntity().getX();
+        float seaTurtleY = getEntity().getY();
         float boatX = boat.getEntity().getX();
         float boatY = boat.getEntity().getY();
 
-        float dx = monsterX - boatX;
-        float dy = monsterY - boatY;
+        float dx = seaTurtleX - boatX;
+        float dy = seaTurtleY - boatY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
@@ -233,16 +409,16 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
             dx /= distance;
             dy /= distance;
 
-            // Reverse the direction to push the boat AWAY from monster
+            // Reverse the direction to push the boat AWAY from sea turtle
             dx = -dx;
             dy = -dy;
 
             // Apply scaled impulse force with improved physics
-            float baseImpulse = GameConstantsFactory.getConstants().MONSTER_BASE_IMPULSE();
-            Vector2 monsterVel = getBody().getLinearVelocity();
+            float baseImpulse = GameConstantsFactory.getConstants().SEA_TURTLE_BASE_IMPULSE();
+            Vector2 seaTurtleVel = getBody().getLinearVelocity();
 
             // Add velocity component to the impulse
-            float velMagnitude = (float) Math.sqrt(monsterVel.x * monsterVel.x + monsterVel.y * monsterVel.y);
+            float velMagnitude = (float) Math.sqrt(seaTurtleVel.x * seaTurtleVel.x + seaTurtleVel.y * seaTurtleVel.y);
             float impactMultiplier = Math.min(0.5f + velMagnitude * 0.01f, 2.0f);
 
             // Apply impulse to push the boat away
@@ -271,13 +447,13 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
      * Handle collision with a rock
      */
     private void handleRockCollision(ICollidableVisitor rock) {
-        float monsterX = getEntity().getX();
-        float monsterY = getEntity().getY();
+        float seaTurtleX = getEntity().getX();
+        float seaTurtleY = getEntity().getY();
         float rockX = rock.getEntity().getX();
         float rockY = rock.getEntity().getY();
 
-        float dx = monsterX - rockX; // Reversed direction (rock pushing monster)
-        float dy = monsterY - rockY;
+        float dx = seaTurtleX - rockX; // Reversed direction (rock pushing sea turtle)
+        float dy = seaTurtleY - rockY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
@@ -285,7 +461,7 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
             dx /= distance;
             dy /= distance;
 
-            // Apply impulse to monster (being pushed by rock)
+            // Apply impulse to sea turtle (being pushed by rock)
             float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE();
             getBody().applyLinearImpulse(
                     dx * rockImpulse,
@@ -297,93 +473,5 @@ public class Monster implements ISpriteRenderable, ICollidableVisitor {
             // Reduce damping to allow movement
             getBody().setLinearDamping(0.5f);
         }
-    }
-
-    @Override
-    public TextureRegion getCurrentSprite() {
-        if (!hasSprites()) {
-            return null;
-        }
-        return sprites[currentSpriteIndex];
-    }
-
-    @Override
-    public void updateSpriteIndex() {
-        // Monster currently uses a single sprite, but could be extended for animations
-    }
-
-    @Override
-    public void setSprites(TextureRegion[] sprites) {
-        this.sprites = sprites;
-    }
-
-    @Override
-    public void setCurrentSpriteIndex(int index) {
-        if (hasSprites() && index >= 0 && index < sprites.length) {
-            this.currentSpriteIndex = index;
-        }
-    }
-
-    @Override
-    public boolean hasSprites() {
-        return sprites != null && sprites.length > 0;
-    }
-
-    @Override
-    public int getSpritesCount() {
-        return hasSprites() ? sprites.length : 0;
-    }
-
-    @Override
-    public void render(SpriteBatch batch) {
-        if (isActive() && getCurrentSprite() != null) {
-            float renderX = entityX() - entityWidth() / 2;
-            float renderY = entityY() - entityHeight() / 2;
-            batch.draw(getCurrentSprite(), renderX, renderY, entityWidth(), entityHeight());
-        }
-    }
-
-    private float entityX() {
-        return entity.getX();
-    }
-
-    private float entityY() {
-        return entity.getY();
-    }
-
-    private float entityWidth() {
-        return entity.getWidth();
-    }
-
-    private float entityHeight() {
-        return entity.getHeight();
-    }
-
-    @Override
-    public String getTexturePath() {
-        return "monster.png"; // Default texture path for fallback
-    }
-
-    @Override
-    public World getWorld() {
-        return world;
-    }
-
-    @Override
-    public void collideWith(Object other) {
-        if (other instanceof ICollidableVisitor) {
-            onCollision((ICollidableVisitor) other);
-        }
-    }
-
-    @Override
-    public void collideWithBoundary() {
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-    }
-
-    @Override
-    public boolean checkCollision(Entity other) {
-        // Always use Box2D for collision detection
-        return true;
     }
 }

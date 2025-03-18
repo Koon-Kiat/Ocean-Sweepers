@@ -13,12 +13,16 @@ import com.badlogic.gdx.utils.Align;
 import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.api.IScene;
 import project.game.engine.scene.management.HealthManager;
+import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
+import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.ScoreManager;
 
 public class GameOverScene extends Scene {
 
+    private final HealthManager healthManager;
+    private final ScoreManager scoreManager;
     private SpriteBatch batch;
     private BitmapFont font;
     private HealthManager healthManager;
@@ -44,6 +48,8 @@ public class GameOverScene extends Scene {
         batch.begin();
         font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
                 false);
+        font.draw(batch, "Score: " + scoreManager.getScore(), Gdx.graphics.getWidth() / 2f,
+                Gdx.graphics.getHeight() - 130, 0, Align.center, false);
         batch.end();
         sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
         sceneUIManager.getStage().draw();
@@ -72,9 +78,6 @@ public class GameOverScene extends Scene {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        //scoreManager = ScoreManager.getInstance();
-        //healthManager = new HealthManager();
-
         // Font for Game Over text
         font = new BitmapFont();
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));

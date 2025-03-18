@@ -3,6 +3,7 @@ package project.game.application.movement.strategy;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
 
@@ -20,6 +21,11 @@ public class ZigZagMovemenStrategy extends AbstractMovementStrategy {
     private final float frequency;
     private float elapsedTime;
 
+    // Enhanced parameters for realistic water movement
+    private final float driftFactor = 1.5f; // Increases the overall drift distance
+    private float wavePhase = 0f; // Used for more natural wave-like motion
+    private float waveAmplitude = 0f; // Additional amplitude for secondary waves
+
     public ZigZagMovemenStrategy(float speed, float amplitude, float frequency, boolean lenientMode) {
         super(ZigZagMovemenStrategy.class, lenientMode);
 
@@ -33,6 +39,15 @@ public class ZigZagMovemenStrategy extends AbstractMovementStrategy {
         this.frequency = validateNonNegative(frequency, "Frequency", 1.0f);
 
         this.elapsedTime = 0f;
+
+        // Initialize random wave phase offset and secondary wave amplitude
+        this.wavePhase = MathUtils.random(0f, MathUtils.PI2);
+        this.waveAmplitude = amplitude * 0.3f; // Secondary wave is 30% of primary amplitude
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.ZIGZAG;
     }
 
     @Override
@@ -54,12 +69,20 @@ public class ZigZagMovemenStrategy extends AbstractMovementStrategy {
             // Calculate perpendicular vector (rotate 90 degrees)
             Vector2 perpVector = new Vector2(-primaryDirection.y, primaryDirection.x);
 
-            // Forward movement
-            Vector2 movementDelta = new Vector2(primaryDirection).scl(speed * deltaTime);
+            // Forward movement with drift factor applied
+            Vector2 movementDelta = new Vector2(primaryDirection).scl(speed * deltaTime * driftFactor);
 
-            // Add zigzag oscillation
-            float oscillation = amplitude * MathUtils.sin(frequency * elapsedTime);
-            movementDelta.add(new Vector2(perpVector).scl(oscillation * deltaTime));
+            // Primary zigzag oscillation
+            float primaryOscillation = amplitude * MathUtils.sin(frequency * elapsedTime);
+
+            // Secondary zigzag oscillation with different phase for more natural motion
+            float secondaryOscillation = waveAmplitude * MathUtils.sin(frequency * 1.7f * elapsedTime + wavePhase);
+
+            // Combined oscillation
+            float totalOscillation = (primaryOscillation + secondaryOscillation) * deltaTime;
+
+            // Add zigzag oscillation to movement
+            movementDelta.add(new Vector2(perpVector).scl(totalOscillation));
 
             // Apply movement
             applyMovement(movable, movementDelta);

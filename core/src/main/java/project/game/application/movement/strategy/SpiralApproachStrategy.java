@@ -3,6 +3,7 @@ package project.game.application.movement.strategy;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
@@ -33,6 +34,11 @@ public class SpiralApproachStrategy extends AbstractMovementStrategy {
         // Validate and set spiral parameters
         this.spiralTightness = Math.max(0.1f, spiralTightness);
         this.approachSpeed = Math.max(0.1f, approachSpeed);
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.SPIRAL_APPROACH;
     }
 
     @Override

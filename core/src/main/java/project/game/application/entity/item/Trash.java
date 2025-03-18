@@ -19,21 +19,22 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     private static final GameLogger LOGGER = new GameLogger(Trash.class);
-    private TextureRegion[] sprites; // Removed final as it needs to be mutable
+    private final Entity entity;
+    private final World world;
+    private final Body body;
+    private TextureRegion[] sprites;
     private int currentSpriteIndex;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private IEntityRemovalListener removalListener;
     private CollisionManager collisionManager;
-    private final Entity entity;
-    private final World world;
-    private final Body body;
 
     // Type-based collision handler registry
     private static final Map<Class<?>, BiConsumer<Trash, ICollidableVisitor>> TRASH_COLLISION_HANDLERS = new ConcurrentHashMap<>();
@@ -78,7 +79,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public String getTexturePath() {
-        return "trash1.png"; // Default texture path for fallback
+        return "trash1.png";
     }
 
     public boolean isActive() {
@@ -86,10 +87,17 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+    public void removeFromManager(EntityManager entityManager) {
+        entityManager.removeRenderableEntity(this);
+	}
+
+    @Override
     public void collideWith(Object other) {
-        if (other instanceof ICollidableVisitor) {
-            onCollision((ICollidableVisitor) other);
-        }
+        onCollision((ICollidableVisitor) other);
     }
 
     @Override
@@ -179,9 +187,9 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     @Override
     public void render(SpriteBatch batch) {
         if (isActive() && getCurrentSprite() != null) {
-            float renderX = entityX() - entityWidth() / 2;
-            float renderY = entityY() - entityHeight() / 2;
-            batch.draw(getCurrentSprite(), renderX, renderY, entityWidth(), entityHeight());
+            float renderX = entity.getX() - entity.getWidth() / 2;
+            float renderY = entity.getY() - entity.getHeight() / 2;
+            batch.draw(getCurrentSprite(), renderX, renderY, entity.getWidth(), entity.getHeight());
         }
     }
 
@@ -272,19 +280,4 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    private float entityX() {
-        return entity.getX();
-    }
-
-    private float entityY() {
-        return entity.getY();
-    }
-
-    private float entityWidth() {
-        return entity.getWidth();
-    }
-
-    private float entityHeight() {
-        return entity.getHeight();
-    }
 }
