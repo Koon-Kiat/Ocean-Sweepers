@@ -2,6 +2,7 @@ package project.game.application.scene.overlay;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -22,10 +23,11 @@ public class GameOverScene extends Scene {
     private BitmapFont font;
     private HealthManager healthManager;
     private ScoreManager scoreManager;
+    private Texture heartTexture = new Texture("droplet.png");
 
     public GameOverScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
-        this.healthManager = HealthManager.getInstance();
+        this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
     }
 

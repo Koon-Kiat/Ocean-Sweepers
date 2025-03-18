@@ -117,10 +117,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private Texture backgroundTexture;
     private HealthManager healthManager;
     private ScoreManager scoreManager;
+    private Texture heartTexture = new Texture("droplet.png");
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
-        this.healthManager = HealthManager.getInstance();
+        this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
     }
 
@@ -277,6 +278,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         initPopUpMenu();
         displayMessage();
 
+        // Init assets
         try {
             // Initialize game assets
             initializeGameAssets();
@@ -405,6 +407,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
+
+        // Init complete
     }
 
     @Override
@@ -524,7 +528,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     /**
      * Handles key inputs for game control:
      */
-    private void input() {
+    protected void input() {
         handleAudioInput();
         for (Integer key : inputManager.getKeyBindings().keySet()) {
             if (inputManager.isKeyJustPressed(key)) {
@@ -567,12 +571,17 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 LOGGER.info("InputProcessor set to inputManager");
             }
         }
+        // Switch to game2 scene (just for testing)
+        if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+            sceneManager.setScene("game2");
+            audioManager.stopMusic();
+        }
     }
 
     /**
      * Displays an on-screen message with key binding instructions.
      */
-    private void displayMessage() {
+    protected void displayMessage() {
         LOGGER.info("Displaying welcome message");
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
