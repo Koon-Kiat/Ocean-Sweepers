@@ -13,10 +13,8 @@ import com.badlogic.gdx.utils.Align;
 import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.api.IScene;
 import project.game.engine.scene.management.HealthManager;
-import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
-import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.ScoreManager;
 
 public class GameOverScene extends Scene {
@@ -25,9 +23,7 @@ public class GameOverScene extends Scene {
     private final ScoreManager scoreManager;
     private SpriteBatch batch;
     private BitmapFont font;
-    private HealthManager healthManager;
-    private ScoreManager scoreManager;
-    private Texture heartTexture = new Texture("droplet.png");
+    private Texture heartTexture = new Texture("heart.png");
 
     public GameOverScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);

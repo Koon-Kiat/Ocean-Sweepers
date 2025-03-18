@@ -41,7 +41,6 @@ import project.game.engine.audio.config.AudioConfig;
 import project.game.engine.audio.management.AudioManager;
 import project.game.engine.audio.music.MusicManager;
 import project.game.engine.audio.sound.SoundManager;
-import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
@@ -53,7 +52,6 @@ import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
-import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.ScoreManager;
 
 public class GameScene extends Scene implements IEntityRemovalListener {
@@ -121,9 +119,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] trashRegions;
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
-    private HealthManager healthManager;
-    private ScoreManager scoreManager;
-    private Texture heartTexture = new Texture("droplet.png");
+    //private HealthManager healthManager;
+    //private ScoreManager scoreManager;
+    private Texture heartTexture = new Texture("heart.png");
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
@@ -195,7 +193,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         entityManager.draw(batch);
 
         // Draw health and score
-        batch.begin();
+        // batch.begin();
         healthManager.draw(batch);
         skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
                 sceneUIManager.getStage().getHeight() - 30);
@@ -671,9 +669,5 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 actor.remove();
             }
         }
-    }
-
-    public void loseLife() {
-        healthManager.loseLife();
     }
 }

@@ -21,7 +21,7 @@ import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
-import project.game.application.entity.npc.Monster;
+import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.application.scene.overlay.Options;
@@ -71,7 +71,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     public static List<Entity> existingEntities;
     private EntityManager entityManager;
     private Boat boat;
-    private Monster monster;
+    private SeaTurtle seaTurtle;
     private List<Rock> rocks;
     private List<Trash> trashes;
 
