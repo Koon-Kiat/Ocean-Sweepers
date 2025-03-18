@@ -67,7 +67,7 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
-        LOGGER.debug("Resizing window to {0}×{1}", width, height);
+        LOGGER.debug("Resizing window to {0}x{1}", width, height);
         sceneManager.resize(width, height);
     }
 
