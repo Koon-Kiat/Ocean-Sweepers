@@ -2,6 +2,7 @@ package project.game.engine.constant.io;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import project.game.engine.constant.api.IConfigurationLoader;
 import project.game.engine.constant.base.AbstractConfigurableConstants;
@@ -12,6 +13,33 @@ import project.game.engine.constant.model.ConstantDefinition;
  * Provides template methods for loading and saving configurations.
  */
 public abstract class AbstractConfigurationLoader implements IConfigurationLoader {
+
+    private final Map<Class<?>, Function<Object, Boolean>> typeCheckerMap;
+
+    protected AbstractConfigurationLoader() {
+        this.typeCheckerMap = initializeTypeCheckers();
+    }
+
+    private Map<Class<?>, Function<Object, Boolean>> initializeTypeCheckers() {
+        Map<Class<?>, Function<Object, Boolean>> checkers = new HashMap<>();
+
+        Function<Object, Boolean> numberChecker = value -> value != null
+                && (Number.class.isAssignableFrom(value.getClass()));
+
+        checkers.put(Float.class, numberChecker);
+        checkers.put(float.class, numberChecker);
+        checkers.put(Long.class, numberChecker);
+        checkers.put(long.class, numberChecker);
+        checkers.put(Integer.class, numberChecker);
+        checkers.put(int.class, numberChecker);
+
+        checkers.put(Boolean.class, value -> value != null && Boolean.class.isAssignableFrom(value.getClass()));
+        checkers.put(boolean.class, checkers.get(Boolean.class));
+
+        checkers.put(String.class, value -> value != null && String.class.isAssignableFrom(value.getClass()));
+
+        return checkers;
+    }
 
     @Override
     public boolean loadConfiguration(String source, String profileName, AbstractConfigurableConstants constants) {
@@ -94,23 +122,14 @@ public abstract class AbstractConfigurationLoader implements IConfigurationLoade
             return false;
         }
 
-        if (expectedType == Float.class || expectedType == float.class) {
-            return value instanceof Number;
-        }
-        if (expectedType == Long.class || expectedType == long.class) {
-            return value instanceof Number;
-        }
-        if (expectedType == Integer.class || expectedType == int.class) {
-            return value instanceof Number;
-        }
-        if (expectedType == Boolean.class || expectedType == boolean.class) {
-            return value instanceof Boolean;
-        }
-        if (expectedType == String.class) {
-            return value instanceof String;
+        // Use the type checker if available
+        Function<Object, Boolean> checker = typeCheckerMap.get(expectedType);
+        if (checker != null) {
+            return checker.apply(value);
         }
 
-        return expectedType.isInstance(value);
+        // Fallback to class check
+        return expectedType.isAssignableFrom(value.getClass());
     }
 
     /**

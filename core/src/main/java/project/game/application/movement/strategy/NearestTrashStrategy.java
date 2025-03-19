@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.application.entity.item.Trash;
+import project.game.application.movement.api.StrategyType;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.api.IMovable;
@@ -114,6 +115,14 @@ public class NearestTrashStrategy extends AbstractMovementStrategy {
                 throw new MovementException("Error calculating velocity in NearestTrashStrategy", e);
             }
         }
+    }
+
+    /**
+     * Gets the strategy type for this movement strategy.
+     */
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.NEAREST_TRASH;
     }
 
     /**

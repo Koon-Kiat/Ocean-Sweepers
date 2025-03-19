@@ -1,4 +1,4 @@
-# Ocean Cleanup Game
+# Ocean Sweepers
 
 ![Game Engine](https://img.shields.io/badge/Game_Engine-LibGDX-orange)
 ![Architecture](https://img.shields.io/badge/Architecture-Component_Based-blue)

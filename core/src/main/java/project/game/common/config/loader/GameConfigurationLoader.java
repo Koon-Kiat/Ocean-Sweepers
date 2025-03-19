@@ -3,6 +3,7 @@ package project.game.common.config.loader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -22,8 +23,22 @@ public class GameConfigurationLoader extends AbstractConfigurationLoader {
     private static final GameConfigurationLoader INSTANCE = new GameConfigurationLoader();
     private final JsonReader jsonReader;
 
+    // Type categorizers
+    private final Map<String, Predicate<Object>> typeCategorizers = new HashMap<>();
+
     private GameConfigurationLoader() {
         this.jsonReader = new JsonReader();
+        initTypeCategorizers();
+    }
+
+    private void initTypeCategorizers() {
+        // Check if value is a floating-point number
+        typeCategorizers.put("floatTypes", value -> value != null && (value.getClass() == Float.class ||
+                value.getClass() == Double.class));
+
+        // Check if value is a long
+        typeCategorizers.put("longTypes", value -> value != null &&
+                value.getClass() == Long.class);
     }
 
     public static GameConfigurationLoader getInstance() {
@@ -78,12 +93,13 @@ public class GameConfigurationLoader extends AbstractConfigurationLoader {
             Map<String, Object> floats = new HashMap<>();
             Map<String, Object> longs = new HashMap<>();
 
-            // Categorize values by type
+            // Categorize values by type using predicates
             for (Map.Entry<String, Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
-                if (value instanceof Float || value instanceof Double) {
+
+                if (typeCategorizers.get("floatTypes").test(value)) {
                     floats.put(entry.getKey(), value);
-                } else if (value instanceof Long) {
+                } else if (typeCategorizers.get("longTypes").test(value)) {
                     longs.put(entry.getKey(), value);
                 }
             }

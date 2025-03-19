@@ -60,6 +60,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
 
     // Menu
+    private final HealthManager healthManager;
+    private final ScoreManager scoreManager;
     private boolean isVolumePopupOpen = false;
     private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
@@ -67,8 +69,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private Window popupMenu;
     private Skin skin;
     private OrthographicCamera camera;
-    private HealthManager healthManager;
-    private ScoreManager scoreManager;
 
     // Audio
     private AudioManager audioManager;
@@ -103,19 +103,22 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";
     private static final String ROCK_SPRITESHEET = "rock_sprites";
+    private static final String SEA_TURTLE_SPRITESHEET = "sea_turtle_sprites";
 
     // Entity type identifiers for directional sprites
     private static final String BOAT_ENTITY = "boat";
+    private static final String SEA_TURTLE_ENTITY = "sea_turtle";
     private SpriteBatch batch;
     private Texture rockImage;
     private Texture boatSpritesheet;
     private Texture trashImage;
-    private Texture monsterImage;
+    private Texture seaTurtleImage;
+    private TextureRegion[] boatTextureRegions;
     private TextureRegion[] boatDirectionalSprites;
     private TextureRegion[] rockRegions;
     private Texture[] trashTextures;
     private TextureRegion[] trashRegions;
-    private TextureRegion monsterRegion;
+    private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
@@ -265,6 +268,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         boatSpritesheet.dispose();
         trashImage.dispose();
         rockImage.dispose();
+        seaTurtleImage.dispose();
         debugRenderer.dispose();
         if (audioManager != null) {
             audioManager.dispose();
@@ -301,7 +305,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     constants.PLAYER_HEIGHT(),
                     true);
 
-            Entity monsterEntity = new Entity(
+            Entity seaTurtleEntity = new Entity(
                     constants.SEA_TURTLE_START_X(),
                     constants.SEA_TURTLE_START_Y(),
                     constants.SEA_TURTLE_WIDTH(),
@@ -338,15 +342,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     world,
                     existingEntities,
                     collisionManager,
-                    monsterRegion,
+                    seaTurtleRegion,
                     rockRegions,
                     trashRegions);
             entityFactoryManager.setTrashRemovalListener(this);
 
             // Create entities using factory manager
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            seaTurtle = new SeaTurtle(monsterEntity, world, npcMovementManager, monsterRegion);
-
             boat.setCollisionManager(collisionManager);
 
             // Create rocks and trash
@@ -365,12 +367,15 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
             float[] customWeights = { 0.70f, 0.30f };
             npcMovementManager = new NPCMovementBuilder()
-                    .withEntity(monsterEntity)
+                    .withEntity(seaTurtleEntity)
                     .setSpeed(constants.NPC_SPEED())
-                    .setInitialVelocity(1, 1)
+                    .setInitialVelocity(1, 0)
                     .withTrashCollector(trashes, rockEntities, customWeights)
                     .setLenientMode(true)
                     .build();
+
+            seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
+            seaTurtle.setCollisionManager(collisionManager);
 
             // Add entities to the entity manager
             entityManager.addRenderableEntity(boat);
@@ -414,16 +419,23 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
     }
-
+    
     @Override
     public void onEntityRemove(Entity entity) {
-        existingEntities.remove(entity);
-        if (entity instanceof IRenderable) {
-            entityManager.removeRenderableEntity((IRenderable) entity);
+        if (entity == null || entityManager == null) {
+            LOGGER.error("Entity or EntityManager is null");
+            return;
         }
+    
+        LOGGER.info("Removing entity: {0}", entity.getID());
+        existingEntities.remove(entity);
+        entity.removeFromManager(entityManager);
+        LOGGER.info("Entity removed from manager: {0}", entity.getID());
+    
         for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
+                LOGGER.info("Trash removed: {0}", trash.getEntity().getID());
                 break;
             }
         }
@@ -441,7 +453,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         assetManager.loadTextureAssets("trash3.png");
         assetManager.loadTextureAssets("steamboat.png");
         assetManager.loadTextureAssets("Rocks.png");
-        assetManager.loadTextureAssets("monster.png");
+        assetManager.loadTextureAssets("seaturtle.png");
         assetManager.loadTextureAssets("ocean_background.jpg");
         assetManager.update();
         assetManager.loadAndFinish();
@@ -451,18 +463,18 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Create and store boat sprite sheet (7x7)
         boatSpritesheet = assetManager.getAsset("steamboat.png", Texture.class);
-        TextureRegion[] boatSheet = assetManager.createSpriteSheet(BOAT_SPRITESHEET, "steamboat.png", 7, 7);
+        boatTextureRegions = assetManager.createSpriteSheet(BOAT_SPRITESHEET, "steamboat.png", 7, 7);
 
         // Create boat directional sprites for all 8 directions
         TextureRegion[] eightDirectionalSprites = new TextureRegion[8];
-        eightDirectionalSprites[Boat.DIRECTION_UP] = boatSheet[0]; // UP
-        eightDirectionalSprites[Boat.DIRECTION_RIGHT] = boatSheet[11]; // RIGHT
-        eightDirectionalSprites[Boat.DIRECTION_DOWN] = boatSheet[23]; // DOWN
-        eightDirectionalSprites[Boat.DIRECTION_LEFT] = boatSheet[35]; // LEFT
-        eightDirectionalSprites[Boat.DIRECTION_UP_RIGHT] = boatSheet[7]; // UP-RIGHT
-        eightDirectionalSprites[Boat.DIRECTION_DOWN_RIGHT] = boatSheet[14]; // DOWN-RIGHT
-        eightDirectionalSprites[Boat.DIRECTION_DOWN_LEFT] = boatSheet[28]; // DOWN-LEFT
-        eightDirectionalSprites[Boat.DIRECTION_UP_LEFT] = boatSheet[42]; // UP-LEFT
+        eightDirectionalSprites[Boat.DIRECTION_UP] = boatTextureRegions[0]; // UP
+        eightDirectionalSprites[Boat.DIRECTION_RIGHT] = boatTextureRegions[11]; // RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN] = boatTextureRegions[23]; // DOWN
+        eightDirectionalSprites[Boat.DIRECTION_LEFT] = boatTextureRegions[35]; // LEFT
+        eightDirectionalSprites[Boat.DIRECTION_UP_RIGHT] = boatTextureRegions[7]; // UP-RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_RIGHT] = boatTextureRegions[14]; // DOWN-RIGHT
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_LEFT] = boatTextureRegions[28]; // DOWN-LEFT
+        eightDirectionalSprites[Boat.DIRECTION_UP_LEFT] = boatTextureRegions[42]; // UP-LEFT
 
         // Register the directional sprites with the asset manager
         assetManager.registerDirectionalSprites(BOAT_ENTITY, eightDirectionalSprites);

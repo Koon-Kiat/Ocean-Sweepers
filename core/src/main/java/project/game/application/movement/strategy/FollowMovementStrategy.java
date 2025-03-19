@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Bezier;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
@@ -47,6 +48,11 @@ public class FollowMovementStrategy extends AbstractMovementStrategy {
         // Initialize path data
         this.pathPoints = new ArrayList<>();
         this.lastTargetPosition = new Vector2(target.getX(), target.getY());
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.FOLLOW;
     }
 
     @Override

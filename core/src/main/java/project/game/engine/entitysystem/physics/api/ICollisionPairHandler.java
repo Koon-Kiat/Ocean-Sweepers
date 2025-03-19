@@ -4,7 +4,7 @@ package project.game.engine.entitysystem.physics.api;
  * Interface for handling collision pair tracking without explicit type
  * checking.
  * This interface allows us to track active collisions between objects
- * in a polymorphic way, without resorting to instanceof checks.
+ * in a polymorphic way.
  */
 public interface ICollisionPairHandler {
 

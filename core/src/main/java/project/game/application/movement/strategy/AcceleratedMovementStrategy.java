@@ -2,6 +2,7 @@ package project.game.application.movement.strategy;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IStoppableStrategy;
@@ -30,6 +31,11 @@ public class AcceleratedMovementStrategy extends AbstractMovementStrategy implem
         this.maxSpeed = accelParams[2];
 
         this.currentSpeed = 0f;
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.ACCELERATED;
     }
 
     @Override

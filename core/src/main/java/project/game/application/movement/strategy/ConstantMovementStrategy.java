@@ -2,6 +2,7 @@ package project.game.application.movement.strategy;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
 
@@ -18,6 +19,12 @@ public class ConstantMovementStrategy extends AbstractMovementStrategy {
     public ConstantMovementStrategy(float speed, boolean lenientMode) {
         super(ConstantMovementStrategy.class, lenientMode);
         this.speed = validateSpeed(speed, 200f);
+    }
+
+    @Override
+
+    public StrategyType getStrategyType() {
+        return StrategyType.CONSTANT;
     }
 
     @Override

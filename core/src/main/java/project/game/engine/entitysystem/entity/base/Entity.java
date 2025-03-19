@@ -4,7 +4,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class Entity {
+import project.game.engine.entitysystem.entity.api.IEntityManager;
+import project.game.engine.entitysystem.entity.management.EntityManager;
+
+public class Entity implements IEntityManager {
 
 	private static AtomicInteger idCounter = new AtomicInteger(0);
 	private final Vector2 position;
@@ -84,4 +87,10 @@ public class Entity {
 	private String generateUniqueID() {
 		return "E" + idCounter.getAndIncrement();
 	}
+
+	@Override
+	public void removeFromManager(EntityManager entityManager) {
+		entityManager.removeEntity(this);
+	}
+
 }

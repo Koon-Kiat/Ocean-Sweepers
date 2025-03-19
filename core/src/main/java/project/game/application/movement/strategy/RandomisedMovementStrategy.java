@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.badlogic.gdx.math.MathUtils;
 
+import project.game.application.movement.api.StrategyType;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.movement.api.IMovable;
@@ -44,6 +45,11 @@ public class RandomisedMovementStrategy extends AbstractMovementStrategy {
         // Initialize state
         this.remainingTime = MathUtils.random(this.minDuration, this.maxDuration);
         pickRandomStrategy();
+    }
+
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.RANDOMIZED;
     }
 
     @Override
