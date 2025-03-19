@@ -41,7 +41,6 @@ import project.game.engine.audio.config.AudioConfig;
 import project.game.engine.audio.management.AudioManager;
 import project.game.engine.audio.music.MusicManager;
 import project.game.engine.audio.sound.SoundManager;
-import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
@@ -120,12 +119,14 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] trashRegions;
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
+    //private HealthManager healthManager;
+    //private ScoreManager scoreManager;
+    private Texture heartTexture = new Texture("heart.png");
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
-        this.healthManager = HealthManager.getInstance();
+        this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
-
     }
 
     /**
@@ -190,6 +191,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Draw entities
         batch.begin();
         entityManager.draw(batch);
+
+        // Draw health and score
+        // batch.begin();
+        healthManager.draw(batch);
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
+                sceneUIManager.getStage().getHeight() - 30);
         batch.end();
 
         // Draw health and score
@@ -233,6 +240,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Play sound effect on collision
             if (collisionManager.collision() && audioManager != null) {
                 audioManager.playSoundEffect("drophit");
+                // SCORE SYSTEM IMPLEMENTED HERE
+                // scoreManager.addScore(10);
+                // LOGGER.log(Level.INFO, "Score: {0}", scoreManager.getScore());
+
             }
         } else {
             // Process removal queue to prevent leaks
@@ -291,6 +302,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         initPopUpMenu();
         displayMessage();
 
+        // Init assets
         try {
             // Initialize game assets
             initializeGameAssets();
@@ -418,6 +430,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
+
+        // Init complete
     }
     
     @Override
@@ -561,7 +575,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     /**
      * Handles key inputs for game control:
      */
-    private void input() {
+    protected void input() {
         handleAudioInput();
         for (Integer key : inputManager.getKeyBindings().keySet()) {
             if (inputManager.isKeyJustPressed(key)) {
@@ -614,12 +628,17 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 options.getRebindMenu().setVisible(false);
             }
         }
+        // Switch to game2 scene (just for testing)
+        if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+            sceneManager.setScene("game2");
+            audioManager.stopMusic();
+        }
     }
 
     /**
      * Displays an on-screen message with key binding instructions.
      */
-    private void displayMessage() {
+    protected void displayMessage() {
         LOGGER.info("Displaying welcome message");
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));

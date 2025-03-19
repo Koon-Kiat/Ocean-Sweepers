@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class HealthManager {
-
     /*
      * This class is responsible for managing the health of the player.
      * ***Not under scene manager or a concrete scene class***
@@ -15,14 +14,14 @@ public class HealthManager {
     private final int maxLives = 3;
     private int lives;
 
-    public HealthManager() {
+    public HealthManager(Texture heartTexture) {
         this.lives = maxLives;
-        this.heartTexture = new Texture(Gdx.files.internal("heart.png"));
+        this.heartTexture = heartTexture; //new Texture(Gdx.files.internal("heart.png"));
     }
 
-    public static HealthManager getInstance() {
+    public static HealthManager getInstance(Texture heartTexture) {
         if (instance == null) {
-            instance = new HealthManager();
+            instance = new HealthManager(heartTexture);
         }
         return instance;
     }
