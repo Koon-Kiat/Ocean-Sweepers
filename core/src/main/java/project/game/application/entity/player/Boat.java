@@ -114,14 +114,9 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         this.collisionManager = collisionManager;
     }
 
-    @Override
-    public boolean isRenderable() {
-        return true;
-    }
-
-	public void removeFromManager(EntityManager entityManager) {
+    public void removeFromManager(EntityManager entityManager) {
         entityManager.removeRenderableEntity(this);
-	}
+    }
 
     /**
      * Set the collision to be active for a certain duration.
@@ -194,6 +189,11 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     @Override
     public String getTexturePath() {
         return texturePath;
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
     }
 
     @Override
