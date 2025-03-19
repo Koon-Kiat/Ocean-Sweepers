@@ -472,9 +472,27 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         rockImage = assetManager.getAsset("Rocks.png", Texture.class);
         rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
 
-        // Load monster texture and create TextureRegion
-        monsterImage = assetManager.getAsset("monster.png", Texture.class);
-        monsterRegion = new TextureRegion(monsterImage);
+        // Load sea turtle texture and create TextureRegion
+        seaTurtleImage = assetManager.getAsset("seaturtle.png", Texture.class);
+        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
+
+        // Create sea turtle directional sprites for all 4 directions
+        TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
+
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7]; // UP
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2]; // RIGHT
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0]; // DOWN
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1]; // LEFT
+
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_RIGHT] = seaTurtleRegion[5]; // UP
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_RIGHT] = seaTurtleRegion[3]; // RIGHT
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_LEFT] = seaTurtleRegion[4]; // DOWN
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_LEFT] = seaTurtleRegion[6]; // LEFT
+
+        // Register the directional sprites with the asset manager
+        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
+        seaTurtleRegion = turtleDirectionalSprites;
+
 
         // Load trash textures and create TextureRegions
         trashTextures = new Texture[3];
