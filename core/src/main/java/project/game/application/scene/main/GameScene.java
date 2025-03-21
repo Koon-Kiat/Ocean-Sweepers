@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.Array;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
@@ -351,6 +352,19 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
             boat.setCollisionManager(collisionManager);
 
+            boat.setLifeLossCallback(new ILifeLossCallback() {
+                @Override
+                public void onLifeLost() {
+                    loseLife();
+                    if (healthManager.getLives() == 0) {
+                        sceneManager.setScene("gameover");
+                        audioManager.stopMusic();
+                        audioManager.hideVolumeControls();
+                        options.getRebindMenu().setVisible(false);
+                    }
+                }
+            });
+
             // Create rocks and trash
             for (int i = 0; i < constants.NUM_ROCKS(); i++) {
                 Rock rock = entityFactoryManager.createRock();
@@ -419,19 +433,19 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
     }
-    
+
     @Override
     public void onEntityRemove(Entity entity) {
         if (entity == null || entityManager == null) {
             LOGGER.error("Entity or EntityManager is null");
             return;
         }
-    
+
         LOGGER.info("Removing entity: {0}", entity.getID());
         existingEntities.remove(entity);
         entity.removeFromManager(entityManager);
         LOGGER.info("Entity removed from manager: {0}", entity.getID());
-    
+
         for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
@@ -504,7 +518,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Register the directional sprites with the asset manager
         assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
         seaTurtleRegion = turtleDirectionalSprites;
-
 
         // Load trash textures and create TextureRegions
         trashTextures = new Texture[3];
@@ -609,16 +622,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 inputMultiplexer.addProcessor(inputManager);
                 sceneUIManager.getStage().setKeyboardFocus(null);
                 LOGGER.info("InputProcessor set to inputManager");
-            }
-        }
-
-        if (inputManager.isKeyJustPressed(Input.Keys.NUM_0)) {
-            loseLife();
-            if (healthManager.getLives() == 0) {
-                sceneManager.setScene("gameover");
-                audioManager.stopMusic();
-                audioManager.hideVolumeControls();
-                options.getRebindMenu().setVisible(false);
             }
         }
     }
