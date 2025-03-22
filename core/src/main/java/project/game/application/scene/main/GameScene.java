@@ -122,6 +122,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
 
+    private float remainingTime;
+
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance();
@@ -240,7 +242,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.warn("Not enough active bodies for physics simulation");
         }
 
-        scoreManager.addScore(10);
+        remainingTime -= deltaTime;
+
+        if(trashes.isEmpty()) {
+            scoreManager.multiplyScore((float) (remainingTime/100));
+            sceneManager.setScene("gameover");
+        }
+
         LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
@@ -262,6 +270,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     @Override
     public void dispose() {
+
+        scoreManager.multiplyScore((float) (remainingTime/100));
+        LOGGER.info("Final Score: " + scoreManager.getScore());
         // Log world state before disposal
         LOGGER.info("Before GameScene disposal:");
 
@@ -291,6 +302,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         initPopUpMenu();
         displayMessage();
+
+        remainingTime = 300.0f;
 
         try {
             // Initialize game assets

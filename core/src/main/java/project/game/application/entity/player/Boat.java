@@ -26,6 +26,7 @@ import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
 import project.game.engine.entitysystem.physics.management.CollisionManager;
+import project.game.engine.scene.management.ScoreManager;
 
 public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
@@ -455,6 +456,8 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             lifeLossCooldown = true;
             lifeLossCooldownEndTime = System.currentTimeMillis() + LIFE_LOSS_COOLDOWN_DURATION;
         }
+
+        ScoreManager.getInstance().subtractScore(25);
     }
 
     /**
@@ -470,11 +473,13 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         String entityType = trash.getClass().getSimpleName();
         if (!isEntityPermanent(entityType)) {
             if (collisionManager != null) {
-                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), trash.getRemovalListener());
             } else {
                 LOGGER.warn("CollisionManager not set in Boat object - cannot safely remove trash");
             }
         }
+
+        ScoreManager.getInstance().addScore(50);
     }
 
     /**

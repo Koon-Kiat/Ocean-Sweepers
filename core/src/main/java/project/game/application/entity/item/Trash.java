@@ -86,6 +86,10 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         return entity.isActive();
     }
 
+    public IEntityRemovalListener getRemovalListener() {
+        return this.removalListener;
+    }
+
     @Override
     public boolean isRenderable() {
         return true;
@@ -267,6 +271,9 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
             if (!Boat.isEntityPermanent(entityType)) {
                 if (collisionManager != null) {
                     collisionManager.scheduleBodyRemoval(getBody(), entity, removalListener);
+                    if (removalListener != null) {
+                        removalListener.onEntityRemove(entity);
+                    }
                 } else {
                     // If collisionManager isn't available, just log an error
                     // but don't try to destroy the body directly
