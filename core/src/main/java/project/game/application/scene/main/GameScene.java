@@ -352,6 +352,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
             boat.setCollisionManager(collisionManager);
 
+            // Set life loss callback for boat
             boat.setLifeLossCallback(new ILifeLossCallback() {
                 @Override
                 public void onLifeLost() {
