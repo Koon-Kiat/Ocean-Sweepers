@@ -120,7 +120,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] trashRegions;
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
-    private Texture heartTexture = new Texture("heart.png");
+    private final Texture heartTexture = new Texture("heart.png");
     protected TimeManager timer;
     private boolean showTimer = true;  // Flag to control if the timer is shown
 
@@ -129,7 +129,14 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 10);
-        //this.timer.start(); // Ensure timer starts only in game scene
+    }
+    
+    public SpriteBatch getBatch() {
+        return batch;
+    }
+
+    public Skin getSkin() {
+        return skin;
     }
 
     /**
@@ -273,7 +280,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         }
 
         scoreManager.addScore(10);
-        //LOGGER.info("Score: {0}", scoreManager.getScore());
+        // LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
     @Override
@@ -463,19 +470,19 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Init complete
     }
-    
+
     @Override
     public void onEntityRemove(Entity entity) {
         if (entity == null || entityManager == null) {
             LOGGER.error("Entity or EntityManager is null");
             return;
         }
-    
+
         LOGGER.info("Removing entity: {0}", entity.getID());
         existingEntities.remove(entity);
         entity.removeFromManager(entityManager);
         LOGGER.info("Entity removed from manager: {0}", entity.getID());
-    
+
         for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
@@ -695,7 +702,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
      */
     private void hideDisplayMessage() {
         sceneUIManager.getStage().getActors()
-            .select(a -> a.getClass() == TextField.class) // Filter only TextField instances
-            .forEach(Actor::remove); // Remove them from the stage
-    }    
+                .select(a -> a.getClass() == TextField.class) // Filter only TextField instances
+                .forEach(Actor::remove); // Remove them from the stage
+    }
 }
