@@ -116,8 +116,10 @@ public class GameOverScene extends Scene {
         inputManager.addButtonClickListener(retryButton, () -> {
             // First get the game scene by name and reset it
             IScene gameScene = sceneManager.getScene("game");
-            if (gameScene != null) {
+            IScene gameScene2 = sceneManager.getScene("game2");
+            if (gameScene != null && gameScene2 != null) {
                 gameScene.resetScene();
+                gameScene2.resetScene();
             }
             // Upon retry, reset the score and health
             scoreManager.resetScore();
