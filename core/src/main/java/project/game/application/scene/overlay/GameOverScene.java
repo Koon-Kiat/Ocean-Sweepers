@@ -30,8 +30,7 @@ public class GameOverScene extends Scene {
     private SpriteBatch batch;
     private BitmapFont font;
     private Texture heartTexture = new Texture("heart.png");
-    private TimeManager timer;
-    private Texture backgroundTexture;
+    private Texture backgroundTexture, winBackgroundTexture;
 
     public GameOverScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
@@ -48,14 +47,34 @@ public class GameOverScene extends Scene {
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         super.render(delta);
-        Gdx.input.setInputProcessor(sceneUIManager.getStage());
 
+        Gdx.input.setInputProcessor(sceneUIManager.getStage());
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center,
-                false);
-        font.draw(batch, "Score: " + scoreManager.getScore(), Gdx.graphics.getWidth() / 2f,
-                Gdx.graphics.getHeight() - 130, 0, Align.center, false);
+        // batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if (scoreManager.getScore() >= 500) {
+            batch.draw(winBackgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            // Draw "You Win!" text with outline
+            font.setColor(Color.BLACK);
+            font.draw(batch, "You Win!", Gdx.graphics.getWidth() / 2f + 2, Gdx.graphics.getHeight() - 100 - 2, 0, Align.center, false);
+            font.draw(batch, "You Win!", Gdx.graphics.getWidth() / 2f - 2, Gdx.graphics.getHeight() - 100 + 2, 0, Align.center, false);
+            font.setColor(Color.WHITE);
+            font.draw(batch, "You Win!", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center, false);
+        } else {
+            batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            // Draw "Game Over" text with outline
+            font.setColor(Color.BLACK);
+            font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f + 2, Gdx.graphics.getHeight() - 100 - 2, 0, Align.center, false);
+            font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f - 2, Gdx.graphics.getHeight() - 100 + 2, 0, Align.center, false);
+            font.setColor(Color.WHITE);
+            font.draw(batch, "Game Over", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center, false);
+        }
+        
+        // Draw score text with outline
+        font.setColor(Color.BLACK);
+        font.draw(batch, "Score: " + scoreManager.getScore(), Gdx.graphics.getWidth() / 2f + 2, Gdx.graphics.getHeight() - 130 - 2, 0, Align.center, false);
+        font.draw(batch, "Score: " + scoreManager.getScore(), Gdx.graphics.getWidth() / 2f - 2, Gdx.graphics.getHeight() - 130 + 2, 0, Align.center, false);
+        font.setColor(Color.WHITE);
+        font.draw(batch, "Score: " + scoreManager.getScore(), Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 130, 0, Align.center, false);
         // font.draw(batch, String.format("Time: %02d:%02d", 
         //         timer.getMinutes(), timer.getSeconds()), Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 160, 0, Align.center, false);
         batch.end();
@@ -87,6 +106,7 @@ public class GameOverScene extends Scene {
     public void create() {
         batch = new SpriteBatch();
         backgroundTexture = new Texture(Gdx.files.internal("gameoverbackground.jpg"));
+        winBackgroundTexture = new Texture(Gdx.files.internal("win.jpg"));
         // Load custom font
         font = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
         // Make game over text larger
@@ -115,16 +135,8 @@ public class GameOverScene extends Scene {
 
         inputManager.addButtonClickListener(retryButton, () -> {
             // First get the game scene by name and reset it
-            IScene gameScene = sceneManager.getScene("game");
-            IScene gameScene2 = sceneManager.getScene("game2");
-            if (gameScene != null && gameScene2 != null) {
-                gameScene.resetScene();
-                gameScene2.resetScene();
-            }
-            // Upon retry, reset the score and health
-            scoreManager.resetScore();
-            healthManager.resetHealth();
-            // Then switch to the game scene
+            resetGame();
+            // Then set the scene back to the game
             sceneManager.setScene("game");
         });
 
@@ -132,6 +144,7 @@ public class GameOverScene extends Scene {
         exitButton.setSize(200, 60);
         exitButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f - 80);
         inputManager.addButtonClickListener(exitButton, () -> {
+            resetGame(); // Ensure game is still reset
             sceneManager.setScene("menu");
         });
 
@@ -142,6 +155,18 @@ public class GameOverScene extends Scene {
         sceneUIManager.getStage().addActor(retryButton);
         sceneUIManager.getStage().addActor(exitButton);
 
+    }
+
+    private void resetGame() {
+        IScene gameScene = sceneManager.getScene("game");
+        IScene gameScene2 = sceneManager.getScene("game2");
+        if (gameScene != null && gameScene2 != null) {
+            gameScene.resetScene();
+            gameScene2.resetScene();
+        }
+        // Upon retry, reset the score and health
+        scoreManager.resetScore();
+        healthManager.resetHealth();
     }
 
     // Add this helper method for creating the transparent drawable
