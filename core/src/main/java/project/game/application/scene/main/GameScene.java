@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.Array;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
@@ -123,6 +124,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private final Texture heartTexture = new Texture("heart.png");
     protected TimeManager timer;
     private boolean showTimer = true;  // Flag to control if the timer is shown
+
+    private float remainingTime;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
@@ -279,7 +282,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.warn("Not enough active bodies for physics simulation");
         }
 
-        scoreManager.addScore(10);
+        remainingTime -= deltaTime;
+
+        if(trashes.isEmpty()) {
+            scoreManager.multiplyScore((float) (remainingTime/100));
+            sceneManager.setScene("gameover");
+        }
+
         // LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
@@ -309,6 +318,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     @Override
     public void dispose() {
+
+        scoreManager.multiplyScore((float) (remainingTime/100));
+        LOGGER.info("Final Score: " + scoreManager.getScore());
         // Log world state before disposal
         LOGGER.info("Before GameScene disposal:");
 
@@ -338,6 +350,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         initPopUpMenu();
         displayMessage();
 
+        remainingTime = 300.0f;
 
         // Init assets
         try {
@@ -399,6 +412,20 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Create entities using factory manager
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
             boat.setCollisionManager(collisionManager);
+
+            // Set life loss callback for boat
+            boat.setLifeLossCallback(new ILifeLossCallback() {
+                @Override
+                public void onLifeLost() {
+                    loseLife();
+                    if (healthManager.getLives() == 0) {
+                        sceneManager.setScene("gameover");
+                        audioManager.stopMusic();
+                        audioManager.hideVolumeControls();
+                        options.getRebindMenu().setVisible(false);
+                    }
+                }
+            });
 
             // Create rocks and trash
             for (int i = 0; i < constants.NUM_ROCKS(); i++) {
@@ -537,18 +564,24 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Load sea turtle texture and create TextureRegion
         seaTurtleImage = assetManager.getAsset("seaturtle.png", Texture.class);
-        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 2, 2);
+        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
 
         // Create sea turtle directional sprites for all 4 directions
-        TextureRegion[] fourDirectionalSprites = new TextureRegion[4];
-        fourDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[3]; // UP
-        fourDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2]; // RIGHT
-        fourDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0]; // DOWN
-        fourDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1]; // LEFT
+        TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
+
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7]; // UP
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2]; // RIGHT
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0]; // DOWN
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1]; // LEFT
+
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_RIGHT] = seaTurtleRegion[5]; // UP
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_RIGHT] = seaTurtleRegion[3]; // RIGHT
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_LEFT] = seaTurtleRegion[4]; // DOWN
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_LEFT] = seaTurtleRegion[6]; // LEFT
 
         // Register the directional sprites with the asset manager
-        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, fourDirectionalSprites);
-        seaTurtleRegion = fourDirectionalSprites;
+        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
+        seaTurtleRegion = turtleDirectionalSprites;
 
         // Load trash textures and create TextureRegions
         trashTextures = new Texture[3];

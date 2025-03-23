@@ -16,6 +16,7 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.obstacle.Rock;
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
@@ -23,7 +24,9 @@ import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+
 import project.game.engine.entitysystem.physics.management.CollisionManager;
+import project.game.engine.scene.management.ScoreManager;
 
 public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
@@ -45,6 +48,13 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     private long collisionEndTime = 0;
     private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
+    private ILifeLossCallback lifeLossCallback;
+
+    // Add a cooldown for life loss
+    private boolean lifeLossCooldown = false;
+    private long lifeLossCooldownEndTime = 0;
+    private static final long LIFE_LOSS_COOLDOWN_DURATION = 1000; // 1 second cooldown
+    
 
     // Direction constants - used as indices in directional sprite arrays
     public static final int DIRECTION_UP = 0;
@@ -114,14 +124,9 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         this.collisionManager = collisionManager;
     }
 
-    @Override
-    public boolean isRenderable() {
-        return true;
-    }
-
-	public void removeFromManager(EntityManager entityManager) {
+    public void removeFromManager(EntityManager entityManager) {
         entityManager.removeRenderableEntity(this);
-	}
+    }
 
     /**
      * Set the collision to be active for a certain duration.
@@ -194,6 +199,11 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     @Override
     public String getTexturePath() {
         return texturePath;
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
     }
 
     @Override
@@ -361,10 +371,19 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public boolean isInCollision() {
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+        long currentTime = System.currentTimeMillis();
+
+        // Update collision state
+        if (collisionActive && currentTime > collisionEndTime) {
             collisionActive = false;
             getBody().setLinearVelocity(0, 0);
         }
+
+        // Update life loss cooldown
+        if (lifeLossCooldown && currentTime > lifeLossCooldownEndTime) {
+            lifeLossCooldown = false;
+        }
+
         return collisionActive;
     }
 
@@ -397,6 +416,10 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
+    public void setLifeLossCallback(ILifeLossCallback callback) {
+        this.lifeLossCallback = callback;
+    }
+
     /**
      * Handle collision with a rock
      */
@@ -423,6 +446,18 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             LOGGER.info("dy dx: " + dx);
             getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);
         }
+
+        // Call the life loss callback if set and not in cooldown
+        if (lifeLossCallback != null && !lifeLossCooldown) {
+            LOGGER.info("Boat collided with rock - losing life");
+            lifeLossCallback.onLifeLost();
+
+            // Set the cooldown
+            lifeLossCooldown = true;
+            lifeLossCooldownEndTime = System.currentTimeMillis() + LIFE_LOSS_COOLDOWN_DURATION;
+        }
+
+        ScoreManager.getInstance().subtractScore(25);
     }
 
     /**
@@ -438,11 +473,13 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         String entityType = trash.getClass().getSimpleName();
         if (!isEntityPermanent(entityType)) {
             if (collisionManager != null) {
-                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), trash.getRemovalListener());
             } else {
                 LOGGER.warn("CollisionManager not set in Boat object - cannot safely remove trash");
             }
         }
+
+        ScoreManager.getInstance().addScore(50);
     }
 
     /**

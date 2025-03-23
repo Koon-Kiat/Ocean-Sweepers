@@ -105,8 +105,6 @@ public class CompositeMovementStrategy implements ICompositeMovementStrategy {
             // Make sure velocity is set consistently
             movable.setVelocity(resultVelocity);
 
-            LOGGER.debug("Applied composite movement with {0} strategies", strategies.size());
-
         } catch (Exception e) {
             LOGGER.error("Error in CompositeMovementStrategy: " + e.getMessage(), e);
             throw new MovementException("Failed to apply composite movement", e);

@@ -129,6 +129,10 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         getBody().setLinearDamping(3.0f);
     }
 
+    public boolean isActive() {
+        return entity.isActive();
+    }
+
     public String getCurrentDirectionName() {
         switch (currentDirectionIndex) {
             case DIRECTION_UP:
@@ -172,8 +176,9 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         return texturePath;
     }
 
-    public boolean isActive() {
-        return entity.isActive();
+    @Override
+    public boolean isRenderable() {
+        return true;
     }
 
     @Override
@@ -240,36 +245,75 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             if (angle < 0)
                 angle += 360; // Convert to 0-360 range
 
-            // Determine direction based on angle - using 4 directions only for sea turtle
-            if (angle >= 45 && angle < 135) {
-                currentDirectionIndex = DIRECTION_UP;
-            } else if (angle >= 135 && angle < 225) {
-                currentDirectionIndex = DIRECTION_LEFT;
-            } else if (angle >= 225 && angle < 315) {
-                currentDirectionIndex = DIRECTION_DOWN;
-            } else { // angle >= 315 || angle < 45
+            // Determine direction based on angle - using 8 directions for sea turtle
+            if (angle >= 337.5 || angle < 22.5) {
                 currentDirectionIndex = DIRECTION_RIGHT;
+            } else if (angle >= 22.5 && angle < 67.5) {
+                currentDirectionIndex = DIRECTION_UP_RIGHT;
+            } else if (angle >= 67.5 && angle < 112.5) {
+                currentDirectionIndex = DIRECTION_UP;
+            } else if (angle >= 112.5 && angle < 157.5) {
+                currentDirectionIndex = DIRECTION_UP_LEFT;
+            } else if (angle >= 157.5 && angle < 202.5) {
+                currentDirectionIndex = DIRECTION_LEFT;
+            } else if (angle >= 202.5 && angle < 247.5) {
+                currentDirectionIndex = DIRECTION_DOWN_LEFT;
+            } else if (angle >= 247.5 && angle < 292.5) {
+                currentDirectionIndex = DIRECTION_DOWN;
+            } else if (angle >= 292.5 && angle < 337.5) {
+                currentDirectionIndex = DIRECTION_DOWN_RIGHT;
             }
 
             LOGGER.debug("SeaTurtle moving at angle: {0}, direction: {1}",
                     angle, getCurrentDirectionName());
         }
 
-        // Since we're using a 2x2 sprite sheet (4 sprites total),
-        // make sure we're within bounds
-        if (hasSprites() && currentDirectionIndex >= 0 && currentDirectionIndex < getSpritesCount()) {
-            setCurrentSpriteIndex(currentDirectionIndex);
+        // Check if we need to map our 8-directional index to a 4-directional sprite
+        // array
+        if (hasSprites()) {
+            // If we have fewer than 8 directional sprites, map to available sprites
+            if (getSpritesCount() <= 4) {
+                int mappedIndex = mapTo4DirectionalIndex(currentDirectionIndex);
+                setCurrentSpriteIndex(mappedIndex);
+            } else {
+                // We have 8-directional sprites
+                setCurrentSpriteIndex(currentDirectionIndex);
+            }
         }
     }
 
-    @Override
-    public boolean isRenderable() {
-        return true;
+    /**
+     * Maps an 8-directional index to a 4-directional index for sprite display
+     * 
+     * @param eightDirIndex The 8-directional index (0-7)
+     * @return The 4-directional index (0-3)
+     */
+    private int mapTo4DirectionalIndex(int eightDirIndex) {
+        switch (eightDirIndex) {
+            case DIRECTION_UP:
+                return DIRECTION_UP; // UP
+            case DIRECTION_RIGHT:
+                return DIRECTION_RIGHT; // RIGHT
+            case DIRECTION_DOWN:
+                return DIRECTION_DOWN; // DOWN
+            case DIRECTION_LEFT:
+                return DIRECTION_LEFT; // LEFT
+            case DIRECTION_UP_RIGHT:
+                return DIRECTION_RIGHT; // UP_RIGHT maps to RIGHT
+            case DIRECTION_DOWN_RIGHT:
+                return DIRECTION_RIGHT; // DOWN_RIGHT maps to RIGHT
+            case DIRECTION_DOWN_LEFT:
+                return DIRECTION_LEFT; // DOWN_LEFT maps to LEFT
+            case DIRECTION_UP_LEFT:
+                return DIRECTION_LEFT; // UP_LEFT maps to LEFT
+            default:
+                return DIRECTION_DOWN; // Default to DOWN
+        }
     }
 
     public void removeFromManager(EntityManager entityManager) {
         entityManager.removeRenderableEntity(this);
-	}
+    }
 
     @Override
     public final Body createBody(World world, float x, float y, float width, float height) {

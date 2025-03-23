@@ -27,7 +27,7 @@ public class GameLogger extends AbstractLogger {
         config = new LoggerConfig.Builder()
                 .withLogDirectory(LogPaths.getGlobalLogDirectory())
                 .withMaxLogFiles(10)
-                .withDefaultLogLevel(LogLevel.INFO)
+                .withDefaultLogLevel(LogLevel.DEBUG)
                 .build();
     }
 
