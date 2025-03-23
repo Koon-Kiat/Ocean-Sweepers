@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.Array;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
@@ -126,15 +127,18 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
     private final Texture heartTexture = new Texture("heart.png");
-    private TimeManager timer;
+    protected TimeManager timer;
+    private boolean showTimer = true;  // Flag to control if the timer is shown
+
+    private float remainingTime;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
-        this.sceneTransition = new Scenetransition(sceneManager);
+        this.timer = new TimeManager(0, 10);
     }
-
+    
     public SpriteBatch getBatch() {
         return batch;
     }
@@ -182,9 +186,53 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         LOGGER.debug("Popup menu closed");
     }
 
+    protected void draw() {
+        // Regular rendering code
+        batch.begin();
+        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+        batch.end();
+
+        // Draw entities
+        batch.begin();
+        entityManager.draw(batch);
+
+        // Draw health and score
+        healthManager.draw(batch);
+        // print score
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
+            sceneUIManager.getStage().getHeight() - 30);
+        
+        // Time left in logs
+        System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+
+        // print timer
+        if (showTimer) {
+            skin.getFont("default-font").setColor(1, 1, 1, 1); // Set color to white
+            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d", 
+            timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+            skin.getFont("default-font").setColor(0, 0, 0, 1); // Reset color to black
+        }
+
+        batch.end();
+
+        // Draw stage
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
+    }
+
+    public void setShowTimer(boolean show) {
+        this.showTimer = show;  // Allow external classes to control whether the timer is visible
+    }
+
     @Override
     public void render(float deltaTime) {
         input();
+        timer.update(deltaTime);
+        
+        if (timer.isTimeUp()) {
+            timer.stop();
+            sceneManager.setScene("gameover");
+        }
 
         try {
             // Update movement for all entities
@@ -197,25 +245,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
 
-        // Regular rendering code
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
-        batch.end();
-
-        // Draw entities
-        batch.begin();
-        entityManager.draw(batch);
-
-        // Draw health and score
-        healthManager.draw(batch);
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
-                sceneUIManager.getStage().getHeight() - 30);
-
-        batch.end();
-
-        // Draw stage
-        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
-        sceneUIManager.getStage().draw();
+        draw();
 
         // Render debug matrix
         debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
@@ -257,12 +287,20 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.warn("Not enough active bodies for physics simulation");
         }
 
-        scoreManager.addScore(10);
+        remainingTime -= deltaTime;
+
+        if(trashes.isEmpty()) {
+            scoreManager.multiplyScore((float) (remainingTime/100));
+            sceneManager.setScene("gameover");
+        }
+
         // LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
     @Override
     public void show() {
+        timer.resetTime();
+        timer.start();
         if (inputMultiplexer == null) {
             inputMultiplexer = new InputMultiplexer();
         } else {
@@ -278,7 +316,16 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     }
 
     @Override
+    public void hide() {
+        timer.stop();
+
+    }
+
+    @Override
     public void dispose() {
+
+        scoreManager.multiplyScore((float) (remainingTime/100));
+        LOGGER.info("Final Score: " + scoreManager.getScore());
         // Log world state before disposal
         LOGGER.info("Before GameScene disposal:");
 
@@ -309,8 +356,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         initPopUpMenu();
         displayMessage();
 
-        timer = new TimeManager();
-        timer.setTime(0, 0, 30);
+        remainingTime = 300.0f;
 
         // Init assets
         try {
@@ -372,6 +418,20 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Create entities using factory manager
             boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
             boat.setCollisionManager(collisionManager);
+
+            // Set life loss callback for boat
+            boat.setLifeLossCallback(new ILifeLossCallback() {
+                @Override
+                public void onLifeLost() {
+                    loseLife();
+                    if (healthManager.getLives() == 0) {
+                        sceneManager.setScene("gameover");
+                        audioManager.stopMusic();
+                        audioManager.hideVolumeControls();
+                        options.getRebindMenu().setVisible(false);
+                    }
+                }
+            });
 
             // Create rocks and trash
             for (int i = 0; i < constants.NUM_ROCKS(); i++) {
@@ -510,18 +570,24 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Load sea turtle texture and create TextureRegion
         seaTurtleImage = assetManager.getAsset("seaturtle.png", Texture.class);
-        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 2, 2);
+        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
 
         // Create sea turtle directional sprites for all 4 directions
-        TextureRegion[] fourDirectionalSprites = new TextureRegion[4];
-        fourDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[3]; // UP
-        fourDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2]; // RIGHT
-        fourDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0]; // DOWN
-        fourDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1]; // LEFT
+        TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
+
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7]; // UP
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2]; // RIGHT
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0]; // DOWN
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1]; // LEFT
+
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_RIGHT] = seaTurtleRegion[5]; // UP
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_RIGHT] = seaTurtleRegion[3]; // RIGHT
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_LEFT] = seaTurtleRegion[4]; // DOWN
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_LEFT] = seaTurtleRegion[6]; // LEFT
 
         // Register the directional sprites with the asset manager
-        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, fourDirectionalSprites);
-        seaTurtleRegion = fourDirectionalSprites;
+        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
+        seaTurtleRegion = turtleDirectionalSprites;
 
         // Load trash textures and create TextureRegions
         trashTextures = new Texture[3];
@@ -676,6 +742,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         batch.end();
     }
 
+    /**
+     * Removes the on-screen key binding message.
+     */
     private void hideDisplayMessage() {
         sceneUIManager.getStage().getActors()
                 .select(a -> a.getClass() == TextField.class) // Filter only TextField instances

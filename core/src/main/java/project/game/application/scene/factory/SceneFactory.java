@@ -7,7 +7,6 @@ import java.util.function.Supplier;
 import project.game.application.scene.main.GameScene;
 import project.game.application.scene.main.MainMenuScene;
 import project.game.application.scene.overlay.GameOverScene;
-import project.game.application.scene.overlay.OptionsScene;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.api.IScene;
@@ -37,7 +36,6 @@ public class SceneFactory {
         sceneCreators = new HashMap<>();
         sceneCreators.put("menu", () -> new MainMenuScene(sceneManager, inputManager));
         sceneCreators.put("game", () -> new GameScene(sceneManager, inputManager));
-        sceneCreators.put("options", () -> new OptionsScene(sceneManager, inputManager));
         sceneCreators.put("gameover", () -> new GameOverScene(sceneManager, inputManager));
         //sceneCreators.put("game2", () -> new GameScene2(sceneManager, inputManager));
     }

@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector2;
  * This class is separate from the main input manager to allow scenes
  * to opt-in to movement controls only when needed.
  */
+
 public class KeyBindingsManager {
 
     private static final Logger LOGGER = Logger.getLogger(KeyBindingsManager.class.getName());
