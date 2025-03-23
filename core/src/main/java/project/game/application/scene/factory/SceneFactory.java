@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import project.game.application.scene.main.GameScene;
-import project.game.application.scene.main.GameScene2;
 import project.game.application.scene.main.MainMenuScene;
 import project.game.application.scene.overlay.GameOverScene;
 import project.game.application.scene.overlay.OptionsScene;
@@ -40,7 +39,7 @@ public class SceneFactory {
         sceneCreators.put("game", () -> new GameScene(sceneManager, inputManager));
         sceneCreators.put("options", () -> new OptionsScene(sceneManager, inputManager));
         sceneCreators.put("gameover", () -> new GameOverScene(sceneManager, inputManager));
-        sceneCreators.put("game2", () -> new GameScene2(sceneManager, inputManager));
+        //sceneCreators.put("game2", () -> new GameScene2(sceneManager, inputManager));
     }
 
     public void createAndRegisterScenes() {

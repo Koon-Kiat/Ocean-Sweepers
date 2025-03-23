@@ -132,6 +132,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
+        this.sceneTransition = new Scenetransition(sceneManager);
     }
 
     public SpriteBatch getBatch() {
@@ -245,7 +246,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
             // Play sound effect on collision
             if (collisionManager.collision() && audioManager != null) {
-                audioManager.playSoundEffect("drophit");
+                audioManager.playSoundEffect("collision");
                 // SCORE SYSTEM IMPLEMENTED HERE
                 // scoreManager.addScore(10);
                 // LOGGER.log(Level.INFO, "Score: {0}", scoreManager.getScore());
@@ -425,8 +426,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Load and play audio
             MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
             SoundManager.getInstance().loadSoundEffects(
-                    new String[] { "watercollision.mp3", "Boinkeffect.mp3", "selection.mp3" },
-                    new String[] { "drophit", "keybuttons", "selection" });
+                    new String[] { "watercollision.mp3", "Boinkeffect.mp3", "selection.mp3", "rubble.mp3" },
+                    new String[] { "drophit", "keybuttons", "selection", "collision" });
 
             // Set audio configuration
             audioManager.setMusicVolume(config.getMusicVolume());
@@ -599,6 +600,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         // Toggle game menu
         if (inputManager.isKeyJustPressed(Input.Keys.M)) {
             sceneManager.setScene("menu");
+            audioManager.stopMusic();
         } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
             audioManager.stopMusic();
@@ -639,12 +641,14 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         }
         if (inputManager.isKeyJustPressed(Input.Keys.L)) {
             sceneTransition.showLevelCompletePopup(this);
-        }
-        // Switch to game2 scene (just for testing)
-        if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-            sceneManager.setScene("game2");
+            sceneManager.setScene("");
             audioManager.stopMusic();
         }
+        // Switch to game2 scene (just for testing)
+        //if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+            //sceneManager.setScene("game2");
+            //audioManager.stopMusic();
+        //}
     }
 
     /**

@@ -144,6 +144,7 @@ public class MainMenuScene extends Scene {
             audioManager.playSoundEffect("selection");
             LOGGER.info("Start Game Clicked!");
             sceneManager.setScene("game");
+            audioManager.playMusic("background");
         });
 
         inputManager.addButtonClickListener(optionsButton, () -> {
