@@ -28,7 +28,7 @@ public class AudioConfig implements IAudioConfig {
 
     @Override
     public float getMusicVolume() {
-        return prefs.getFloat("musicVolume", 0.2f);
+        return prefs.getFloat("musicVolume", 0f);
     }
 
     @Override
@@ -39,6 +39,6 @@ public class AudioConfig implements IAudioConfig {
 
     @Override
     public float getSoundVolume() {
-        return prefs.getFloat("soundVolume", 0.2f);
+        return prefs.getFloat("soundVolume", 0.1f);
     }
 }

@@ -33,6 +33,7 @@ import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.application.movement.strategy.ConstantMovementStrategy;
 import project.game.application.scene.overlay.Options;
+import project.game.application.scene.overlay.Scenetransition;
 import project.game.application.scene.ui.AudioUI;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
@@ -54,6 +55,7 @@ import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
 
+
 public class GameScene extends Scene implements IEntityRemovalListener {
 
     private static final GameLogger LOGGER = new GameLogger(GameScene.class);
@@ -68,6 +70,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private Window popupMenu;
     private Skin skin;
     private OrthographicCamera camera;
+
+    // Transition
+    private Scenetransition sceneTransition;
 
     // Audio
     private AudioManager audioManager;
@@ -290,6 +295,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     @Override
     public void create() {
+        sceneTransition = new Scenetransition(sceneManager); // Initialize transition
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
@@ -627,6 +633,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 audioManager.hideVolumeControls();
                 options.getRebindMenu().setVisible(false);
             }
+        }
+        if (inputManager.isKeyJustPressed(Input.Keys.L)) {
+            sceneTransition.showLevelCompletePopup(this);
         }
         // Switch to game2 scene (just for testing)
         if (inputManager.isKeyJustPressed(Input.Keys.N)) {

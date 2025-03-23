@@ -108,7 +108,6 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private Texture heartTexture = new Texture("droplet.png");
 
     public GameScene2(SceneManager sceneManager, SceneInputManager sceneInputManager) {
-
         super(sceneManager, sceneInputManager);
         gameScene = new GameScene(sceneManager, sceneInputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
