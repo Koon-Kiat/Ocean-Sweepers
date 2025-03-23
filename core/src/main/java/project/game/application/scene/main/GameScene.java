@@ -121,12 +121,15 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
     private Texture heartTexture = new Texture("heart.png");
-    private TimeManager timer;
+    protected TimeManager timer;
+    private boolean showTimer = true;  // Flag to control if the timer is shown
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
+        this.timer = new TimeManager(0, 10);
+        //this.timer.start(); // Ensure timer starts only in game scene
     }
 
     /**
@@ -168,9 +171,53 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         LOGGER.debug("Popup menu closed");
     }
 
+    protected void draw() {
+        // Regular rendering code
+        batch.begin();
+        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+        batch.end();
+
+        // Draw entities
+        batch.begin();
+        entityManager.draw(batch);
+
+        // Draw health and score
+        healthManager.draw(batch);
+        // print score
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
+            sceneUIManager.getStage().getHeight() - 30);
+        
+        // Time left in logs
+        System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+
+        // print timer
+        if (showTimer) {
+            skin.getFont("default-font").setColor(1, 1, 1, 1); // Set color to white
+            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d", 
+            timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+            skin.getFont("default-font").setColor(0, 0, 0, 1); // Reset color to black
+        }
+
+        batch.end();
+
+        // Draw stage
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
+    }
+
+    public void setShowTimer(boolean show) {
+        this.showTimer = show;  // Allow external classes to control whether the timer is visible
+    }
+
     @Override
     public void render(float deltaTime) {
         input();
+        timer.update(deltaTime);
+        
+        if (timer.isTimeUp()) {
+            timer.stop();
+            sceneManager.setScene("gameover");
+        }
 
         try {
             // Update movement for all entities
@@ -183,25 +230,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
 
-        // Regular rendering code
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
-        batch.end();
-
-        // Draw entities
-        batch.begin();
-        entityManager.draw(batch);
-
-        // Draw health and score
-        healthManager.draw(batch);
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
-                sceneUIManager.getStage().getHeight() - 30);
-        
-        batch.end();
-
-        // Draw stage
-        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
-        sceneUIManager.getStage().draw();
+        draw();
 
         // Render debug matrix
         debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
@@ -249,6 +278,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     @Override
     public void show() {
+        timer.resetTime();
+        timer.start();
         if (inputMultiplexer == null) {
             inputMultiplexer = new InputMultiplexer();
         } else {
@@ -261,6 +292,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
         audioManager.playMusic("BackgroundMusic");
+    }
+
+    @Override
+    public void hide() {
+        timer.stop();
+
     }
 
     @Override
@@ -294,8 +331,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         initPopUpMenu();
         displayMessage();
 
-        timer = new TimeManager();
-        timer.setTime(0, 0, 30);
 
         // Init assets
         try {
@@ -658,13 +693,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     /**
      * Removes the on-screen key binding message.
      */
-    // private void hideDisplayMessage() {
-    //     for (Actor actor : sceneUIManager.getStage().getActors()) {
-    //         if (actor instanceof TextField) {
-    //             actor.remove();
-    //         }
-    //     }
-    // }
     private void hideDisplayMessage() {
         sceneUIManager.getStage().getActors()
             .select(a -> a.getClass() == TextField.class) // Filter only TextField instances

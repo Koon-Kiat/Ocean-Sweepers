@@ -172,8 +172,8 @@ public class MainMenuScene extends Scene {
 
         table.add(playButton).padBottom(10);
         table.row();
-        table.add(optionsButton).padBottom(10);
-        table.row();
+        // table.add(optionsButton).padBottom(10);
+        // table.row();
         table.add(exitButton);
 
         sceneUIManager.getStage().addActor(table);

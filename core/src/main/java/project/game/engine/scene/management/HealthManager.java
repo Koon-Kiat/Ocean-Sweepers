@@ -43,7 +43,7 @@ public class HealthManager {
     public void draw(SpriteBatch batch) {
         int heartSpacing = 50;
         int xOffset = 25;
-        int yOffset = Gdx.graphics.getHeight() - 50;
+        int yOffset = Gdx.graphics.getHeight() - 75;
 
         // Define heart dimensions - adjust as needed
         int heartWidth = 60;

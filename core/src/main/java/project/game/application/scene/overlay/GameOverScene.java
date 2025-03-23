@@ -16,6 +16,7 @@ import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
+import project.game.engine.scene.management.TimeManager;
 
 public class GameOverScene extends Scene {
 
@@ -24,11 +25,13 @@ public class GameOverScene extends Scene {
     private SpriteBatch batch;
     private BitmapFont font;
     private Texture heartTexture = new Texture("heart.png");
+    private TimeManager timer;
 
     public GameOverScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
+        //this.timer = TimeManager.getInstance(timer.getMinutes(), timer.getSeconds());
     }
 
     /**
@@ -46,6 +49,8 @@ public class GameOverScene extends Scene {
                 false);
         font.draw(batch, "Score: " + scoreManager.getScore(), Gdx.graphics.getWidth() / 2f,
                 Gdx.graphics.getHeight() - 130, 0, Align.center, false);
+        // font.draw(batch, String.format("Time: %02d:%02d", 
+        //         timer.getMinutes(), timer.getSeconds()), Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 160, 0, Align.center, false);
         batch.end();
         sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
         sceneUIManager.getStage().draw();
