@@ -131,7 +131,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
-        this.timer = new TimeManager(0, 10);
+        this.timer = new TimeManager(0, 20);
     }
     
     public SpriteBatch getBatch() {
@@ -286,6 +286,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         if(trashes.isEmpty()) {
             scoreManager.multiplyScore((float) (remainingTime/100));
+            // Indicate that the player has won
+            sceneManager.setWinState(true);
             sceneManager.setScene("gameover");
         }
 
@@ -657,10 +659,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 }
             }
         }
-        // Toggle game menu
-        if (inputManager.isKeyJustPressed(Input.Keys.M)) {
-            sceneManager.setScene("menu");
-        } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
+
+        // end game (debugging purposes)
+        if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
             audioManager.stopMusic();
             audioManager.hideVolumeControls();
@@ -688,17 +689,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 LOGGER.info("InputProcessor set to inputManager");
             }
         }
-
-        if (inputManager.isKeyJustPressed(Input.Keys.NUM_0)) {
-            loseLife();
-            if (healthManager.getLives() == 0) {
-                sceneManager.setScene("gameover");
-                audioManager.stopMusic();
-                audioManager.hideVolumeControls();
-                options.getRebindMenu().setVisible(false);
-            }
-        }
-        // Switch to game2 scene (just for testing)
+        // Switch to game2 scene (debugging purposes)
         if (inputManager.isKeyJustPressed(Input.Keys.N)) {
             sceneManager.setScene("game2");
             audioManager.stopMusic();
@@ -720,7 +711,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         textField.setPosition(sceneUIManager.getStage().getWidth() / 2f - textField.getWidth() / 2f,
                 sceneUIManager.getStage().getHeight() - textField.getHeight());
         textField.setMessageText(
-                "Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
+                "Debugging: \nPress P to pause and rebind keys\nPress E to end the game\nPress N to switch to GameScene2");
         textField.setDisabled(true);
         sceneUIManager.getStage().addActor(textField);
 

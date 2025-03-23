@@ -21,7 +21,6 @@ import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
-import project.game.engine.scene.management.TimeManager;
 
 public class GameOverScene extends Scene {
 
@@ -29,14 +28,16 @@ public class GameOverScene extends Scene {
     private final ScoreManager scoreManager;
     private SpriteBatch batch;
     private BitmapFont font;
-    private Texture heartTexture = new Texture("heart.png");
+    private Texture heartTexture; 
     private Texture backgroundTexture, winBackgroundTexture;
+    private boolean nextLevelButtonAdded = false;
+    private TextButton nextLevelButton;
+    private TextButtonStyle textButtonStyle;
 
     public GameOverScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
-        //this.timer = TimeManager.getInstance(timer.getMinutes(), timer.getSeconds());
     }
 
     /**
@@ -51,6 +52,12 @@ public class GameOverScene extends Scene {
         Gdx.input.setInputProcessor(sceneUIManager.getStage());
         batch.begin();
         // batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        /*
+         * Win condition logic
+         */
+        //if (sceneManager.hasWon()) {
+        
         if (scoreManager.getScore() >= 500) {
             batch.draw(winBackgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             // Draw "You Win!" text with outline
@@ -59,6 +66,30 @@ public class GameOverScene extends Scene {
             font.draw(batch, "You Win!", Gdx.graphics.getWidth() / 2f - 2, Gdx.graphics.getHeight() - 100 + 2, 0, Align.center, false);
             font.setColor(Color.WHITE);
             font.draw(batch, "You Win!", Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() - 100, 0, Align.center, false);
+            
+            //if (!nextLevelButtonAdded) {
+            if (!nextLevelButtonAdded && "GameScene".equals(sceneManager.getPreviousScene())) {
+
+                nextLevelButtonAdded = true; // Prevent multiple additions
+    
+                nextLevelButton = new TextButton("Next Level", textButtonStyle);
+                nextLevelButton.setSize(200, 60);
+                nextLevelButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f + 80);
+    
+                inputManager.addButtonClickListener(nextLevelButton, () -> {
+                    resetGame();
+                    sceneManager.setScene("game2");
+                });
+    
+                sceneUIManager.getStage().addActor(nextLevelButton);
+
+            } else if ("GameScene2".equals(sceneManager.getPreviousScene())) {
+                nextLevelButtonAdded = false; // Reset for next level
+                if (nextLevelButton != null) {
+                    nextLevelButton.remove();
+                    nextLevelButton = null;
+                }
+            }
         } else {
             batch.draw(backgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             // Draw "Game Over" text with outline
@@ -116,7 +147,7 @@ public class GameOverScene extends Scene {
         Drawable transparentDrawable = createColorDrawable(new Color(0, 0, 0, 0));
 
         // Create button style with custom font
-        TextButtonStyle textButtonStyle = new TextButtonStyle(
+        textButtonStyle = new TextButtonStyle(
                 transparentDrawable,
                 transparentDrawable,
                 transparentDrawable,
