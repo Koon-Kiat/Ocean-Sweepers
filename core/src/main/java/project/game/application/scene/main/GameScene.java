@@ -54,6 +54,7 @@ import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
+import project.game.engine.scene.management.TimeManager;
 
 
 public class GameScene extends Scene implements IEntityRemovalListener {
@@ -124,14 +125,21 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] trashRegions;
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
-    //private HealthManager healthManager;
-    //private ScoreManager scoreManager;
-    private Texture heartTexture = new Texture("heart.png");
+    private final Texture heartTexture = new Texture("heart.png");
+    private TimeManager timer;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
+    }
+
+    public SpriteBatch getBatch() {
+        return batch;
+    }
+
+    public Skin getSkin() {
+        return skin;
     }
 
     /**
@@ -198,17 +206,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         entityManager.draw(batch);
 
         // Draw health and score
-        // batch.begin();
         healthManager.draw(batch);
         skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
                 sceneUIManager.getStage().getHeight() - 30);
-        batch.end();
 
-        // Draw health and score
-        batch.begin();
-        healthManager.draw(batch);
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
-                sceneUIManager.getStage().getHeight() - 30);
         batch.end();
 
         // Draw stage
@@ -256,7 +257,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         }
 
         scoreManager.addScore(10);
-        LOGGER.info("Score: {0}", scoreManager.getScore());
+        // LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
     @Override
@@ -304,9 +305,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         constants = GameConstantsFactory.getConstants();
         config = new AudioConfig();
         LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
-
         initPopUpMenu();
         displayMessage();
+
+        timer = new TimeManager();
+        timer.setTime(0, 0, 30);
 
         // Init assets
         try {
@@ -439,19 +442,19 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Init complete
     }
-    
+
     @Override
     public void onEntityRemove(Entity entity) {
         if (entity == null || entityManager == null) {
             LOGGER.error("Entity or EntityManager is null");
             return;
         }
-    
+
         LOGGER.info("Removing entity: {0}", entity.getID());
         existingEntities.remove(entity);
         entity.removeFromManager(entityManager);
         LOGGER.info("Entity removed from manager: {0}", entity.getID());
-    
+
         for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
@@ -669,14 +672,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         batch.end();
     }
 
-    /**
-     * Removes the on-screen key binding message.
-     */
     private void hideDisplayMessage() {
-        for (Actor actor : sceneUIManager.getStage().getActors()) {
-            if (actor instanceof TextField) {
-                actor.remove();
-            }
-        }
+        sceneUIManager.getStage().getActors()
+                .select(a -> a.getClass() == TextField.class) // Filter only TextField instances
+                .forEach(Actor::remove); // Remove them from the stage
     }
 }
