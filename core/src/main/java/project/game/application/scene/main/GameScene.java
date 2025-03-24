@@ -147,10 +147,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
-        options.setMainMenuButtonVisibility(true);
-        options.getPopupMenu().setTouchable(Touchable.enabled);
-
-        popupMenu = options.getPopupMenu();
         inputMultiplexer = new InputMultiplexer();
 
         // Add popup menu to the stage
@@ -162,23 +158,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             Gdx.app.log("GameScene", "popupMenu is null");
         }
 
-        sceneUIManager.getStage().addActor(options.getPopupMenu());
         sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
     public void loseLife() {
         healthManager.loseLife();
-    }
-
-    /**
-     * Closes the popup menu and resumes game play.
-     */
-    public void closePopupMenu() {
-        isMenuOpen = false;
-        options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(sceneUIManager.getStage());
-        inputMultiplexer.addProcessor(inputManager);
-        LOGGER.debug("Popup menu closed");
     }
 
     protected void draw() {
