@@ -15,6 +15,8 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.entity.player.Boat;
+import project.game.application.entity.npc.SeaTurtle;
+import project.game.application.entity.obstacle.Rock;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
@@ -42,6 +44,12 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     static {
         // Register collision handler for Boat
         registerTrashCollisionHandler(Boat.class, Trash::handleBoatCollision);
+        // Handler for trash-trash collisions
+        registerTrashCollisionHandler(Trash.class, Trash::handleTrashCollision);
+        // Register collision handler for SeaTurtle
+        registerTrashCollisionHandler(SeaTurtle.class, Trash::handleSeaTurtleCollision);
+        // Register collision handler for Rock
+        registerTrashCollisionHandler(Rock.class, Trash::handleRockCollision);
     }
 
     /**
@@ -71,6 +79,15 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     public void setCollisionActive(long durationMillis) {
         collisionActive = true;
         collisionEndTime = System.currentTimeMillis() + durationMillis;
+
+        // When collision becomes active, sync position between physics body and entity
+        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+        float physX = getBody().getPosition().x * pixelsToMeters;
+        float physY = getBody().getPosition().y * pixelsToMeters;
+
+        // Update entity position
+        getEntity().setX(physX);
+        getEntity().setY(physY);
     }
 
     public void setCollisionManager(CollisionManager collisionManager) {
@@ -97,12 +114,45 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public void collideWith(Object other) {
-        onCollision((ICollidableVisitor) other);
+        if (other instanceof ICollidableVisitor) {
+            onCollision((ICollidableVisitor) other);
+        }
     }
 
     @Override
     public void collideWithBoundary() {
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+        // Get current velocity
+        com.badlogic.gdx.math.Vector2 velocity = body.getLinearVelocity();
+        float speed = velocity.len();
+
+        // Get position to determine which boundary was hit
+        float x = entity.getX();
+        float y = entity.getY();
+        float bounceMultiplier = 0.8f; // Maintain 80% of speed after bounce
+
+        // Get game boundaries
+        float gameWidth = GameConstantsFactory.getConstants().GAME_WIDTH();
+        float gameHeight = GameConstantsFactory.getConstants().GAME_HEIGHT();
+
+        // Determine which boundary was hit and reverse appropriate velocity component
+        if (x <= 0 || x >= gameWidth) {
+            velocity.x = -velocity.x * bounceMultiplier;
+        }
+        if (y <= 0 || y >= gameHeight) {
+            velocity.y = -velocity.y * bounceMultiplier;
+        }
+
+        // Ensure minimum speed after bounce
+        float minSpeed = 2.0f;
+        if (velocity.len() < minSpeed) {
+            velocity.nor().scl(minSpeed);
+        }
+
+        // Apply the new velocity
+        body.setLinearVelocity(velocity);
+
+        // Keep damping low to maintain movement
+        body.setLinearDamping(0.2f);
     }
 
     @Override
@@ -218,7 +268,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         bodyDef.position.set(centerX, centerY);
         bodyDef.fixedRotation = true;
         bodyDef.bullet = true;
-        bodyDef.linearDamping = 0.8f;
+        bodyDef.linearDamping = 0.05f;
 
         Body newBody = world.createBody(bodyDef);
         CircleShape shape = new CircleShape();
@@ -226,9 +276,9 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.2f;
-        fixtureDef.restitution = 0.1f;
+        fixtureDef.density = 0.3f;
+        fixtureDef.friction = 0.1f;
+        fixtureDef.restitution = 0.8f;
 
         Filter filter = new Filter();
         filter.categoryBits = 0x0004; // Trash category
@@ -278,6 +328,101 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
                 }
             }
         }
+    }
+
+    private void handleTrashCollision(ICollidableVisitor other) {
+        if (other == null || !(other instanceof Trash)) {
+            return;
+        }
+    
+        // Get the other Trash object
+        Trash otherTrash = (Trash) other;
+    
+        // Get the positions of both Trash objects
+        float trash1X = getBody().getPosition().x;
+        float trash1Y = getBody().getPosition().y;
+        float trash2X = otherTrash.getBody().getPosition().x;
+        float trash2Y = otherTrash.getBody().getPosition().y;
+    
+        // Calculate direction from trash2 to trash1
+        float dx = trash1X - trash2X;
+        float dy = trash1Y - trash2Y;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+    
+        if (distance > 0.0001f) {
+            dx /= distance;
+            dy /= distance;
+    
+            // Apply a repulsion force to both trash objects
+            float repulsionForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE() * 3; // Adjust as needed
+            getBody().applyLinearImpulse(dx * repulsionForce, dy * repulsionForce, trash1X, trash1Y, true);
+            otherTrash.getBody().applyLinearImpulse(-dx * repulsionForce, -dy * repulsionForce, trash2X, trash2Y, true);
+        }
+    
+        // Ensure minimum speed after collision
+        float minSpeed = 3.0f;
+        com.badlogic.gdx.math.Vector2 velocity1 = getBody().getLinearVelocity();
+        if (velocity1.len() < minSpeed) {
+            velocity1.x = dx * minSpeed;
+            velocity1.y = dy * minSpeed;
+            getBody().setLinearVelocity(velocity1);
+        }
+        com.badlogic.gdx.math.Vector2 velocity2 = otherTrash.getBody().getLinearVelocity();
+        if (velocity2.len() < minSpeed) {
+            velocity2.x = -dx * minSpeed;
+            velocity2.y = -dy * minSpeed;
+            otherTrash.getBody().setLinearVelocity(velocity2);
+        }
+    
+        // Reduce linear damping to maintain post-collision movement
+        getBody().setLinearDamping(0.01f);
+        otherTrash.getBody().setLinearDamping(0.01f);
+    }
+
+    private void handleSeaTurtleCollision(ICollidableVisitor seaTurtle) {
+        // SeaTurtle collision handling
+        // SeaTurtle is not affected by trash collisions
+    }
+
+     /**
+     * Handle collision with a rock
+     */
+    private void handleRockCollision(ICollidableVisitor rock) {
+        if (rock == null || !(rock instanceof Rock)) {
+            return;
+        }
+
+        // Get the Rock object
+        Rock currentRock = (Rock) rock;
+
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+        float trashX = getBody().getPosition().x;
+        float trashY = getBody().getPosition().y;
+        float rockX = currentRock.getBody().getPosition().x;
+        float rockY = currentRock.getBody().getPosition().y;
+
+        float dx = trashX - rockX;
+        float dy = trashY - rockY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        // LOGGER.info("go distance: " + distance);
+
+        if (distance > 0.0001f) {
+            dx /= distance;
+            dy /= distance;
+            float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE() * 2;
+            getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, trashX, trashY, true);
+        }
+
+        // Ensure minimum speed after collision
+        float minSpeed = 3.0f;
+        com.badlogic.gdx.math.Vector2 velocity = getBody().getLinearVelocity();
+        if (velocity.len() < minSpeed) {
+            velocity.nor().scl(minSpeed);
+            getBody().setLinearVelocity(velocity);
+        }
+
+        // Reduce linear damping to maintain post-collision movement
+        getBody().setLinearDamping(0.01f);
     }
 
 }

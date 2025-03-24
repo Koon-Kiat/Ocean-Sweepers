@@ -16,6 +16,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import project.game.Main;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.player.Boat;
+import project.game.application.entity.item.Trash;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
@@ -41,6 +42,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 		// Register collision handlers for different entity types
 		registerRockCollisionHandler(Boat.class, Rock::handleBoatCollision);
 		registerRockCollisionHandler(SeaTurtle.class, Rock::handleMonsterCollision);
+		registerRockCollisionHandler(Trash.class, Rock::handleTrashCollision);
 	}
 
 	/**
@@ -128,7 +130,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.friction = 0.4f;
-		fixtureDef.restitution = 0.0f;
+		fixtureDef.restitution = 0.5f;
 
 		// Set up collision filtering
 		Filter filter = new Filter();
@@ -249,6 +251,14 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	}
 
 	/**
+	 * Handle collision with a trash
+	 */
+	private void handleTrashCollision(ICollidableVisitor other) {
+		// Apply strong repulsion force to boat
+		applyRepulsionForce(other, 0.05f);
+	}
+
+	/**
 	 * Handle collision with any other entity
 	 */
 	private void handleDefaultCollision(ICollidableVisitor other) {
@@ -289,8 +299,18 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 
 		// Set collision states
 		setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-		if (other.getBody() != null) {
-			other.getBody().setLinearDamping(3.0f);
+		// Reset damping after a short delay
+		final Body otherBody = other.getBody();
+		if (otherBody != null) {
+			otherBody.setLinearDamping(3.0f); // Set high damping initially
+			java.util.Timer timer = new java.util.Timer();
+			timer.schedule(new java.util.TimerTask() {
+				@Override
+				public void run() {
+					otherBody.setLinearDamping(0.5f); // Reset to normal damping
+					timer.cancel();
+				}
+			}, 200); // Delay in milliseconds
 		}
 	}
 

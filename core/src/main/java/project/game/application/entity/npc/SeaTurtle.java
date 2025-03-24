@@ -66,8 +66,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         // Register collision handlers for specific entity types
         registerSeaTurtleCollisionHandler(Boat.class, SeaTurtle::handleBoatCollision);
         registerSeaTurtleCollisionHandler(Rock.class, SeaTurtle::handleRockCollision);
-        registerSeaTurtleCollisionHandler(Trash.class, (seaTurtle, trash) -> {
-            /* Ignore trash collisions */});
+        registerSeaTurtleCollisionHandler(Trash.class, SeaTurtle:: handleTrashCollision);
     }
 
     /**
@@ -384,13 +383,11 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
             collisionActive = false;
             // Reset damping when collision ends
-            getBody().setLinearDamping(0.2f);
-            // Clear any lingering velocity when exiting collision state
-            getBody().setLinearVelocity(0, 0);
+            getBody().setLinearDamping(0.5f);  
         }
         return collisionActive;
     }
-
+    
     @Override
     public void collideWith(Object other) {
         onCollision((ICollidableVisitor) other);
@@ -398,7 +395,38 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public void collideWithBoundary() {
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+        // Get current velocity
+        Vector2 velocity = body.getLinearVelocity();
+        float speed = velocity.len();
+    
+        // Get position to determine which boundary was hit
+        float x = entity.getX();
+        float y = entity.getY();
+        float bounceMultiplier = 0.8f; // Maintain 80% of speed after bounce
+    
+        // Get game boundaries
+        float gameWidth = GameConstantsFactory.getConstants().GAME_WIDTH();
+        float gameHeight = GameConstantsFactory.getConstants().GAME_HEIGHT();
+    
+        // Determine which boundary was hit and reverse appropriate velocity component
+        if (x <= 0 || x >= gameWidth) {
+            velocity.x = -velocity.x * bounceMultiplier;
+        }
+        if (y <= 0 || y >= gameHeight) {
+            velocity.y = -velocity.y * bounceMultiplier;
+        }
+    
+        // Ensure minimum speed after bounce
+        float minSpeed = 2.0f;
+        if (velocity.len() < minSpeed) {
+            velocity.nor().scl(minSpeed);
+        }
+    
+        // Apply the new velocity
+        body.setLinearVelocity(velocity);
+    
+        // Keep damping low to maintain movement
+        body.setLinearDamping(0.2f);
     }
 
     /**
@@ -414,24 +442,17 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * @param other The other entity involved in the collision
      */
     private void dispatchCollisionHandling(ICollidableVisitor other) {
-        // Skip trash collisions
-        if (other.getClass() == Trash.class) {
-            return;
-        }
-
-        // Set collision active by default for non-trash entities
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-
         // Get other entity's class and find a matching handler
         Class<?> otherClass = other.getClass();
-
-        // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> entry : SEA_TURTLE_COLLISION_HANDLERS
-                .entrySet()) {
-            if (entry.getKey().isAssignableFrom(otherClass)) {
-                entry.getValue().accept(this, other);
-                return;
+    
+        // Handle collision based on registered handlers - single execution only
+        BiConsumer<SeaTurtle, ICollidableVisitor> handler = SEA_TURTLE_COLLISION_HANDLERS.get(otherClass);
+        if (handler != null) {
+            // Only set collision active for non-trash entities
+            if (otherClass != Trash.class) {
+                setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
             }
+            handler.accept(this, other);
         }
     }
 
@@ -516,6 +537,54 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
             // Reduce damping to allow movement
             getBody().setLinearDamping(0.5f);
+        }
+    }
+
+    /**
+     * Handle collision with trash
+     */
+    private void handleTrashCollision(ICollidableVisitor trash) {
+        if (trash == null || !(trash instanceof Trash)) {
+            return; // Ensure the collision entity is indeed a Trash object
+        }
+    
+        Trash trashEntity = (Trash) trash;
+    
+        // Apply a small impulse to the turtle in the opposite direction of the trash
+        Vector2 trashPosition = trash.getBody().getPosition();
+        Vector2 turtlePosition = getBody().getPosition();
+    
+        float dx = turtlePosition.x - trashPosition.x;
+        float dy = turtlePosition.y - trashPosition.y;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+    
+        if (distance > 0.0001f) {
+            // Normalize the direction
+            dx /= distance;
+            dy /= distance;
+    
+            // Apply a small impulse to the turtle
+            float trashImpulse = GameConstantsFactory.getConstants().TRASH_BASE_IMPULSE();
+            getBody().applyLinearImpulse(
+                dx * trashImpulse,
+                dy * trashImpulse,
+                getBody().getWorldCenter().x,
+                getBody().getWorldCenter().y,
+                true
+            );
+        }
+    
+        // Check if the CollisionManager is available to safely remove the Trash
+        if (collisionManager != null) {
+            collisionManager.scheduleBodyRemoval(
+                trashEntity.getBody(),
+                trashEntity.getEntity(),
+                entity -> { // Implement IEntityRemovalListener
+                    LOGGER.info("SeaTurtle ate trash: {0}", new Object[]{trashEntity.getEntity().getClass().getSimpleName()});
+                }
+            );
+        } else {
+            LOGGER.warn("CollisionManager not set in SeaTurtle object - cannot safely remove trash");
         }
     }
 }
