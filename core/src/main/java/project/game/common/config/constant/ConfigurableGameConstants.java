@@ -54,13 +54,8 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
     }
 
     @Override
-    public float BOAT_BOUNCE_FORCE() {
-        return getFloatValue("BOAT_BOUNCE_FORCE");
-    }
-
-    @Override
-    public float TRASH_ROCK_BOUNCE_FORCE() {
-        return getFloatValue("TRASH_ROCK_BOUNCE_FORCE");
+    public float BOAT_BASE_IMPULSE() {
+        return getFloatValue("BOAT_BASE_IMPULSE");
     }
 
     @Override

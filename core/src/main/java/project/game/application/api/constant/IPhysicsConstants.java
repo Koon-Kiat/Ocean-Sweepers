@@ -15,7 +15,5 @@ public interface IPhysicsConstants {
 
     float TRASH_BASE_IMPULSE();
 
-    float BOAT_BOUNCE_FORCE();
-
-    float TRASH_ROCK_BOUNCE_FORCE();
+    float BOAT_BASE_IMPULSE();
 }

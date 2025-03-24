@@ -418,10 +418,15 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         if (distance > 0.0001f) {
             dx /= distance;
             dy /= distance;
-            float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE();
+            // Scale down the bounce force by PIXELS_TO_METERS since Box2D works in meters
+            float bounceForce = GameConstantsFactory.getConstants().BOAT_BASE_IMPULSE()
+                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
             LOGGER.info("boat bounce force: " + bounceForce);
             LOGGER.info("dy dx: " + dx);
             getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);
+
+            // Set higher damping during collision to reduce excessive bouncing
+            getBody().setLinearDamping(2.0f);
         }
     }
 

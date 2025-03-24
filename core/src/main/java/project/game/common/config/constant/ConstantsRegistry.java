@@ -50,7 +50,7 @@ public class ConstantsRegistry extends AbstractConstantsRegistry {
         def = new ConstantDefinition("ROCK_BASE_IMPULSE", CATEGORY_PHYSICS, Float.class, 2.0f);
         register(def.getKey(), def);
 
-        def = new ConstantDefinition("BOAT_BOUNCE_FORCE", CATEGORY_PHYSICS, Float.class, 0.1f);
+        def = new ConstantDefinition("BOAT_BASE_IMPULSE", CATEGORY_PHYSICS, Float.class, 0.1f);
         register(def.getKey(), def);
 
     }

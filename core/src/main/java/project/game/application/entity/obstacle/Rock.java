@@ -14,9 +14,9 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
+import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.player.Boat;
-import project.game.application.entity.item.Trash;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
@@ -90,9 +90,9 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	}
 
 	@Override
-    public boolean isRenderable() {
-        return true;
-    }
+	public boolean isRenderable() {
+		return true;
+	}
 
 	public void removeFromManager(EntityManager entityManager) {
 		if (entityManager == null) {
@@ -114,35 +114,40 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	@Override
 	public final Body createBody(World world, float x, float y, float width, float height) {
 		BodyDef bodyDef = new BodyDef();
-		bodyDef.type = BodyDef.BodyType.StaticBody;
-		float centerX = (x + width / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-		float centerY = (y + height / 2) / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+		bodyDef.type = BodyDef.BodyType.StaticBody; // Rocks are static/immovable
+		float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+
+		// Center the body
+		float centerX = (x + width / 2) / pixelsToMeters;
+		float centerY = (y + height / 2) / pixelsToMeters;
 		bodyDef.position.set(centerX, centerY);
 		bodyDef.fixedRotation = true;
-		bodyDef.allowSleep = false;
 
-		Body newBody = world.createBody(bodyDef);
-
+		Body body = world.createBody(bodyDef);
 		CircleShape shape = new CircleShape();
+
+		// Convert dimensions to Box2D meters and make hitbox slightly smaller than
+		// visual
+
 		float radius = Math.min(width, height) / 1.8f / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
 		shape.setRadius(radius);
 
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
-		fixtureDef.friction = 0.4f;
-		fixtureDef.restitution = 0.5f;
+		fixtureDef.density = 1000.0f; // Very heavy
+		fixtureDef.friction = 0.4f; // Moderate friction
+		fixtureDef.restitution = 0.2f; // Low bounce
 
-		// Set up collision filtering
 		Filter filter = new Filter();
-		filter.categoryBits = 0x0002;
-		filter.maskBits = -1;
+		filter.categoryBits = 0x0002; // Rock category
+		filter.maskBits = -1; // Collide with everything
 		fixtureDef.filter.categoryBits = filter.categoryBits;
 		fixtureDef.filter.maskBits = filter.maskBits;
 
-		newBody.createFixture(fixtureDef);
+		body.createFixture(fixtureDef);
 		shape.dispose();
-		newBody.setUserData(this);
-		return newBody;
+		body.setUserData(this);
+		return body;
 	}
 
 	// ISpriteRenderable implementation
@@ -203,6 +208,12 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 
 	@Override
 	public void onCollision(ICollidableVisitor other) {
+		// Since rocks are static, they don't need to apply forces
+		// The other objects handle their collision response with rocks
+		if (other != null) {
+			// Just maintain collision state for a short duration
+			setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION() / 2);
+		}
 		LOGGER.info("{0} collided with {1}",
 				new Object[] { getEntity().getClass().getSimpleName(),
 						other == null ? "boundary" : other.getClass().getSimpleName() });
@@ -239,7 +250,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	 */
 	private void handleBoatCollision(ICollidableVisitor other) {
 		// Apply strong repulsion force to boat
-		applyRepulsionForce(other, 1.5f);
+		applyRepulsionForce(other, 0.1f);
 	}
 
 	/**
@@ -247,15 +258,24 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	 */
 	private void handleMonsterCollision(ICollidableVisitor other) {
 		// Apply very strong repulsion force to monster
-		applyRepulsionForce(other, 15.0f);
+		applyRepulsionForce(other, 1.0f);
 	}
 
 	/**
 	 * Handle collision with a trash
 	 */
 	private void handleTrashCollision(ICollidableVisitor other) {
-		// Apply strong repulsion force to boat
-		applyRepulsionForce(other, 0.05f);
+		// For trash-rock collisions, we'll let the Trash handle the physics
+		// to avoid conflicting responses. Rock should minimally affect trash.
+
+		// Very important: Don't apply any damping or forces from the Rock side
+		// This allows the Trash's own collision handler to control the response
+
+		// We still need to mark the collision as active on the rock
+		setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+
+		// Log that we're deferring to the trash's collision handler
+		LOGGER.debug("Rock detected trash collision, deferring physics handling to trash object");
 	}
 
 	/**
@@ -299,19 +319,6 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 
 		// Set collision states
 		setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-		// Reset damping after a short delay
-		final Body otherBody = other.getBody();
-		if (otherBody != null) {
-			otherBody.setLinearDamping(3.0f); // Set high damping initially
-			java.util.Timer timer = new java.util.Timer();
-			timer.schedule(new java.util.TimerTask() {
-				@Override
-				public void run() {
-					otherBody.setLinearDamping(0.5f); // Reset to normal damping
-					timer.cancel();
-				}
-			}, 200); // Delay in milliseconds
-		}
 	}
 
 	@Override
