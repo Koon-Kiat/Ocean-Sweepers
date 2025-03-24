@@ -91,7 +91,6 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         }
 
         LOGGER.info("GameScene2 disposed");
-          
     }
 
     @Override

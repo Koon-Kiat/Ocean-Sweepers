@@ -37,7 +37,7 @@ public class SceneFactory {
         sceneCreators.put("menu", () -> new MainMenuScene(sceneManager, inputManager));
         sceneCreators.put("game", () -> new GameScene(sceneManager, inputManager));
         sceneCreators.put("gameover", () -> new GameOverScene(sceneManager, inputManager));
-        //sceneCreators.put("game2", () -> new GameScene2(sceneManager, inputManager));
+        sceneCreators.put("game2", () -> new GameScene(sceneManager, inputManager));
     }
 
     public void createAndRegisterScenes() {

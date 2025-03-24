@@ -16,7 +16,6 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
@@ -136,7 +135,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
-        this.timer = new TimeManager(0, 20);
+        this.timer = new TimeManager(0, 30);
     }
     
     public SpriteBatch getBatch() {
@@ -216,6 +215,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (timer.isTimeUp()) {
             timer.stop();
             sceneManager.setScene("gameover");
+            if (sceneManager.hasWon() == false) {
+                audioManager.playSoundEffect("loss");
+            }else{
+                audioManager.playSoundEffect("success");
+            }
+            audioManager.stopMusic();
         }
 
         try {
@@ -257,15 +262,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             collisionManager.processRemovalQueue();
             collisionManager.processCollisions();
             collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
-
-            // Play sound effect on collision
-            if (collisionManager.collision() && audioManager != null) {
-                audioManager.playSoundEffect("collision");
-                // SCORE SYSTEM IMPLEMENTED HERE
-                // scoreManager.addScore(10);
-                // LOGGER.log(Level.INFO, "Score: {0}", scoreManager.getScore());
-
-            }
         } else {
             // Process removal queue to prevent leaks
             LOGGER.warn("Not enough active bodies for physics simulation");
@@ -278,6 +274,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Indicate that the player has won
             sceneManager.setWinState(true);
             sceneManager.setScene("gameover");
+            audioManager.stopMusic();
+            audioManager.playSoundEffect("success");
         }
 
         // LOGGER.info("Score: {0}", scoreManager.getScore());
@@ -410,8 +408,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 @Override
                 public void onLifeLost() {
                     loseLife();
+                    audioManager.playSoundEffect("collision");
                     if (healthManager.getLives() == 0) {
                         sceneManager.setScene("gameover");
+                        audioManager.playSoundEffect("loss");
                         audioManager.stopMusic();
                         audioManager.hideVolumeControls();
                         options.getRebindMenu().setVisible(false);
@@ -472,8 +472,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Load and play audio
             MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
             SoundManager.getInstance().loadSoundEffects(
-                    new String[] { "watercollision.mp3", "Boinkeffect.mp3", "selection.mp3", "rubble.mp3" },
-                    new String[] { "drophit", "keybuttons", "selection", "collision" });
+                    new String[] { "Boinkeffect.mp3", "selection.mp3", "rubble.mp3", "explosion.mp3", "loss.mp3", "success.mp3", "points.mp3" },
+                    new String[] { "keybuttons", "selection", "collision", "explosion", "loss", "success", "points" });
 
             // Set audio configuration
             audioManager.setMusicVolume(config.getMusicVolume());
@@ -505,6 +505,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
+                audioManager.playSoundEffect("points");
                 LOGGER.info("Trash removed: {0}", trash.getEntity().getID());
                 break;
             }
@@ -591,54 +592,54 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         LOGGER.info("Game assets initialized successfully");
     }
 
-    private void handleAudioInput() {
-        if (inputManager.isKeyJustPressed(Input.Keys.V)) {
-            LOGGER.info("Key V detected!");
+    // private void handleAudioInput() {
+    //     if (inputManager.isKeyJustPressed(Input.Keys.V)) {
+    //         LOGGER.info("Key V detected!");
 
-            // If pause menu is open, close it before opening volume settings
-            if (isMenuOpen) {
-                isMenuOpen = false;
-                options.getRebindMenu().setVisible(false);
-                inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(inputManager); // Restore game input
-                Gdx.input.setInputProcessor(inputMultiplexer);
-                LOGGER.info("Closed rebind menu because V was pressed.");
-            }
+    //         // If pause menu is open, close it before opening volume settings
+    //         if (isMenuOpen) {
+    //             isMenuOpen = false;
+    //             options.getRebindMenu().setVisible(false);
+    //             inputMultiplexer.clear();
+    //             inputMultiplexer.addProcessor(inputManager); // Restore game input
+    //             Gdx.input.setInputProcessor(inputMultiplexer);
+    //             LOGGER.info("Closed rebind menu because V was pressed.");
+    //         }
 
-            isVolumePopupOpen = !isVolumePopupOpen;
-            if (isVolumePopupOpen) {
-                audioManager.showVolumeControls();
+    //         isVolumePopupOpen = !isVolumePopupOpen;
+    //         if (isVolumePopupOpen) {
+    //             audioManager.showVolumeControls();
 
-                // Ensure UI elements are interactive
-                if (audioUI != null) {
-                    audioUI.restoreUIInteractivity();
-                } else {
-                    LOGGER.error("Error: audioUIManager is null!");
-                }
+    //             // Ensure UI elements are interactive
+    //             if (audioUI != null) {
+    //                 audioUI.restoreUIInteractivity();
+    //             } else {
+    //                 LOGGER.error("Error: audioUIManager is null!");
+    //             }
 
-                // Always ensure both stage & game input are handled
-                inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(sceneUIManager.getStage());
-                inputMultiplexer.addProcessor(inputManager);
-                Gdx.input.setInputProcessor(inputMultiplexer);
+    //             // Always ensure both stage & game input are handled
+    //             inputMultiplexer.clear();
+    //             inputMultiplexer.addProcessor(sceneUIManager.getStage());
+    //             inputMultiplexer.addProcessor(inputManager);
+    //             Gdx.input.setInputProcessor(inputMultiplexer);
 
-                LOGGER.info("Opened volume settings.");
-            } else {
-                audioManager.hideVolumeControls();
-                inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(inputManager);
-                Gdx.input.setInputProcessor(inputMultiplexer);
+    //             LOGGER.info("Opened volume settings.");
+    //         } else {
+    //             audioManager.hideVolumeControls();
+    //             inputMultiplexer.clear();
+    //             inputMultiplexer.addProcessor(inputManager);
+    //             Gdx.input.setInputProcessor(inputMultiplexer);
 
-                LOGGER.info("Closed volume settings.");
-            }
-        }
-    }
+    //             LOGGER.info("Closed volume settings.");
+    //         }
+    //     }
+    // }
 
     /**
      * Handles key inputs for game control:
      */
     protected void input() {
-        handleAudioInput();
+        // handleAudioInput();
         for (Integer key : inputManager.getKeyBindings().keySet()) {
             if (inputManager.isKeyJustPressed(key)) {
                 LOGGER.info("Direction Key pressed: {0}", Input.Keys.toString(key));

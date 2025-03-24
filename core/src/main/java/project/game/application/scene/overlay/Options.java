@@ -66,6 +66,10 @@ public class Options extends Scene {
     public void setPaused(boolean paused) {
         this.isPaused = paused;
     }
+    private void clearTextFieldFocus() {
+        Stage stage = sceneUIManager.getStage();
+        stage.setKeyboardFocus(null);
+    }
 
     /**
      * Constructs an Options scene.
@@ -209,6 +213,8 @@ public class Options extends Scene {
                 return;
             }
             inputManager.promptForKeyBindings(upKeyString, downKeyString, leftKeyString, rightKeyString);
+            sceneUIManager.getStage().setKeyboardFocus(null);
+            textField4.getStage().setKeyboardFocus(null);
         });
 
         Table rebindTable = new Table();
