@@ -15,7 +15,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
 import project.game.application.scene.main.GameScene;
+import project.game.application.scene.ui.AudioUI;
 import project.game.common.logging.core.GameLogger;
+import project.game.engine.audio.config.AudioConfig;
+import project.game.engine.audio.management.AudioManager;
+import project.game.engine.audio.music.MusicManager;
+import project.game.engine.audio.sound.SoundManager;
 import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
@@ -29,6 +34,9 @@ public class Options extends Scene {
     private Window popupMenu;
     private Window rebindMenu;
     private boolean isPaused = true;
+    private AudioUI audioUI; // Add audioUI reference
+    private AudioManager audioManager;
+    private AudioConfig config;
 
     // Button to control main menu visibility.
     private TextButton mainMenuButton;
@@ -38,24 +46,12 @@ public class Options extends Scene {
         this.gameScene = gameScene;
     }
 
-    public Window getPopupMenu() {
-        return popupMenu;
-    }
-
     public Window getRebindMenu() {
         return rebindMenu;
     }
 
-    public void setMainMenuButtonVisibility(boolean isVisible) {
-        mainMenuButton.setVisible(isVisible);
-    }
-
     public Stage getStage() {
         return sceneUIManager.getStage();
-    }
-
-    public void setPopupMenu(Window popupMenu) {
-        this.popupMenu = popupMenu;
     }
 
     public void render() {
@@ -81,6 +77,11 @@ public class Options extends Scene {
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         BitmapFont customFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
 
+        config = new AudioConfig();
+        audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
+        audioUI = new AudioUI(audioManager, config, sceneUIManager.getStage(), skin); 
+        audioManager.setAudioUI(audioUI);
+
         // Create a custom window style with the new font
         Window.WindowStyle customWindowStyle = new Window.WindowStyle(
                 skin.get(Window.WindowStyle.class).titleFont,
@@ -98,48 +99,11 @@ public class Options extends Scene {
         Label.LabelStyle customLabelStyle = new Label.LabelStyle(
                 customFont, Color.WHITE);
 
-        popupMenu = new Window("Options", skin);
-        popupMenu.setSize(200, 100);
-        popupMenu.setPosition(400, 270);
-        popupMenu.setVisible(false);
-
-        // Configure the popup menu.
-        popupMenu.setModal(true);
-        popupMenu.setMovable(false);
-        popupMenu.setKeepWithinStage(true);
-
-        // Log touch events on the popup menu.
-        inputManager.addWindowTouchDownListener(popupMenu, (event, x, y, pointer, button) -> {
-            LOGGER.info("Popup menu touched at ({0}, {1})", new Object[] { x, y });
-        });
-
-        // Create buttons with custom style
-        TextButton rebindButton = new TextButton("REBIND KEYS", skin);
-        rebindButton.setStyle(customButtonStyle);
-        mainMenuButton = new TextButton("MAIN MENU", skin);
-        mainMenuButton.setStyle(customButtonStyle);
-
-        inputManager.addButtonClickListener(rebindButton, () -> {
-            LOGGER.info("Rebind keys selected");
-            popupMenu.setVisible(false);
-            rebindMenu.setVisible(true);
-        });
-
-        inputManager.addButtonClickListener(mainMenuButton, () -> {
-            LOGGER.info("Return to main menu selected");
-            popupMenu.setVisible(false);
-        });
-
-        Table table = new Table();
-        table.add(rebindButton).fillX().pad(5);
-        popupMenu.add(table);
-        sceneUIManager.getStage().addActor(popupMenu);
-
         // Rebind Menu Creation
         rebindMenu = new Window("REBIND", skin);
         rebindMenu.getTitleLabel().setStyle(customLabelStyle);
 
-        rebindMenu.setSize(600, 400);
+        rebindMenu.setSize(900, 400);
         // Calculate center position based on screen dimensions
         float centerX = Gdx.graphics.getWidth() / 2f - rebindMenu.getWidth() / 2f;
         float centerY = Gdx.graphics.getHeight() / 2f - rebindMenu.getHeight() / 2f;
@@ -262,8 +226,12 @@ public class Options extends Scene {
         rebindTable.row();
         rebindTable.add(confirmButton).colspan(2).center().pad(5);
 
-        Label exitHintLabel = new Label("Hit 'P' again to exit this menu", skin);
+
         rebindTable.row();
+        rebindMenu.add(audioUI.createAudioSettingsTable()).colspan(5).center().padTop(10).padRight(30);
+
+        Label exitHintLabel = new Label("Hit 'P' again to exit this menu", skin);
+        //rebindTable.row();
         rebindTable.add(exitHintLabel).colspan(2).center().pad(5);
         // Apply custom style to exit hint label
         exitHintLabel.setStyle(customLabelStyle);

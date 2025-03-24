@@ -136,7 +136,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
-        this.timer = new TimeManager(0, 10);
+        this.timer = new TimeManager(0, 20);
     }
     
     public SpriteBatch getBatch() {
@@ -152,10 +152,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
-        options.setMainMenuButtonVisibility(true);
-        options.getPopupMenu().setTouchable(Touchable.enabled);
-
-        popupMenu = options.getPopupMenu();
         inputMultiplexer = new InputMultiplexer();
 
         // Add popup menu to the stage
@@ -167,23 +163,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             Gdx.app.log("GameScene", "popupMenu is null");
         }
 
-        sceneUIManager.getStage().addActor(options.getPopupMenu());
         sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
     public void loseLife() {
         healthManager.loseLife();
-    }
-
-    /**
-     * Closes the popup menu and resumes game play.
-     */
-    public void closePopupMenu() {
-        isMenuOpen = false;
-        options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(sceneUIManager.getStage());
-        inputMultiplexer.addProcessor(inputManager);
-        LOGGER.debug("Popup menu closed");
     }
 
     protected void draw() {
@@ -291,6 +275,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         if(trashes.isEmpty()) {
             scoreManager.multiplyScore((float) (remainingTime/100));
+            // Indicate that the player has won
+            sceneManager.setWinState(true);
             sceneManager.setScene("gameover");
         }
 
@@ -663,11 +649,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 }
             }
         }
-        // Toggle game menu
-        if (inputManager.isKeyJustPressed(Input.Keys.M)) {
-            sceneManager.setScene("menu");
-            audioManager.stopMusic();
-        } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
+
+        // end game (debugging purposes)
+        if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
             audioManager.stopMusic();
             audioManager.hideVolumeControls();
@@ -695,19 +679,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 LOGGER.info("InputProcessor set to inputManager");
             }
         }
-
-        if (inputManager.isKeyJustPressed(Input.Keys.NUM_0)) {
-            loseLife();
-            if (healthManager.getLives() == 0) {
-                sceneManager.setScene("gameover");
-                audioManager.stopMusic();
-                audioManager.hideVolumeControls();
-                options.getRebindMenu().setVisible(false);
-            }
-        }
-        if (inputManager.isKeyJustPressed(Input.Keys.L)) {
-            sceneTransition.showLevelCompletePopup(this);
-            sceneManager.setScene("");
+        // Switch to game2 scene (debugging purposes)
+        if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+            sceneManager.setScene("game2");
             audioManager.stopMusic();
         }
         // Switch to game2 scene (just for testing)
@@ -732,7 +706,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         textField.setPosition(sceneUIManager.getStage().getWidth() / 2f - textField.getWidth() / 2f,
                 sceneUIManager.getStage().getHeight() - textField.getHeight());
         textField.setMessageText(
-                "Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
+                "Debugging: \nPress P to pause and rebind keys\nPress E to end the game\nPress N to switch to GameScene2");
         textField.setDisabled(true);
         sceneUIManager.getStage().addActor(textField);
 
