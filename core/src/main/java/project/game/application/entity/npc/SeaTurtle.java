@@ -36,6 +36,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
+    private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
 
     // Threshold to determine if we should consider movement on an axis
@@ -126,6 +127,15 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
         // Temporarily increase damping during collision to prevent bouncing too much
         getBody().setLinearDamping(3.0f);
+    }
+
+    /**
+     * Checks if this entity should be considered permanent in the game world
+     */
+    public static boolean isEntityPermanent(String entityType) {
+        return entityType.equals("SeaTurtle") ||
+                entityType.equals("Monster") ||
+                entityType.equals("boundary");
     }
 
     public boolean isActive() {
@@ -357,23 +367,19 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         return true;
     }
 
-    /**
-     * Handle sea turtle collisions with other entities
-     */
     @Override
     public void onCollision(ICollidableVisitor other) {
-        long currentTime = System.currentTimeMillis();
-        long cooldownTime = shouldApplyCooldown(other) ? 300 : 100;
-
-        if (currentTime - lastCollisionTime < cooldownTime) {
-            return;
-        }
-
+        // Only handle collisions with actual entities, not boundaries
         if (other != null) {
+            // Store the current collision entity
+            this.currentCollisionEntity = other;
+
+            // Log normal entity collisions
             LOGGER.info("{0} collided with {1}",
                     new Object[] { getEntity().getClass().getSimpleName(),
                             other.getClass().getSimpleName() });
 
+            // Dispatch to appropriate handler based on the other entity's type
             dispatchCollisionHandling(other);
         }
     }
@@ -544,47 +550,23 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * Handle collision with trash
      */
     private void handleTrashCollision(ICollidableVisitor trash) {
-        if (trash == null || !(trash instanceof Trash)) {
-            return; // Ensure the collision entity is indeed a Trash object
-        }
-    
-        Trash trashEntity = (Trash) trash;
-    
-        // Apply a small impulse to the turtle in the opposite direction of the trash
-        Vector2 trashPosition = trash.getBody().getPosition();
-        Vector2 turtlePosition = getBody().getPosition();
-    
-        float dx = turtlePosition.x - trashPosition.x;
-        float dy = turtlePosition.y - trashPosition.y;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
-    
-        if (distance > 0.0001f) {
-            // Normalize the direction
-            dx /= distance;
-            dy /= distance;
-    
-            // Apply a small impulse to the turtle
-            float trashImpulse = GameConstantsFactory.getConstants().TRASH_BASE_IMPULSE();
-            getBody().applyLinearImpulse(
-                dx * trashImpulse,
-                dy * trashImpulse,
-                getBody().getWorldCenter().x,
-                getBody().getWorldCenter().y,
-                true
-            );
-        }
-    
-        // Check if the CollisionManager is available to safely remove the Trash
-        if (collisionManager != null) {
-            collisionManager.scheduleBodyRemoval(
-                trashEntity.getBody(),
-                trashEntity.getEntity(),
-                entity -> { // Implement IEntityRemovalListener
-                    LOGGER.info("SeaTurtle ate trash: {0}", new Object[]{trashEntity.getEntity().getClass().getSimpleName()});
-                }
-            );
-        } else {
-            LOGGER.warn("CollisionManager not set in SeaTurtle object - cannot safely remove trash");
+        if (!(trash instanceof Trash))
+            return;
+
+        // Check if either entity is permenant before scheduling removal
+        String entityType = trash.getClass().getSimpleName();
+        if (!isEntityPermanent(entityType)) {
+            if (collisionManager != null) {
+                // Schedule the trash for removal
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
+                LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
+
+                // Restore damping after removing trash
+                getBody().setLinearDamping(0.8f);
+            } else {
+                LOGGER.warn("Collision manager not set for SeaTurtle, cannot remove trash");
+            }
         }
     }
+       
 }

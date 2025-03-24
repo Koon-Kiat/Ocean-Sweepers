@@ -49,7 +49,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         // Register collision handler for SeaTurtle
         registerTrashCollisionHandler(SeaTurtle.class, Trash::handleSeaTurtleCollision);
         // Register collision handler for Rock
-        registerTrashCollisionHandler(Rock.class, Trash::handleRockCollision);
+        // registerTrashCollisionHandler(Rock.class, Trash::handleRockCollision);
     }
 
     /**
@@ -277,7 +277,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 0.3f;
-        fixtureDef.friction = 0.1f;
+        fixtureDef.friction = 0.01f;
         fixtureDef.restitution = 0.8f;
 
         Filter filter = new Filter();
@@ -354,25 +354,25 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
             dy /= distance;
     
             // Apply a repulsion force to both trash objects
-            float repulsionForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE() * 3; // Adjust as needed
+            float repulsionForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE() * 5; // Adjust as needed
             getBody().applyLinearImpulse(dx * repulsionForce, dy * repulsionForce, trash1X, trash1Y, true);
             otherTrash.getBody().applyLinearImpulse(-dx * repulsionForce, -dy * repulsionForce, trash2X, trash2Y, true);
         }
     
         // Ensure minimum speed after collision
-        float minSpeed = 3.0f;
-        com.badlogic.gdx.math.Vector2 velocity1 = getBody().getLinearVelocity();
-        if (velocity1.len() < minSpeed) {
-            velocity1.x = dx * minSpeed;
-            velocity1.y = dy * minSpeed;
-            getBody().setLinearVelocity(velocity1);
-        }
-        com.badlogic.gdx.math.Vector2 velocity2 = otherTrash.getBody().getLinearVelocity();
-        if (velocity2.len() < minSpeed) {
-            velocity2.x = -dx * minSpeed;
-            velocity2.y = -dy * minSpeed;
-            otherTrash.getBody().setLinearVelocity(velocity2);
-        }
+        // float minSpeed = 3.0f;
+        // com.badlogic.gdx.math.Vector2 velocity1 = getBody().getLinearVelocity();
+        // if (velocity1.len() < minSpeed) {
+        //     velocity1.x = dx * minSpeed;
+        //     velocity1.y = dy * minSpeed;
+        //     getBody().setLinearVelocity(velocity1);
+        // }
+        // com.badlogic.gdx.math.Vector2 velocity2 = otherTrash.getBody().getLinearVelocity();
+        // if (velocity2.len() < minSpeed) {
+        //     velocity2.x = -dx * minSpeed;
+        //     velocity2.y = -dy * minSpeed;
+        //     otherTrash.getBody().setLinearVelocity(velocity2);
+        // }
     
         // Reduce linear damping to maintain post-collision movement
         getBody().setLinearDamping(0.01f);
@@ -380,49 +380,82 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     private void handleSeaTurtleCollision(ICollidableVisitor seaTurtle) {
-        // SeaTurtle collision handling
-        // SeaTurtle is not affected by trash collisions
+        // Check if the sea turtle covers up half of the trash
+        float seaTurtleX = seaTurtle.getEntity().getX();
+        float seaTurtleY = seaTurtle.getEntity().getY();
+        float seaTurtleWidth = seaTurtle.getEntity().getWidth();
+        float seaTurtleHeight = seaTurtle.getEntity().getHeight();
+
+        float trashX = entity.getX();
+        float trashY = entity.getY();
+        float trashWidth = entity.getWidth();
+        float trashHeight = entity.getHeight();
+
+        boolean isCovered = (seaTurtleX < trashX + trashWidth / 2 && seaTurtleX + seaTurtleWidth > trashX + trashWidth / 2) &&
+                (seaTurtleY < trashY + trashHeight / 2 && seaTurtleY + seaTurtleHeight > trashY + trashHeight / 2);
+        
+        if (isCovered) {
+            // Always mark as inactive regardless of collisionManager availability
+            // to prevent further collision processing
+            entity.setActive(false);
+
+            // Check if this entity should be removed
+            String entityType = this.getClass().getSimpleName();
+            if (!SeaTurtle.isEntityPermanent(entityType)) {
+                if (collisionManager != null) {
+                    collisionManager.scheduleBodyRemoval(getBody(), entity, removalListener);
+                } else {
+                    // If collisionManager isn't available, just log an error
+                    // but don't try to destroy the body directly
+                    LOGGER.error("CollisionManager not set in Trash object - cannot safely remove trash");
+                    // Still notify the removal listener if available
+                    if (removalListener != null) {
+                        removalListener.onEntityRemove(entity);
+                    }
+                }
+            } 
+        } 
     }
 
      /**
      * Handle collision with a rock
      */
-    private void handleRockCollision(ICollidableVisitor rock) {
-        if (rock == null || !(rock instanceof Rock)) {
-            return;
-        }
+    // private void handleRockCollision(ICollidableVisitor rock) {
+    //     if (rock == null || !(rock instanceof Rock)) {
+    //         return;
+    //     }
 
-        // Get the Rock object
-        Rock currentRock = (Rock) rock;
+    //     // Get the Rock object
+    //     Rock currentRock = (Rock) rock;
 
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-        float trashX = getBody().getPosition().x;
-        float trashY = getBody().getPosition().y;
-        float rockX = currentRock.getBody().getPosition().x;
-        float rockY = currentRock.getBody().getPosition().y;
+    //     setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+    //     float trashX = getBody().getPosition().x;
+    //     float trashY = getBody().getPosition().y;
+    //     float rockX = currentRock.getBody().getPosition().x;
+    //     float rockY = currentRock.getBody().getPosition().y;
 
-        float dx = trashX - rockX;
-        float dy = trashY - rockY;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
-        // LOGGER.info("go distance: " + distance);
+    //     float dx = trashX - rockX;
+    //     float dy = trashY - rockY;
+    //     float distance = (float) Math.sqrt(dx * dx + dy * dy);
+    //     // LOGGER.info("go distance: " + distance);
 
-        if (distance > 0.0001f) {
-            dx /= distance;
-            dy /= distance;
-            float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE() * 2;
-            getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, trashX, trashY, true);
-        }
+    //     if (distance > 0.0001f) {
+    //         dx /= distance;
+    //         dy /= distance;
+    //         float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE() * 2;
+    //         getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, trashX, trashY, true);
+    //     }
 
-        // Ensure minimum speed after collision
-        float minSpeed = 3.0f;
-        com.badlogic.gdx.math.Vector2 velocity = getBody().getLinearVelocity();
-        if (velocity.len() < minSpeed) {
-            velocity.nor().scl(minSpeed);
-            getBody().setLinearVelocity(velocity);
-        }
+    //     // Ensure minimum speed after collision
+    //     float minSpeed = 3.0f;
+    //     com.badlogic.gdx.math.Vector2 velocity = getBody().getLinearVelocity();
+    //     if (velocity.len() < minSpeed) {
+    //         velocity.nor().scl(minSpeed);
+    //         getBody().setLinearVelocity(velocity);
+    //     }
 
-        // Reduce linear damping to maintain post-collision movement
-        getBody().setLinearDamping(0.01f);
-    }
+    //     // Reduce linear damping to maintain post-collision movement
+    //     getBody().setLinearDamping(0.01f);
+    // }
 
 }
