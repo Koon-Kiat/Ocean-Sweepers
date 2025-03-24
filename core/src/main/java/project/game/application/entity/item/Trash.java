@@ -317,22 +317,22 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         bodyDef.position.set(centerX, centerY);
         bodyDef.fixedRotation = true;
         bodyDef.bullet = true; // Enable continuous collision detection
-        bodyDef.linearDamping = 0.05f; // Very low base damping
-        bodyDef.angularDamping = 0.05f; // Low angular damping
+        bodyDef.linearDamping = 0.1f; // Consistent base damping
+        bodyDef.angularDamping = 0.1f;
         bodyDef.allowSleep = false; // Never let the body sleep
 
         Body newBody = world.createBody(bodyDef);
         CircleShape shape = new CircleShape();
 
-        // Make the collision shape slightly smaller than visual size
-        float collisionRadius = (width * 0.4f) / pixelsToMeters;
+        // Make the collision shape closer to visual size
+        float collisionRadius = (width * 0.45f) / pixelsToMeters;
         shape.setRadius(collisionRadius);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 0.3f; // Light enough to be pushed around
-        fixtureDef.friction = 0.01f; // Very low friction
-        fixtureDef.restitution = 0.8f; // High bounciness
+        fixtureDef.density = 0.5f; // More mass for better collision response
+        fixtureDef.friction = 0.01f; // Keep very low friction
+        fixtureDef.restitution = 0.6f; // Moderate bounce
 
         // Set up collision filtering
         Filter filter = new Filter();
@@ -347,7 +347,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
         // Set initial random velocity to ensure movement
         float angle = (float) (Math.random() * Math.PI * 2);
-        float speed = 2.0f; // Initial speed
+        float speed = 2.5f; // Slightly higher initial speed
         newBody.setLinearVelocity(
                 (float) Math.cos(angle) * speed,
                 (float) Math.sin(angle) * speed);

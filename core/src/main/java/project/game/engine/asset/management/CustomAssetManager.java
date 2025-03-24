@@ -127,7 +127,7 @@ public class CustomAssetManager implements Disposable {
     /**
      * Registers a set of directional sprites for an entity type
      * 
-     * @param entityType The type of entity (e.g., "player", "monster")
+     * @param entityType The type of entity (e.g., "player", "sea turtle")
      * @param sprites    Array of directional sprites (typically UP, RIGHT, DOWN,
      *                   LEFT)
      */

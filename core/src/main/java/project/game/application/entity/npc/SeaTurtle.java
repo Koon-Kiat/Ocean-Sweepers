@@ -25,6 +25,7 @@ import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.collision.resolution.CollisionResponseHandler;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
@@ -116,17 +117,23 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         collisionEndTime = System.currentTimeMillis() + durationMillis;
         lastCollisionTime = System.currentTimeMillis();
 
-        // When collision becomes active, sync position between physics body and entity
+        // Sync positions between physics body, entity, and movement manager
         float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float physX = getBody().getPosition().x * pixelsToMeters;
-        float physY = getBody().getPosition().y * pixelsToMeters;
+        CollisionResponseHandler.syncEntity(this, pixelsToMeters);
 
-        // Update entity position
-        getEntity().setX(physX);
-        getEntity().setY(physY);
+        if (movementManager != null) {
+            // Update movement manager position to match physics
+            float physX = getBody().getPosition().x * pixelsToMeters;
+            float physY = getBody().getPosition().y * pixelsToMeters;
+            movementManager.setVelocity(physX, physY);
 
-        // Temporarily increase damping during collision to prevent bouncing too much
-        getBody().setLinearDamping(3.0f);
+            // Update velocity in movement manager to match physics
+            Vector2 velocity = getBody().getLinearVelocity();
+            movementManager.setVelocity(velocity.x, velocity.y);
+        }
+
+        // Set higher damping during collision
+        getBody().setLinearDamping(5.0f);
     }
 
     /**
@@ -134,7 +141,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      */
     public static boolean isEntityPermanent(String entityType) {
         return entityType.equals("SeaTurtle") ||
-                entityType.equals("Monster") ||
                 entityType.equals("boundary");
     }
 
@@ -334,34 +340,34 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         bodyDef.position.set(centerX, centerY);
         bodyDef.fixedRotation = true;
         bodyDef.bullet = true;
-        bodyDef.linearDamping = 0.8f;
+        bodyDef.linearDamping = 0.8f; // Reduced from previous value
+        bodyDef.angularDamping = 0.8f;
 
-        Body body = world.createBody(bodyDef);
+        Body newBody = world.createBody(bodyDef);
         PolygonShape shape = new PolygonShape();
 
-        // Use a slightly larger collision box for better trash detection
-        float boxWidth = (width * 1.1f) / (2 * pixelsToMeters);
-        float boxHeight = (height * 1.1f) / (2 * pixelsToMeters);
-        shape.setAsBox(boxWidth, boxHeight);
+        // Make hitbox slightly smaller for better collision response
+        float hitboxScale = 0.7f;
+        float hitboxWidth = (width * hitboxScale) / pixelsToMeters;
+        float hitboxHeight = (height * hitboxScale) / pixelsToMeters;
+        shape.setAsBox(hitboxWidth / 2, hitboxHeight / 2);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.4f;
-        fixtureDef.restitution = 0.2f;
+        fixtureDef.density = 200.0f; // Reduced mass
+        fixtureDef.friction = 0.2f; // Less friction
+        fixtureDef.restitution = 0.1f; // Less bounce
 
-        // CRITICAL: Configure collision filtering
         Filter filter = new Filter();
-        filter.categoryBits = 0x0008; // SeaTurtle category
+        filter.categoryBits = 0x0008;
         filter.maskBits = -1;
         fixtureDef.filter.categoryBits = filter.categoryBits;
         fixtureDef.filter.maskBits = filter.maskBits;
 
-        body.createFixture(fixtureDef);
+        newBody.createFixture(fixtureDef);
         shape.dispose();
-        body.setUserData(this);
-
-        return body;
+        newBody.setUserData(this);
+        return newBody;
     }
 
     @Override
@@ -392,7 +398,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
             collisionActive = false;
             // Reset damping when collision ends
-            getBody().setLinearDamping(0.5f);
+            getBody().setLinearDamping(10f);
         }
         return collisionActive;
     }
@@ -434,7 +440,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         body.setLinearVelocity(velocity);
 
         // Keep damping low to maintain movement
-        body.setLinearDamping(0.2f);
+        body.setLinearDamping(10f);
     }
 
     /**
@@ -461,48 +467,43 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * Handle collision with a boat
      */
     private void handleBoatCollision(ICollidableVisitor boat) {
-        float seaTurtleX = getEntity().getX();
-        float seaTurtleY = getEntity().getY();
-        float boatX = boat.getEntity().getX();
-        float boatY = boat.getEntity().getY();
+        // Prevent double-handling if we're already in collision
+        if (isInCollision()) {
+            return;
+        }
+
+        float seaTurtleX = getBody().getPosition().x;
+        float seaTurtleY = getBody().getPosition().y;
+        float boatX = boat.getBody().getPosition().x;
+        float boatY = boat.getBody().getPosition().y;
 
         float dx = seaTurtleX - boatX;
         float dy = seaTurtleY - boatY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
-            // Normalize direction
             dx /= distance;
             dy /= distance;
 
-            // Reverse the direction to push the boat AWAY from sea turtle
-            dx = -dx;
-            dy = -dy;
-
-            // Scale down impulse by PIXELS_TO_METERS for proper Box2D physics
-            float baseImpulse = GameConstantsFactory.getConstants().SEA_TURTLE_BASE_IMPULSE()
-                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-            float pushForce = baseImpulse;
-
-            // Apply impulse to push the boat away
-            boat.getBody().applyLinearImpulse(
-                    dx * pushForce,
-                    dy * pushForce,
-                    boat.getBody().getWorldCenter().x,
-                    boat.getBody().getWorldCenter().y,
+            // Apply small impulse to turtle
+            float turtleForce = 0.1f;
+            getBody().applyLinearImpulse(
+                    dx * turtleForce,
+                    dy * turtleForce,
+                    seaTurtleX,
+                    seaTurtleY,
                     true);
 
-            // Moderate damping for better control after impact
-            boat.getBody().setLinearDamping(1.5f);
-
-            // Set collision state on boat
-            try {
-                java.lang.reflect.Method method = boat.getClass().getMethod("setCollisionActive", long.class);
-                method.invoke(boat, GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-            } catch (Exception e) {
-                LOGGER.warn("Could not set collision active state on boat: {0}", e.getMessage());
+            // Cap turtle velocity
+            Vector2 velocity = getBody().getLinearVelocity();
+            float maxSpeed = 2.0f;
+            if (velocity.len() > maxSpeed) {
+                velocity.nor().scl(maxSpeed);
+                getBody().setLinearVelocity(velocity);
             }
         }
+
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
     }
 
     /**
@@ -514,18 +515,24 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         float rockX = rock.getEntity().getX();
         float rockY = rock.getEntity().getY();
 
-        float dx = seaTurtleX - rockX; // Reversed direction (rock pushing sea turtle)
+        float dx = seaTurtleX - rockX;
         float dy = seaTurtleY - rockY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
-            // Normalize direction
             dx /= distance;
             dy /= distance;
 
-            // Scale impulse by PIXELS_TO_METERS since Box2D works in meters
+            // Get current velocity and calculate impact speed
+            Vector2 velocity = getBody().getLinearVelocity();
+            float currentSpeed = velocity.len();
+
+            // Scale down impulse based on current speed
+            float speedFactor = Math.min(1.0f, 1.0f / (1 + currentSpeed * 0.2f));
             float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE()
-                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS() * speedFactor;
+
+            // Apply scaled impulse
             getBody().applyLinearImpulse(
                     dx * rockImpulse,
                     dy * rockImpulse,
@@ -533,8 +540,13 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                     getBody().getWorldCenter().y,
                     true);
 
-            // Moderate damping to allow movement while maintaining control
-            getBody().setLinearDamping(0.8f);
+            // Cap maximum velocity after collision
+            velocity = getBody().getLinearVelocity();
+            float maxSpeed = 5.0f;
+            if (velocity.len() > maxSpeed) {
+                velocity.nor().scl(maxSpeed);
+                getBody().setLinearVelocity(velocity);
+            }
         }
     }
 
@@ -554,7 +566,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                 LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
 
                 // Restore damping after removing trash
-                getBody().setLinearDamping(0.8f);
+                getBody().setLinearDamping(10f);
             } else {
                 LOGGER.warn("Collision manager not set for SeaTurtle, cannot remove trash");
             }
