@@ -4,6 +4,7 @@ import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.MovableEntity;
+import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 
@@ -96,7 +97,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
     public PlayerMovementManager build() {
         validateBuildRequirements();
         try {
-            if (this.entity == null && this.movableEntity == null) {
+            if (this.entity == null && this.movable == null) {
                 String errorMsg = "Entity must not be null for PlayerMovementBuilder.";
                 LOGGER.fatal(errorMsg);
                 throw new MovementException(errorMsg);
@@ -121,7 +122,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
     }
 
     @Override
-    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
+    protected IMovable createMovableFromEntity(Entity entity, float speed) {
         if (entity == null) {
             String errorMsg = "Cannot create MovableEntity: Entity is null";
             LOGGER.fatal(errorMsg);

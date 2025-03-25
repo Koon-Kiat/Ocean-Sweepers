@@ -22,7 +22,7 @@ public class NPCMovementManager extends MovementManager {
      * Constructor using the Builder pattern.
      */
     public NPCMovementManager(NPCMovementBuilder builder, IMovementStrategyFactory movementStrategyFactory) {
-        super(checkBuilder(builder).getMovableEntity(),
+        super(checkBuilder(builder).getMovable(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementStrategy(),

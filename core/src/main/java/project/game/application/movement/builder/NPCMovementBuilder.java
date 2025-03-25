@@ -453,7 +453,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     public NPCMovementManager build() {
         try {
             validateBuildRequirements();
-            if (this.entity == null && this.movableEntity == null) {
+            if (this.entity == null && this.movable == null) {
                 String errorMsg = "Entity must not be null for NPCMovementBuilder.";
                 LOGGER.fatal(errorMsg);
                 throw new MovementException(errorMsg);
@@ -495,12 +495,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     }
 
     @Override
-    public NPCMovementBuilder setSpeed(float speed) {
-        return super.setSpeed(speed);
-    }
-
-    @Override
-    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
+    protected IMovable createMovableFromEntity(Entity entity, float speed) {
         if (entity == null) {
             String errorMsg = "Cannot create MovableEntity: Entity is null";
             LOGGER.fatal(errorMsg);
