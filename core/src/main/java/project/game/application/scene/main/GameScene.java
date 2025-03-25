@@ -6,6 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -68,7 +69,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
-    private Window popupMenu;
     private Skin skin;
     private OrthographicCamera camera;
 
@@ -433,16 +433,16 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     .setLenientMode(true)
                     .build();
 
-            seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
-            seaTurtle.setCollisionManager(collisionManager);
+            //seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
+            //seaTurtle.setCollisionManager(collisionManager);
 
             // Add entities to the entity manager
             entityManager.addRenderableEntity(boat);
-            entityManager.addRenderableEntity(seaTurtle);
+            //entityManager.addRenderableEntity(seaTurtle);
 
             // Add entities to collision manager
             collisionManager.addEntity(boat, playerMovementManager);
-            collisionManager.addEntity(seaTurtle, npcMovementManager);
+            //collisionManager.addEntity(seaTurtle, npcMovementManager);
 
             for (Rock rock : rocks) {
                 collisionManager.addEntity(rock, null);
@@ -587,7 +587,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     /**
      * Handles key inputs for game control:
      */
-    protected void input() {
+    private void input() {
         // handleAudioInput();
         for (Integer key : inputManager.getKeyBindings().keySet()) {
             if (inputManager.isKeyJustPressed(key)) {
@@ -644,7 +644,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     /**
      * Displays an on-screen message with key binding instructions.
      */
-    protected void displayMessage() {
+    private void displayMessage() {
         LOGGER.info("Displaying welcome message");
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         final TextField.TextFieldStyle style = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
@@ -674,4 +674,34 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 .select(a -> a.getClass() == TextField.class) // Filter only TextField instances
                 .forEach(Actor::remove); // Remove them from the stage
     }
+
+    /*
+     * protected getters so only game2 accesses them
+     */
+
+    protected World getWorld() {
+        return world;
+    }
+    
+    protected CollisionManager getCollisionManager() {
+        return collisionManager;
+    }
+    
+    protected List<Trash> getTrashes() {
+        return trashes;
+    }
+    
+    protected List<Entity> getRockEntities() {
+        return existingEntities;
+    }
+    
+    protected TextureRegion[] getSeaTurtleRegion() {
+        return seaTurtleRegion;
+    }
+
+    protected EntityManager getEntityManager() {
+        return entityManager;
+    }
+
+    
 }

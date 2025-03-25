@@ -56,9 +56,9 @@ public class GameOverScene extends Scene {
         /*
          * Win condition logic
          */
-        //if (sceneManager.hasWon()) {
+        if (sceneManager.hasWon()) {
         
-        if (scoreManager.getScore() >= 500) {
+        //if (scoreManager.getScore() >= 500) {
             batch.draw(winBackgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             // Draw "You Win!" text with outline
             font.setColor(Color.BLACK);
