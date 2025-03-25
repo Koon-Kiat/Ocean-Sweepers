@@ -18,8 +18,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.utils.Align;
-
 
 import project.game.application.scene.ui.AudioUI;
 import project.game.common.logging.core.GameLogger;
@@ -124,7 +122,6 @@ public class MainMenuScene extends Scene {
         // Create buttons with the custom style
         playButton = new TextButton("PLAY", textButtonStyle);
 
-
         // Add padding to the buttons themselves
         playButton.pad(15); // Sets uniform padding on all sides
         exitButton = new TextButton("EXIT", textButtonStyle);
@@ -140,6 +137,7 @@ public class MainMenuScene extends Scene {
             audioManager.playSoundEffect("selection");
             LOGGER.info("Start Game Clicked!");
             sceneManager.setScene("game");
+            audioManager.playMusic("background");
         });
 
         inputManager.addButtonClickListener(exitButton, () -> {

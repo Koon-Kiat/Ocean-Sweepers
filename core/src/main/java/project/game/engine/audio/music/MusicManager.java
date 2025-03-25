@@ -8,6 +8,7 @@ import com.badlogic.gdx.audio.Music;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.audio.api.IMusic;
+import project.game.engine.audio.config.AudioConfig;
 
 public class MusicManager implements IMusic {
 
@@ -92,11 +93,12 @@ public class MusicManager implements IMusic {
                 LOGGER.fatal("File not found: {0}", track);
                 return;
             }
-
             String trackKey = extractTrackKey(track);
             Music music = Gdx.audio.newMusic(Gdx.files.internal(track));
             music.setLooping(true);
             musicTracks.put(trackKey, music);
+            float defaultVolume = new AudioConfig().getMusicVolume();
+            music.setVolume(defaultVolume);
             LOGGER.info("Successfully loaded music: {0}", trackKey);
         } catch (Exception e) {
             LOGGER.warn("Failed to Load Music: {0} - Error: {1}", new Object[] { track, e.getMessage() });

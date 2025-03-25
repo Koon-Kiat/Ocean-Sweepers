@@ -6,6 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -16,7 +17,6 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
@@ -34,6 +34,7 @@ import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.application.movement.strategy.ConstantMovementStrategy;
 import project.game.application.scene.overlay.Options;
+import project.game.application.scene.overlay.Scenetransition;
 import project.game.application.scene.ui.AudioUI;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
@@ -42,7 +43,6 @@ import project.game.engine.audio.config.AudioConfig;
 import project.game.engine.audio.management.AudioManager;
 import project.game.engine.audio.music.MusicManager;
 import project.game.engine.audio.sound.SoundManager;
-import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
@@ -55,6 +55,8 @@ import project.game.engine.scene.management.HealthManager;
 import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
+import project.game.engine.scene.management.TimeManager;
+
 
 public class GameScene extends Scene implements IEntityRemovalListener {
 
@@ -67,9 +69,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private boolean isMenuOpen = false;
     private InputMultiplexer inputMultiplexer;
     private Options options;
-    private Window popupMenu;
     private Skin skin;
     private OrthographicCamera camera;
+
+    // Transition
+    private Scenetransition sceneTransition;
 
     // Audio
     private AudioManager audioManager;
@@ -121,14 +125,25 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private TextureRegion[] trashRegions;
     private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
+    private final Texture heartTexture = new Texture("heart.png");
+    protected TimeManager timer;
+    private boolean showTimer = true;  // Flag to control if the timer is shown
 
     private float remainingTime;
 
     public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
-        this.healthManager = HealthManager.getInstance();
+        this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
+        this.timer = new TimeManager(0, 30);
+    }
+    
+    public SpriteBatch getBatch() {
+        return batch;
+    }
 
+    public Skin getSkin() {
+        return skin;
     }
 
     /**
@@ -136,22 +151,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
-        options.setMainMenuButtonVisibility(true);
-        options.getPopupMenu().setTouchable(Touchable.enabled);
-
-        popupMenu = options.getPopupMenu();
         inputMultiplexer = new InputMultiplexer();
 
-        // Add popup menu to the stage
-        if (popupMenu != null) {
-            float centerX = sceneUIManager.getStage().getWidth() / 2f - popupMenu.getWidth() / 2f;
-            float centerY = sceneUIManager.getStage().getHeight() / 2f - popupMenu.getHeight() / 2f;
-            popupMenu.setPosition(centerX, centerY);
-        } else {
-            Gdx.app.log("GameScene", "popupMenu is null");
-        }
-
-        sceneUIManager.getStage().addActor(options.getPopupMenu());
         sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
@@ -159,20 +160,59 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         healthManager.loseLife();
     }
 
-    /**
-     * Closes the popup menu and resumes game play.
-     */
-    public void closePopupMenu() {
-        isMenuOpen = false;
-        options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(sceneUIManager.getStage());
-        inputMultiplexer.addProcessor(inputManager);
-        LOGGER.debug("Popup menu closed");
+    protected void draw() {
+        // Regular rendering code
+        batch.begin();
+        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+        batch.end();
+
+        // Draw entities
+        batch.begin();
+        entityManager.draw(batch);
+
+        // Draw health and score
+        healthManager.draw(batch);
+        // print score
+        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
+            sceneUIManager.getStage().getHeight() - 30);
+        
+        // Time left in logs
+        System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+
+        // print timer
+        if (showTimer) {
+            skin.getFont("default-font").setColor(1, 1, 1, 1); // Set color to white
+            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d", 
+            timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+            skin.getFont("default-font").setColor(0, 0, 0, 1); // Reset color to black
+        }
+
+        batch.end();
+
+        // Draw stage
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
+    }
+
+    public void setShowTimer(boolean show) {
+        this.showTimer = show;  // Allow external classes to control whether the timer is visible
     }
 
     @Override
     public void render(float deltaTime) {
         input();
+        timer.update(deltaTime);
+        
+        if (timer.isTimeUp()) {
+            timer.stop();
+            sceneManager.setScene("gameover");
+            if (sceneManager.hasWon() == false) {
+                audioManager.playSoundEffect("loss");
+            }else{
+                audioManager.playSoundEffect("success");
+            }
+            audioManager.stopMusic();
+        }
 
         try {
             // Update movement for all entities
@@ -185,26 +225,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
 
-        // Regular rendering code
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
-        batch.end();
-
-        // Draw entities
-        batch.begin();
-        entityManager.draw(batch);
-        batch.end();
-
-        // Draw health and score
-        batch.begin();
-        healthManager.draw(batch);
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
-                sceneUIManager.getStage().getHeight() - 30);
-        batch.end();
-
-        // Draw stage
-        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
-        sceneUIManager.getStage().draw();
+        draw();
 
         // Render debug matrix
         debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
@@ -232,11 +253,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             collisionManager.processRemovalQueue();
             collisionManager.processCollisions();
             collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
-
-            // Play sound effect on collision
-            if (collisionManager.collision() && audioManager != null) {
-                audioManager.playSoundEffect("drophit");
-            }
         } else {
             // Process removal queue to prevent leaks
             LOGGER.warn("Not enough active bodies for physics simulation");
@@ -246,14 +262,20 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         if(trashes.isEmpty()) {
             scoreManager.multiplyScore((float) (remainingTime/100));
+            // Indicate that the player has won
+            sceneManager.setWinState(true);
             sceneManager.setScene("gameover");
+            audioManager.playSoundEffect("success");
+            audioManager.stopMusic();
         }
 
-        LOGGER.info("Score: {0}", scoreManager.getScore());
+        // LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
     @Override
     public void show() {
+        timer.resetTime();
+        timer.start();
         if (inputMultiplexer == null) {
             inputMultiplexer = new InputMultiplexer();
         } else {
@@ -266,6 +288,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
         audioManager.playMusic("BackgroundMusic");
+    }
+
+    @Override
+    public void hide() {
+        timer.stop();
+
     }
 
     @Override
@@ -291,6 +319,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     @Override
     public void create() {
+        sceneTransition = new Scenetransition(sceneManager); // Initialize transition
         batch = new SpriteBatch();
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
@@ -299,12 +328,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         constants = GameConstantsFactory.getConstants();
         config = new AudioConfig();
         LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
-
         initPopUpMenu();
         displayMessage();
 
         remainingTime = 300.0f;
 
+        // Init assets
         try {
             // Initialize game assets
             initializeGameAssets();
@@ -370,8 +399,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 @Override
                 public void onLifeLost() {
                     loseLife();
+                    audioManager.playSoundEffect("collision");
                     if (healthManager.getLives() == 0) {
                         sceneManager.setScene("gameover");
+                        audioManager.playSoundEffect("loss");
                         audioManager.stopMusic();
                         audioManager.hideVolumeControls();
                         options.getRebindMenu().setVisible(false);
@@ -402,16 +433,16 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     .setLenientMode(true)
                     .build();
 
-            seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
-            seaTurtle.setCollisionManager(collisionManager);
+            //seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
+            //seaTurtle.setCollisionManager(collisionManager);
 
             // Add entities to the entity manager
             entityManager.addRenderableEntity(boat);
-            entityManager.addRenderableEntity(seaTurtle);
+            //entityManager.addRenderableEntity(seaTurtle);
 
             // Add entities to collision manager
             collisionManager.addEntity(boat, playerMovementManager);
-            collisionManager.addEntity(seaTurtle, npcMovementManager);
+            //collisionManager.addEntity(seaTurtle, npcMovementManager);
 
             for (Rock rock : rocks) {
                 collisionManager.addEntity(rock, null);
@@ -432,8 +463,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             // Load and play audio
             MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
             SoundManager.getInstance().loadSoundEffects(
-                    new String[] { "watercollision.mp3", "Boinkeffect.mp3", "selection.mp3" },
-                    new String[] { "drophit", "keybuttons", "selection" });
+                    new String[] { "Boinkeffect.mp3", "selection.mp3", "rubble.mp3", "explosion.mp3", "loss.mp3", "success.mp3", "points.mp3" },
+                    new String[] { "keybuttons", "selection", "collision", "explosion", "loss", "success", "points" });
 
             // Set audio configuration
             audioManager.setMusicVolume(config.getMusicVolume());
@@ -446,6 +477,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Log completion of initialization
         LOGGER.info("GameScene initialization complete");
+
+        // Init complete
     }
 
     @Override
@@ -463,6 +496,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
                 trashes.remove(trash);
+                audioManager.playSoundEffect("points");
                 LOGGER.info("Trash removed: {0}", trash.getEntity().getID());
                 break;
             }
@@ -549,54 +583,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         LOGGER.info("Game assets initialized successfully");
     }
 
-    private void handleAudioInput() {
-        if (inputManager.isKeyJustPressed(Input.Keys.V)) {
-            LOGGER.info("Key V detected!");
-
-            // If pause menu is open, close it before opening volume settings
-            if (isMenuOpen) {
-                isMenuOpen = false;
-                options.getRebindMenu().setVisible(false);
-                inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(inputManager); // Restore game input
-                Gdx.input.setInputProcessor(inputMultiplexer);
-                LOGGER.info("Closed rebind menu because V was pressed.");
-            }
-
-            isVolumePopupOpen = !isVolumePopupOpen;
-            if (isVolumePopupOpen) {
-                audioManager.showVolumeControls();
-
-                // Ensure UI elements are interactive
-                if (audioUI != null) {
-                    audioUI.restoreUIInteractivity();
-                } else {
-                    LOGGER.error("Error: audioUIManager is null!");
-                }
-
-                // Always ensure both stage & game input are handled
-                inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(sceneUIManager.getStage());
-                inputMultiplexer.addProcessor(inputManager);
-                Gdx.input.setInputProcessor(inputMultiplexer);
-
-                LOGGER.info("Opened volume settings.");
-            } else {
-                audioManager.hideVolumeControls();
-                inputMultiplexer.clear();
-                inputMultiplexer.addProcessor(inputManager);
-                Gdx.input.setInputProcessor(inputMultiplexer);
-
-                LOGGER.info("Closed volume settings.");
-            }
-        }
-    }
 
     /**
      * Handles key inputs for game control:
      */
     private void input() {
-        handleAudioInput();
+        // handleAudioInput();
         for (Integer key : inputManager.getKeyBindings().keySet()) {
             if (inputManager.isKeyJustPressed(key)) {
                 LOGGER.info("Direction Key pressed: {0}", Input.Keys.toString(key));
@@ -607,10 +599,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 }
             }
         }
-        // Toggle game menu
-        if (inputManager.isKeyJustPressed(Input.Keys.M)) {
-            sceneManager.setScene("menu");
-        } else if (inputManager.isKeyJustPressed(Input.Keys.E)) {
+
+        // end game (debugging purposes)
+        if (inputManager.isKeyJustPressed(Input.Keys.E)) {
             sceneManager.setScene("gameover");
             audioManager.stopMusic();
             audioManager.hideVolumeControls();
@@ -638,6 +629,16 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 LOGGER.info("InputProcessor set to inputManager");
             }
         }
+        // Switch to game2 scene (debugging purposes)
+        if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+            sceneManager.setScene("game2");
+            audioManager.stopMusic();
+        }
+        // Switch to game2 scene (just for testing)
+        //if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+            //sceneManager.setScene("game2");
+            //audioManager.stopMusic();
+        //}
     }
 
     /**
@@ -655,7 +656,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         textField.setPosition(sceneUIManager.getStage().getWidth() / 2f - textField.getWidth() / 2f,
                 sceneUIManager.getStage().getHeight() - textField.getHeight());
         textField.setMessageText(
-                "Press M to return to main menu...\nPress P to pause and rebind keys\nPress E to end the game");
+                "Debugging: \nPress P to pause and rebind keys\nPress E to end the game\nPress N to switch to GameScene2");
         textField.setDisabled(true);
         sceneUIManager.getStage().addActor(textField);
 
@@ -669,10 +670,38 @@ public class GameScene extends Scene implements IEntityRemovalListener {
      * Removes the on-screen key binding message.
      */
     private void hideDisplayMessage() {
-        for (Actor actor : sceneUIManager.getStage().getActors()) {
-            if (actor instanceof TextField) {
-                actor.remove();
-            }
-        }
+        sceneUIManager.getStage().getActors()
+                .select(a -> a.getClass() == TextField.class) // Filter only TextField instances
+                .forEach(Actor::remove); // Remove them from the stage
     }
+
+    /*
+     * protected getters so only game2 accesses them
+     */
+
+    protected World getWorld() {
+        return world;
+    }
+    
+    protected CollisionManager getCollisionManager() {
+        return collisionManager;
+    }
+    
+    protected List<Trash> getTrashes() {
+        return trashes;
+    }
+    
+    protected List<Entity> getRockEntities() {
+        return existingEntities;
+    }
+    
+    protected TextureRegion[] getSeaTurtleRegion() {
+        return seaTurtleRegion;
+    }
+
+    protected EntityManager getEntityManager() {
+        return entityManager;
+    }
+
+    
 }
