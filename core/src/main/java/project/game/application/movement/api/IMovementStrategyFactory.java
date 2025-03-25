@@ -1,9 +1,12 @@
-package project.game.engine.entitysystem.movement.api;
+package project.game.application.movement.api;
 
 import java.util.List;
 
 import project.game.application.entity.item.Trash;
 import project.game.engine.entitysystem.entity.base.Entity;
+import project.game.engine.entitysystem.movement.api.IMovable;
+import project.game.engine.entitysystem.movement.api.IMovementStrategy;
+import project.game.engine.entitysystem.movement.api.IPositionable;
 
 /**
  * Interface defining a factory for creating movement strategies.

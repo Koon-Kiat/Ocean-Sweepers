@@ -3,6 +3,7 @@ package project.game.application.movement.factory;
 import java.util.List;
 
 import project.game.application.entity.item.Trash;
+import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.application.movement.composite.InterceptorAvoidanceStrategy;
 import project.game.application.movement.composite.OceanCurrentStrategy;
 import project.game.application.movement.composite.TrashCollectorStrategy;
@@ -23,7 +24,6 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
-import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrategy;
 
