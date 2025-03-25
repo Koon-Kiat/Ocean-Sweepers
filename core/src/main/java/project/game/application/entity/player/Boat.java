@@ -14,9 +14,9 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.obstacle.Rock;
-import project.game.application.api.entity.ILifeLossCallback;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
@@ -24,7 +24,6 @@ import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
-
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 import project.game.engine.scene.management.ScoreManager;
 
@@ -144,8 +143,8 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         getEntity().setX(physX);
         getEntity().setY(physY);
         if (movementManager != null) {
-            movementManager.setX(physX);
-            movementManager.setY(physY);
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
         }
     }
 
@@ -258,7 +257,7 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
 
         // Get velocity from movement manager
-        Vector2 velocity = movementManager.getVelocity();
+        Vector2 velocity = movementManager.getMovableEntity().getVelocity();
 
         // Only update direction if actually moving
         if (Math.abs(velocity.x) > MOVEMENT_THRESHOLD || Math.abs(velocity.y) > MOVEMENT_THRESHOLD) {

@@ -236,7 +236,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         }
 
         // Get velocity from movement manager
-        Vector2 velocity = movementManager.getVelocity();
+        Vector2 velocity = movementManager.getMovableEntity().getVelocity();
 
         // Only update direction if actually moving
         if (Math.abs(velocity.x) > MOVEMENT_THRESHOLD || Math.abs(velocity.y) > MOVEMENT_THRESHOLD) {

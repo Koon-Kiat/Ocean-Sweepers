@@ -10,7 +10,9 @@ import com.badlogic.gdx.math.Vector2;
  * Extends IMovable to ensure all movement managers have position
  * information.
  */
-public interface IMovementManager extends IMovable {
+public interface IMovementManager {
+
+    IMovable getMovableEntity();
 
     void updateMovement();
 
