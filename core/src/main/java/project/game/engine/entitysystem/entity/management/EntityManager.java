@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -29,10 +30,17 @@ public class EntityManager {
 	private static final Map<Class<?>, Function<Object, Entity>> ENTITY_EXTRACTORS = new ConcurrentHashMap<>();
 	private static final Map<Class<?>, Function<Object, ICollidableVisitor>> COLLIDABLE_EXTRACTORS = new ConcurrentHashMap<>();
 
+	// Registry for removal methods
+    private static final Map<Class<?>, Consumer<Entity>> REMOVAL_METHODS = new ConcurrentHashMap<>();
+
 	static {
 		// Register default converters
 		registerEntityExtractor(Entity.class, obj -> (Entity) obj);
 		registerCollidableExtractor(ICollidableVisitor.class, obj -> (ICollidableVisitor) obj);
+
+		// Register default removal methods
+		registerRemovalMethod(IRenderable.class, entity -> new EntityManager().removeRenderableEntity((IRenderable) entity));
+		registerRemovalMethod(Entity.class, entity -> new EntityManager().removeEntity(entity));
 	}
 
 	/**
@@ -47,6 +55,11 @@ public class EntityManager {
 		Function<Object, Entity> castedExtractor = obj -> extractor.apply((T) obj);
 		ENTITY_EXTRACTORS.put(clazz, castedExtractor);
 	}
+
+	// Register a removal method for a specific type
+    public static <T> void registerRemovalMethod(Class<T> clazz, Consumer<Entity> removalMethod) {
+        REMOVAL_METHODS.put(clazz, removalMethod);
+    }
 
 	/**
 	 * Register a collidable extractor for a specific type
@@ -212,4 +225,22 @@ public class EntityManager {
 
 		return null;
 	}
+
+	// New method to remove an entity using the registry
+    public void removeEntityUsingRegistry(Entity entity) {
+        if (entity == null) {
+            LOGGER.error("Entity is null");
+            return;
+        }
+
+        // Use the registry to find and invoke the appropriate removal method
+        for (Map.Entry<Class<?>, Consumer<Entity>> entry : REMOVAL_METHODS.entrySet()) {
+            if (entry.getKey().isInstance(entity)) {
+                entry.getValue().accept(entity);
+                return;
+            }
+        }
+
+        LOGGER.warn("No removal method registered for entity type: {0}", entity.getClass().getSimpleName());
+    }
 }

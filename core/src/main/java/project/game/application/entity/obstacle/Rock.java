@@ -96,7 +96,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 		if (entityManager == null) {
 			throw new IllegalArgumentException("EntityManager cannot be null");
 		}
-		entityManager.removeRenderableEntity(this);
+		entityManager.removeEntityUsingRegistry(this.entity);
 	}
 
 	@Override
