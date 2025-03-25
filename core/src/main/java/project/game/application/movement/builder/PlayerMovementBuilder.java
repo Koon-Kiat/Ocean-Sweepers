@@ -92,7 +92,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
                 LOGGER.warn("Movement strategy factory is null. Using default factory.");
                 this.movementStrategyFactory = MovementStrategyFactory.getInstance();
             }
-            return new PlayerMovementManager(this, this.movementStrategyFactory);
+            return new PlayerMovementManager(this);
         } catch (MovementException e) {
             LOGGER.fatal("Failed to build PlayerMovementManager: " + e.getMessage(), e);
             throw e;

@@ -469,7 +469,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
                 this.movementStrategyFactory = MovementStrategyFactory.getInstance();
             }
 
-            return new NPCMovementManager(this, this.movementStrategyFactory);
+            return new NPCMovementManager(this);
         } catch (MovementException e) {
             LOGGER.fatal("Failed to build NPCMovementManager: " + e.getMessage(), e);
             throw new MovementException("Failed to build NPCMovementManager: " + e.getMessage(), e);
