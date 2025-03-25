@@ -151,38 +151,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
      */
     public void initPopUpMenu() {
         options = new Options(sceneManager, this, inputManager);
-        options.setMainMenuButtonVisibility(true);
-        options.getPopupMenu().setTouchable(Touchable.enabled);
-
-        popupMenu = options.getPopupMenu();
         inputMultiplexer = new InputMultiplexer();
 
-        // Add popup menu to the stage
-        if (popupMenu != null) {
-            float centerX = sceneUIManager.getStage().getWidth() / 2f - popupMenu.getWidth() / 2f;
-            float centerY = sceneUIManager.getStage().getHeight() / 2f - popupMenu.getHeight() / 2f;
-            popupMenu.setPosition(centerX, centerY);
-        } else {
-            Gdx.app.log("GameScene", "popupMenu is null");
-        }
-
-        sceneUIManager.getStage().addActor(options.getPopupMenu());
         sceneUIManager.getStage().addActor(options.getRebindMenu());
     }
 
     public void loseLife() {
         healthManager.loseLife();
-    }
-
-    /**
-     * Closes the popup menu and resumes game play.
-     */
-    public void closePopupMenu() {
-        isMenuOpen = false;
-        options.getPopupMenu().setVisible(false);
-        inputMultiplexer.removeProcessor(sceneUIManager.getStage());
-        inputMultiplexer.addProcessor(inputManager);
-        LOGGER.debug("Popup menu closed");
     }
 
     protected void draw() {
@@ -608,48 +583,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         LOGGER.info("Game assets initialized successfully");
     }
 
-    // private void handleAudioInput() {
-    //     if (inputManager.isKeyJustPressed(Input.Keys.V)) {
-    //         LOGGER.info("Key V detected!");
-
-    //         // If pause menu is open, close it before opening volume settings
-    //         if (isMenuOpen) {
-    //             isMenuOpen = false;
-    //             options.getRebindMenu().setVisible(false);
-    //             inputMultiplexer.clear();
-    //             inputMultiplexer.addProcessor(inputManager); // Restore game input
-    //             Gdx.input.setInputProcessor(inputMultiplexer);
-    //             LOGGER.info("Closed rebind menu because V was pressed.");
-    //         }
-
-    //         isVolumePopupOpen = !isVolumePopupOpen;
-    //         if (isVolumePopupOpen) {
-    //             audioManager.showVolumeControls();
-
-    //             // Ensure UI elements are interactive
-    //             if (audioUI != null) {
-    //                 audioUI.restoreUIInteractivity();
-    //             } else {
-    //                 LOGGER.error("Error: audioUIManager is null!");
-    //             }
-
-    //             // Always ensure both stage & game input are handled
-    //             inputMultiplexer.clear();
-    //             inputMultiplexer.addProcessor(sceneUIManager.getStage());
-    //             inputMultiplexer.addProcessor(inputManager);
-    //             Gdx.input.setInputProcessor(inputMultiplexer);
-
-    //             LOGGER.info("Opened volume settings.");
-    //         } else {
-    //             audioManager.hideVolumeControls();
-    //             inputMultiplexer.clear();
-    //             inputMultiplexer.addProcessor(inputManager);
-    //             Gdx.input.setInputProcessor(inputMultiplexer);
-
-    //             LOGGER.info("Closed volume settings.");
-    //         }
-    //     }
-    // }
 
     /**
      * Handles key inputs for game control:
