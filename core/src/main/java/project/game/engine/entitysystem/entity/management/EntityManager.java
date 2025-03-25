@@ -37,10 +37,6 @@ public class EntityManager {
 		// Register default converters
 		registerEntityExtractor(Entity.class, obj -> (Entity) obj);
 		registerCollidableExtractor(ICollidableVisitor.class, obj -> (ICollidableVisitor) obj);
-
-		// Register default removal methods
-		registerRemovalMethod(IRenderable.class, entity -> new EntityManager().removeRenderableEntity((IRenderable) entity));
-		registerRemovalMethod(Entity.class, entity -> new EntityManager().removeEntity(entity));
 	}
 
 	/**
@@ -78,6 +74,10 @@ public class EntityManager {
 		this.renderables = new ArrayList<>();
 		this.entityList = new ArrayList<>();
 		this.entityIDs = new HashSet<>();
+
+		// Register default removal methods
+		registerRemovalMethod(IRenderable.class, entity -> removeRenderableEntity((IRenderable) entity));
+		registerRemovalMethod(Entity.class, this::removeEntity);
 	}
 
 	public boolean addRenderableEntity(IRenderable renderable) {
