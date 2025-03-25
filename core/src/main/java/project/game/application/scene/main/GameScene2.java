@@ -13,6 +13,10 @@ import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
+import project.game.engine.audio.config.AudioConfig;
+import project.game.engine.audio.management.AudioManager;
+import project.game.engine.audio.music.MusicManager;
+import project.game.engine.audio.sound.SoundManager;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
@@ -23,7 +27,6 @@ import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.TimeManager;
-
 public class GameScene2 extends Scene implements IEntityRemovalListener {
 
     private static final GameLogger LOGGER = new GameLogger(GameScene2.class);
@@ -31,6 +34,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private IGameConstants constants;
     
     private HealthManager healthManager;
+    private AudioManager audioManager;
     private ScoreManager scoreManager;
     private NPCMovementManager npcMovementManager;
     private CollisionManager collisionManager;
@@ -55,6 +59,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 50);
+        this.audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), new AudioConfig());
         LOGGER.info("GameScene2 created with composition of GameScene");
     }
 
@@ -75,6 +80,12 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         if (timer.isTimeUp()) {
             timer.stop();
             sceneManager.setScene("gameover");
+            if (scoreManager.getScore() < 500) {
+                audioManager.playSoundEffect("loss");
+            }else{
+                audioManager.playSoundEffect("success");
+            }
+            audioManager.stopMusic();
             return;
         }
 
