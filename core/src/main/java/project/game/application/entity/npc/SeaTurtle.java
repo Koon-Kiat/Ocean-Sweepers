@@ -39,6 +39,9 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private long lastCollisionTime = 0;
     private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
+    // Add these fields to the SeaTurtle class
+    private Vector2 accumulatedImpulse = new Vector2();
+    private Vector2 accumulatedVelocity = new Vector2();
 
     // Threshold to determine if we should consider movement on an axis
     private static final float MOVEMENT_THRESHOLD = 0.01f;
@@ -388,8 +391,26 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                     new Object[] { getEntity().getClass().getSimpleName(),
                             other.getClass().getSimpleName() });
 
+            // Reset accumulators at the beginning of collision handling
+            accumulatedImpulse.set(0, 0);
+            accumulatedVelocity.set(getBody().getLinearVelocity());
+            
+
             // Dispatch to appropriate handler based on the other entity's type
             dispatchCollisionHandling(other);
+
+            // Apply accumulated impulse
+            getBody().applyLinearImpulse(
+                    accumulatedImpulse.x,
+                    accumulatedImpulse.y,
+                    getBody().getWorldCenter().x,
+                    getBody().getWorldCenter().y,
+                    true);
+
+            // Apply accumulated velocity changes
+            if (accumulatedVelocity.len2() > 0) {
+                getBody().setLinearVelocity(accumulatedVelocity);
+            }
         }
     }
 
@@ -435,6 +456,9 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         if (velocity.len() < minSpeed) {
             velocity.nor().scl(minSpeed);
         }
+
+        // Accumulate velocity changes
+        accumulatedVelocity.set(velocity);
 
         // Apply the new velocity
         body.setLinearVelocity(velocity);
@@ -532,6 +556,10 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE()
                     / GameConstantsFactory.getConstants().PIXELS_TO_METERS() * speedFactor;
 
+            // Accumulate impulse
+            accumulatedImpulse.x += dx * rockImpulse;
+            accumulatedImpulse.y += dy * rockImpulse;
+
             // Apply scaled impulse
             getBody().applyLinearImpulse(
                     dx * rockImpulse,
@@ -545,7 +573,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             float maxSpeed = 5.0f;
             if (velocity.len() > maxSpeed) {
                 velocity.nor().scl(maxSpeed);
-                getBody().setLinearVelocity(velocity);
+                accumulatedVelocity.set(velocity);
             }
         }
     }
