@@ -90,7 +90,7 @@ public class Entity implements IEntityManager {
 
 	@Override
 	public void removeFromManager(EntityManager entityManager) {
-		entityManager.removeEntity(this);
+		entityManager.removeEntityUsingRegistry(this);
 	}
 
 }

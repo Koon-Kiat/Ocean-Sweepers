@@ -1,9 +1,9 @@
 package project.game.engine.entitysystem.movement.core;
 
+import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 import project.game.engine.entitysystem.movement.management.MovementManager;
 
 /**
@@ -22,7 +22,7 @@ public class NPCMovementManager extends MovementManager {
      * Constructor using the Builder pattern.
      */
     public NPCMovementManager(NPCMovementBuilder builder, IMovementStrategyFactory movementStrategyFactory) {
-        super(checkBuilder(builder).getMovableEntity(),
+        super(checkBuilder(builder).getMovable(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementStrategy(),

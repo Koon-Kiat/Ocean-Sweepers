@@ -6,7 +6,7 @@ import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.entity.core.MovableEntity;
+import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 
 /**
@@ -18,7 +18,7 @@ import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<T>> {
 
     protected static final GameLogger LOGGER = new GameLogger(AbstractMovementBuilder.class);
-    protected MovableEntity movableEntity;
+    protected IMovable movable;
     protected Entity entity;
     protected float speed;
     protected Vector2 initialVelocity = new Vector2(0, 0);
@@ -39,12 +39,12 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
         return self();
     }
 
-    public MovableEntity getMovableEntity() {
-        if (movableEntity != null) {
-            return movableEntity;
+    public IMovable getMovable() {
+        if (movable != null) {
+            return movable;
         } else if (entity != null) {
             // You need to implement this method in concrete builder classes
-            return createMovableEntityFromEntity(entity, speed);
+            return createMovableFromEntity(entity, speed);
         } else {
             String errorMessage = "No entity provided.";
             LOGGER.fatal(errorMessage);
@@ -57,8 +57,8 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
         }
     }
 
-    public T withMovableEntity(MovableEntity movableEntity) {
-        this.movableEntity = movableEntity;
+    public T withMovable(IMovable movable) {
+        this.movable = movable;
         return self();
     }
 
@@ -115,6 +115,6 @@ public abstract class AbstractMovementBuilder<T extends AbstractMovementBuilder<
 
     protected abstract void validateBuildRequirements();
 
-    protected abstract MovableEntity createMovableEntityFromEntity(Entity entity, float speed);
+    protected abstract IMovable createMovableFromEntity(Entity entity, float speed);
 
 }

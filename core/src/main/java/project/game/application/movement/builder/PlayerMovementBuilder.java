@@ -1,10 +1,11 @@
 package project.game.application.movement.builder;
 
+import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.MovableEntity;
-import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
+import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 
 /**
@@ -13,9 +14,6 @@ import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
  */
 public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovementBuilder> {
 
-    private static final float DEFAULT_SPEED = 200f;
-    private static final float DEFAULT_ACCELERATION = 500f;
-    private static final float DEFAULT_DECELERATION = 250f;
     private IMovementStrategyFactory movementStrategyFactory;
 
     public PlayerMovementBuilder() {
@@ -46,24 +44,9 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
         return this.movementStrategyFactory;
     }
 
-    // Static factory methods
-    public static PlayerMovementBuilder createDefaultPlayer() {
-        return new PlayerMovementBuilder()
-                .setSpeed(DEFAULT_SPEED)
-                .setInitialVelocity(0, 0)
-                .withConstantMovement();
-    }
-
-    public static PlayerMovementBuilder createAcceleratingPlayer() {
-        return new PlayerMovementBuilder()
-                .setSpeed(DEFAULT_SPEED)
-                .setInitialVelocity(0, 0)
-                .withAcceleratedMovement(DEFAULT_ACCELERATION, DEFAULT_DECELERATION);
-    }
-
     public PlayerMovementBuilder withConstantMovement() {
         try {
-            this.movementStrategy = MovementStrategyFactory.createConstantMovement(this.speed, this.lenientMode);
+            this.movementStrategy = this.movementStrategyFactory.createConstantMovement(this.speed, this.lenientMode);
         } catch (Exception e) {
             if (this.lenientMode) {
                 LOGGER.warn("Failed to create ConstantMovementStrategy in lenient mode: " + e.getMessage()
@@ -79,7 +62,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
 
     public PlayerMovementBuilder withAcceleratedMovement(float acceleration, float deceleration) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createAcceleratedMovement(acceleration, deceleration,
+            this.movementStrategy = this.movementStrategyFactory.createAcceleratedMovement(acceleration, deceleration,
                     this.speed, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -96,7 +79,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
     public PlayerMovementManager build() {
         validateBuildRequirements();
         try {
-            if (this.entity == null && this.movableEntity == null) {
+            if (this.entity == null && this.movable == null) {
                 String errorMsg = "Entity must not be null for PlayerMovementBuilder.";
                 LOGGER.fatal(errorMsg);
                 throw new MovementException(errorMsg);
@@ -121,7 +104,7 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
     }
 
     @Override
-    protected MovableEntity createMovableEntityFromEntity(Entity entity, float speed) {
+    protected IMovable createMovableFromEntity(Entity entity, float speed) {
         if (entity == null) {
             String errorMsg = "Cannot create MovableEntity: Entity is null";
             LOGGER.fatal(errorMsg);

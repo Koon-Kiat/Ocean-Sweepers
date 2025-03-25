@@ -312,7 +312,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     }
 
     public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeRenderableEntity(this);
+        entityManager.removeEntityUsingRegistry(this.entity);
     }
 
     @Override

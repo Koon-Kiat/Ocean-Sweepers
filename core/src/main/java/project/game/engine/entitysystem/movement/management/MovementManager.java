@@ -5,12 +5,12 @@ import java.util.Set;
 
 import com.badlogic.gdx.math.Vector2;
 
+import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementManager;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
-import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 
 /**
  * MovementManager manages movement for entities implementing IMovable.
