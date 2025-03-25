@@ -122,6 +122,7 @@ public class MainMenuScene extends Scene {
         // Create buttons with the custom style
         playButton = new TextButton("PLAY", textButtonStyle);
 
+
         // Add padding to the buttons themselves
         playButton.pad(15); // Sets uniform padding on all sides
         exitButton = new TextButton("EXIT", textButtonStyle);
@@ -160,6 +161,8 @@ public class MainMenuScene extends Scene {
 
         table.add(playButton).padBottom(10);
         table.row();
+        // table.add(optionsButton).padBottom(10);
+        // table.row();
         table.add(exitButton);
 
         sceneUIManager.getStage().addActor(table);

@@ -133,42 +133,4 @@ public class AudioUI implements IAudioUI {
         // Store reference to checkbox
         soundToggle = checkbox;
     }
-
-    public Table createAudioSettingsTable() {
-        Table table = new Table();
-
-        Label musicLabel = new Label("MUSIC VOLUME", skin);
-        musicSlider = new Slider(0f, 1f, 0.01f, false, skin);
-        musicSlider.setValue(config.getMusicVolume());
-        musicSlider.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                float volume = musicSlider.getValue();
-                audioManager.setMusicVolume(volume);
-                config.saveMusicVolume(volume);
-            }
-        });
-
-        Label soundLabel = new Label("ENABLE SOUND EFFECTS", skin);
-        soundToggle = new CheckBox("", skin);
-        soundToggle.setChecked(config.isSoundEnabled());
-        soundToggle.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                boolean enabled = soundToggle.isChecked();
-                audioManager.setSoundEnabled(enabled);
-                config.saveSoundEnabled(enabled);
-            }
-        });
-
-        // Organize UI elements
-        table.add(musicLabel).top().pad(5);
-        table.row();
-        table.add(musicSlider).width(300).padBottom(10);
-        table.row();
-        table.add(soundLabel).left().pad(5);
-        table.add(soundToggle).padBottom(10);
-
-        return table;
-    }
 }

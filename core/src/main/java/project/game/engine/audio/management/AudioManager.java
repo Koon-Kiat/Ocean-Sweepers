@@ -81,16 +81,4 @@ public class AudioManager {
         musicManager.dispose();
         soundManager.dispose();
     }
-
-    public IMusic getMusicManager() {
-        return musicManager;
-    }
-
-    public ISound getSoundManager() {
-        return soundManager;
-    }
-
-    public IAudioConfig getAudioConfig() {
-        return audioConfig;
-    }
 }
