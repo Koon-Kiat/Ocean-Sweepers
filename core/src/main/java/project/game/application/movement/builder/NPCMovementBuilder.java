@@ -54,7 +54,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withConstantMovement() {
         try {
-            this.movementStrategy = MovementStrategyFactory.createConstantMovement(this.speed, this.lenientMode);
+            this.movementStrategy = this.movementStrategyFactory.createConstantMovement(this.speed, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
                 LOGGER.warn("Error creating ConstantMovementStrategy in lenient mode: " + e.getMessage()
@@ -70,7 +70,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createZigZagMovement(this.speed, amplitude, frequency,
+            this.movementStrategy = this.movementStrategyFactory.createZigZagMovement(this.speed, amplitude, frequency,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -95,7 +95,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             throw new MovementException(errorMsg);
         }
         try {
-            this.movementStrategy = MovementStrategyFactory.createFollowMovement(target, this.speed, this.lenientMode);
+            this.movementStrategy = this.movementStrategyFactory.createFollowMovement(target, this.speed,
+                    this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
                 LOGGER.warn("Error in FollowMovementStrategy in lenient mode: " + e.getMessage()
@@ -121,7 +122,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             throw new MovementException(errorMsg);
         }
         try {
-            this.movementStrategy = MovementStrategyFactory.createRandomisedMovement(strategyPool, minDuration,
+            this.movementStrategy = this.movementStrategyFactory.createRandomisedMovement(strategyPool, minDuration,
                     maxDuration, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -138,9 +139,9 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
     public NPCMovementBuilder withOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
             float eccentricity) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createOrbitalMovement(target, orbitRadius, rotationSpeed,
-                    eccentricity,
-                    this.lenientMode);
+            this.movementStrategy = this.movementStrategyFactory.createOrbitalMovement(target, orbitRadius,
+                    rotationSpeed,
+                    eccentricity, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
                 LOGGER.warn("Error creating OrbitalMovementStrategy: " + e.getMessage()
@@ -154,7 +155,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withSpringFollow(IPositionable target, float springConstant, float damping) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createSpringFollowMovement(target, springConstant, damping,
+            this.movementStrategy = this.movementStrategyFactory.createSpringFollowMovement(target, springConstant,
+                    damping,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -169,7 +171,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withInterceptorMovement(IMovable movable) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createInterceptorMovement(movable, this.speed,
+            this.movementStrategy = this.movementStrategyFactory.createInterceptorMovement(movable, this.speed,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -184,7 +186,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withSpiralApproach(IPositionable target, float spiralTightness, float approachSpeed) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createSpiralApproachMovement(target, this.speed,
+            this.movementStrategy = this.movementStrategyFactory.createSpiralApproachMovement(target, this.speed,
                     spiralTightness, approachSpeed,
                     this.lenientMode);
         } catch (MovementException e) {
@@ -200,7 +202,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     public NPCMovementBuilder withObstacleAvoidanceTargeting(IMovable target) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createObstacleAvoidanceStrategy(target, this.speed,
+            this.movementStrategy = this.movementStrategyFactory.createObstacleAvoidanceStrategy(target, this.speed,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -222,7 +224,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
      */
     public NPCMovementBuilder withObstacleAvoidance(List<Entity> obstacles) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, obstacles,
+            this.movementStrategy = this.movementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, obstacles,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -235,15 +237,9 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    /**
-     * Creates a default obstacle avoidance Strategy without specific obstacles.
-     * Obstacles can be added later through the movementStrategy if needed.
-     * 
-     * @return This builder for method chaining
-     */
     public NPCMovementBuilder withObstacleAvoidance() {
         try {
-            this.movementStrategy = MovementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, null,
+            this.movementStrategy = this.movementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, null,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -270,7 +266,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             float[] weights) {
 
         try {
-            this.movementStrategy = MovementStrategyFactory.createCompositeMovementStrategy(
+            this.movementStrategy = this.movementStrategyFactory.createCompositeMovementStrategy(
                     baseStrategy, additionalStrategies, weights);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -294,7 +290,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
      */
     public NPCMovementBuilder withInterceptorAndObstacleAvoidance(IMovable target, List<Entity> obstacles) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createInterceptorWithObstacleAvoidance(
+            this.movementStrategy = this.movementStrategyFactory.createInterceptorWithObstacleAvoidance(
                     target, obstacles, this.speed, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -307,20 +303,10 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    /**
-     * Creates a combined interceptor with obstacle avoidance movement strategy
-     * using custom weights.
-     * 
-     * @param target    The target to follow/intercept
-     * @param obstacles The obstacles to avoid
-     * @param weights   Custom weights for interceptor and avoidance (first for
-     *                  interceptor, second for avoidance)
-     * @return This builder for method chaining
-     */
     public NPCMovementBuilder withInterceptorAndObstacleAvoidance(IMovable target, List<Entity> obstacles,
             float[] weights) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createInterceptorWithObstacleAvoidance(
+            this.movementStrategy = this.movementStrategyFactory.createInterceptorWithObstacleAvoidance(
                     target, obstacles, this.speed, weights, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
@@ -352,7 +338,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             float constantWeight, float zigzagWeight) {
 
         try {
-            this.movementStrategy = MovementStrategyFactory.createOceanCurrentMovement(
+            this.movementStrategy = this.movementStrategyFactory.createOceanCurrentMovement(
                     baseSpeed, zigSpeed, amplitude, frequency,
                     constantWeight, zigzagWeight, this.lenientMode);
         } catch (MovementException e) {
@@ -391,7 +377,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             float constantWeight, float zigzagWeight) {
 
         try {
-            this.movementStrategy = MovementStrategyFactory.createRandomizedOceanCurrentMovement(
+            this.movementStrategy = this.movementStrategyFactory.createRandomizedOceanCurrentMovement(
                     minBaseSpeed, maxBaseSpeed,
                     minZigSpeed, maxZigSpeed,
                     minAmplitude, maxAmplitude,
@@ -437,7 +423,7 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
      */
     public NPCMovementBuilder withTrashCollector(List<Trash> trashEntities, List<Entity> obstacles, float[] weights) {
         try {
-            this.movementStrategy = MovementStrategyFactory.createTrashCollectorStrategy(
+            this.movementStrategy = this.movementStrategyFactory.createTrashCollectorStrategy(
                     this.speed, trashEntities, obstacles, weights, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
