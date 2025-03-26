@@ -47,13 +47,31 @@ public class EntityFactoryManager {
 
     public Trash createTrash() {
         float x, y;
+        int maxRetries = 50; // Maximum number of attempts to find a non-colliding position
+        int retries = 0;
+        Trash trash = null;
+
         do {
             x = random.nextFloat() * (constants.GAME_WIDTH() - constants.TRASH_WIDTH());
             y = random.nextFloat() * (constants.GAME_HEIGHT() - constants.TRASH_HEIGHT());
-        } while (trashFactory.checkCollisionWithExisting(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT()));
+            if (!trashFactory.checkCollisionWithExisting(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT())
+                    || retries >= maxRetries) {
+                trash = trashFactory.createEntity(x, y);
+                System.out.println("Created Trash at: x=" + x + ", y=" + y);
+                break;
+            }
+            retries++;
+        } while (retries < maxRetries);
 
-        Trash trash = trashFactory.createEntity(x, y);
-        System.out.println("Created Trash at: x=" + x + ", y=" + y);
+        // If we couldn't find a non-colliding position after max retries, just place it
+        // somewhere
+        if (trash == null) {
+            x = random.nextFloat() * (constants.GAME_WIDTH() - constants.TRASH_WIDTH());
+            y = random.nextFloat() * (constants.GAME_HEIGHT() - constants.TRASH_HEIGHT());
+            trash = trashFactory.createEntity(x, y);
+            System.out.println("Created Trash (after retries) at: x=" + x + ", y=" + y);
+        }
+
         return trash;
     }
 

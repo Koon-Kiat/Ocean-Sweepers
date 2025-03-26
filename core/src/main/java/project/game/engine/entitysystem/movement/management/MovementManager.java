@@ -5,7 +5,6 @@ import java.util.Set;
 
 import com.badlogic.gdx.math.Vector2;
 
-import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.movement.api.IMovable;
@@ -20,7 +19,6 @@ public class MovementManager implements IMovementManager {
 
     private static final GameLogger LOGGER = new GameLogger(MovementManager.class);
     private final IMovable movable;
-    private final IMovementStrategyFactory movementStrategyFactory;
     private final boolean lenientMode;
     private IMovementStrategy movementStrategy;
 
@@ -28,14 +26,12 @@ public class MovementManager implements IMovementManager {
      * Constructs a MovementManager with the specified parameters.
      */
     public MovementManager(IMovable movable, float speed, Vector2 initialVelocity,
-            IMovementStrategy movementStrategy, boolean lenientMode,
-            IMovementStrategyFactory movementStrategyFactory) {
+            IMovementStrategy movementStrategy, boolean lenientMode) {
         if (movable == null) {
             throw new MovementException("MovableEntity cannot be null");
         }
         this.movable = movable;
         this.lenientMode = lenientMode;
-        this.movementStrategyFactory = movementStrategyFactory;
 
         // Handle initial speed validation
         float correctedSpeed = speed;
@@ -46,18 +42,14 @@ public class MovementManager implements IMovementManager {
             } else {
                 throw new MovementException("Speed cannot be negative: " + speed);
             }
-            setSpeed(correctedSpeed);
+            movable.setSpeed(correctedSpeed);
         }
 
         // Set movement strategy with validation
         if (movementStrategy == null) {
             if (lenientMode) {
-                LOGGER.warn("Movement strategy is null. Defaulting to default strategy.");
-                if (this.movementStrategyFactory == null) {
-                    LOGGER.fatal("Movement strategy factory is also null. Cannot create default strategy.");
-                    throw new MovementException("Both movement strategy and factory are null");
-                }
-                this.movementStrategy = this.movementStrategyFactory.createDefaultMovement();
+                LOGGER.warn("Movement strategy is null, but required for MovementManager.");
+                throw new MovementException("Movement strategy cannot be null");
             } else {
                 throw new MovementException("Movement strategy cannot be null");
             }
@@ -67,18 +59,11 @@ public class MovementManager implements IMovementManager {
 
         // Set initial velocity if provided in the entity
         if (initialVelocity != null && (initialVelocity.x != 0 || initialVelocity.y != 0)) {
-            setVelocity(initialVelocity);
+            movable.setVelocity(initialVelocity);
         }
     }
 
-    /**
-     * Convenience constructor that uses a default movement strategy.
-     */
-    public MovementManager(IMovable movable, float speed, Vector2 initialVelocity,
-            boolean lenientMode, IMovementStrategyFactory movementStrategyFactory) {
-        this(movable, speed, initialVelocity, null, lenientMode, movementStrategyFactory);
-    }
-
+    @Override
     public IMovable getMovableEntity() {
         return movable;
     }
@@ -112,96 +97,11 @@ public class MovementManager implements IMovementManager {
             String errorMessage = "Error during movement strategy update: " + e.getMessage();
             LOGGER.fatal(errorMessage, e);
             if (lenientMode) {
-                clearVelocity();
+                movable.clearVelocity();
             } else {
                 throw new MovementException(errorMessage, e);
             }
         }
-    }
-
-    @Override
-    public float getX() {
-        return movable.getX();
-    }
-
-    @Override
-    public float getY() {
-        return movable.getY();
-    }
-
-    @Override
-    public void setX(float x) {
-        try {
-            movable.setX(x);
-        } catch (Exception e) {
-            LOGGER.error("Error setting X position to " + x, e);
-            if (!lenientMode) {
-                throw new MovementException("Failed to set X position", e);
-            }
-        }
-    }
-
-    @Override
-    public void setY(float y) {
-        try {
-            movable.setY(y);
-        } catch (Exception e) {
-            LOGGER.error("Error setting Y position to " + y, e);
-            if (!lenientMode) {
-                throw new MovementException("Failed to set Y position", e);
-            }
-        }
-    }
-
-    @Override
-    public float getSpeed() {
-        return movable.getSpeed();
-    }
-
-    @Override
-    public final void setSpeed(float speed) {
-        if (speed < 0 && !lenientMode) {
-            throw new MovementException("Speed cannot be negative: " + speed);
-        }
-        movable.setSpeed(speed < 0 ? Math.abs(speed) : speed);
-    }
-
-    @Override
-    public Vector2 getVelocity() {
-        return movable.getVelocity();
-    }
-
-    @Override
-    public final void setVelocity(Vector2 velocity) {
-        if (velocity == null) {
-            if (lenientMode) {
-                LOGGER.warn("Null velocity provided. Using zero vector instead.");
-                movable.setVelocity(0, 0);
-            } else {
-                throw new MovementException("Velocity vector cannot be null");
-            }
-        } else {
-            movable.setVelocity(velocity);
-        }
-    }
-
-    @Override
-    public void setVelocity(float x, float y) {
-        movable.setVelocity(x, y);
-    }
-
-    @Override
-    public void normalizeVelocity() {
-        Vector2 velocity = getVelocity();
-        if (velocity != null && velocity.len2() > 0) {
-            velocity.nor();
-            setVelocity(velocity);
-        }
-    }
-
-    @Override
-    public void clearVelocity() {
-        setVelocity(0, 0);
     }
 
     @Override
@@ -232,9 +132,9 @@ public class MovementManager implements IMovementManager {
         // Normalize and apply speed if we have movement
         if (resultVelocity.len2() > 0.0001f) {
             // This ensures diagonal movement doesn't go faster than cardinal movement
-            resultVelocity.nor().scl(getSpeed());
+            resultVelocity.nor().scl(movable.getSpeed());
         }
 
-        setVelocity(resultVelocity);
+        movable.setVelocity(resultVelocity);
     }
 }

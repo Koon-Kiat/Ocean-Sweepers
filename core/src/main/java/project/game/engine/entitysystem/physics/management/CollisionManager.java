@@ -146,6 +146,8 @@ public class CollisionManager implements ContactListener {
     public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
         for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
             MovementManager manager = entry.getValue();
+            ICollidableVisitor entity = entry.getKey();
+
             if (manager != null) {
                 // Only apply keyboard input to player-controlled movement managers
                 if (isPlayerControlled(manager)) {

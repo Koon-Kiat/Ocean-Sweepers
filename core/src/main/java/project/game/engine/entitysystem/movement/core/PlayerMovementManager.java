@@ -1,6 +1,5 @@
 package project.game.engine.entitysystem.movement.core;
 
-import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.common.exception.MovementException;
 import project.game.common.logging.core.GameLogger;
@@ -21,13 +20,12 @@ public class PlayerMovementManager extends MovementManager {
     /**
      * Constructor using the Builder pattern.
      */
-    public PlayerMovementManager(PlayerMovementBuilder builder, IMovementStrategyFactory movementStrategyFactory) {
+    public PlayerMovementManager(PlayerMovementBuilder builder) {
         super(checkBuilder(builder).getMovable(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementStrategy(),
-                checkBuilder(builder).isLenientMode(),
-                movementStrategyFactory);
+                checkBuilder(builder).isLenientMode());
         this.builder = builder;
     }
 

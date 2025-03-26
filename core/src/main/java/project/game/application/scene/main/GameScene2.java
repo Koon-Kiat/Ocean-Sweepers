@@ -27,12 +27,13 @@ import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.TimeManager;
+
 public class GameScene2 extends Scene implements IEntityRemovalListener {
 
     private static final GameLogger LOGGER = new GameLogger(GameScene2.class);
-    
+
     private IGameConstants constants;
-    
+
     private HealthManager healthManager;
     private AudioManager audioManager;
     private ScoreManager scoreManager;
@@ -40,7 +41,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private CollisionManager collisionManager;
     private EntityManager entityManager;
     private CustomAssetManager assetManager;
-    private TimeManager timer;    
+    private TimeManager timer;
 
     private final GameScene gameScene;
     private Texture heartTexture;
@@ -59,7 +60,8 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 50);
-        this.audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), new AudioConfig());
+        this.audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(),
+                new AudioConfig());
         LOGGER.info("GameScene2 created with composition of GameScene");
     }
 
@@ -68,7 +70,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         batch = new SpriteBatch();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
         if (gameScene != null) {
-            gameScene.create();  
+            gameScene.create();
         }
     }
 
@@ -82,7 +84,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             sceneManager.setScene("gameover");
             if (scoreManager.getScore() < 500) {
                 audioManager.playSoundEffect("loss");
-            }else{
+            } else {
                 audioManager.playSoundEffect("success");
             }
             audioManager.stopMusic();
@@ -91,9 +93,9 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
 
         gameScene.render(deltaTime);
         batch.begin();
-        skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d", 
-            timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
-        batch.end();  
+        skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d",
+                timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+        batch.end();
     }
 
     @Override
@@ -134,6 +136,9 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         gameScene.setShowTimer(false); // Hide timer in GameScene
         if (gameScene != null) {
             gameScene.show();
+
+            // Reset input state to prevent constant movement
+            inputManager.resetInputState();
 
             entityManager = gameScene.getEntityManager();
             collisionManager = gameScene.getCollisionManager();
@@ -182,8 +187,6 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
 
             entityManager.addRenderableEntity(seaTurtle);
             collisionManager.addEntity(seaTurtle, npcMovementManager);
-            
-
 
             LOGGER.info("GameScene2 shown (delegated to GameScene)");
         }
