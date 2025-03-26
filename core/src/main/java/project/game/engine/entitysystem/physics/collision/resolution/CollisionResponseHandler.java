@@ -97,8 +97,8 @@ public class CollisionResponseHandler {
             // Update both entity and movement manager positions
             entity.getEntity().setX(physX);
             entity.getEntity().setY(physY);
-            movementManager.setX(physX);
-            movementManager.setY(physY);
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
 
             // Don't clear velocity completely during collision
             Vector2 velocity = entity.getBody().getLinearVelocity();
@@ -121,7 +121,7 @@ public class CollisionResponseHandler {
         entity.getBody().setTransform(inputX / pixelsToMeters, inputY / pixelsToMeters, 0);
 
         // Get movement manager velocity and apply it to the body
-        Vector2 velocity = movementManager.getVelocity();
+        Vector2 velocity = movementManager.getMovableEntity().getVelocity();
         if (velocity.len2() > 0) {
             entity.getBody().setLinearVelocity(velocity);
             entity.getBody().setLinearDamping(0.1f); // Keep consistent low damping
@@ -172,7 +172,7 @@ public class CollisionResponseHandler {
 
         entity.getEntity().setX(physX);
         entity.getEntity().setY(physY);
-        movementManager.setX(physX);
-        movementManager.setY(physY);
+        movementManager.getMovableEntity().setX(physX);
+        movementManager.getMovableEntity().setY(physY);
     }
 }
