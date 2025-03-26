@@ -2,6 +2,7 @@ package project.game.application.scene.main;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -48,6 +49,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private Texture heartTexture;
     private SpriteBatch batch;
     private Skin skin;
+    private BitmapFont upheavalFont;
 
     private SeaTurtle seaTurtle;
     private Texture seaTurtleImage;
@@ -62,11 +64,11 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     public GameScene2(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.gameScene = new GameScene(sceneManager, inputManager);
-        this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 50);
         this.audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(),
                 new AudioConfig());
+        // Remove the healthManager initialization here, we'll do it in create()
         LOGGER.info("GameScene2 created with composition of GameScene");
     }
 
@@ -74,7 +76,16 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     public void create() {
         batch = new SpriteBatch();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-        turtleHeartTexture = new Texture("heart.png");
+        upheavalFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
+
+        // Load heart texture once and use it for both boat and turtle
+        heartTexture = new Texture("heart.png");
+        // Use the same texture for turtle hearts
+        turtleHeartTexture = heartTexture;
+
+        // Initialize HealthManager with the loaded texture
+        this.healthManager = HealthManager.getInstance(heartTexture);
+
         if (gameScene != null) {
             gameScene.create();
         }
@@ -99,19 +110,14 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
 
         gameScene.render(deltaTime);
         batch.begin();
-        skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d",
-                timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+        upheavalFont.draw(batch, String.format("Time: %02d:%02d",
+                timer.getMinutes(), timer.getSeconds()), 500, sceneUIManager.getStage().getHeight() - 60);
 
-        // Draw turtle health
-        skin.getFont("default-font").draw(batch, "Turtle Health:", 400,
-                sceneUIManager.getStage().getHeight() - 30);
+        // Adding a label for turtle health
+        upheavalFont.draw(batch, "Turtle Health:", 50,
+                sceneUIManager.getStage().getHeight() - 60);
 
-        // Draw heart icons for turtle health
-        for (int i = 0; i < turtleHealth; i++) {
-            batch.draw(turtleHeartTexture, 530 + (i * 40),
-                    sceneUIManager.getStage().getHeight() - 40, 30, 30);
-        }
-
+        healthManager.draw(batch, 300, sceneUIManager.getStage().getHeight() - 100, turtleHealth);
 
         batch.end();
     }
@@ -143,16 +149,19 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             gameScene.dispose();
         }
 
-        if (turtleHeartTexture != null) {
-            turtleHeartTexture.dispose();
+        if (heartTexture != null) {
+            heartTexture.dispose();
         }
+
+        // Don't dispose turtleHeartTexture since it's the same as heartTexture
+        // This would cause a double-free error
 
         LOGGER.info("GameScene2 disposed");
     }
 
     @Override
     public void show() {
-        
+
         super.show();
         turtleHealth = MAX_TURTLE_HEALTH;
         timer.resetTime();
