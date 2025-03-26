@@ -275,6 +275,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     @Override
     public void show() {
         timer.resetTime();
+        inputManager.resetInputState();
         timer.start();
         if (inputMultiplexer == null) {
             inputMultiplexer = new InputMultiplexer();
