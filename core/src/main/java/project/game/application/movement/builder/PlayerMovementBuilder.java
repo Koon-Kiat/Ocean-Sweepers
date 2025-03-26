@@ -1,7 +1,6 @@
 package project.game.application.movement.builder;
 
 import project.game.application.movement.api.IMovementStrategyFactory;
-import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.MovableEntity;
@@ -89,8 +88,9 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
                 withConstantMovement();
             }
             if (this.movementStrategyFactory == null) {
-                LOGGER.warn("Movement strategy factory is null. Using default factory.");
-                this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+                String errorMsg = "MovementStrategyFactory cannot be null";
+                LOGGER.fatal(errorMsg);
+                throw new MovementException(errorMsg);
             }
             return new PlayerMovementManager(this);
         } catch (MovementException e) {

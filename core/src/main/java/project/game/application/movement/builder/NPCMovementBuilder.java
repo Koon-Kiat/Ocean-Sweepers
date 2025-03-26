@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.application.entity.item.Trash;
 import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.application.movement.api.StrategyType;
-import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.exception.MovementException;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.core.MovableEntity;
@@ -465,8 +464,9 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
             }
 
             if (this.movementStrategyFactory == null) {
-                LOGGER.warn("Movement strategy factory is null. Using default factory.");
-                this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+                String errorMsg = "MovementStrategyFactory cannot be null";
+                LOGGER.fatal(errorMsg);
+                throw new MovementException(errorMsg);
             }
 
             return new NPCMovementManager(this);

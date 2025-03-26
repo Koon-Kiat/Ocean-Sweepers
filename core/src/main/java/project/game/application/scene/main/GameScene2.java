@@ -12,7 +12,6 @@ import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.movement.builder.NPCMovementBuilder;
-import project.game.application.movement.decorator.MovementStrategyDecorator;
 import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
