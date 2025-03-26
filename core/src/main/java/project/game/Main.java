@@ -11,11 +11,13 @@ import project.game.common.logging.util.LogPaths;
 import project.game.common.util.file.ProjectPaths;
 import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.SceneManager;
+import project.game.engine.scene.management.SceneRenderer;
 
 public class Main extends ApplicationAdapter {
 
     private static final GameLogger LOGGER = new GameLogger(Main.class);
     private SceneManager sceneManager;
+    private SceneRenderer sceneRenderer;
 
     @Override
     public void create() {
@@ -45,6 +47,7 @@ public class Main extends ApplicationAdapter {
         // Scene Manager setup
         LOGGER.debug("Creating scene manager");
         sceneManager = new SceneManager();
+        sceneRenderer = new SceneRenderer(sceneManager);
         SceneInputManager sharedInputManager = sceneManager.getInputManager();
 
         // Initializing and registering scenes now done in Scene Factory
@@ -60,7 +63,7 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0, 0, 0f, 0);
 
         float deltaTime = Gdx.graphics.getDeltaTime();
-        sceneManager.render(deltaTime);
+        sceneRenderer.render(deltaTime);
     }
 
     @Override
