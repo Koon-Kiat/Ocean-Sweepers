@@ -178,7 +178,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
                     constants.SEA_TURTLE_HEIGHT(),
                     true);
 
-            float[] customWeights = { 0.70f, 0.30f };
+            float[] customWeights = { 0.40f, 0.60f };
             npcMovementManager = new NPCMovementBuilder()
                     .withEntity(seaTurtleEntity)
                     .setSpeed(constants.NPC_SPEED())
