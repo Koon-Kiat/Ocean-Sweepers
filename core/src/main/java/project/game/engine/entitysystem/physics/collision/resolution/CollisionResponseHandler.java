@@ -106,12 +106,12 @@ public class CollisionResponseHandler {
 
             // Keep some momentum during collision
             if (speed > 0) {
-                velocity.scl(0.98f); // Gradual slowdown
+                velocity.scl(1f); // Gradual slowdown
                 entity.getBody().setLinearVelocity(velocity);
             }
 
             // Low damping during collision for smoother movement
-            entity.getBody().setLinearDamping(0.1f);
+            entity.getBody().setLinearDamping(1f);
             return;
         }
 
@@ -124,12 +124,13 @@ public class CollisionResponseHandler {
         Vector2 velocity = movementManager.getMovableEntity().getVelocity();
         if (velocity.len2() > 0) {
             entity.getBody().setLinearVelocity(velocity);
-            entity.getBody().setLinearDamping(0.1f); // Keep consistent low damping
+            entity.getBody().setLinearDamping(1f); // Keep consistent low damping
         }
     }
 
     /**
      * Synchronizes the logical entity's position from the Box2D body.
+     * Also adds the ability to limit maximum displacement during collisions.
      */
     public static void syncEntity(ICollidableVisitor entity, float pixelsToMeters) {
         if (entity == null || entity.getBody() == null)
@@ -138,6 +139,36 @@ public class CollisionResponseHandler {
         // Get position from physics body
         float x = entity.getBody().getPosition().x * pixelsToMeters;
         float y = entity.getBody().getPosition().y * pixelsToMeters;
+
+        // Get current entity position
+        float currentX = entity.getEntity().getX();
+        float currentY = entity.getEntity().getY();
+
+        // If in collision state, limit the maximum displacement per frame
+        // This prevents entities from being pushed too far in a single step
+        if (entity.isInCollision()) {
+            // Calculate displacement from current position
+            float dx = x - currentX;
+            float dy = y - currentY;
+            float displacement = (float) Math.sqrt(dx * dx + dy * dy);
+
+            // Set a maximum displacement per frame during collision
+            float maxDisplacement = 10.0f;
+
+            // If displacement exceeds limit, scale it down
+            if (displacement > maxDisplacement) {
+                float scale = maxDisplacement / displacement;
+                x = currentX + dx * scale;
+                y = currentY + dy * scale;
+
+                // Since we're limiting displacement, also limit the velocity
+                Vector2 vel = entity.getBody().getLinearVelocity();
+                if (vel.len() > 10.0f) {
+                    vel.nor().scl(10.0f);
+                    entity.getBody().setLinearVelocity(vel);
+                }
+            }
+        }
 
         // Update entity position to match physics
         entity.getEntity().setX(x);
@@ -163,16 +194,5 @@ public class CollisionResponseHandler {
         } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
             // Method doesn't exist or can't be accessed - silently continue
         }
-    }
-
-    private static void syncPositions(ICollidableVisitor entity, MovementManager movementManager,
-            float pixelsToMeters) {
-        float physX = entity.getBody().getPosition().x * pixelsToMeters;
-        float physY = entity.getBody().getPosition().y * pixelsToMeters;
-
-        entity.getEntity().setX(physX);
-        entity.getEntity().setY(physY);
-        movementManager.getMovableEntity().setX(physX);
-        movementManager.getMovableEntity().setY(physY);
     }
 }

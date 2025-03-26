@@ -35,13 +35,13 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private IGameConstants constants;
 
     private HealthManager healthManager;
-    private AudioManager audioManager;
-    private ScoreManager scoreManager;
+    private final AudioManager audioManager;
+    private final ScoreManager scoreManager;
     private NPCMovementManager npcMovementManager;
     private CollisionManager collisionManager;
     private EntityManager entityManager;
     private CustomAssetManager assetManager;
-    private TimeManager timer;
+    private final TimeManager timer;
 
     private final GameScene gameScene;
     private Texture heartTexture;
@@ -133,7 +133,8 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         super.show();
         timer.resetTime();
         timer.start();
-        gameScene.setShowTimer(false); // Hide timer in GameScene
+        gameScene.setShowTimer(false);
+
         if (gameScene != null) {
             gameScene.show();
 
@@ -144,10 +145,14 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             collisionManager = gameScene.getCollisionManager();
             assetManager = CustomAssetManager.getInstance();
 
+            // Load the sea turtle texture and explicitly finish loading before using it
             assetManager.loadTextureAssets("seaturtle.png");
+            assetManager.update();
+            assetManager.loadAndFinish(); // Ensure all assets are fully loaded before continuing
+
+            // Only proceed if the asset is actually loaded
             seaTurtleImage = assetManager.getAsset("seaturtle.png", Texture.class);
             seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
-            // Create sea turtle directional sprites for all 4 directions
             TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
 
             turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7]; // UP
@@ -189,6 +194,9 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             collisionManager.addEntity(seaTurtle, npcMovementManager);
 
             LOGGER.info("GameScene2 shown (delegated to GameScene)");
+        } else {
+            LOGGER.error("Failed to load seaturtle.png asset");
+
         }
     }
 

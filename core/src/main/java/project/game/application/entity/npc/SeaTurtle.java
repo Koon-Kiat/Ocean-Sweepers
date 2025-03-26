@@ -127,7 +127,9 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             // Update movement manager position to match physics
             float physX = getBody().getPosition().x * pixelsToMeters;
             float physY = getBody().getPosition().y * pixelsToMeters;
-            movementManager.getMovableEntity().setVelocity(physX, physY);
+            // Use setX/setY instead of setVelocity for position
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
 
             // Update velocity in movement manager to match physics
             Vector2 velocity = getBody().getLinearVelocity();
@@ -356,9 +358,9 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 200.0f; // Reduced mass
-        fixtureDef.friction = 0.2f; // Less friction
-        fixtureDef.restitution = 0.1f; // Less bounce
+        fixtureDef.density = 1000.0f;
+        fixtureDef.friction = 0.2f;
+        fixtureDef.restitution = 0.1f;
 
         Filter filter = new Filter();
         filter.categoryBits = 0x0008;
@@ -393,7 +395,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             // Reset accumulators at the beginning of collision handling
             accumulatedImpulse.set(0, 0);
             accumulatedVelocity.set(getBody().getLinearVelocity());
-            
 
             // Dispatch to appropriate handler based on the other entity's type
             dispatchCollisionHandling(other);
@@ -500,32 +501,103 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         float boatX = boat.getBody().getPosition().x;
         float boatY = boat.getBody().getPosition().y;
 
-        float dx = seaTurtleX - boatX;
-        float dy = seaTurtleY - boatY;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        // Get current velocities of both entities
+        Vector2 turtleVelocity = getBody().getLinearVelocity();
+        Vector2 boatVelocity = boat.getBody().getLinearVelocity();
 
-        if (distance > 0.0001f) {
-            dx /= distance;
-            dy /= distance;
+        // Create a copy for calculations
+        Vector2 turtleVel = new Vector2(turtleVelocity);
+        Vector2 boatVel = new Vector2(boatVelocity);
 
-            // Apply small impulse to turtle
-            float turtleForce = 0.1f;
-            getBody().applyLinearImpulse(
-                    dx * turtleForce,
-                    dy * turtleForce,
-                    seaTurtleX,
-                    seaTurtleY,
-                    true);
+        // Calculate approach vector (the direction they're approaching each other from)
+        // This combines both position difference and velocity
+        Vector2 approachDir = new Vector2();
 
-            // Cap turtle velocity
-            Vector2 velocity = getBody().getLinearVelocity();
-            float maxSpeed = 2.0f;
-            if (velocity.len() > maxSpeed) {
-                velocity.nor().scl(maxSpeed);
-                getBody().setLinearVelocity(velocity);
+        // First component: Position difference (where they are relative to each other)
+        approachDir.x = seaTurtleX - boatX;
+        approachDir.y = seaTurtleY - boatY;
+
+        // If they're very close, ensure we have a valid direction
+        if (approachDir.len() < 0.0001f) {
+            // If positions are almost identical, use velocity directions
+            approachDir.x = -boatVel.x;
+            approachDir.y = -boatVel.y;
+
+            // If boat velocity is very small, use turtle velocity
+            if (approachDir.len() < 0.0001f) {
+                approachDir.x = turtleVel.x;
+                approachDir.y = turtleVel.y;
             }
         }
 
+        // Second component: Consider their velocities to determine their approach
+        // directions
+        float dotProduct = boatVel.x * turtleVel.x + boatVel.y * turtleVel.y;
+        float boatSpeed = boatVel.len();
+        float turtleSpeed = turtleVel.len();
+
+        // Only normalize if they have meaningful velocity
+        if (boatSpeed > 0.1f)
+            boatVel.nor();
+        if (turtleSpeed > 0.1f)
+            turtleVel.nor();
+
+        // Normalize approach direction
+        if (approachDir.len() > 0.0001f) {
+            approachDir.nor();
+        } else {
+            // Fallback to a default direction if no clear approach
+            approachDir.set(1, 0);
+        }
+
+        // Calculate impulse forces based on speeds and mass ratio
+        float impactSpeed = Math.max(0.8f, (boatSpeed + turtleSpeed) * 0.5f);
+        float turtleToBoatMassRatio = 1000.0f / 500.0f; // Turtle mass / Boat mass
+
+        // Calculate push directions
+        // Turtle should be pushed in the direction opposite to the boat's velocity
+        Vector2 turtlePushDir = new Vector2(approachDir);
+
+        // Boat should be pushed in the direction opposite to the turtle's velocity
+        Vector2 boatPushDir = new Vector2(-approachDir.x, -approachDir.y);
+
+        // Apply impulse to turtle - higher mass means less impulse
+        float turtleForce = 0.04f * impactSpeed / turtleToBoatMassRatio;
+        getBody().applyLinearImpulse(
+                turtlePushDir.x * turtleForce,
+                turtlePushDir.y * turtleForce,
+                seaTurtleX,
+                seaTurtleY,
+                true);
+
+        // Apply impulse to boat - lower mass means more impulse
+        float boatForce = 0.06f * impactSpeed;
+        boat.getBody().applyLinearImpulse(
+                boatPushDir.x * boatForce,
+                boatPushDir.y * boatForce,
+                boatX,
+                boatY,
+                true);
+
+        LOGGER.debug("Applied opposing collision forces - turtle: {0}, boat: {1}, approachDir: {2},{3}",
+                turtleForce, boatForce, approachDir.x, approachDir.y);
+
+        // Cap maximum velocities
+        Vector2 newTurtleVel = getBody().getLinearVelocity();
+        float maxTurtleSpeed = 1.2f;
+        if (newTurtleVel.len() > maxTurtleSpeed) {
+            newTurtleVel.nor().scl(maxTurtleSpeed);
+            getBody().setLinearVelocity(newTurtleVel);
+        }
+
+        Vector2 newBoatVel = boat.getBody().getLinearVelocity();
+        float maxBoatSpeed = 1.2f;
+        if (newBoatVel.len() > maxBoatSpeed) {
+            newBoatVel.nor().scl(maxBoatSpeed);
+            boat.getBody().setLinearVelocity(newBoatVel);
+        }
+
+        // Set collision active
         setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
     }
 

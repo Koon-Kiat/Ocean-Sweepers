@@ -54,7 +54,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     private boolean lifeLossCooldown = false;
     private long lifeLossCooldownEndTime = 0;
     private static final long LIFE_LOSS_COOLDOWN_DURATION = 1000; // 1 second cooldown
-    
 
     // Direction constants - used as indices in directional sprite arrays
     public static final int DIRECTION_UP = 0;
@@ -77,9 +76,9 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     private final Entity entity;
 
     static {
-        registerCollisionHandler(Rock.class, boat -> boat.handleRockCollision());
-        registerCollisionHandler(Trash.class, boat -> boat.handleTrashCollision());
-        registerCollisionHandler(SeaTurtle.class, boat -> boat.handleSeaTurtleCollision());
+        registerCollisionHandler(Rock.class, Boat::handleRockCollision);
+        registerCollisionHandler(Trash.class, Boat::handleTrashCollision);
+        registerCollisionHandler(SeaTurtle.class, Boat::handleSeaTurtleCollision);
     }
 
     /**
@@ -442,15 +441,10 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             dx /= distance;
             dy /= distance;
 
-            // Get current velocity
-            Vector2 velocity = getBody().getLinearVelocity();
-            float currentSpeed = velocity.len();
-
             // Calculate bounce force based on approach velocity
             // Higher speeds result in lower bounce multiplier to prevent excessive bouncing
-            float speedFactor = Math.min(1.0f, 1.0f / (1 + currentSpeed * 0.1f));
             float bounceForce = GameConstantsFactory.getConstants().BOAT_BASE_IMPULSE()
-                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS() * speedFactor;
+                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
 
             // Apply impulse in the direction away from rock
             getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);
@@ -459,7 +453,7 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             getBody().setLinearDamping(1.0f);
 
             // Reset velocity if it's too high after collision
-            velocity = getBody().getLinearVelocity();
+            Vector2 velocity = getBody().getLinearVelocity();
             float newSpeed = velocity.len();
             float maxSpeed = 5.0f;
             if (newSpeed > maxSpeed) {
@@ -511,47 +505,15 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             return;
         }
 
+        // Only set the collision state active, but don't apply forces
+        // The sea turtle's handleBoatCollision is responsible for applying forces to
+        // both entities
         setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-        float boatX = getBody().getPosition().x;
-        float boatY = getBody().getPosition().y;
-        float turtleX = currentCollisionEntity.getBody().getPosition().x;
-        float turtleY = currentCollisionEntity.getBody().getPosition().y;
 
-        float dx = boatX - turtleX;
-        float dy = boatY - turtleY;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        // Apply higher damping to quickly stop motion and let the physics handle things
+        getBody().setLinearDamping(5.0f);
 
-        if (distance > 0.0001f) {
-            dx /= distance;
-            dy /= distance;
-
-            // Get current velocity
-            Vector2 boatVel = getBody().getLinearVelocity();
-            float currentSpeed = boatVel.len();
-
-            // Very small bounce force with speed-based reduction
-            float speedFactor = Math.min(0.5f, 1.0f / (1 + currentSpeed * 0.5f));
-            float bounceForce = 0.2f * speedFactor;
-
-            // Apply minimal impulse to boat
-            getBody().applyLinearImpulse(
-                    dx * bounceForce,
-                    dy * bounceForce,
-                    boatX,
-                    boatY,
-                    true);
-
-            // Apply high damping to quickly stop motion
-            getBody().setLinearDamping(5.0f);
-
-            // Cap boat velocity
-            Vector2 velocity = getBody().getLinearVelocity();
-            float maxSpeed = 2.0f;
-            if (velocity.len() > maxSpeed) {
-                velocity.nor().scl(maxSpeed);
-                getBody().setLinearVelocity(velocity);
-            }
-        }
+        LOGGER.debug("Boat collided with sea turtle - letting sea turtle handle physics");
     }
 
     /**

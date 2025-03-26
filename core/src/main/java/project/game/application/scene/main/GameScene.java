@@ -25,10 +25,8 @@ import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
-import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
-import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.application.scene.overlay.Options;
 import project.game.application.scene.overlay.Scenetransition;
@@ -53,7 +51,6 @@ import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.TimeManager;
-
 
 public class GameScene extends Scene implements IEntityRemovalListener {
 
@@ -90,7 +87,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     public static List<Entity> existingEntities;
     private EntityManager entityManager;
     private Boat boat;
-    private SeaTurtle seaTurtle;
     private List<Rock> rocks;
     private List<Trash> trashes;
 
@@ -106,26 +102,22 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";
     private static final String ROCK_SPRITESHEET = "rock_sprites";
-    private static final String SEA_TURTLE_SPRITESHEET = "sea_turtle_sprites";
 
     // Entity type identifiers for directional sprites
     private static final String BOAT_ENTITY = "boat";
-    private static final String SEA_TURTLE_ENTITY = "sea_turtle";
     private SpriteBatch batch;
     private Texture rockImage;
     private Texture boatSpritesheet;
     private Texture trashImage;
-    private Texture seaTurtleImage;
     private TextureRegion[] boatTextureRegions;
     private TextureRegion[] boatDirectionalSprites;
     private TextureRegion[] rockRegions;
     private Texture[] trashTextures;
     private TextureRegion[] trashRegions;
-    private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
     private final Texture heartTexture = new Texture("heart.png");
     protected TimeManager timer;
-    private boolean showTimer = true;  // Flag to control if the timer is shown
+    private boolean showTimer = true; // Flag to control if the timer is shown
 
     private float remainingTime;
 
@@ -135,7 +127,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 30);
     }
-    
+
     public SpriteBatch getBatch() {
         return batch;
     }
@@ -172,16 +164,16 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         healthManager.draw(batch);
         // print score
         skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
-            sceneUIManager.getStage().getHeight() - 30);
-        
+                sceneUIManager.getStage().getHeight() - 30);
+
         // Time left in logs
         System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
 
         // print timer
         if (showTimer) {
             skin.getFont("default-font").setColor(1, 1, 1, 1); // Set color to white
-            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d", 
-            timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d",
+                    timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
             skin.getFont("default-font").setColor(0, 0, 0, 1); // Reset color to black
         }
 
@@ -193,20 +185,20 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     }
 
     public void setShowTimer(boolean show) {
-        this.showTimer = show; 
+        this.showTimer = show;
     }
 
     @Override
     public void render(float deltaTime) {
         input();
         timer.update(deltaTime);
-        
+
         if (timer.isTimeUp()) {
             timer.stop();
             sceneManager.setScene("gameover");
             if (sceneManager.hasWon() == false) {
                 audioManager.playSoundEffect("loss");
-            }else{
+            } else {
                 audioManager.playSoundEffect("success");
             }
             audioManager.stopMusic();
@@ -275,8 +267,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         remainingTime -= deltaTime;
 
-        if(trashes.isEmpty()) {
-            scoreManager.multiplyScore((float) (remainingTime/100));
+        if (trashes.isEmpty()) {
+            scoreManager.multiplyScore((float) (remainingTime / 100));
             // Indicate that the player has won
             sceneManager.setWinState(true);
             sceneManager.setScene("gameover");
@@ -329,7 +321,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     @Override
     public void dispose() {
 
-        scoreManager.multiplyScore((float) (remainingTime/100));
+        scoreManager.multiplyScore((float) (remainingTime / 100));
         LOGGER.info("Final Score: " + scoreManager.getScore());
         // Log world state before disposal
         LOGGER.info("Before GameScene disposal:");
@@ -338,7 +330,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         boatSpritesheet.dispose();
         trashImage.dispose();
         rockImage.dispose();
-        seaTurtleImage.dispose();
         debugRenderer.dispose();
         if (audioManager != null) {
             audioManager.dispose();
@@ -410,38 +401,12 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             collisionManager.addEntity(boat, playerMovementManager);
             existingEntities.add(boatEntity);
 
-            // Create sea turtle entity
-            Entity seaTurtleEntity = new Entity(
-                    constants.SEA_TURTLE_START_X(),
-                    constants.SEA_TURTLE_START_Y(),
-                    constants.SEA_TURTLE_WIDTH(),
-                    constants.SEA_TURTLE_HEIGHT(),
-                    true);
-
-            float[] customWeights = { 0.70f, 0.30f };
-            npcMovementManager = new NPCMovementBuilder()
-                    .withEntity(seaTurtleEntity)
-                    .setSpeed(constants.NPC_SPEED())
-                    .setInitialVelocity(1, 0)
-                    .withTrashCollector(trashes, existingEntities, customWeights)
-                    .setLenientMode(true)
-                    .build();
-
-            //seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
-            //seaTurtle.setCollisionManager(collisionManager);
-
-            // Add sea turtle to managers
-            //entityManager.addRenderableEntity(seaTurtle);
-            //collisionManager.addEntity(seaTurtle, npcMovementManager);
-            //existingEntities.add(seaTurtleEntity);
-
             // Initialize EntityFactoryManager
             entityFactoryManager = new EntityFactoryManager(
                     constants,
                     world,
                     existingEntities,
                     collisionManager,
-                    seaTurtleRegion,
                     rockRegions,
                     trashRegions);
             entityFactoryManager.setTrashRemovalListener(this);
@@ -501,7 +466,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
             MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
             SoundManager.getInstance().loadSoundEffects(
-                    new String[] { "Boinkeffect.mp3", "selection.mp3", "rubble.mp3", "explosion.mp3", "loss.mp3", "success.mp3", "points.mp3" },
+                    new String[] { "Boinkeffect.mp3", "selection.mp3", "rubble.mp3", "explosion.mp3", "loss.mp3",
+                            "success.mp3", "points.mp3" },
                     new String[] { "keybuttons", "selection", "collision", "explosion", "loss", "success", "points" });
 
             audioManager.setMusicVolume(config.getMusicVolume());
@@ -519,7 +485,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Init complete
     }
-
 
     @Override
     public void onEntityRemove(Entity entity) {
@@ -562,7 +527,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         assetManager.loadTextureAssets("trash3.png");
         assetManager.loadTextureAssets("steamboat.png");
         assetManager.loadTextureAssets("Rocks.png");
-        assetManager.loadTextureAssets("seaturtle.png");
         assetManager.loadTextureAssets("ocean_background.jpg");
         assetManager.update();
         assetManager.loadAndFinish();
@@ -593,27 +557,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         rockImage = assetManager.getAsset("Rocks.png", Texture.class);
         rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
 
-        // Load sea turtle texture and create TextureRegion
-        seaTurtleImage = assetManager.getAsset("seaturtle.png", Texture.class);
-        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
-
-        // Create sea turtle directional sprites for all 4 directions
-        TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
-
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7]; // UP
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2]; // RIGHT
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0]; // DOWN
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1]; // LEFT
-
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_RIGHT] = seaTurtleRegion[5]; // UP
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_RIGHT] = seaTurtleRegion[3]; // RIGHT
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_LEFT] = seaTurtleRegion[4]; // DOWN
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_LEFT] = seaTurtleRegion[6]; // LEFT
-
-        // Register the directional sprites with the asset manager
-        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
-        seaTurtleRegion = turtleDirectionalSprites;
-
         // Load trash textures and create TextureRegions
         trashTextures = new Texture[3];
         trashRegions = new TextureRegion[3];
@@ -629,7 +572,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         LOGGER.info("Game assets initialized successfully");
     }
-
 
     /**
      * Handles key inputs for game control:
@@ -682,10 +624,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             audioManager.stopMusic();
         }
         // Switch to game2 scene (just for testing)
-        //if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-            //sceneManager.setScene("game2");
-            //audioManager.stopMusic();
-        //}
+        // if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+        // sceneManager.setScene("game2");
+        // audioManager.stopMusic();
+        // }
     }
 
     /**
@@ -729,26 +671,21 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     protected World getWorld() {
         return world;
     }
-    
+
     protected CollisionManager getCollisionManager() {
         return collisionManager;
     }
-    
+
     protected List<Trash> getTrashes() {
         return trashes;
     }
-    
+
     protected List<Entity> getRockEntities() {
         return existingEntities;
-    }
-    
-    protected TextureRegion[] getSeaTurtleRegion() {
-        return seaTurtleRegion;
     }
 
     protected EntityManager getEntityManager() {
         return entityManager;
     }
 
-    
 }

@@ -14,6 +14,7 @@ import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class EntityFactoryManager {
+
     private final IGameConstants constants;
     private final RockFactory rockFactory;
     private final TrashFactory trashFactory;
@@ -24,7 +25,6 @@ public class EntityFactoryManager {
             World world,
             List<Entity> existingEntities,
             CollisionManager collisionManager,
-            TextureRegion[] seaTurtleRegion,
             TextureRegion[] rockRegions,
             TextureRegion[] trashRegions) {
         this.constants = constants;
