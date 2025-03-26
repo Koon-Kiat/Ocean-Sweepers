@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
@@ -41,6 +42,12 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private CollisionManager collisionManager;
     private final Vector2 accumulatedImpulse = new Vector2();
     private final Vector2 accumulatedVelocity = new Vector2();
+
+    private ILifeLossCallback healthCallback;
+
+    private boolean healthLossCooldown = false;
+    private long healthLossCooldownEndTime = 0;
+    private static final long HEALTH_LOSS_COOLDOWN_DURATION = 500; 
 
     // Threshold to determine if we should consider movement on an axis
     private static final float MOVEMENT_THRESHOLD = 0.01f;
@@ -283,8 +290,8 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                 currentDirectionIndex = DIRECTION_DOWN_RIGHT;
             }
 
-            LOGGER.debug("SeaTurtle moving at angle: {0}, direction: {1}",
-                    angle, getCurrentDirectionName());
+            // LOGGER.debug("SeaTurtle moving at angle: {0}, direction: {1}",
+            // angle, getCurrentDirectionName());
         }
 
         // Check if we need to map our 8-directional index to a 4-directional sprite
@@ -466,6 +473,8 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         // Keep damping low to maintain movement
         body.setLinearDamping(10f);
     }
+
+
 
     /**
      * Dispatches collision handling to the appropriate registered handler
@@ -649,6 +658,10 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
+    public void setHealthCallback(ILifeLossCallback callback) {
+        this.healthCallback = callback;
+    }
+
     /**
      * Handle collision with trash
      */
@@ -663,6 +676,18 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                 // Schedule the trash for removal
                 collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
                 LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
+
+                // Check cooldown before triggering health loss
+                long currentTime = System.currentTimeMillis();
+                if (healthCallback != null && (!healthLossCooldown || currentTime > healthLossCooldownEndTime)) {
+                    // Reset cooldown
+                    healthLossCooldown = true;
+                    healthLossCooldownEndTime = currentTime + HEALTH_LOSS_COOLDOWN_DURATION;
+                    
+                    // Call health loss callback
+                    healthCallback.onLifeLost();
+                    LOGGER.info("Turtle lost health from eating trash");
+                }
 
                 // Restore damping after removing trash
                 getBody().setLinearDamping(10f);

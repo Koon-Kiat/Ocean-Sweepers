@@ -8,6 +8,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
@@ -118,6 +119,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private final Texture heartTexture = new Texture("heart.png");
     protected TimeManager timer;
     private boolean showTimer = true; // Flag to control if the timer is shown
+    private BitmapFont upheavalFont;
 
     private float remainingTime;
 
@@ -160,14 +162,18 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         batch.begin();
         entityManager.draw(batch);
 
+        // Adding a label for turtle health
+        upheavalFont.draw(batch, "Player Health:", 50,
+                sceneUIManager.getStage().getHeight() - 30);
         // Draw health and score
-        healthManager.draw(batch);
+        healthManager.draw(batch, 300, sceneUIManager.getStage().getHeight() - 60, healthManager.getLives());
+
         // print score
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
+        upheavalFont.draw(batch, "Score: " + scoreManager.getScore(), 500,
                 sceneUIManager.getStage().getHeight() - 30);
 
         // Time left in logs
-        System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+        // System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
 
         // print timer
         if (showTimer) {
@@ -345,6 +351,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        upheavalFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
         inputManager.enableMovementControls();
         constants = GameConstantsFactory.getConstants();
         config = new AudioConfig();

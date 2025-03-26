@@ -16,7 +16,7 @@ public class HealthManager {
 
     public HealthManager(Texture heartTexture) {
         this.lives = maxLives;
-        this.heartTexture = heartTexture; //new Texture(Gdx.files.internal("heart.png"));
+        this.heartTexture = heartTexture; // new Texture(Gdx.files.internal("heart.png"));
     }
 
     public static HealthManager getInstance(Texture heartTexture) {
@@ -45,7 +45,7 @@ public class HealthManager {
         int xOffset = 25;
         int yOffset = Gdx.graphics.getHeight() - 75;
 
-        // Define heart dimensions - adjust as needed
+        // Define heart dimensions
         int heartWidth = 60;
         int heartHeight = 60;
 
@@ -53,6 +53,22 @@ public class HealthManager {
             batch.draw(heartTexture,
                     xOffset + (i * heartSpacing),
                     yOffset,
+                    heartWidth,
+                    heartHeight);
+        }
+    }
+
+    public void draw(SpriteBatch batch, float x, float y, int health) {
+        int heartSpacing = 50;
+        
+        // Define heart dimensions
+        int heartWidth = 60;
+        int heartHeight = 60;
+    
+        for (int i = 0; i < health; i++) {
+            batch.draw(heartTexture,
+                    x + (i * heartSpacing),
+                    y,
                     heartWidth,
                     heartHeight);
         }
