@@ -202,7 +202,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (timer.isTimeUp()) {
             timer.stop();
             sceneManager.setScene("gameover");
-            if (sceneManager.hasWon() == false) {
+            if (scoreManager.hasWon() == false) {
                 audioManager.playSoundEffect("loss");
             } else {
                 audioManager.playSoundEffect("success");
@@ -276,7 +276,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (trashes.isEmpty()) {
             scoreManager.multiplyScore((float) (remainingTime / 100));
             // Indicate that the player has won
-            sceneManager.setWinState(true);
+            scoreManager.setWinState(true);
             sceneManager.setScene("gameover");
             audioManager.playSoundEffect("success");
             audioManager.stopMusic();
@@ -357,7 +357,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         config = new AudioConfig();
         LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
         initPopUpMenu();
-        displayMessage();
+        //displayMessage();
 
         remainingTime = 300.0f;
 

@@ -113,7 +113,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             float remainingTime = timer.getRemainingTime(); // use your TimeManager's method
             timer.stop();
             scoreManager.multiplyScore(remainingTime / 100f);
-            sceneManager.setWinState(true);
+            scoreManager.setWinState(true);
             audioManager.stopMusic();
             audioManager.playSoundEffect("success");
             sceneManager.setScene("gameover");
