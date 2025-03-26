@@ -20,7 +20,6 @@ import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
@@ -129,11 +128,11 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             // Update movement manager position to match physics
             float physX = getBody().getPosition().x * pixelsToMeters;
             float physY = getBody().getPosition().y * pixelsToMeters;
-            movementManager.setVelocity(physX, physY);
+            movementManager.getMovableEntity().setVelocity(physX, physY);
 
             // Update velocity in movement manager to match physics
             Vector2 velocity = getBody().getLinearVelocity();
-            movementManager.setVelocity(velocity.x, velocity.y);
+            movementManager.getMovableEntity().setVelocity(velocity.x, velocity.y);
         }
 
         // Set higher damping during collision

@@ -193,7 +193,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     }
 
     public void setShowTimer(boolean show) {
-        this.showTimer = show;  // Allow external classes to control whether the timer is visible
+        this.showTimer = show; 
     }
 
     @Override
@@ -464,10 +464,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     rockRegions,
                     trashRegions);
             entityFactoryManager.setTrashRemovalListener(this);
-
-            // Create entities using factory manager
-            boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            boat.setCollisionManager(collisionManager);
 
             // Set life loss callback for boat
             boat.setLifeLossCallback(new ILifeLossCallback() {

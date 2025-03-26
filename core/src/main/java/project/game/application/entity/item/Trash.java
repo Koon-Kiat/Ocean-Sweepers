@@ -20,7 +20,6 @@ import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
@@ -101,12 +100,12 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
         // If we have a movement manager, update its position too
         if (movementManager != null) {
-            movementManager.setX(physX);
-            movementManager.setY(physY);
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
 
             // Keep the current velocity in the movement manager
             Vector2 currentVel = getBody().getLinearVelocity();
-            movementManager.setVelocity(currentVel.x, currentVel.y);
+            movementManager.getMovableEntity().setVelocity(currentVel.x, currentVel.y);
         }
 
         // Use very low damping during collision to maintain movement
@@ -243,7 +242,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
             // When collision ends, ensure we maintain movement
             if (movementManager != null) {
                 Vector2 currentVel = getBody().getLinearVelocity();
-                movementManager.setVelocity(currentVel.x, currentVel.y);
+                movementManager.getMovableEntity().setVelocity(currentVel.x, currentVel.y);
             }
 
             // Keep damping low after collision ends
@@ -460,7 +459,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
             // Update movement managers if available
             if (movementManager != null) {
                 Vector2 newVel = getBody().getLinearVelocity();
-                movementManager.setVelocity(newVel.x, newVel.y);
+                movementManager.getMovableEntity().setVelocity(newVel.x, newVel.y);
             }
 
             // Update other trash's movement manager if available
@@ -469,7 +468,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
                 NPCMovementManager otherManager = otherTrash.getMovementManager();
                 if (otherManager != null) {
                     Vector2 newVel = other.getBody().getLinearVelocity();
-                    otherManager.setVelocity(newVel.x, newVel.y);
+                    otherManager.getMovableEntity().setVelocity(newVel.x, newVel.y);
                 }
             }
         }
