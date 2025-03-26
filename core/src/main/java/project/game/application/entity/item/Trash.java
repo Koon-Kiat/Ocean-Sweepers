@@ -17,6 +17,7 @@ import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
+import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
@@ -96,7 +97,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeEntityUsingRegistry(this.entity);
+        entityManager.removeRenderableEntity(this);
 	}
 
     @Override
