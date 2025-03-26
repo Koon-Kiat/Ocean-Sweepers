@@ -92,6 +92,10 @@ public class SceneInputManager extends InputManager {
         });
     }
 
+    public void resetInputState() {
+        clearPressedKeys();
+    }
+
     // Functional interface for handling touchDown events via lambda expressions.
     @FunctionalInterface
     public interface TouchDownCallback {

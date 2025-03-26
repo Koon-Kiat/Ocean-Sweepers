@@ -28,8 +28,10 @@ public class CollisionResponseHandler {
         float halfHeight = entity.getEntity().getHeight() / 2;
         float currentX = entity.getEntity().getX();
         float currentY = entity.getEntity().getY();
-        float inputX = movementManager.getX();
-        float inputY = movementManager.getY();
+        float inputX = movementManager.getMovableEntity().getX();
+        float inputY = movementManager.getMovableEntity().getY();
+
+        // Clamp input position within screen bounds
         inputX = Math.max(halfWidth, Math.min(inputX, gameWidth - halfWidth));
         inputY = Math.max(halfHeight, Math.min(inputY, gameHeight - halfHeight));
         // Check if we're at a boundary
@@ -81,8 +83,8 @@ public class CollisionResponseHandler {
             entity.getEntity().setX(inputX);
             entity.getEntity().setY(inputY);
             entity.getBody().setTransform(inputX / pixelsToMeters, inputY / pixelsToMeters, 0);
-            movementManager.setX(inputX);
-            movementManager.setY(inputY);
+            movementManager.getMovableEntity().setX(inputX);
+            movementManager.getMovableEntity().setY(inputY);
             return;
         }
 

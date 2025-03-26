@@ -3,6 +3,7 @@ package project.game.application.movement.factory;
 import java.util.List;
 
 import project.game.application.entity.item.Trash;
+import project.game.application.movement.api.IMovementStrategyFactory;
 import project.game.application.movement.composite.InterceptorAvoidanceStrategy;
 import project.game.application.movement.composite.OceanCurrentStrategy;
 import project.game.application.movement.composite.TrashCollectorStrategy;
@@ -23,7 +24,6 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.api.IMovementStrategy;
-import project.game.engine.entitysystem.movement.api.IMovementStrategyFactory;
 import project.game.engine.entitysystem.movement.api.IPositionable;
 import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrategy;
 
@@ -52,16 +52,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         // Protected constructor for singleton pattern and to allow subclassing
     }
 
-    /**
-     * Creates an accelerated movement strategy.
-     * 
-     * @param acceleration The acceleration of the movement.
-     * @param deceleration The deceleration of the movement.
-     * @param speed        The speed of the movement.
-     * @param lenientMode  Whether to enable lenient mode.
-     * @return A new AcceleratedMovementStrategy instance.
-     */
-    public static IMovementStrategy createAcceleratedMovement(float acceleration, float deceleration, float speed,
+    @Override
+    public IMovementStrategy createAcceleratedMovement(float acceleration, float deceleration, float speed,
             boolean lenientMode) {
         try {
             return new AcceleratedMovementStrategy(acceleration, deceleration, speed, lenientMode);
@@ -71,13 +63,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a constant movement strategy.
-     * 
-     * @param speed The speed of the movement.
-     * @return A new ConstantMovementStrategy instance.
-     */
-    public static IMovementStrategy createConstantMovement(float speed, boolean lenientMode) {
+    @Override
+    public IMovementStrategy createConstantMovement(float speed, boolean lenientMode) {
         try {
             return new ConstantMovementStrategy(speed, lenientMode);
         } catch (MovementException e) {
@@ -86,14 +73,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a follow movement strategy.
-     * 
-     * @param target The target to follow.
-     * @param speed  The speed of the movement.
-     * @return A new FollowMovementStrategy instance.
-     */
-    public static IMovementStrategy createFollowMovement(IPositionable target, float speed, boolean lenientMode) {
+    @Override
+    public IMovementStrategy createFollowMovement(IPositionable target, float speed, boolean lenientMode) {
         if (target == null) {
             String errorMsg = "Target is null in createFollowMovement.";
             LOGGER.fatal(errorMsg);
@@ -107,10 +88,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates an InterceptorMovementStrategy.
-     */
-    public static IMovementStrategy createInterceptorMovement(IMovable movable, float speed, boolean lenientMode) {
+    @Override
+    public IMovementStrategy createInterceptorMovement(IMovable movable, float speed, boolean lenientMode) {
         try {
             return new InterceptorMovementStrategy(movable, speed, lenientMode);
         } catch (Exception e) {
@@ -119,11 +98,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates an ObstacleAvoidanceStrategy.
-     */
-    public static IMovementStrategy createObstacleAvoidanceStrategy(IMovable movable, float speed,
-            boolean lenientMode) {
+    @Override
+    public IMovementStrategy createObstacleAvoidanceStrategy(IMovable movable, float speed, boolean lenientMode) {
         try {
             ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
             return strategy;
@@ -133,16 +109,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates an ObstacleAvoidanceStrategy with a list of obstacles to avoid.
-     * 
-     * @param speed       The movement speed
-     * @param obstacles   List of obstacle entities to avoid
-     * @param lenientMode Whether to use lenient mode for error handling
-     * @return A new ObstacleAvoidanceStrategy instance
-     */
-    public static IMovementStrategy createObstacleAvoidanceStrategy(float speed, List<Entity> obstacles,
-            boolean lenientMode) {
+    @Override
+    public IMovementStrategy createObstacleAvoidanceStrategy(float speed, List<Entity> obstacles, boolean lenientMode) {
         try {
             ObstacleAvoidanceStrategy strategy = new ObstacleAvoidanceStrategy(speed, lenientMode);
             if (obstacles != null && !obstacles.isEmpty()) {
@@ -155,10 +123,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates an OrbitalMovementStrategy.
-     */
-    public static IMovementStrategy createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
+    @Override
+    public IMovementStrategy createOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
             float eccentricity, boolean lenientMode) {
         try {
             return new OrbitalMovementStrategy(target, orbitRadius, rotationSpeed, eccentricity, lenientMode);
@@ -168,17 +134,9 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a randomised movement strategy.
-     * 
-     * @param strategyPool The pool of strategys to randomly select from.
-     * @param minDuration  The minimum duration for each strategy.
-     * @param maxDuration  The maximum duration for each strategy.
-     * @return A new RandomisedMovementStrategy instance.
-     */
-    public static IMovementStrategy createRandomisedMovement(List<IMovementStrategy> strategyPool,
-            float minDuration,
-            float maxDuration, boolean lenientMode) {
+    @Override
+    public IMovementStrategy createRandomisedMovement(List<IMovementStrategy> strategyPool,
+            float minDuration, float maxDuration, boolean lenientMode) {
         if (strategyPool == null) {
             String errorMsg = "Strategy pool cannot be null in createRandomisedMovement.";
             LOGGER.fatal(errorMsg);
@@ -192,12 +150,9 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a SpiralApproachStrategy.
-     */
-    public static IMovementStrategy createSpiralApproachMovement(IPositionable target, float speed,
-            float spiralTightness,
-            float approachSpeed, boolean lenientMode) {
+    @Override
+    public IMovementStrategy createSpiralApproachMovement(IPositionable target, float speed,
+            float spiralTightness, float approachSpeed, boolean lenientMode) {
         try {
             return new SpiralApproachStrategy(target, speed, spiralTightness, approachSpeed, lenientMode);
         } catch (Exception e) {
@@ -206,12 +161,9 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a SpringFollowStrategy.
-     */
-    public static IMovementStrategy createSpringFollowMovement(IPositionable target, float springConstant,
-            float damping,
-            boolean lenientMode) {
+    @Override
+    public IMovementStrategy createSpringFollowMovement(IPositionable target, float springConstant,
+            float damping, boolean lenientMode) {
         try {
             return new SpringFollowStrategy(target, springConstant, damping, lenientMode);
         } catch (Exception e) {
@@ -220,16 +172,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a zig-zag movement strategy.
-     * 
-     * @param speed       The speed of the movement.
-     * @param amplitude   The amplitude of the zigzag pattern.
-     * @param frequency   The frequency of the zigzag pattern.
-     * @param lenientMode Whether to enable lenient mode.
-     * @return A new ZigZagMovementStrategy instance.
-     */
-    public static IMovementStrategy createZigZagMovement(float speed, float amplitude, float frequency,
+    @Override
+    public IMovementStrategy createZigZagMovement(float speed, float amplitude, float frequency,
             boolean lenientMode) {
         try {
             return new ZigZagMovemenStrategy(speed, amplitude, frequency, lenientMode);
@@ -239,16 +183,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a composite movement strategy combining multiple movement strategies.
-     * 
-     * @param baseStrategy         The primary movement strategy
-     * @param additionalStrategies Additional strategies to apply
-     * @param weights              Weights for each strategy (including base
-     *                             strategy)
-     * @return A new CompositeMovementStrategy instance
-     */
-    public static IMovementStrategy createCompositeMovementStrategy(
+    @Override
+    public IMovementStrategy createCompositeMovementStrategy(
             IMovementStrategy baseStrategy,
             List<IMovementStrategy> additionalStrategies,
             float[] weights) {
@@ -266,23 +202,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a composite movement strategy combining interceptor movement with
-     * obstacle avoidance.
-     * This is a common use case where an entity follows a target while avoiding
-     * obstacles.
-     * 
-     * @param target      The target to follow/intercept
-     * @param obstacles   The obstacles to avoid
-     * @param speed       The movement speed
-     * @param weights     Optional custom weights for interceptor and avoidance
-     *                    (first for interceptor, second for avoidance)
-     * @param lenientMode Whether to use lenient mode
-     * @return An InterceptorAvoidanceStrategy that combines interception and
-     *         obstacle
-     *         avoidance
-     */
-    public static IMovementStrategy createInterceptorWithObstacleAvoidance(
+    @Override
+    public IMovementStrategy createInterceptorWithObstacleAvoidance(
             IMovable target,
             List<Entity> obstacles,
             float speed,
@@ -297,19 +218,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a composite movement strategy combining interceptor movement with
-     * obstacle avoidance using default weights.
-     * 
-     * @param target      The target to follow/intercept
-     * @param obstacles   The obstacles to avoid
-     * @param speed       The movement speed
-     * @param lenientMode Whether to use lenient mode
-     * @return An InterceptorAvoidanceStrategy that combines interception and
-     *         obstacle
-     *         avoidance
-     */
-    public static IMovementStrategy createInterceptorWithObstacleAvoidance(
+    @Override
+    public IMovementStrategy createInterceptorWithObstacleAvoidance(
             IMovable target,
             List<Entity> obstacles,
             float speed,
@@ -317,20 +227,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         return createInterceptorWithObstacleAvoidance(target, obstacles, speed, null, lenientMode);
     }
 
-    /**
-     * Creates an ocean current movement strategy combining constant and zigzag
-     * movements for realistic floating debris simulation.
-     * 
-     * @param baseSpeed      Speed for constant component
-     * @param zigSpeed       Speed for zigzag component
-     * @param amplitude      Zigzag amplitude
-     * @param frequency      Zigzag frequency
-     * @param constantWeight Weight for constant movement (0.0-1.0)
-     * @param zigzagWeight   Weight for zigzag movement (0.0-1.0)
-     * @param lenientMode    Whether to use lenient mode
-     * @return An OceanCurrentStrategy that simulates ocean current effects
-     */
-    public static IMovementStrategy createOceanCurrentMovement(
+    @Override
+    public IMovementStrategy createOceanCurrentMovement(
             float baseSpeed, float zigSpeed, float amplitude, float frequency,
             float constantWeight, float zigzagWeight, boolean lenientMode) {
 
@@ -344,24 +242,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a randomized ocean current movement with parameters within specified
-     * ranges.
-     * 
-     * @param minBaseSpeed   Minimum constant speed
-     * @param maxBaseSpeed   Maximum constant speed
-     * @param minZigSpeed    Minimum zigzag speed
-     * @param maxZigSpeed    Maximum zigzag speed
-     * @param minAmplitude   Minimum zigzag amplitude
-     * @param maxAmplitude   Maximum zigzag amplitude
-     * @param minFrequency   Minimum zigzag frequency
-     * @param maxFrequency   Maximum zigzag frequency
-     * @param constantWeight Weight for constant movement
-     * @param zigzagWeight   Weight for zigzag movement
-     * @param lenientMode    Whether to use lenient mode
-     * @return A randomized OceanCurrentStrategy
-     */
-    public static IMovementStrategy createRandomizedOceanCurrentMovement(
+    @Override
+    public IMovementStrategy createRandomizedOceanCurrentMovement(
             float minBaseSpeed, float maxBaseSpeed,
             float minZigSpeed, float maxZigSpeed,
             float minAmplitude, float maxAmplitude,
@@ -383,15 +265,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a movement strategy for targeting the nearest trash entity.
-     * 
-     * @param speed         The movement speed
-     * @param trashEntities The list of trash entities to target
-     * @param lenientMode   Whether to use lenient mode for error handling
-     * @return A new NearestTrashStrategy instance
-     */
-    public static IMovementStrategy createNearestTrashStrategy(float speed, List<Trash> trashEntities,
+    @Override
+    public IMovementStrategy createNearestTrashStrategy(float speed, List<Trash> trashEntities,
             boolean lenientMode) {
         try {
             return new NearestTrashStrategy(speed, trashEntities, lenientMode);
@@ -405,19 +280,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a trash collector strategy that combines nearest trash targeting with
-     * obstacle avoidance.
-     * 
-     * @param speed         The movement speed
-     * @param trashEntities The list of trash entities to target
-     * @param obstacles     The list of obstacles to avoid
-     * @param weights       The weights for trash targeting and obstacle avoidance
-     *                      (or null for defaults)
-     * @param lenientMode   Whether to use lenient mode for error handling
-     * @return A new TrashCollectorStrategy instance
-     */
-    public static IMovementStrategy createTrashCollectorStrategy(float speed, List<Trash> trashEntities,
+    @Override
+    public IMovementStrategy createTrashCollectorStrategy(float speed, List<Trash> trashEntities,
             List<Entity> obstacles, float[] weights,
             boolean lenientMode) {
         try {
@@ -432,17 +296,8 @@ public class MovementStrategyFactory implements IMovementStrategyFactory {
         }
     }
 
-    /**
-     * Creates a trash collector strategy with default weights (70% targeting, 30%
-     * avoidance).
-     * 
-     * @param speed         The movement speed
-     * @param trashEntities The list of trash entities to target
-     * @param obstacles     The list of obstacles to avoid
-     * @param lenientMode   Whether to use lenient mode for error handling
-     * @return A new TrashCollectorStrategy instance with default weights
-     */
-    public static IMovementStrategy createTrashCollectorStrategy(float speed, List<Trash> trashEntities,
+    @Override
+    public IMovementStrategy createTrashCollectorStrategy(float speed, List<Trash> trashEntities,
             List<Entity> obstacles, boolean lenientMode) {
         return createTrashCollectorStrategy(speed, trashEntities, obstacles, null, lenientMode);
     }

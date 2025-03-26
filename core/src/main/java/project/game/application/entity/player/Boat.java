@@ -14,17 +14,20 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
+import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
+import project.game.engine.scene.management.ScoreManager;
 
 public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
@@ -46,6 +49,13 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     private long collisionEndTime = 0;
     private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
+    private ILifeLossCallback lifeLossCallback;
+
+    // Add a cooldown for life loss
+    private boolean lifeLossCooldown = false;
+    private long lifeLossCooldownEndTime = 0;
+    private static final long LIFE_LOSS_COOLDOWN_DURATION = 1000; // 1 second cooldown
+    
 
     // Direction constants - used as indices in directional sprite arrays
     public static final int DIRECTION_UP = 0;
@@ -135,8 +145,8 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         getEntity().setX(physX);
         getEntity().setY(physY);
         if (movementManager != null) {
-            movementManager.setX(physX);
-            movementManager.setY(physY);
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
         }
     }
 
@@ -249,7 +259,7 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
 
         // Get velocity from movement manager
-        Vector2 velocity = movementManager.getVelocity();
+        Vector2 velocity = movementManager.getMovableEntity().getVelocity();
 
         // Only update direction if actually moving
         if (Math.abs(velocity.x) > MOVEMENT_THRESHOLD || Math.abs(velocity.y) > MOVEMENT_THRESHOLD) {
@@ -362,10 +372,19 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public boolean isInCollision() {
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+        long currentTime = System.currentTimeMillis();
+
+        // Update collision state
+        if (collisionActive && currentTime > collisionEndTime) {
             collisionActive = false;
             getBody().setLinearVelocity(0, 0);
         }
+
+        // Update life loss cooldown
+        if (lifeLossCooldown && currentTime > lifeLossCooldownEndTime) {
+            lifeLossCooldown = false;
+        }
+
         return collisionActive;
     }
 
@@ -396,6 +415,10 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
                 return;
             }
         }
+    }
+
+    public void setLifeLossCallback(ILifeLossCallback callback) {
+        this.lifeLossCallback = callback;
     }
 
     /**
@@ -445,6 +468,18 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
                 getBody().setLinearVelocity(velocity);
             }
         }
+
+        // Call the life loss callback if set and not in cooldown
+        if (lifeLossCallback != null && !lifeLossCooldown) {
+            LOGGER.info("Boat collided with rock - losing life");
+            lifeLossCallback.onLifeLost();
+
+            // Set the cooldown
+            lifeLossCooldown = true;
+            lifeLossCooldownEndTime = System.currentTimeMillis() + LIFE_LOSS_COOLDOWN_DURATION;
+        }
+
+        ScoreManager.getInstance().subtractScore(25);
     }
 
     /**
@@ -460,11 +495,13 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         String entityType = trash.getClass().getSimpleName();
         if (!isEntityPermanent(entityType)) {
             if (collisionManager != null) {
-                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), trash.getRemovalListener());
             } else {
                 LOGGER.warn("CollisionManager not set in Boat object - cannot safely remove trash");
             }
         }
+
+        ScoreManager.getInstance().addScore(50);
     }
 
     /**

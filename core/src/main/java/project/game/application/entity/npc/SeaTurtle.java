@@ -20,6 +20,7 @@ import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
+import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
@@ -254,7 +255,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         }
 
         // Get velocity from movement manager
-        Vector2 velocity = movementManager.getVelocity();
+        Vector2 velocity = movementManager.getMovableEntity().getVelocity();
 
         // Only update direction if actually moving
         if (Math.abs(velocity.x) > MOVEMENT_THRESHOLD || Math.abs(velocity.y) > MOVEMENT_THRESHOLD) {

@@ -2,7 +2,6 @@ package project.game.engine.scene.management;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import project.game.engine.io.management.SceneInputManager;
@@ -17,6 +16,8 @@ public class SceneManager {
     private final Stack<IScene> sceneHistory;
     private final SceneInputManager baseInputManager;
     private IScene currentScene;
+    private boolean winState = false; 
+    private String previousScene = "";
 
     public SceneManager() {
         baseInputManager = new SceneInputManager();
@@ -24,16 +25,16 @@ public class SceneManager {
         this.sceneHistory = new Stack<>();
     }
 
+    // public IScene getScene(String name) {
+    //     return currentScene;
+    // }
+
     public IScene getScene(String name) {
-        return currentScene;
-    }
-
-    public Set<String> getSceneList() {
-        return scenes.keySet();
-    }
-
-    public IScene getCurrentScene() {
-        return currentScene;
+        if (!scenes.containsKey(name)) {
+            System.err.println("Scene not found: " + name);
+            return null;
+        }
+        return scenes.get(name);
     }
 
     public SceneInputManager getInputManager() {
@@ -52,18 +53,15 @@ public class SceneManager {
         if (currentScene != null) {
             currentScene.hide();
             sceneHistory.push(currentScene);
+            previousScene = currentScene.getClass().getSimpleName();
         }
 
         currentScene = scenes.get(name);
         currentScene.show();
     }
 
-    public void returnToPreviousScene() {
-        if (!sceneHistory.isEmpty()) {
-            currentScene.hide();
-            currentScene = sceneHistory.pop();
-            currentScene.show();
-        }
+    public String getPreviousScene() {
+        return previousScene;
     }
 
     public void removeScene(String name) {
@@ -96,4 +94,11 @@ public class SceneManager {
         scenes.clear();
     }
 
+    public void setWinState(boolean state) {
+        this.winState = state;
+    }
+    
+    public boolean hasWon() {
+        return winState;
+    }
 }

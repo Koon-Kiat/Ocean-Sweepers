@@ -18,6 +18,10 @@ public abstract class Scene implements Screen, IScene {
     protected SceneInputManager inputManager;
     protected SceneManager sceneManager;
 
+    public SceneUIManager getSceneUIManager() {
+        return sceneUIManager;
+    }
+
     public Scene(SceneManager sceneManager, SceneInputManager inputManager) {
         this.sceneManager = sceneManager;
         this.inputManager = inputManager;

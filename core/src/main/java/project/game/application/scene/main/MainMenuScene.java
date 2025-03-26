@@ -18,9 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.utils.Align;
 
-import project.game.application.scene.overlay.Options;
 import project.game.application.scene.ui.AudioUI;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.audio.config.AudioConfig;
@@ -35,7 +33,7 @@ public class MainMenuScene extends Scene {
 
     private static final GameLogger LOGGER = new GameLogger(MainMenuScene.class);
     private Skin skin;
-    private TextButton playButton, exitButton, optionsButton;
+    private TextButton playButton, exitButton;
     private GameScene gameScene;
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -76,7 +74,7 @@ public class MainMenuScene extends Scene {
     }
 
     /**
-     * Initializes the main menu scene with Play, Options, and Exit buttons.
+     * Initializes the main menu scene with Play, and Exit buttons.
      * Sets up the viewport, UI skin, audio manager, and button click listeners.
      */
     @Override
@@ -123,15 +121,9 @@ public class MainMenuScene extends Scene {
 
         // Create buttons with the custom style
         playButton = new TextButton("PLAY", textButtonStyle);
-        optionsButton = new TextButton("OPTIONS", textButtonStyle);
 
         // Add padding to the buttons themselves
         playButton.pad(15); // Sets uniform padding on all sides
-        optionsButton.pad(15);
-
-        Options options = new Options(sceneManager, gameScene, inputManager);
-        options.create();
-        options.setMainMenuButtonVisibility(false);
         exitButton = new TextButton("EXIT", textButtonStyle);
 
         exitButton.pad(15);
@@ -145,12 +137,7 @@ public class MainMenuScene extends Scene {
             audioManager.playSoundEffect("selection");
             LOGGER.info("Start Game Clicked!");
             sceneManager.setScene("game");
-        });
-
-        inputManager.addButtonClickListener(optionsButton, () -> {
-            audioManager.playSoundEffect("selection");
-            LOGGER.info("Options Clicked!");
-            sceneManager.setScene("options");
+            audioManager.playMusic("background");
         });
 
         inputManager.addButtonClickListener(exitButton, () -> {
@@ -172,8 +159,6 @@ public class MainMenuScene extends Scene {
         table.row();
 
         table.add(playButton).padBottom(10);
-        table.row();
-        table.add(optionsButton).padBottom(10);
         table.row();
         table.add(exitButton);
 

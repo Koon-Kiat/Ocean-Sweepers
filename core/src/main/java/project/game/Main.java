@@ -52,9 +52,7 @@ public class Main extends ApplicationAdapter {
         SceneFactory sceneFactory = new SceneFactory(sceneManager, sharedInputManager);
         sceneFactory.createAndRegisterScenes();
 
-        LOGGER.info("Available scenes: {0}", sceneManager.getSceneList());
         sceneManager.setScene("menu");
-        LOGGER.info("Current scene: {0}", sceneManager.getCurrentScene());
     }
 
     @Override

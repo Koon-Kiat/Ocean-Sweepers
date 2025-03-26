@@ -21,18 +21,22 @@ public class ScoreManager {
 
     public void addScore(int points) {
         this.score += points;
+        updateScoreLabel();
     }
 
     public void subtractScore(int points) {
         this.score -= points;
+        updateScoreLabel();
     }
 
-    public void multiplyScore(int multiplier) {
+    public void multiplyScore(float multiplier) {
         this.score *= multiplier;
+        updateScoreLabel();
     }
 
     public void resetScore() {
         score = 0;
+        updateScoreLabel();
     }
 
     public int getScore() {
@@ -41,13 +45,16 @@ public class ScoreManager {
 
     public void setScoreLabel(Label label) {
         this.scoreLabel = label;
+        updateScoreLabel();
     }
 
     public Label getScoreLabel() {
         return scoreLabel;
     }
 
-    public void draw() {
-        
+    private void updateScoreLabel() {
+        if (scoreLabel != null) {
+            scoreLabel.setText("Score: " + score);
+        }
     }
 }
