@@ -6,19 +6,18 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import java.util.List;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.entity.ILifeLossCallback;
+import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
-import project.game.engine.audio.config.AudioConfig;
 import project.game.engine.audio.management.AudioManager;
-import project.game.engine.audio.music.MusicManager;
-import project.game.engine.audio.sound.SoundManager;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
@@ -50,6 +49,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private SpriteBatch batch;
     private Skin skin;
     private BitmapFont upheavalFont;
+    private float remainingTime;
 
     private SeaTurtle seaTurtle;
     private Texture seaTurtleImage;
@@ -66,8 +66,8 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         this.gameScene = new GameScene(sceneManager, inputManager);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 50);
-        this.audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(),
-                new AudioConfig());
+        // 
+        this.audioManager = gameScene.getAudioManager(); 
         // Remove the healthManager initialization here, we'll do it in create()
         LOGGER.info("GameScene2 created with composition of GameScene");
     }
@@ -103,8 +103,20 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
                 audioManager.playSoundEffect("loss");
             } else {
                 audioManager.playSoundEffect("success");
+                audioManager.stopMusic();
             }
             audioManager.stopMusic();
+            return;
+        }
+        List<Trash> trashes = gameScene.getTrashes();
+        if (gameScene.getTrashes().isEmpty()) {
+            float remainingTime = timer.getRemainingTime(); // use your TimeManager's method
+            timer.stop();
+            scoreManager.multiplyScore(remainingTime / 100f);
+            sceneManager.setWinState(true);
+            audioManager.stopMusic();
+            audioManager.playSoundEffect("success");
+            sceneManager.setScene("gameover");
             return;
         }
 
@@ -120,6 +132,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         healthManager.draw(batch, 300, sceneUIManager.getStage().getHeight() - 100, turtleHealth);
 
         batch.end();
+
     }
 
     @Override
@@ -170,6 +183,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
 
         if (gameScene != null) {
             gameScene.show();
+            gameScene.getEntityFactoryManager().setTrashRemovalListener(GameScene2.this); //addition
 
             // Reset input state to prevent constant movement
             inputManager.resetInputState();
@@ -259,11 +273,15 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             // Turtle has died
             LOGGER.info("Turtle died!");
             timer.stop();
-            sceneManager.setScene("gameover");
-            audioManager.playSoundEffect("loss");
             audioManager.stopMusic();
+            audioManager.playSoundEffect("loss");
+            sceneManager.setScene("gameover");
+            
+            
         }
     }
+
+    
 
     /**
      * Check if the turtle is still alive

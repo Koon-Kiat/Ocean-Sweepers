@@ -627,14 +627,18 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         }
         // Switch to game2 scene (debugging purposes)
         if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-            sceneManager.setScene("game2");
             audioManager.stopMusic();
+            sceneManager.setScene("game2");
+            
         }
         // Switch to game2 scene (just for testing)
         // if (inputManager.isKeyJustPressed(Input.Keys.N)) {
         // sceneManager.setScene("game2");
         // audioManager.stopMusic();
         // }
+    }
+    public AudioManager getAudioManager() {
+        return audioManager;
     }
 
     /**
@@ -693,6 +697,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     protected EntityManager getEntityManager() {
         return entityManager;
+    }
+    
+    public EntityFactoryManager getEntityFactoryManager() {
+        return entityFactoryManager;
     }
 
 }
