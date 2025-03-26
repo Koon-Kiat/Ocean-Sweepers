@@ -240,26 +240,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
 
-        // Regular rendering code
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
-        batch.end();
-
-        // Draw entities
-        batch.begin();
-        entityManager.draw(batch);
-        batch.end();
-
-        // Draw health and score
-        batch.begin();
-        healthManager.draw(batch);
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
-                sceneUIManager.getStage().getHeight() - 30);
-        batch.end();
-
-        // Draw stage
-        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
-        sceneUIManager.getStage().draw();
+        draw();
 
         // Render debug matrix
         debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
@@ -446,13 +427,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     .setLenientMode(true)
                     .build();
 
-            seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
-            seaTurtle.setCollisionManager(collisionManager);
+            //seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
+            //seaTurtle.setCollisionManager(collisionManager);
 
             // Add sea turtle to managers
-            entityManager.addRenderableEntity(seaTurtle);
-            collisionManager.addEntity(seaTurtle, npcMovementManager);
-            existingEntities.add(seaTurtleEntity);
+            //entityManager.addRenderableEntity(seaTurtle);
+            //collisionManager.addEntity(seaTurtle, npcMovementManager);
+            //existingEntities.add(seaTurtleEntity);
 
             // Initialize EntityFactoryManager
             entityFactoryManager = new EntityFactoryManager(

@@ -198,5 +198,4 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             gameScene.onEntityRemove(entity);
         }
     }
-
 }
