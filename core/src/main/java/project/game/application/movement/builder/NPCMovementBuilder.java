@@ -24,8 +24,8 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
 
     private IMovementStrategyFactory movementStrategyFactory;
 
-    public NPCMovementBuilder() {
-        this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+    public NPCMovementBuilder(IMovementStrategyFactory factory) {
+        this.movementStrategyFactory = factory;
     }
 
     /**

@@ -29,6 +29,7 @@ import project.game.application.entity.item.Trash;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.application.movement.builder.PlayerMovementBuilder;
+import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.application.scene.overlay.Options;
 import project.game.application.scene.overlay.Scenetransition;
 import project.game.application.scene.ui.AudioUI;
@@ -392,7 +393,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     constants.PLAYER_HEIGHT(),
                     true);
 
-            playerMovementManager = new PlayerMovementBuilder()
+            playerMovementManager = new PlayerMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(boatEntity)
                     .setSpeed(constants.PLAYER_SPEED())
                     .setInitialVelocity(0, 0)

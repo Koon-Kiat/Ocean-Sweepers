@@ -12,6 +12,8 @@ import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.movement.builder.NPCMovementBuilder;
+import project.game.application.movement.decorator.MovementStrategyDecorator;
+import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
@@ -212,7 +214,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
                     true);
 
             float[] customWeights = { 0.40f, 0.60f };
-            npcMovementManager = new NPCMovementBuilder()
+            npcMovementManager = new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(seaTurtleEntity)
                     .setSpeed(constants.NPC_SPEED())
                     .setInitialVelocity(1, 0)

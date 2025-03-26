@@ -16,8 +16,8 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
 
     private IMovementStrategyFactory movementStrategyFactory;
 
-    public PlayerMovementBuilder() {
-        this.movementStrategyFactory = MovementStrategyFactory.getInstance();
+    public PlayerMovementBuilder(IMovementStrategyFactory factory) {
+        this.movementStrategyFactory = factory;
     }
 
     /**
