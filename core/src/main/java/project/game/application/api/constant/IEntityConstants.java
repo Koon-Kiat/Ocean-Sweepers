@@ -41,6 +41,6 @@ public interface IEntityConstants {
 
     float SEA_TURTLE_HEIGHT();
 
-    float BOAT_BOUNCE_FORCE();
+    float BOAT_BASE_IMPULSE();
 
 }

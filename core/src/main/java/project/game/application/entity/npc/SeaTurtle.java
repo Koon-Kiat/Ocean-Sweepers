@@ -20,12 +20,12 @@ import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
-import project.game.engine.entitysystem.entity.api.IRenderable;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
+import project.game.engine.entitysystem.physics.collision.resolution.CollisionResponseHandler;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
@@ -37,7 +37,11 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
+    private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
+    // Add these fields to the SeaTurtle class
+    private Vector2 accumulatedImpulse = new Vector2();
+    private Vector2 accumulatedVelocity = new Vector2();
 
     // Threshold to determine if we should consider movement on an axis
     private static final float MOVEMENT_THRESHOLD = 0.01f;
@@ -67,8 +71,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         // Register collision handlers for specific entity types
         registerSeaTurtleCollisionHandler(Boat.class, SeaTurtle::handleBoatCollision);
         registerSeaTurtleCollisionHandler(Rock.class, SeaTurtle::handleRockCollision);
-        registerSeaTurtleCollisionHandler(Trash.class, (seaTurtle, trash) -> {
-            /* Ignore trash collisions */});
+        registerSeaTurtleCollisionHandler(Trash.class, SeaTurtle::handleTrashCollision);
     }
 
     /**
@@ -117,17 +120,31 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         collisionEndTime = System.currentTimeMillis() + durationMillis;
         lastCollisionTime = System.currentTimeMillis();
 
-        // When collision becomes active, sync position between physics body and entity
+        // Sync positions between physics body, entity, and movement manager
         float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float physX = getBody().getPosition().x * pixelsToMeters;
-        float physY = getBody().getPosition().y * pixelsToMeters;
+        CollisionResponseHandler.syncEntity(this, pixelsToMeters);
 
-        // Update entity position
-        getEntity().setX(physX);
-        getEntity().setY(physY);
+        if (movementManager != null) {
+            // Update movement manager position to match physics
+            float physX = getBody().getPosition().x * pixelsToMeters;
+            float physY = getBody().getPosition().y * pixelsToMeters;
+            movementManager.getMovableEntity().setVelocity(physX, physY);
 
-        // Temporarily increase damping during collision to prevent bouncing too much
-        getBody().setLinearDamping(3.0f);
+            // Update velocity in movement manager to match physics
+            Vector2 velocity = getBody().getLinearVelocity();
+            movementManager.getMovableEntity().setVelocity(velocity.x, velocity.y);
+        }
+
+        // Set higher damping during collision
+        getBody().setLinearDamping(5.0f);
+    }
+
+    /**
+     * Checks if this entity should be considered permanent in the game world
+     */
+    public static boolean isEntityPermanent(String entityType) {
+        return entityType.equals("SeaTurtle") ||
+                entityType.equals("boundary");
     }
 
     public boolean isActive() {
@@ -326,24 +343,27 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         bodyDef.position.set(centerX, centerY);
         bodyDef.fixedRotation = true;
         bodyDef.bullet = true;
-        bodyDef.linearDamping = 0.8f;
+        bodyDef.linearDamping = 0.8f; // Reduced from previous value
         bodyDef.angularDamping = 0.8f;
 
         Body newBody = world.createBody(bodyDef);
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(
-                (width / 2) / pixelsToMeters,
-                (height / 2) / pixelsToMeters);
+
+        // Make hitbox slightly smaller for better collision response
+        float hitboxScale = 0.7f;
+        float hitboxWidth = (width * hitboxScale) / pixelsToMeters;
+        float hitboxHeight = (height * hitboxScale) / pixelsToMeters;
+        shape.setAsBox(hitboxWidth / 2, hitboxHeight / 2);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 500.0f;
-        fixtureDef.friction = 0.2f;
-        fixtureDef.restitution = 0.1f;
+        fixtureDef.density = 200.0f; // Reduced mass
+        fixtureDef.friction = 0.2f; // Less friction
+        fixtureDef.restitution = 0.1f; // Less bounce
 
         Filter filter = new Filter();
         filter.categoryBits = 0x0008;
-        filter.maskBits = -1 & ~0x0004;
+        filter.maskBits = -1;
         fixtureDef.filter.categoryBits = filter.categoryBits;
         fixtureDef.filter.maskBits = filter.maskBits;
 
@@ -359,24 +379,38 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         return true;
     }
 
-    /**
-     * Handle sea turtle collisions with other entities
-     */
     @Override
     public void onCollision(ICollidableVisitor other) {
-        long currentTime = System.currentTimeMillis();
-        long cooldownTime = shouldApplyCooldown(other) ? 300 : 100;
-
-        if (currentTime - lastCollisionTime < cooldownTime) {
-            return;
-        }
-
+        // Only handle collisions with actual entities, not boundaries
         if (other != null) {
+            // Store the current collision entity
+            this.currentCollisionEntity = other;
+
+            // Log normal entity collisions
             LOGGER.info("{0} collided with {1}",
                     new Object[] { getEntity().getClass().getSimpleName(),
                             other.getClass().getSimpleName() });
 
+            // Reset accumulators at the beginning of collision handling
+            accumulatedImpulse.set(0, 0);
+            accumulatedVelocity.set(getBody().getLinearVelocity());
+            
+
+            // Dispatch to appropriate handler based on the other entity's type
             dispatchCollisionHandling(other);
+
+            // Apply accumulated impulse
+            getBody().applyLinearImpulse(
+                    accumulatedImpulse.x,
+                    accumulatedImpulse.y,
+                    getBody().getWorldCenter().x,
+                    getBody().getWorldCenter().y,
+                    true);
+
+            // Apply accumulated velocity changes
+            if (accumulatedVelocity.len2() > 0) {
+                getBody().setLinearVelocity(accumulatedVelocity);
+            }
         }
     }
 
@@ -385,9 +419,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
             collisionActive = false;
             // Reset damping when collision ends
-            getBody().setLinearDamping(0.2f);
-            // Clear any lingering velocity when exiting collision state
-            getBody().setLinearVelocity(0, 0);
+            getBody().setLinearDamping(10f);
         }
         return collisionActive;
     }
@@ -399,14 +431,40 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
     @Override
     public void collideWithBoundary() {
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-    }
+        // Get current velocity
+        Vector2 velocity = body.getLinearVelocity();
 
-    /**
-     * Determine if a cooldown should be applied based on entity type
-     */
-    private boolean shouldApplyCooldown(ICollidableVisitor other) {
-        return other != null && other.getClass() == Boat.class;
+        // Get position to determine which boundary was hit
+        float x = entity.getX();
+        float y = entity.getY();
+        float bounceMultiplier = 0.8f; // Maintain 80% of speed after bounce
+
+        // Get game boundaries
+        float gameWidth = GameConstantsFactory.getConstants().GAME_WIDTH();
+        float gameHeight = GameConstantsFactory.getConstants().GAME_HEIGHT();
+
+        // Determine which boundary was hit and reverse appropriate velocity component
+        if (x <= 0 || x >= gameWidth) {
+            velocity.x = -velocity.x * bounceMultiplier;
+        }
+        if (y <= 0 || y >= gameHeight) {
+            velocity.y = -velocity.y * bounceMultiplier;
+        }
+
+        // Ensure minimum speed after bounce
+        float minSpeed = 2.0f;
+        if (velocity.len() < minSpeed) {
+            velocity.nor().scl(minSpeed);
+        }
+
+        // Accumulate velocity changes
+        accumulatedVelocity.set(velocity);
+
+        // Apply the new velocity
+        body.setLinearVelocity(velocity);
+
+        // Keep damping low to maintain movement
+        body.setLinearDamping(10f);
     }
 
     /**
@@ -415,24 +473,17 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * @param other The other entity involved in the collision
      */
     private void dispatchCollisionHandling(ICollidableVisitor other) {
-        // Skip trash collisions
-        if (other.getClass() == Trash.class) {
-            return;
-        }
-
-        // Set collision active by default for non-trash entities
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-
         // Get other entity's class and find a matching handler
         Class<?> otherClass = other.getClass();
 
-        // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> entry : SEA_TURTLE_COLLISION_HANDLERS
-                .entrySet()) {
-            if (entry.getKey().isAssignableFrom(otherClass)) {
-                entry.getValue().accept(this, other);
-                return;
+        // Handle collision based on registered handlers - single execution only
+        BiConsumer<SeaTurtle, ICollidableVisitor> handler = SEA_TURTLE_COLLISION_HANDLERS.get(otherClass);
+        if (handler != null) {
+            // Only set collision active for non-trash entities
+            if (otherClass != Trash.class) {
+                setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
             }
+            handler.accept(this, other);
         }
     }
 
@@ -440,52 +491,43 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
      * Handle collision with a boat
      */
     private void handleBoatCollision(ICollidableVisitor boat) {
-        float seaTurtleX = getEntity().getX();
-        float seaTurtleY = getEntity().getY();
-        float boatX = boat.getEntity().getX();
-        float boatY = boat.getEntity().getY();
+        // Prevent double-handling if we're already in collision
+        if (isInCollision()) {
+            return;
+        }
+
+        float seaTurtleX = getBody().getPosition().x;
+        float seaTurtleY = getBody().getPosition().y;
+        float boatX = boat.getBody().getPosition().x;
+        float boatY = boat.getBody().getPosition().y;
 
         float dx = seaTurtleX - boatX;
         float dy = seaTurtleY - boatY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
-            // Normalize direction
             dx /= distance;
             dy /= distance;
 
-            // Reverse the direction to push the boat AWAY from sea turtle
-            dx = -dx;
-            dy = -dy;
-
-            // Apply scaled impulse force with improved physics
-            float baseImpulse = GameConstantsFactory.getConstants().SEA_TURTLE_BASE_IMPULSE();
-            Vector2 seaTurtleVel = getBody().getLinearVelocity();
-
-            // Add velocity component to the impulse
-            float velMagnitude = (float) Math.sqrt(seaTurtleVel.x * seaTurtleVel.x + seaTurtleVel.y * seaTurtleVel.y);
-            float impactMultiplier = Math.min(0.5f + velMagnitude * 0.01f, 2.0f);
-
-            // Apply impulse to push the boat away
-            float pushForce = baseImpulse * (1.0f + impactMultiplier);
-            boat.getBody().applyLinearImpulse(
-                    dx * pushForce,
-                    dy * pushForce,
-                    boat.getBody().getWorldCenter().x,
-                    boat.getBody().getWorldCenter().y,
+            // Apply small impulse to turtle
+            float turtleForce = 0.1f;
+            getBody().applyLinearImpulse(
+                    dx * turtleForce,
+                    dy * turtleForce,
+                    seaTurtleX,
+                    seaTurtleY,
                     true);
 
-            // High damping for better control after impact
-            boat.getBody().setLinearDamping(3.0f);
-
-            // Access the boat's setCollisionActive method through reflection
-            try {
-                java.lang.reflect.Method method = boat.getClass().getMethod("setCollisionActive", long.class);
-                method.invoke(boat, GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-            } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
-                LOGGER.warn("Could not set collision active state on boat: {0}", e.getMessage());
+            // Cap turtle velocity
+            Vector2 velocity = getBody().getLinearVelocity();
+            float maxSpeed = 2.0f;
+            if (velocity.len() > maxSpeed) {
+                velocity.nor().scl(maxSpeed);
+                getBody().setLinearVelocity(velocity);
             }
         }
+
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
     }
 
     /**
@@ -497,17 +539,28 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         float rockX = rock.getEntity().getX();
         float rockY = rock.getEntity().getY();
 
-        float dx = seaTurtleX - rockX; // Reversed direction (rock pushing sea turtle)
+        float dx = seaTurtleX - rockX;
         float dy = seaTurtleY - rockY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0.0001f) {
-            // Normalize direction
             dx /= distance;
             dy /= distance;
 
-            // Apply impulse to sea turtle (being pushed by rock)
-            float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE();
+            // Get current velocity and calculate impact speed
+            Vector2 velocity = getBody().getLinearVelocity();
+            float currentSpeed = velocity.len();
+
+            // Scale down impulse based on current speed
+            float speedFactor = Math.min(1.0f, 1.0f / (1 + currentSpeed * 0.2f));
+            float rockImpulse = GameConstantsFactory.getConstants().ROCK_BASE_IMPULSE()
+                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS() * speedFactor;
+
+            // Accumulate impulse
+            accumulatedImpulse.x += dx * rockImpulse;
+            accumulatedImpulse.y += dy * rockImpulse;
+
+            // Apply scaled impulse
             getBody().applyLinearImpulse(
                     dx * rockImpulse,
                     dy * rockImpulse,
@@ -515,8 +568,37 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                     getBody().getWorldCenter().y,
                     true);
 
-            // Reduce damping to allow movement
-            getBody().setLinearDamping(0.5f);
+            // Cap maximum velocity after collision
+            velocity = getBody().getLinearVelocity();
+            float maxSpeed = 5.0f;
+            if (velocity.len() > maxSpeed) {
+                velocity.nor().scl(maxSpeed);
+                accumulatedVelocity.set(velocity);
+            }
         }
     }
+
+    /**
+     * Handle collision with trash
+     */
+    private void handleTrashCollision(ICollidableVisitor trash) {
+        if (!(trash instanceof Trash))
+            return;
+
+        // Check if either entity is permenant before scheduling removal
+        String entityType = trash.getClass().getSimpleName();
+        if (!isEntityPermanent(entityType)) {
+            if (collisionManager != null) {
+                // Schedule the trash for removal
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
+                LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
+
+                // Restore damping after removing trash
+                getBody().setLinearDamping(10f);
+            } else {
+                LOGGER.warn("Collision manager not set for SeaTurtle, cannot remove trash");
+            }
+        }
+    }
+
 }

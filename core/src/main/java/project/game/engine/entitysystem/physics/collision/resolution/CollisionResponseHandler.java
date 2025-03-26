@@ -1,5 +1,7 @@
 package project.game.engine.entitysystem.physics.collision.resolution;
 
+import com.badlogic.gdx.math.Vector2;
+
 import project.game.engine.entitysystem.movement.management.MovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
@@ -16,7 +18,6 @@ public class CollisionResponseHandler {
     public static void updateEntity(ICollidableVisitor entity, MovementManager movementManager,
             float gameWidth, float gameHeight, float pixelsToMeters,
             float collisionMovementStrength, float movementThreshold) {
-
         // If movement manager is null, just sync entity position
         if (movementManager == null) {
             syncEntity(entity, pixelsToMeters);
@@ -33,12 +34,10 @@ public class CollisionResponseHandler {
         // Clamp input position within screen bounds
         inputX = Math.max(halfWidth, Math.min(inputX, gameWidth - halfWidth));
         inputY = Math.max(halfHeight, Math.min(inputY, gameHeight - halfHeight));
-
         // Check if we're at a boundary
         boolean atBoundary = isAtBoundary(currentX, currentY, halfWidth, halfHeight, gameWidth, gameHeight);
 
         if (atBoundary) {
-            // Always clear any active collisions when at boundary
             if (entity.isInCollision()) {
                 clearCollisionState(entity);
             }
@@ -91,16 +90,28 @@ public class CollisionResponseHandler {
 
         // Handle non-boundary movement
         if (entity.isInCollision()) {
-            // During collision, Box2D handles physics
-            syncEntity(entity, pixelsToMeters);
+            // During collision, sync positions from Box2D physics
+            float physX = entity.getBody().getPosition().x * pixelsToMeters;
+            float physY = entity.getBody().getPosition().y * pixelsToMeters;
 
-            // Update movement manager position without applying movement
-            // This ensures movement manager stays in sync with physics
-            currentX = entity.getEntity().getX();
-            currentY = entity.getEntity().getY();
-            movementManager.getMovableEntity().setX(currentX);
-            movementManager.getMovableEntity().setY(currentY);
-            movementManager.getMovableEntity().clearVelocity();
+            // Update both entity and movement manager positions
+            entity.getEntity().setX(physX);
+            entity.getEntity().setY(physY);
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
+
+            // Don't clear velocity completely during collision
+            Vector2 velocity = entity.getBody().getLinearVelocity();
+            float speed = velocity.len();
+
+            // Keep some momentum during collision
+            if (speed > 0) {
+                velocity.scl(0.98f); // Gradual slowdown
+                entity.getBody().setLinearVelocity(velocity);
+            }
+
+            // Low damping during collision for smoother movement
+            entity.getBody().setLinearDamping(0.1f);
             return;
         }
 
@@ -108,7 +119,13 @@ public class CollisionResponseHandler {
         entity.getEntity().setX(inputX);
         entity.getEntity().setY(inputY);
         entity.getBody().setTransform(inputX / pixelsToMeters, inputY / pixelsToMeters, 0);
-        entity.getBody().setLinearVelocity(0, 0);
+
+        // Get movement manager velocity and apply it to the body
+        Vector2 velocity = movementManager.getMovableEntity().getVelocity();
+        if (velocity.len2() > 0) {
+            entity.getBody().setLinearVelocity(velocity);
+            entity.getBody().setLinearDamping(0.1f); // Keep consistent low damping
+        }
     }
 
     /**
@@ -146,5 +163,16 @@ public class CollisionResponseHandler {
         } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
             // Method doesn't exist or can't be accessed - silently continue
         }
+    }
+
+    private static void syncPositions(ICollidableVisitor entity, MovementManager movementManager,
+            float pixelsToMeters) {
+        float physX = entity.getBody().getPosition().x * pixelsToMeters;
+        float physY = entity.getBody().getPosition().y * pixelsToMeters;
+
+        entity.getEntity().setX(physX);
+        entity.getEntity().setY(physY);
+        movementManager.getMovableEntity().setX(physX);
+        movementManager.getMovableEntity().setY(physY);
     }
 }

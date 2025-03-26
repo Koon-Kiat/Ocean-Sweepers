@@ -72,7 +72,7 @@ The engine provides a framework of abstract components that can be reused across
 
 Game-specific implementations built on top of the engine:
 
-- **Entities**: Boat, Monster, Rock, Trash with specific behaviors
+- **Entities**: Boat, Sea Turtle, Rock, Trash with specific behaviors
 - **Movement Strategies**: Different AI patterns (interceptor, obstacle avoidance, etc.)
 - **Scene Implementation**: Menu, Game, Options, GameOver screens
 - **Game Constants**: Game-specific configurations and parameters

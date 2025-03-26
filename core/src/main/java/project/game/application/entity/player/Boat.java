@@ -16,6 +16,7 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
+import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
@@ -77,9 +78,9 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     private final Entity entity;
 
     static {
-
         registerCollisionHandler(Rock.class, boat -> boat.handleRockCollision());
         registerCollisionHandler(Trash.class, boat -> boat.handleTrashCollision());
+        registerCollisionHandler(SeaTurtle.class, boat -> boat.handleSeaTurtleCollision());
     }
 
     /**
@@ -154,7 +155,7 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
      */
     public static boolean isEntityPermanent(String entityType) {
         return entityType.equals("Boat") ||
-                entityType.equals("Monster") ||
+                entityType.equals("SeaTurtle") ||
                 entityType.equals("boundary");
     }
 
@@ -330,7 +331,7 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 10.0f;
+        fixtureDef.density = 500.0f;
         fixtureDef.friction = 0.1f;
         fixtureDef.restitution = 0.0f;
 
@@ -436,15 +437,36 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         float dx = boatX - rockX;
         float dy = boatY - rockY;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
-        LOGGER.info("go distance: " + distance);
 
         if (distance > 0.0001f) {
+            // Normalize direction
             dx /= distance;
             dy /= distance;
-            float bounceForce = GameConstantsFactory.getConstants().BOAT_BOUNCE_FORCE();
-            LOGGER.info("boat bounce force: " + bounceForce);
-            LOGGER.info("dy dx: " + dx);
+
+            // Get current velocity
+            Vector2 velocity = getBody().getLinearVelocity();
+            float currentSpeed = velocity.len();
+
+            // Calculate bounce force based on approach velocity
+            // Higher speeds result in lower bounce multiplier to prevent excessive bouncing
+            float speedFactor = Math.min(1.0f, 1.0f / (1 + currentSpeed * 0.1f));
+            float bounceForce = GameConstantsFactory.getConstants().BOAT_BASE_IMPULSE()
+                    / GameConstantsFactory.getConstants().PIXELS_TO_METERS() * speedFactor;
+
+            // Apply impulse in the direction away from rock
             getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);
+
+            // Set higher damping during collision to reduce bouncing
+            getBody().setLinearDamping(1.0f);
+
+            // Reset velocity if it's too high after collision
+            velocity = getBody().getLinearVelocity();
+            float newSpeed = velocity.len();
+            float maxSpeed = 5.0f;
+            if (newSpeed > maxSpeed) {
+                velocity.nor().scl(maxSpeed);
+                getBody().setLinearVelocity(velocity);
+            }
         }
 
         // Call the life loss callback if set and not in cooldown
@@ -480,6 +502,57 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
 
         ScoreManager.getInstance().addScore(50);
+    }
+
+    /**
+     * Handle collision with sea turtle
+     */
+    private void handleSeaTurtleCollision() {
+        if (currentCollisionEntity == null || isInCollision()) {
+            return;
+        }
+
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+        float boatX = getBody().getPosition().x;
+        float boatY = getBody().getPosition().y;
+        float turtleX = currentCollisionEntity.getBody().getPosition().x;
+        float turtleY = currentCollisionEntity.getBody().getPosition().y;
+
+        float dx = boatX - turtleX;
+        float dy = boatY - turtleY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 0.0001f) {
+            dx /= distance;
+            dy /= distance;
+
+            // Get current velocity
+            Vector2 boatVel = getBody().getLinearVelocity();
+            float currentSpeed = boatVel.len();
+
+            // Very small bounce force with speed-based reduction
+            float speedFactor = Math.min(0.5f, 1.0f / (1 + currentSpeed * 0.5f));
+            float bounceForce = 0.2f * speedFactor;
+
+            // Apply minimal impulse to boat
+            getBody().applyLinearImpulse(
+                    dx * bounceForce,
+                    dy * bounceForce,
+                    boatX,
+                    boatY,
+                    true);
+
+            // Apply high damping to quickly stop motion
+            getBody().setLinearDamping(5.0f);
+
+            // Cap boat velocity
+            Vector2 velocity = getBody().getLinearVelocity();
+            float maxSpeed = 2.0f;
+            if (velocity.len() > maxSpeed) {
+                velocity.nor().scl(maxSpeed);
+                getBody().setLinearVelocity(velocity);
+            }
+        }
     }
 
     /**
