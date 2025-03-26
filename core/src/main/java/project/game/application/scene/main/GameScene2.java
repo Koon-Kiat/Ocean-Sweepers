@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.common.config.factory.GameConstantsFactory;
@@ -54,6 +55,10 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private static final String SEA_TURTLE_SPRITESHEET = "sea_turtle_sprites";
     private static final String SEA_TURTLE_ENTITY = "sea_turtle";
 
+    private int turtleHealth = 3;
+    private Texture turtleHeartTexture;
+    private static final int MAX_TURTLE_HEALTH = 3;
+
     public GameScene2(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.gameScene = new GameScene(sceneManager, inputManager);
@@ -69,6 +74,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     public void create() {
         batch = new SpriteBatch();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        turtleHeartTexture = new Texture("heart.png");
         if (gameScene != null) {
             gameScene.create();
         }
@@ -95,6 +101,18 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         batch.begin();
         skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d",
                 timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+
+        // Draw turtle health
+        skin.getFont("default-font").draw(batch, "Turtle Health:", 400,
+                sceneUIManager.getStage().getHeight() - 30);
+
+        // Draw heart icons for turtle health
+        for (int i = 0; i < turtleHealth; i++) {
+            batch.draw(turtleHeartTexture, 530 + (i * 40),
+                    sceneUIManager.getStage().getHeight() - 40, 30, 30);
+        }
+
+
         batch.end();
     }
 
@@ -125,12 +143,18 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             gameScene.dispose();
         }
 
+        if (turtleHeartTexture != null) {
+            turtleHeartTexture.dispose();
+        }
+
         LOGGER.info("GameScene2 disposed");
     }
 
     @Override
     public void show() {
+        
         super.show();
+        turtleHealth = MAX_TURTLE_HEALTH;
         timer.resetTime();
         timer.start();
         gameScene.setShowTimer(false);
@@ -190,6 +214,14 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             seaTurtle = new SeaTurtle(seaTurtleEntity, gameScene.getWorld(), npcMovementManager, seaTurtleRegion);
             seaTurtle.setCollisionManager(gameScene.getCollisionManager());
 
+            // Set health callback for the turtle
+            seaTurtle.setHealthCallback(new ILifeLossCallback() {
+                @Override
+                public void onLifeLost() {
+                    reduceTurtleHealth();
+                }
+            });
+
             entityManager.addRenderableEntity(seaTurtle);
             collisionManager.addEntity(seaTurtle, npcMovementManager);
 
@@ -205,5 +237,29 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         if (gameScene != null) {
             gameScene.onEntityRemove(entity);
         }
+    }
+
+    public void reduceTurtleHealth() {
+        turtleHealth--;
+        LOGGER.info("Turtle health reduced to " + turtleHealth);
+
+        // Play sound effect for health loss
+        audioManager.playSoundEffect("collision");
+
+        if (turtleHealth <= 0) {
+            // Turtle has died
+            LOGGER.info("Turtle died!");
+            timer.stop();
+            sceneManager.setScene("gameover");
+            audioManager.playSoundEffect("loss");
+            audioManager.stopMusic();
+        }
+    }
+
+    /**
+     * Check if the turtle is still alive
+     */
+    public boolean isTurtleAlive() {
+        return turtleHealth > 0;
     }
 }

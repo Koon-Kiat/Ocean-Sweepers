@@ -202,10 +202,10 @@ public class CollisionManager implements ContactListener {
         Object userDataA = fixtureA.getBody().getUserData();
         Object userDataB = fixtureB.getBody().getUserData();
 
-        LOGGER.debug("Collision detected between: " +
-                (userDataA != null ? userDataA.getClass().getSimpleName() : "null") +
-                " and " +
-                (userDataB != null ? userDataB.getClass().getSimpleName() : "null"));
+        // LOGGER.debug("Collision detected between: " +
+        //         (userDataA != null ? userDataA.getClass().getSimpleName() : "null") +
+        //         " and " +
+        //         (userDataB != null ? userDataB.getClass().getSimpleName() : "null"));
 
         // Add to active collisions using our visitor pattern handler
         collisionPairTracker.addCollisionPair(userDataA, userDataB);

@@ -285,8 +285,8 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
                 currentDirectionIndex = DIRECTION_DOWN_RIGHT;
             }
 
-            LOGGER.debug("Boat moving at angle: {0}, direction: {1}",
-                    angle, getCurrentDirectionName());
+            // LOGGER.debug("Boat moving at angle: {0}, direction: {1}",
+            //         angle, getCurrentDirectionName());
         }
 
         // Check if we need to map our 8-directional index to a 4-directional sprite

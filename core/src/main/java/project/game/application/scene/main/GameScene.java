@@ -167,7 +167,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 sceneUIManager.getStage().getHeight() - 30);
 
         // Time left in logs
-        System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+        // System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
 
         // print timer
         if (showTimer) {
