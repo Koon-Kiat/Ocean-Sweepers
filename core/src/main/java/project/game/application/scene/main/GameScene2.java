@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import project.game.application.api.constant.IGameConstants;
@@ -89,7 +91,9 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         if (gameScene != null) {
             gameScene.create();
         }
+        // sceneManager.setWinState(false);
     }
+
 
     @Override
     public void render(float deltaTime) {
@@ -99,21 +103,22 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         if (timer.isTimeUp()) {
             timer.stop();
             sceneManager.setScene("gameover");
-            if (scoreManager.getScore() < 500) {
+            if (scoreManager.getScore() < 100000) {
                 audioManager.playSoundEffect("loss");
             } else {
+                // sceneManager.setWinState(true); 
                 audioManager.playSoundEffect("success");
                 audioManager.stopMusic();
             }
             audioManager.stopMusic();
             return;
         }
+    
         List<Trash> trashes = gameScene.getTrashes();
-        if (gameScene.getTrashes().isEmpty()) {
+        if (trashes.isEmpty()) {
             float remainingTime = timer.getRemainingTime(); // use your TimeManager's method
             timer.stop();
             scoreManager.multiplyScore(remainingTime / 100f);
-            scoreManager.setWinState(true);
             audioManager.stopMusic();
             audioManager.playSoundEffect("success");
             sceneManager.setScene("gameover");
@@ -235,6 +240,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
                     .build();
 
             seaTurtle = new SeaTurtle(seaTurtleEntity, gameScene.getWorld(), npcMovementManager, seaTurtleRegion);
+            seaTurtle.setEntityRemovalListener(this); // <-- Add this!
             seaTurtle.setCollisionManager(gameScene.getCollisionManager());
 
             // Set health callback for the turtle
@@ -260,6 +266,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         if (gameScene != null) {
             gameScene.onEntityRemove(entity);
         }
+        // removeTrashFromList(entity);
     }
 
     public void reduceTurtleHealth() {
@@ -280,6 +287,17 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             
         }
     }
+
+    // private void removeTrashFromList(Entity entity) {
+    //     List<Trash> trashes = gameScene.getTrashes();
+    //     for (Trash trash : new ArrayList<>(trashes)) {
+    //         if (trash.getEntity().equals(entity)) {
+    //             trashes.remove(trash);
+    //             LOGGER.info("Trash removed by turtle: " + entity.getID());
+    //             break;
+    //         }
+    //     }
+    // }
 
     
 
