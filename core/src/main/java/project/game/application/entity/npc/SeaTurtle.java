@@ -39,9 +39,8 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private long lastCollisionTime = 0;
     private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
-    // Add these fields to the SeaTurtle class
-    private Vector2 accumulatedImpulse = new Vector2();
-    private Vector2 accumulatedVelocity = new Vector2();
+    private final Vector2 accumulatedImpulse = new Vector2();
+    private final Vector2 accumulatedVelocity = new Vector2();
 
     // Threshold to determine if we should consider movement on an axis
     private static final float MOVEMENT_THRESHOLD = 0.01f;

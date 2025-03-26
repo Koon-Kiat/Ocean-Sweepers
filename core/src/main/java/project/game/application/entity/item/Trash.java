@@ -41,10 +41,10 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     private CollisionManager collisionManager;
     private NPCMovementManager movementManager;
     private float lastMotionCheckTime = 0;
-    private Vector2 lastPosition = new Vector2();
-    private float minimumVelocity = 1.0f; // Minimum desired velocity
+    private final Vector2 lastPosition = new Vector2();
+    private final float minimumVelocity = 1.0f;
     private float lastTrashCollisionTime = 0;
-    private float trashCollisionCooldown = 1.0f; // 1 second cooldown for trash-trash collisions
+    private final float trashCollisionCooldown = 1.0f;
 
     // Type-based collision handler registry
     private static final Map<Class<?>, BiConsumer<Trash, ICollidableVisitor>> TRASH_COLLISION_HANDLERS = new ConcurrentHashMap<>();
