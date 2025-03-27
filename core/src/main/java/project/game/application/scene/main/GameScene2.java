@@ -2,14 +2,17 @@ package project.game.application.scene.main;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.movement.builder.NPCMovementBuilder;
+import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
@@ -35,18 +38,19 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private IGameConstants constants;
 
     private HealthManager healthManager;
-    private AudioManager audioManager;
-    private ScoreManager scoreManager;
+    private final AudioManager audioManager;
+    private final ScoreManager scoreManager;
     private NPCMovementManager npcMovementManager;
     private CollisionManager collisionManager;
     private EntityManager entityManager;
     private CustomAssetManager assetManager;
-    private TimeManager timer;
+    private final TimeManager timer;
 
     private final GameScene gameScene;
     private Texture heartTexture;
     private SpriteBatch batch;
     private Skin skin;
+    private BitmapFont upheavalFont;
 
     private SeaTurtle seaTurtle;
     private Texture seaTurtleImage;
@@ -54,14 +58,18 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private static final String SEA_TURTLE_SPRITESHEET = "sea_turtle_sprites";
     private static final String SEA_TURTLE_ENTITY = "sea_turtle";
 
+    private int turtleHealth = 3;
+    private Texture turtleHeartTexture;
+    private static final int MAX_TURTLE_HEALTH = 3;
+
     public GameScene2(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.gameScene = new GameScene(sceneManager, inputManager);
-        this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 50);
         this.audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(),
                 new AudioConfig());
+        // Remove the healthManager initialization here, we'll do it in create()
         LOGGER.info("GameScene2 created with composition of GameScene");
     }
 
@@ -69,6 +77,16 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     public void create() {
         batch = new SpriteBatch();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        upheavalFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
+
+        // Load heart texture once and use it for both boat and turtle
+        heartTexture = new Texture("heart.png");
+        // Use the same texture for turtle hearts
+        turtleHeartTexture = heartTexture;
+
+        // Initialize HealthManager with the loaded texture
+        this.healthManager = HealthManager.getInstance(heartTexture);
+
         if (gameScene != null) {
             gameScene.create();
         }
@@ -93,8 +111,15 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
 
         gameScene.render(deltaTime);
         batch.begin();
-        skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d",
-                timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
+        upheavalFont.draw(batch, String.format("Time: %02d:%02d",
+                timer.getMinutes(), timer.getSeconds()), 500, sceneUIManager.getStage().getHeight() - 60);
+
+        // Adding a label for turtle health
+        upheavalFont.draw(batch, "Turtle Health:", 50,
+                sceneUIManager.getStage().getHeight() - 60);
+
+        healthManager.draw(batch, 300, sceneUIManager.getStage().getHeight() - 100, turtleHealth);
+
         batch.end();
     }
 
@@ -125,15 +150,25 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             gameScene.dispose();
         }
 
+        if (heartTexture != null) {
+            heartTexture.dispose();
+        }
+
+        // Don't dispose turtleHeartTexture since it's the same as heartTexture
+        // This would cause a double-free error
+
         LOGGER.info("GameScene2 disposed");
     }
 
     @Override
     public void show() {
+
         super.show();
+        turtleHealth = MAX_TURTLE_HEALTH;
         timer.resetTime();
         timer.start();
-        gameScene.setShowTimer(false); // Hide timer in GameScene
+        gameScene.setShowTimer(false);
+
         if (gameScene != null) {
             gameScene.show();
 
@@ -144,10 +179,14 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             collisionManager = gameScene.getCollisionManager();
             assetManager = CustomAssetManager.getInstance();
 
+            // Load the sea turtle texture and explicitly finish loading before using it
             assetManager.loadTextureAssets("seaturtle.png");
+            assetManager.update();
+            assetManager.loadAndFinish(); // Ensure all assets are fully loaded before continuing
+
+            // Only proceed if the asset is actually loaded
             seaTurtleImage = assetManager.getAsset("seaturtle.png", Texture.class);
             seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
-            // Create sea turtle directional sprites for all 4 directions
             TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
 
             turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7]; // UP
@@ -173,8 +212,8 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
                     constants.SEA_TURTLE_HEIGHT(),
                     true);
 
-            float[] customWeights = { 0.70f, 0.30f };
-            npcMovementManager = new NPCMovementBuilder()
+            float[] customWeights = { 0.40f, 0.60f };
+            npcMovementManager = new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(seaTurtleEntity)
                     .setSpeed(constants.NPC_SPEED())
                     .setInitialVelocity(1, 0)
@@ -185,10 +224,21 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             seaTurtle = new SeaTurtle(seaTurtleEntity, gameScene.getWorld(), npcMovementManager, seaTurtleRegion);
             seaTurtle.setCollisionManager(gameScene.getCollisionManager());
 
+            // Set health callback for the turtle
+            seaTurtle.setHealthCallback(new ILifeLossCallback() {
+                @Override
+                public void onLifeLost() {
+                    reduceTurtleHealth();
+                }
+            });
+
             entityManager.addRenderableEntity(seaTurtle);
             collisionManager.addEntity(seaTurtle, npcMovementManager);
 
             LOGGER.info("GameScene2 shown (delegated to GameScene)");
+        } else {
+            LOGGER.error("Failed to load seaturtle.png asset");
+
         }
     }
 
@@ -199,4 +249,27 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         }
     }
 
+    public void reduceTurtleHealth() {
+        turtleHealth--;
+        LOGGER.info("Turtle health reduced to " + turtleHealth);
+
+        // Play sound effect for health loss
+        audioManager.playSoundEffect("collision");
+
+        if (turtleHealth <= 0) {
+            // Turtle has died
+            LOGGER.info("Turtle died!");
+            timer.stop();
+            sceneManager.setScene("gameover");
+            audioManager.playSoundEffect("loss");
+            audioManager.stopMusic();
+        }
+    }
+
+    /**
+     * Check if the turtle is still alive
+     */
+    public boolean isTurtleAlive() {
+        return turtleHealth > 0;
+    }
 }

@@ -6,9 +6,9 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
@@ -19,7 +19,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Array;
 
 import project.game.application.api.constant.IGameConstants;
@@ -27,12 +26,10 @@ import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.factory.EntityFactoryManager;
 import project.game.application.entity.item.Trash;
-import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
-import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.builder.PlayerMovementBuilder;
-import project.game.application.movement.strategy.ConstantMovementStrategy;
+import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.application.scene.overlay.Options;
 import project.game.application.scene.overlay.Scenetransition;
 import project.game.application.scene.ui.AudioUI;
@@ -56,7 +53,6 @@ import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.TimeManager;
-
 
 public class GameScene extends Scene implements IEntityRemovalListener {
 
@@ -86,13 +82,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     // Movement
     private PlayerMovementManager playerMovementManager;
     private NPCMovementManager npcMovementManager;
+    private List<NPCMovementManager> trashMovementManagers = new ArrayList<>();
     List<IMovementStrategy> strategyPool = new ArrayList<>();
 
     // Entities
     public static List<Entity> existingEntities;
     private EntityManager entityManager;
     private Boat boat;
-    private SeaTurtle seaTurtle;
     private List<Rock> rocks;
     private List<Trash> trashes;
 
@@ -108,26 +104,23 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";
     private static final String ROCK_SPRITESHEET = "rock_sprites";
-    private static final String SEA_TURTLE_SPRITESHEET = "sea_turtle_sprites";
 
     // Entity type identifiers for directional sprites
     private static final String BOAT_ENTITY = "boat";
-    private static final String SEA_TURTLE_ENTITY = "sea_turtle";
     private SpriteBatch batch;
     private Texture rockImage;
     private Texture boatSpritesheet;
     private Texture trashImage;
-    private Texture seaTurtleImage;
     private TextureRegion[] boatTextureRegions;
     private TextureRegion[] boatDirectionalSprites;
     private TextureRegion[] rockRegions;
     private Texture[] trashTextures;
     private TextureRegion[] trashRegions;
-    private TextureRegion[] seaTurtleRegion;
     private Texture backgroundTexture;
     private final Texture heartTexture = new Texture("heart.png");
     protected TimeManager timer;
-    private boolean showTimer = true;  // Flag to control if the timer is shown
+    private boolean showTimer = true; // Flag to control if the timer is shown
+    private BitmapFont upheavalFont;
 
     private float remainingTime;
 
@@ -137,7 +130,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 30);
     }
-    
+
     public SpriteBatch getBatch() {
         return batch;
     }
@@ -170,21 +163,24 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         batch.begin();
         entityManager.draw(batch);
 
+        // Adding a label for turtle health
+        upheavalFont.draw(batch, "Player Health:", 50,
+                sceneUIManager.getStage().getHeight() - 30);
         // Draw health and score
-        healthManager.draw(batch);
+        healthManager.draw(batch, 300, sceneUIManager.getStage().getHeight() - 60, healthManager.getLives());
+
         // print score
-        skin.getFont("default-font").draw(batch, "Score: " + scoreManager.getScore(), 200,
-            sceneUIManager.getStage().getHeight() - 30);
-        
+        upheavalFont.draw(batch, "Score: " + scoreManager.getScore(), 500,
+                sceneUIManager.getStage().getHeight() - 30);
+
         // Time left in logs
-        System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+        // System.out.println("Time Left: " + timer.getMinutes() + ":" +
+        // timer.getSeconds());
 
         // print timer
         if (showTimer) {
-            skin.getFont("default-font").setColor(1, 1, 1, 1); // Set color to white
-            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d", 
-            timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
-            skin.getFont("default-font").setColor(0, 0, 0, 1); // Reset color to black
+            upheavalFont.draw(batch, String.format("Time: %02d:%02d",
+                    timer.getMinutes(), timer.getSeconds()), 500, sceneUIManager.getStage().getHeight() - 60);
         }
 
         batch.end();
@@ -195,32 +191,49 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     }
 
     public void setShowTimer(boolean show) {
-        this.showTimer = show;  // Allow external classes to control whether the timer is visible
+        this.showTimer = show;
     }
 
     @Override
     public void render(float deltaTime) {
         input();
         timer.update(deltaTime);
-        
+
         if (timer.isTimeUp()) {
             timer.stop();
             sceneManager.setScene("gameover");
             if (sceneManager.hasWon() == false) {
                 audioManager.playSoundEffect("loss");
-            }else{
+            } else {
                 audioManager.playSoundEffect("success");
             }
             audioManager.stopMusic();
         }
 
         try {
-            // Update movement for all entities
-            playerMovementManager.updateMovement();
-            npcMovementManager.updateMovement();
+            // Update movement for all entities - simple null checks only
+            if (playerMovementManager != null) {
+                playerMovementManager.updateMovement();
+            }
+
+            if (npcMovementManager != null) {
+                npcMovementManager.updateMovement();
+            }
+
+            // Update all trash movement managers
+            if (trashMovementManagers != null) {
+                for (NPCMovementManager trashManager : trashMovementManagers) {
+                    if (trashManager != null) {
+                        trashManager.updateMovement();
+                    }
+                }
+            }
 
             // Make sure collision handling catches up with new positions
-            collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(), constants.PIXELS_TO_METERS());
+            if (collisionManager != null) {
+                collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(),
+                        constants.PIXELS_TO_METERS());
+            }
         } catch (Exception e) {
             LOGGER.error("Exception during game update: {0}", e.getMessage());
         }
@@ -243,8 +256,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Ensure we have enough bodies for physics to work
         if (activeBodyCount > 1) {
-            // Step the world
-            float timeStep = 1.0f / 60.0f;
+            // Step the world with fixed time step for stable physics (1/60 second)
+            float timeStep = 1.0f / 60.0f; // Fixed time step instead of variable deltaTime
             int velocityIterations = 6;
             int positionIterations = 2;
             world.step(timeStep, velocityIterations, positionIterations);
@@ -260,8 +273,8 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         remainingTime -= deltaTime;
 
-        if(trashes.isEmpty()) {
-            scoreManager.multiplyScore((float) (remainingTime/100));
+        if (trashes.isEmpty()) {
+            scoreManager.multiplyScore((float) (remainingTime / 100));
             // Indicate that the player has won
             sceneManager.setWinState(true);
             sceneManager.setScene("gameover");
@@ -287,8 +300,22 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         Gdx.input.setInputProcessor(inputMultiplexer);
         Gdx.input.setCursorPosition(0, 0);
 
+        // Make sure AudioManager is initialized before using it
+        if (audioManager == null) {
+            // Initialize AudioManager if it's null
+            config = config != null ? config : new AudioConfig();
+            audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
+            LOGGER.info("Initializing AudioManager in show() method");
+        }
+
+        // Make sure MusicManager is initialized and play music safely
         MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
-        audioManager.playMusic("BackgroundMusic");
+        if (audioManager != null) {
+            audioManager.playMusic("BackgroundMusic");
+            LOGGER.info("Playing background music");
+        } else {
+            LOGGER.error("AudioManager is still null after initialization attempt");
+        }
     }
 
     @Override
@@ -338,7 +365,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     @Override
     public void dispose() {
 
-        scoreManager.multiplyScore((float) (remainingTime/100));
+        scoreManager.multiplyScore((float) (remainingTime / 100));
         LOGGER.info("Final Score: " + scoreManager.getScore());
         // Log world state before disposal
         LOGGER.info("Before GameScene disposal:");
@@ -347,7 +374,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         boatSpritesheet.dispose();
         trashImage.dispose();
         rockImage.dispose();
-        seaTurtleImage.dispose();
         debugRenderer.dispose();
         if (audioManager != null) {
             audioManager.dispose();
@@ -363,6 +389,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         world = new World(new Vector2(0, 0), true);
         debugRenderer = new Box2DDebugRenderer();
         skin = new Skin(Gdx.files.internal("uiskin.json"));
+        upheavalFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
         inputManager.enableMovementControls();
         constants = GameConstantsFactory.getConstants();
         config = new AudioConfig();
@@ -374,12 +401,28 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         // Init assets
         try {
-            // Initialize game assets
+            // Initialize game assets first
             initializeGameAssets();
 
+            // Create entity manager
             entityManager = new EntityManager();
 
-            // Initialize entities and movement managers
+            // Initialize lists
+            rocks = new ArrayList<>();
+            trashes = new ArrayList<>();
+            existingEntities = new ArrayList<>();
+            trashMovementManagers = new ArrayList<>();
+
+            // Initialize camera
+            camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+            camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
+            camera.update();
+
+            // Initialize CollisionManager before creating any entities
+            collisionManager = new CollisionManager(world, inputManager);
+            collisionManager.init();
+
+            // Create boat (player) entity
             Entity boatEntity = new Entity(
                     constants.PLAYER_START_X(),
                     constants.PLAYER_START_Y(),
@@ -387,14 +430,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     constants.PLAYER_HEIGHT(),
                     true);
 
-            Entity seaTurtleEntity = new Entity(
-                    constants.SEA_TURTLE_START_X(),
-                    constants.SEA_TURTLE_START_Y(),
-                    constants.SEA_TURTLE_WIDTH(),
-                    constants.SEA_TURTLE_HEIGHT(),
-                    true);
-
-            playerMovementManager = new PlayerMovementBuilder()
+            playerMovementManager = new PlayerMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(boatEntity)
                     .setSpeed(constants.PLAYER_SPEED())
                     .setInitialVelocity(0, 0)
@@ -402,21 +438,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     .withConstantMovement()
                     .build();
 
-            strategyPool = new ArrayList<>();
-            strategyPool.add(new ConstantMovementStrategy(constants.NPC_SPEED(), true));
+            boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
+            boat.setCollisionManager(collisionManager);
 
-            List<Entity> rockEntities = new ArrayList<>();
-            rocks = new ArrayList<>();
-            trashes = new ArrayList<>();
-            existingEntities = new ArrayList<>();
-
-            camera = new OrthographicCamera(constants.GAME_WIDTH(), constants.GAME_HEIGHT());
-            camera.position.set(constants.GAME_WIDTH() / 2, constants.GAME_HEIGHT() / 2, 0);
-            camera.update();
-
-            // Initialize CollisionManager
-            collisionManager = new CollisionManager(world, inputManager);
-            collisionManager.init();
+            // Add boat to managers
+            entityManager.addRenderableEntity(boat);
+            collisionManager.addEntity(boat, playerMovementManager);
+            existingEntities.add(boatEntity);
 
             // Initialize EntityFactoryManager
             entityFactoryManager = new EntityFactoryManager(
@@ -424,14 +452,9 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                     world,
                     existingEntities,
                     collisionManager,
-                    seaTurtleRegion,
                     rockRegions,
                     trashRegions);
             entityFactoryManager.setTrashRemovalListener(this);
-
-            // Create entities using factory manager
-            boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
-            boat.setCollisionManager(collisionManager);
 
             // Set life loss callback for boat
             boat.setLifeLossCallback(new ILifeLossCallback() {
@@ -454,60 +477,48 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 Rock rock = entityFactoryManager.createRock();
                 rocks.add(rock);
                 entityManager.addRenderableEntity(rock);
-                rockEntities.add(rock.getEntity());
+                collisionManager.addEntity(rock, null);
+                existingEntities.add(rock.getEntity());
             }
 
+            // Create all trash entities
             for (int i = 0; i < constants.NUM_TRASHES(); i++) {
                 Trash trash = entityFactoryManager.createTrash();
-                trashes.add(trash);
-                entityManager.addRenderableEntity(trash);
+                if (trash != null) {
+                    trashes.add(trash);
+                    entityManager.addRenderableEntity(trash);
+
+                    // Get and store the movement manager
+                    NPCMovementManager trashMovementManager = trash.getMovementManager();
+                    if (trashMovementManager != null) {
+                        trashMovementManagers.add(trashMovementManager);
+                        collisionManager.addEntity(trash, trashMovementManager);
+                    }
+
+                    existingEntities.add(trash.getEntity());
+                    LOGGER.info("Created and registered trash entity {0} with movement manager", i);
+                }
             }
 
-            float[] customWeights = { 0.70f, 0.30f };
-            npcMovementManager = new NPCMovementBuilder()
-                    .withEntity(seaTurtleEntity)
-                    .setSpeed(constants.NPC_SPEED())
-                    .setInitialVelocity(1, 0)
-                    .withTrashCollector(trashes, rockEntities, customWeights)
-                    .setLenientMode(true)
-                    .build();
-
-            //seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
-            //seaTurtle.setCollisionManager(collisionManager);
-
-            // Add entities to the entity manager
-            entityManager.addRenderableEntity(boat);
-            //entityManager.addRenderableEntity(seaTurtle);
-
-            // Add entities to collision manager
-            collisionManager.addEntity(boat, playerMovementManager);
-            //collisionManager.addEntity(seaTurtle, npcMovementManager);
-
-            for (Rock rock : rocks) {
-                collisionManager.addEntity(rock, null);
-            }
-
-            // Create boundaries
+            // Create world boundaries last
             WorldBoundaryFactory.createScreenBoundaries(world, constants.GAME_WIDTH(), constants.GAME_HEIGHT(), 0.5f,
                     constants.PIXELS_TO_METERS());
 
-            // Log world status after initialization
-            LOGGER.info("Physics world initialization complete");
-
-            // Initialize AudioManager and AudioUI
+            // Initialize audio
             audioManager = AudioManager.getInstance(MusicManager.getInstance(), SoundManager.getInstance(), config);
             audioUI = new AudioUI(audioManager, config, sceneUIManager.getStage(), skin);
             audioManager.setAudioUI(audioUI);
 
-            // Load and play audio
             MusicManager.getInstance().loadMusicTracks("BackgroundMusic.mp3");
             SoundManager.getInstance().loadSoundEffects(
-                    new String[] { "Boinkeffect.mp3", "selection.mp3", "rubble.mp3", "explosion.mp3", "loss.mp3", "success.mp3", "points.mp3" },
+                    new String[] { "Boinkeffect.mp3", "selection.mp3", "rubble.mp3", "explosion.mp3", "loss.mp3",
+                            "success.mp3", "points.mp3" },
                     new String[] { "keybuttons", "selection", "collision", "explosion", "loss", "success", "points" });
 
-            // Set audio configuration
             audioManager.setMusicVolume(config.getMusicVolume());
             audioManager.setSoundEnabled(config.isSoundEnabled());
+
+            LOGGER.info("GameScene initialization complete");
 
         } catch (Exception e) {
             LOGGER.error("Exception during game creation: {0}", e.getMessage());
@@ -534,6 +545,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         for (Trash trash : new ArrayList<>(trashes)) {
             if (trash.getEntity().equals(entity)) {
+                // Also remove the trash's movement manager from our list
+                NPCMovementManager trashManager = trash.getMovementManager();
+                if (trashManager != null) {
+                    trashMovementManagers.remove(trashManager);
+                    LOGGER.info("Trash movement manager removed for entity: {0}", entity.getID());
+                }
+
                 trashes.remove(trash);
                 audioManager.playSoundEffect("points");
                 LOGGER.info("Trash removed: {0}", trash.getEntity().getID());
@@ -554,7 +572,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         assetManager.loadTextureAssets("trash3.png");
         assetManager.loadTextureAssets("steamboat.png");
         assetManager.loadTextureAssets("Rocks.png");
-        assetManager.loadTextureAssets("seaturtle.png");
         assetManager.loadTextureAssets("ocean_background.jpg");
         assetManager.update();
         assetManager.loadAndFinish();
@@ -585,27 +602,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         rockImage = assetManager.getAsset("Rocks.png", Texture.class);
         rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
 
-        // Load sea turtle texture and create TextureRegion
-        seaTurtleImage = assetManager.getAsset("seaturtle.png", Texture.class);
-        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
-
-        // Create sea turtle directional sprites for all 4 directions
-        TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
-
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7]; // UP
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2]; // RIGHT
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0]; // DOWN
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1]; // LEFT
-
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_RIGHT] = seaTurtleRegion[5]; // UP
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_RIGHT] = seaTurtleRegion[3]; // RIGHT
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_LEFT] = seaTurtleRegion[4]; // DOWN
-        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_LEFT] = seaTurtleRegion[6]; // LEFT
-
-        // Register the directional sprites with the asset manager
-        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
-        seaTurtleRegion = turtleDirectionalSprites;
-
         // Load trash textures and create TextureRegions
         trashTextures = new Texture[3];
         trashRegions = new TextureRegion[3];
@@ -621,7 +617,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
         LOGGER.info("Game assets initialized successfully");
     }
-
 
     /**
      * Handles key inputs for game control:
@@ -674,10 +669,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             audioManager.stopMusic();
         }
         // Switch to game2 scene (just for testing)
-        //if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-            //sceneManager.setScene("game2");
-            //audioManager.stopMusic();
-        //}
+        // if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+        // sceneManager.setScene("game2");
+        // audioManager.stopMusic();
+        // }
     }
 
     /**
@@ -721,26 +716,21 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     protected World getWorld() {
         return world;
     }
-    
+
     protected CollisionManager getCollisionManager() {
         return collisionManager;
     }
-    
+
     protected List<Trash> getTrashes() {
         return trashes;
     }
-    
+
     protected List<Entity> getRockEntities() {
         return existingEntities;
-    }
-    
-    protected TextureRegion[] getSeaTurtleRegion() {
-        return seaTurtleRegion;
     }
 
     protected EntityManager getEntityManager() {
         return entityManager;
     }
 
-    
 }

@@ -73,12 +73,6 @@ public class SceneManager {
         scene.dispose();
     }
 
-    public void render(float delta) {
-        if (currentScene != null) {
-            currentScene.render(delta);
-        }
-    }
-
     public void resize(int width, int height) {
         if (currentScene != null) {
             currentScene.resize(width, height);
@@ -100,5 +94,9 @@ public class SceneManager {
     
     public boolean hasWon() {
         return winState;
+    }
+
+    public IScene getCurrentScene() {
+        return currentScene;
     }
 }

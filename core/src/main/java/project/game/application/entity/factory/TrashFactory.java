@@ -10,6 +10,7 @@ import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.entity.item.Trash;
 import project.game.application.movement.builder.NPCMovementBuilder;
+import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
@@ -46,6 +47,13 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
         this.removalListener = removalListener;
     }
 
+    /**
+     * Creates a new Trash entity at the specified position.
+     * 
+     * @param x The x-coordinate for the trash.
+     * @param y The y-coordinate for the trash.
+     * @return A new Trash entity.
+     */
     @Override
     public Trash createEntity(float x, float y) {
         Entity trashEntity = new Entity(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT(), true);
@@ -56,35 +64,35 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
 
         Trash trash = new Trash(trashEntity, world, selectedTexture);
 
+        // Set up the trash object with required components
         if (collisionManager != null) {
             trash.setCollisionManager(collisionManager);
-            // Add entity to collision manager's tracking with movement
-            collisionManager.addEntity(trash, movementManager);
         }
 
         if (removalListener != null) {
             trash.setRemovalListener(removalListener);
         }
 
+        // Set the movement manager and register with collision manager
+        trash.setMovementManager(movementManager);
+
+        // Add to list of existing entities
         existingEntities.add(trashEntity);
+
         return trash;
     }
 
     /**
-     * Creates a movement manager with ocean current simulation for trash objects
+     * Creates a movement manager for trash that simulates ocean currents.
      */
     private NPCMovementManager createTrashMovement(Entity trashEntity) {
         try {
             // Generate dominant flow direction (mostly horizontal)
             float dominantDirection = MathUtils.randomBoolean() ? 1f : -1f; // Left or right flow
-
-            // Strong horizontal component with slight vertical drift
             float dirX = dominantDirection;
-            float dirY = MathUtils.random(-0.3f, 0.3f);
+            float dirY = MathUtils.random(-0.3f, 0.3f); // Slight vertical drift
 
-            // Use the builder pattern with withRandomizedOceanCurrentMovement for cleaner
-            // code
-            NPCMovementBuilder builder = new NPCMovementBuilder()
+            return new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(trashEntity)
                     .setSpeed(MathUtils.random(BASE_SPEED_MIN, BASE_SPEED_MAX))
                     .setInitialVelocity(dirX, dirY)
@@ -94,13 +102,12 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
                             ZIG_SPEED_MIN, ZIG_SPEED_MAX,
                             MIN_AMPLITUDE, MAX_AMPLITUDE,
                             MIN_FREQUENCY, MAX_FREQUENCY,
-                            DEFAULT_CONSTANT_WEIGHT, DEFAULT_ZIGZAG_WEIGHT);
-
-            return builder.build();
+                            DEFAULT_CONSTANT_WEIGHT, DEFAULT_ZIGZAG_WEIGHT)
+                    .build();
         } catch (Exception e) {
             LOGGER.error("Error creating trash movement: {0}", e.getMessage());
             // Fallback to basic movement if creation fails
-            return new NPCMovementBuilder()
+            return new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(trashEntity)
                     .setSpeed(BASE_SPEED_MIN)
                     .setInitialVelocity(1, 0)

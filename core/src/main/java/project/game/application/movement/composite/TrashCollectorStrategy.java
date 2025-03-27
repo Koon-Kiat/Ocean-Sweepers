@@ -59,8 +59,8 @@ public class TrashCollectorStrategy extends AbstractMovementStrategy {
             this.obstacleAvoidanceWeight = weights[1];
         } else {
             // Default weights: 70% trash targeting, 30% obstacle avoidance
-            this.trashTargetWeight = 0.7f;
-            this.obstacleAvoidanceWeight = 0.3f;
+            this.trashTargetWeight = 0.3f;
+            this.obstacleAvoidanceWeight = 0.7f;
         }
 
         // Create the composite strategy
