@@ -1,6 +1,7 @@
 package project.game.application.entity.factory;
 
 import java.util.List;
+import java.util.Random;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -30,7 +31,7 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
     private static final float DEFAULT_CONSTANT_WEIGHT = 0.9f;
     private static final float DEFAULT_ZIGZAG_WEIGHT = 0.1f;
     private final TextureRegion[] trashTextures;
-    private final java.util.Random random;
+    private final Random random;
     private IEntityRemovalListener removalListener;
 
     public TrashFactory(
@@ -41,7 +42,7 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
             TextureRegion[] trashTextures) {
         super(constants, world, existingEntities, collisionManager);
         this.trashTextures = trashTextures;
-        this.random = new java.util.Random();
+        this.random = new Random();
         // Initialize the Flyweight Factory with trash textures
         for (int i = 0; i < trashTextures.length; i++) {
             TextureFlyweightFactory.addTexture("trash_" + i, trashTextures[i]);

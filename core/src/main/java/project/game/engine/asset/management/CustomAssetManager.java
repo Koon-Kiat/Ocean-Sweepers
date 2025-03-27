@@ -78,6 +78,22 @@ public class CustomAssetManager implements Disposable {
         loadAsset(filePath, BitmapFont.class);
     }
 
+    public boolean isAssetLoaded(String filePath) {
+        return asset_Manager.isLoaded(filePath);
+    }
+
+    public boolean isLoaded() {
+        return asset_Manager.update();
+    }
+
+    public float getLoadProgress() {
+        return asset_Manager.getProgress();
+    }
+
+    public AssetManager getasset_Manager() {
+        return this.asset_Manager;
+    }
+
     /** Loads a group of assets */
     public void loadAssetGroup(String groupName, Map<String, Class<?>> assets) {
         assetGroups.putIfAbsent(groupName, new HashSet<>());
@@ -246,34 +262,6 @@ public class CustomAssetManager implements Disposable {
         } else {
             LOGGER.info("Attempted to unload non-existent asset: {0}", filePath);
         }
-    }
-
-    /**
-     * Checks if an asset is loaded
-     */
-    public boolean isAssetLoaded(String filePath) {
-        return asset_Manager.isLoaded(filePath);
-    }
-
-    /**
-     * Asynchronously updates asset loading, returns true when done
-     */
-    public boolean isLoaded() {
-        return asset_Manager.update();
-    }
-
-    /**
-     * Gets asset loading progress
-     */
-    public float getLoadProgress() {
-        return asset_Manager.getProgress();
-    }
-
-    /**
-     * Gets the asset manager
-     */
-    public AssetManager getasset_Manager() {
-        return this.asset_Manager;
     }
 
     /**

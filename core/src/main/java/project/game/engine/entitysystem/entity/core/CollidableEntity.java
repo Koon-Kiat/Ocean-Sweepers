@@ -42,6 +42,12 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 				other -> ((ICollidableVisitor) other).getEntity());
 	}
 
+	public CollidableEntity(Entity baseEntity, World world) {
+		this.entity = baseEntity;
+		this.inCollision = false;
+		this.world = world;
+	}
+
 	/**
 	 * Register a handler for a specific type of object to enable polymorphic
 	 * dispatch
@@ -68,12 +74,6 @@ public abstract class CollidableEntity extends Entity implements ICollidableVisi
 		@SuppressWarnings("unchecked")
 		Function<Object, Entity> castedExtractor = obj -> extractor.apply((T) obj);
 		ENTITY_EXTRACTORS.put(clazz, castedExtractor);
-	}
-
-	public CollidableEntity(Entity baseEntity, World world) {
-		this.entity = baseEntity;
-		this.inCollision = false;
-		this.world = world;
 	}
 
 	public final void initBody(World world) {

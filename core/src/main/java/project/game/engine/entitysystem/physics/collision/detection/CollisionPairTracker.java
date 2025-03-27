@@ -10,8 +10,7 @@ import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 import project.game.engine.entitysystem.physics.api.ICollisionPairHandler;
 
 /**
- * A class that tracks active collision pairs using the visitor pattern.
- * This eliminates the need for type checks when tracking collisions.
+ * A class that tracks active collision pairs between objects in a game.
  */
 public class CollisionPairTracker implements ICollisionPairHandler {
 

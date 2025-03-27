@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 
 /**
  * IOManager handles input events (keyboard and mouse) for the game.
+ * 
  * It extends LibGDX's InputAdapter to provide basic behavior.
  */
 public class InputManager extends InputAdapter {

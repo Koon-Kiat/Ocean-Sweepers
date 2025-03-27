@@ -20,27 +20,6 @@ public abstract class AbstractConfigurationLoader implements IConfigurationLoade
         this.typeCheckerMap = initializeTypeCheckers();
     }
 
-    private Map<Class<?>, Function<Object, Boolean>> initializeTypeCheckers() {
-        Map<Class<?>, Function<Object, Boolean>> checkers = new HashMap<>();
-
-        Function<Object, Boolean> numberChecker = value -> value != null
-                && (Number.class.isAssignableFrom(value.getClass()));
-
-        checkers.put(Float.class, numberChecker);
-        checkers.put(float.class, numberChecker);
-        checkers.put(Long.class, numberChecker);
-        checkers.put(long.class, numberChecker);
-        checkers.put(Integer.class, numberChecker);
-        checkers.put(int.class, numberChecker);
-
-        checkers.put(Boolean.class, value -> value != null && Boolean.class.isAssignableFrom(value.getClass()));
-        checkers.put(boolean.class, checkers.get(Boolean.class));
-
-        checkers.put(String.class, value -> value != null && String.class.isAssignableFrom(value.getClass()));
-
-        return checkers;
-    }
-
     @Override
     public boolean loadConfiguration(String source, String profileName, AbstractConfigurableConstants constants) {
         try {
@@ -142,4 +121,25 @@ public abstract class AbstractConfigurationLoader implements IConfigurationLoade
      * strategy.
      */
     protected abstract void handleError(String message, Exception e);
+
+    private Map<Class<?>, Function<Object, Boolean>> initializeTypeCheckers() {
+        Map<Class<?>, Function<Object, Boolean>> checkers = new HashMap<>();
+
+        Function<Object, Boolean> numberChecker = value -> value != null
+                && (Number.class.isAssignableFrom(value.getClass()));
+
+        checkers.put(Float.class, numberChecker);
+        checkers.put(float.class, numberChecker);
+        checkers.put(Long.class, numberChecker);
+        checkers.put(long.class, numberChecker);
+        checkers.put(Integer.class, numberChecker);
+        checkers.put(int.class, numberChecker);
+
+        checkers.put(Boolean.class, value -> value != null && Boolean.class.isAssignableFrom(value.getClass()));
+        checkers.put(boolean.class, checkers.get(Boolean.class));
+
+        checkers.put(String.class, value -> value != null && String.class.isAssignableFrom(value.getClass()));
+
+        return checkers;
+    }
 }

@@ -1,6 +1,7 @@
 package project.game.application.entity.factory;
 
 import java.util.List;
+import java.util.Random;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.World;
@@ -13,7 +14,7 @@ import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class RockFactory extends AbstractEntityFactory<Rock> {
     private final TextureRegion[] rockRegions;
-    private final java.util.Random random;
+    private final Random random;
 
     public RockFactory(
             IGameConstants constants,
@@ -23,7 +24,7 @@ public class RockFactory extends AbstractEntityFactory<Rock> {
             TextureRegion[] rockRegions) {
         super(constants, world, existingEntities, collisionManager);
         this.rockRegions = rockRegions;
-        this.random = new java.util.Random();
+        this.random = new Random();
         // Initialize the Flyweight Factory with rock textures
         for (int i = 0; i < rockRegions.length; i++) {
             TextureFlyweightFactory.addTexture("rock_" + i, rockRegions[i]);

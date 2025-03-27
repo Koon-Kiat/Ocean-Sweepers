@@ -7,6 +7,7 @@ import project.game.engine.logging.api.LogLevel;
 
 /**
  * Abstract base logger that implements core logging functionality.
+ * 
  * Game-specific loggers can extend this class to add custom behavior.
  */
 public abstract class AbstractLogger implements ILogger {

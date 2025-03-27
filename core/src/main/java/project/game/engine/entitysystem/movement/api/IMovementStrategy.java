@@ -4,9 +4,6 @@ import project.game.application.movement.api.StrategyType;
 
 /**
  * Interface for movement behaviors.
- * 
- * Classes implementing this interface must provide methods to apply movement
- * behaviors to entities.
  */
 public interface IMovementStrategy {
 

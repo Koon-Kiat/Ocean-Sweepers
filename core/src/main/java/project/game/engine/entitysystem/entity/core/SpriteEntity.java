@@ -1,5 +1,6 @@
 package project.game.engine.entitysystem.entity.core;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.World;
@@ -15,9 +16,9 @@ import project.game.engine.entitysystem.entity.base.Entity;
  */
 public abstract class SpriteEntity extends CollidableEntity implements ISpriteRenderable {
 
+    private final String texturePath;
     private TextureRegion[] sprites;
     private int currentSpriteIndex;
-    private final String texturePath;
 
     /**
      * Constructor for SpriteEntity
@@ -129,7 +130,7 @@ public abstract class SpriteEntity extends CollidableEntity implements ISpriteRe
         } else if (texturePath != null && CustomAssetManager.getInstance().isLoaded()) {
             // Fall back to texture-based rendering using CustomAssetManager
             batch.draw(
-                    CustomAssetManager.getInstance().getAsset(texturePath, com.badlogic.gdx.graphics.Texture.class),
+                    CustomAssetManager.getInstance().getAsset(texturePath, Texture.class),
                     renderX, renderY,
                     getEntity().getWidth(), getEntity().getHeight());
         }

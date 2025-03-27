@@ -1,5 +1,7 @@
 package project.game.engine.entitysystem.physics.management;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +34,7 @@ import project.game.engine.io.management.SceneInputManager;
 
 /**
  * CollisionManager is a class that manages the collision detection and
- * resolution of entities in the game using a pure polymorphic approach.
+ * resolution of entities in the game world.
  */
 public class CollisionManager implements ContactListener {
 
@@ -80,6 +82,10 @@ public class CollisionManager implements ContactListener {
 
     public void init() {
         world.setContactListener(this);
+    }
+
+    public boolean collision() {
+        return collided;
     }
 
     /**
@@ -135,14 +141,6 @@ public class CollisionManager implements ContactListener {
         }
     }
 
-    /**
-     * Check if a movement manager is player-controlled
-     */
-    private boolean isPlayerControlled(MovementManager manager) {
-        Boolean isPlayerControlled = playerControlledMap.get(manager);
-        return isPlayerControlled != null && isPlayerControlled;
-    }
-
     public void updateGame(float gameWidth, float gameHeight, float pixelsToMeters) {
         for (Map.Entry<ICollidableVisitor, MovementManager> entry : entityMap.entrySet()) {
             MovementManager manager = entry.getValue();
@@ -190,10 +188,6 @@ public class CollisionManager implements ContactListener {
         }
     }
 
-    public boolean collision() {
-        return collided;
-    }
-
     @Override
     public void beginContact(Contact contact) {
         Fixture fixtureA = contact.getFixtureA();
@@ -203,9 +197,9 @@ public class CollisionManager implements ContactListener {
         Object userDataB = fixtureB.getBody().getUserData();
 
         // LOGGER.debug("Collision detected between: " +
-        //         (userDataA != null ? userDataA.getClass().getSimpleName() : "null") +
-        //         " and " +
-        //         (userDataB != null ? userDataB.getClass().getSimpleName() : "null"));
+        // (userDataA != null ? userDataA.getClass().getSimpleName() : "null") +
+        // " and " +
+        // (userDataB != null ? userDataB.getClass().getSimpleName() : "null"));
 
         // Add to active collisions using our visitor pattern handler
         collisionPairTracker.addCollisionPair(userDataA, userDataB);
@@ -247,12 +241,20 @@ public class CollisionManager implements ContactListener {
     // Use reflection to refresh collision state.
     private void refreshEntityCollisionState(ICollidableVisitor entity) {
         try {
-            java.lang.reflect.Method method = entity.getClass().getMethod("setCollisionActive", long.class);
+            Method method = entity.getClass().getMethod("setCollisionActive", long.class);
             method.invoke(entity, defaultCollisionDuration);
-        } catch (Exception e) {
+        } catch (IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
             // If the entity doesn't have this method, just leave it as is
             LOGGER.warn("Could not refresh collision state for entity: {0}",
                     entity.getClass().getSimpleName());
         }
+    }
+
+    /**
+     * Check if a movement manager is player-controlled
+     */
+    private boolean isPlayerControlled(MovementManager manager) {
+        Boolean isPlayerControlled = playerControlledMap.get(manager);
+        return isPlayerControlled != null && isPlayerControlled;
     }
 }

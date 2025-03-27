@@ -1,5 +1,8 @@
 package project.game.engine.entitysystem.physics.collision.resolution;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import com.badlogic.gdx.math.Vector2;
 
 import project.game.engine.entitysystem.movement.management.MovementManager;
@@ -56,7 +59,6 @@ public class CollisionResponseHandler {
             float dx = inputX - currentX;
             float dy = inputY - currentY;
 
-            // Enhanced boundary movement logic
             if (touchingLeft || touchingRight) {
                 // Allow vertical movement at full speed
                 inputX = currentX;
@@ -110,7 +112,6 @@ public class CollisionResponseHandler {
                 entity.getBody().setLinearVelocity(velocity);
             }
 
-            // Low damping during collision for smoother movement
             entity.getBody().setLinearDamping(1f);
             return;
         }
@@ -161,7 +162,7 @@ public class CollisionResponseHandler {
                 x = currentX + dx * scale;
                 y = currentY + dy * scale;
 
-                // Since we're limiting displacement, also limit the velocity
+                // Limit the velocity to prevent excessive speed
                 Vector2 vel = entity.getBody().getLinearVelocity();
                 if (vel.len() > 10.0f) {
                     vel.nor().scl(10.0f);
@@ -189,9 +190,9 @@ public class CollisionResponseHandler {
      */
     private static void clearCollisionState(ICollidableVisitor entity) {
         try {
-            java.lang.reflect.Method method = entity.getClass().getMethod("setCollisionActive", long.class);
+            Method method = entity.getClass().getMethod("setCollisionActive", long.class);
             method.invoke(entity, 0L);
-        } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             // Method doesn't exist or can't be accessed - silently continue
         }
     }

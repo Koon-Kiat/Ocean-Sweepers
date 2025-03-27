@@ -13,9 +13,7 @@ import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 
 /**
  * CompositeMovementStrategy combines multiple movement strategies and applies
- * them in sequence, blending their effects. For example, combining a
- * FollowMovementStrategy with an ObstacleAvoidanceStrategy will make an entity
- * follow a target while avoiding obstacles.
+ * them in sequence, blending their effects.
  */
 public class CompositeMovementStrategy implements ICompositeMovementStrategy {
 
@@ -74,40 +72,6 @@ public class CompositeMovementStrategy implements ICompositeMovementStrategy {
             for (int i = 0; i < this.weights.length; i++) {
                 this.weights[i] = 1.0f / this.weights.length;
             }
-        }
-    }
-
-    @Override
-    public void move(IMovable movable, float deltaTime) {
-        try {
-            // Create temporary state for capturing movement from each strategy
-            TempMovableState tempState = new TempMovableState(movable);
-            Vector2 resultVelocity = new Vector2(0, 0);
-
-            // Apply each strategy with its weight
-            for (int i = 0; i < strategies.size(); i++) {
-                IMovementStrategy strategy = strategies.get(i);
-                if (strategy != null) {
-                    // Reset temp state position for each strategy so they all start from the
-                    // original position
-                    if (i > 0)
-                        tempState.resetPosition(movable);
-
-                    float weight = weights[i];
-                    applyStrategyWithWeight(strategy, tempState, deltaTime, weight, resultVelocity);
-                }
-            }
-
-            // Apply the final weighted position and velocity to the actual movable
-            movable.setX(tempState.finalX);
-            movable.setY(tempState.finalY);
-
-            // Make sure velocity is set consistently
-            movable.setVelocity(resultVelocity);
-
-        } catch (Exception e) {
-            LOGGER.error("Error in CompositeMovementStrategy: " + e.getMessage(), e);
-            throw new MovementException("Failed to apply composite movement", e);
         }
     }
 
@@ -221,6 +185,40 @@ public class CompositeMovementStrategy implements ICompositeMovementStrategy {
             return removeStrategy(index);
         }
         return false;
+    }
+
+    @Override
+    public void move(IMovable movable, float deltaTime) {
+        try {
+            // Create temporary state for capturing movement from each strategy
+            TempMovableState tempState = new TempMovableState(movable);
+            Vector2 resultVelocity = new Vector2(0, 0);
+
+            // Apply each strategy with its weight
+            for (int i = 0; i < strategies.size(); i++) {
+                IMovementStrategy strategy = strategies.get(i);
+                if (strategy != null) {
+                    // Reset temp state position for each strategy so they all start from the
+                    // original position
+                    if (i > 0)
+                        tempState.resetPosition(movable);
+
+                    float weight = weights[i];
+                    applyStrategyWithWeight(strategy, tempState, deltaTime, weight, resultVelocity);
+                }
+            }
+
+            // Apply the final weighted position and velocity to the actual movable
+            movable.setX(tempState.finalX);
+            movable.setY(tempState.finalY);
+
+            // Make sure velocity is set consistently
+            movable.setVelocity(resultVelocity);
+
+        } catch (Exception e) {
+            LOGGER.error("Error in CompositeMovementStrategy: " + e.getMessage(), e);
+            throw new MovementException("Failed to apply composite movement", e);
+        }
     }
 
     /**

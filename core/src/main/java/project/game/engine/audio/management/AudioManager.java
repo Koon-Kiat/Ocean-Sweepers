@@ -6,12 +6,15 @@ import project.game.engine.audio.api.IMusic;
 import project.game.engine.audio.api.ISound;
 
 public class AudioManager {
-    
+
     private static volatile AudioManager instance;
     private final IMusic musicManager;
     private final ISound soundManager;
-    private final IAudioConfig audioConfig;
     private AudioUI audioUI;
+
+    @SuppressWarnings("unused")
+    private final IAudioConfig audioConfig;
+
 
     private AudioManager(IMusic musicManager, ISound soundManager, IAudioConfig audioConfig) {
         this.musicManager = musicManager;
@@ -20,7 +23,6 @@ public class AudioManager {
         this.audioUI = null;
     }
 
-    // Public method to get the singleton instance of AudioManager with parameters
     @SuppressWarnings("DoubleCheckedLocking")
     public static AudioManager getInstance(IMusic musicManager, ISound soundManager, IAudioConfig config) {
         if (instance == null) {

@@ -1,11 +1,12 @@
 package project.game.engine.scene.management;
 
 public class TimeManager {
+    
+    private static TimeManager instance;
+    private final int initialMinutes;
+    private final int initialSeconds;
     private float timeLeft;
     private boolean isRunning;
-    private int initialMinutes;
-    private int initialSeconds;
-    private static TimeManager instance;
 
     public TimeManager(int minutes, int seconds) {
         this.initialMinutes = minutes;

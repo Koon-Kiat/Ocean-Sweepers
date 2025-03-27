@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Vector2;
 
 public interface IVelocity {
 
-    //TODO: Create new interface specifically for speed
     float getSpeed();
 
     void setSpeed(float speed);

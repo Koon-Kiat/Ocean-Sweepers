@@ -7,8 +7,6 @@ import com.badlogic.gdx.math.Vector2;
 
 /**
  * Interface for movement managers.
- * Extends IMovable to ensure all movement managers have position
- * information.
  */
 public interface IMovementManager {
 

@@ -31,15 +31,6 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
     }
 
     /**
-     * Main movement method required by IMovementStrategy
-     * 
-     * @param movable   The movable entity
-     * @param deltaTime The time delta
-     */
-    @Override
-    public abstract void move(IMovable movable, float deltaTime);
-
-    /**
      * Gets the strategy type for this movement strategy.
      * 
      * @return The strategy type enum value
@@ -59,6 +50,15 @@ public abstract class AbstractMovementStrategy implements IMovementStrategy {
     public boolean isStrategyType(StrategyType type) {
         return getStrategyType() == type;
     }
+
+    /**
+     * Main movement method required by IMovementStrategy
+     * 
+     * @param movable   The movable entity
+     * @param deltaTime The time delta
+     */
+    @Override
+    public abstract void move(IMovable movable, float deltaTime);
 
     /**
      * Validates that a target is not null

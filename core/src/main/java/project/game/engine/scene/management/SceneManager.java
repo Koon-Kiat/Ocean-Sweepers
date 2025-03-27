@@ -25,10 +25,6 @@ public class SceneManager {
         this.sceneHistory = new Stack<>();
     }
 
-    // public IScene getScene(String name) {
-    //     return currentScene;
-    // }
-
     public IScene getScene(String name) {
         if (!scenes.containsKey(name)) {
             System.err.println("Scene not found: " + name);

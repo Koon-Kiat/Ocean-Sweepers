@@ -6,6 +6,7 @@ import project.game.engine.scene.api.IScene;
  * Handles rendering of the current scene.
  */
 public class SceneRenderer {
+    
     private final SceneManager sceneManager;
 
     public SceneRenderer(SceneManager sceneManager) {

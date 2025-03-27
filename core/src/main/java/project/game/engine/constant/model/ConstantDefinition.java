@@ -2,6 +2,7 @@ package project.game.engine.constant.model;
 
 /**
  * Defines a game constant and its metadata.
+ * 
  * This allows for more dynamic constant management.
  */
 public class ConstantDefinition {

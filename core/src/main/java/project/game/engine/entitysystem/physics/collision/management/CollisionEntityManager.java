@@ -11,8 +11,6 @@ import project.game.engine.entitysystem.physics.api.ICollisionOperation;
 
 /**
  * Default implementation of ICollisionHandler for ICollidable entities
- * This class adapts the ICollidable interface to the ICollisionHandler
- * interface
  */
 public class CollisionEntityManager implements ICollisionOperation {
 

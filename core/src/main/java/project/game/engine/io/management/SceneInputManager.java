@@ -13,6 +13,7 @@ import project.game.engine.io.binding.KeyBindingsManager;
 
 /**
  * SceneIOManager handles input events (keyboard and mouse) for the game.
+ * 
  * It extends IOManager to provide additional functionality for scene-based
  * input handling.
  */

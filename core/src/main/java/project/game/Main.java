@@ -25,7 +25,6 @@ public class Main extends ApplicationAdapter {
         LOGGER.debug("Java version: {0}", System.getProperty("java.version"));
         LOGGER.debug("Using log directory: {0}", LogPaths.getGlobalLogDirectory());
 
-        // Find the config file - using LogPaths for consistent path resolution
         String projectRoot = LogPaths.getProjectRoot();
         String configFile = ProjectPaths.findConfigFile("default-config.json", projectRoot);
 
@@ -79,6 +78,6 @@ public class Main extends ApplicationAdapter {
             sceneManager.dispose();
             sceneManager = null;
         }
-        
+
     }
 }

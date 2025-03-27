@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -36,6 +35,12 @@ public class EntityManager {
 		registerCollidableExtractor(ICollidableVisitor.class, obj -> (ICollidableVisitor) obj);
 	}
 
+	public EntityManager() {
+		this.renderables = new ArrayList<>();
+		this.entityList = new ArrayList<>();
+		this.entityIDs = new HashSet<>();
+	}
+
 	/**
 	 * Register an entity extractor for a specific type
 	 * 
@@ -62,12 +67,6 @@ public class EntityManager {
 		COLLIDABLE_EXTRACTORS.put(clazz, castedExtractor);
 	}
 
-	public EntityManager() {
-		this.renderables = new ArrayList<>();
-		this.entityList = new ArrayList<>();
-		this.entityIDs = new HashSet<>();
-	}
-
 	public boolean addRenderableEntity(IRenderable renderable) {
 		renderables.add(renderable);
 
@@ -81,25 +80,6 @@ public class EntityManager {
 			entityList.add(entity);
 		}
 		return true;
-	}
-
-	private void printRenderableList() {
-		LOGGER.info("Current renderable entities:");
-		for (IRenderable renderable : renderables) {
-			Entity entity = extractEntity(renderable);
-			if (entity != null) {
-				LOGGER.info("Renderable entity ID: {0}", entity.getID());
-			}
-		}
-	}
-
-	private void printEntityList() {
-		LOGGER.info("Current entities:");
-		for (Entity entity : entityList) {
-			if (entity != null) {
-				LOGGER.info("Entity ID: {0}", entity.getID());
-			}
-		}
 	}
 
 	public void removeRenderableEntity(IRenderable renderable) {
@@ -161,6 +141,25 @@ public class EntityManager {
 						collidableB.onCollision(collidableA);
 					}
 				}
+			}
+		}
+	}
+
+	private void printRenderableList() {
+		LOGGER.info("Current renderable entities:");
+		for (IRenderable renderable : renderables) {
+			Entity entity = extractEntity(renderable);
+			if (entity != null) {
+				LOGGER.info("Renderable entity ID: {0}", entity.getID());
+			}
+		}
+	}
+
+	private void printEntityList() {
+		LOGGER.info("Current entities:");
+		for (Entity entity : entityList) {
+			if (entity != null) {
+				LOGGER.info("Entity ID: {0}", entity.getID());
 			}
 		}
 	}

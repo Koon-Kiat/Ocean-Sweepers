@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 
 /**
  * Manages keyboard bindings for directional movement controls.
+ * 
  * This class is separate from the main input manager to allow scenes
  * to opt-in to movement controls only when needed.
  */
@@ -39,7 +40,7 @@ public class KeyBindingsManager {
         return keyBindings;
     }
 
-    // Update keyBindings based on new strings provided (e.g., during key rebind)
+    // Update keyBindings based on new strings provided (e.g., During key rebind)
     public void updateKeyBindings(String upKeyString, String downKeyString, String leftKeyString,
             String rightKeyString) {
         keyBindings.clear();

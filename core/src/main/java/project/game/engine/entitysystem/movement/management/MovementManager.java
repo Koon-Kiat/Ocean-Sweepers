@@ -13,7 +13,6 @@ import project.game.engine.entitysystem.movement.api.IMovementStrategy;
 
 /**
  * MovementManager manages movement for entities implementing IMovable.
- * Uses aggregation to separate movement logic from entity state.
  */
 public class MovementManager implements IMovementManager {
 
@@ -63,11 +62,6 @@ public class MovementManager implements IMovementManager {
         }
     }
 
-    @Override
-    public IMovable getMovableEntity() {
-        return movable;
-    }
-
     public IMovementStrategy getMovementStrategy() {
         return movementStrategy;
     }
@@ -102,6 +96,11 @@ public class MovementManager implements IMovementManager {
                 throw new MovementException(errorMessage, e);
             }
         }
+    }
+
+    @Override
+    public IMovable getMovableEntity() {
+        return movable;
     }
 
     @Override
