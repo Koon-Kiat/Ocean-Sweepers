@@ -41,10 +41,10 @@ public class SceneFactory {
         sceneCreators.put("game2", () -> new GameScene2(sceneManager, inputManager));
     }
 
+    /**
+     * Create and register each scene in the game.
+     */
     public void createAndRegisterScenes() {
-        /**
-         * Create and register each scene in the game.
-         */
         sceneCreators.forEach((name, creator) -> {
             IScene scene = creator.get();
             sceneManager.addScene(name, scene);

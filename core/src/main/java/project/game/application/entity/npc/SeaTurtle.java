@@ -40,9 +40,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private int currentSpriteIndex;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
-    private long lastCollisionTime = 0;
     private IEntityRemovalListener removalListener;
-    private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
     private ILifeLossCallback healthCallback;
     private String texturePath;
@@ -131,7 +129,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     public void setCollisionActive(long durationMillis) {
         collisionActive = true;
         collisionEndTime = System.currentTimeMillis() + durationMillis;
-        lastCollisionTime = System.currentTimeMillis();
 
         // Sync positions between physics body, entity, and movement manager
         float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
@@ -362,9 +359,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     public void onCollision(ICollidableVisitor other) {
         // Only handle collisions with actual entities, not boundaries
         if (other != null) {
-            // Store the current collision entity
-            this.currentCollisionEntity = other;
-
             // Log normal entity collisions
             LOGGER.info("{0} collided with {1}",
                     new Object[] { getEntity().getClass().getSimpleName(),

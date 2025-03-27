@@ -34,11 +34,12 @@ public class MainMenuScene extends Scene {
     private static final GameLogger LOGGER = new GameLogger(MainMenuScene.class);
     private Skin skin;
     private TextButton playButton, exitButton;
-    private GameScene gameScene;
     private OrthographicCamera camera;
     private Viewport viewport;
     private AudioManager audioManager;
+    @SuppressWarnings("unused")
     private Stage stage;
+    @SuppressWarnings("unused")
     private AudioUI audioUI;
     private AudioConfig audioConfig;
     private boolean disposed = false;

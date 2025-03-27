@@ -34,12 +34,9 @@ public class Options extends Scene {
     private Window popupMenu;
     private Window rebindMenu;
     private boolean isPaused = true;
-    private AudioUI audioUI; // Add audioUI reference
+    private AudioUI audioUI;
     private AudioManager audioManager;
     private AudioConfig config;
-
-
-    // Button to control main menu visibility.
     private TextButton mainMenuButton;
 
     public Options(SceneManager sceneManager, GameScene gameScene, SceneInputManager inputManager) {

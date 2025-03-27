@@ -9,8 +9,9 @@ import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
 
 public class Scenetransition {
-    private SceneManager sceneManager;
-    private Skin skin;
+    
+    private final SceneManager sceneManager;
+    private final Skin skin;
 
     public Scenetransition(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
