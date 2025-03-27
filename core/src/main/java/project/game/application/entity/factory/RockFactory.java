@@ -6,9 +6,9 @@ import java.util.Random;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.application.api.constant.IGameConstants;
 import project.game.application.entity.flyweight.TextureFlyweightFactory;
 import project.game.application.entity.obstacle.Rock;
+import project.game.common.config.api.IGameConstants;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
@@ -45,7 +45,7 @@ public class RockFactory extends AbstractEntityFactory<Rock> {
         TextureRegion selectedRock = TextureFlyweightFactory.getTexture(textureKey);
         Rock rock = new Rock(rockEntity, world, selectedRock);
         existingEntities.add(rockEntity);
-        
+
         if (collisionManager != null) {
             collisionManager.addEntity(rock, null);
         }

@@ -2,7 +2,7 @@ package project.game.engine.entitysystem.physics.lifecycle;
 
 import com.badlogic.gdx.physics.box2d.Body;
 
-import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.entity.api.IEntityRemovalListener;
 import project.game.engine.entitysystem.entity.base.Entity;
 
 /**

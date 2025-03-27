@@ -14,7 +14,7 @@ import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.entity.api.IEntityRemovalListener;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;

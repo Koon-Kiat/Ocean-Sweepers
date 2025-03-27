@@ -1,4 +1,4 @@
-package project.game.application.api.constant;
+package project.game.common.config.api;
 
 /**
  * Top-level interface for game constants.

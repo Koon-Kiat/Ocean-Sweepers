@@ -7,12 +7,12 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.application.api.constant.IGameConstants;
-import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.entity.api.IEntityRemovalListener;
 import project.game.application.entity.flyweight.TextureFlyweightFactory;
 import project.game.application.entity.item.Trash;
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.factory.MovementStrategyFactory;
+import project.game.common.config.api.IGameConstants;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;

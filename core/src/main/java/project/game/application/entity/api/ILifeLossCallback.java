@@ -1,7 +1,7 @@
-package project.game.application.api.entity;
+package project.game.application.entity.api;
 
 
 public interface ILifeLossCallback {
-    
+
     void onLifeLost();
 }

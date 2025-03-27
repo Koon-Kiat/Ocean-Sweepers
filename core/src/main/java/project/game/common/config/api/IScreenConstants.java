@@ -1,4 +1,4 @@
-package project.game.application.api.constant;
+package project.game.common.config.api;
 
 /**
  * Constants related to screen dimensions and UI.

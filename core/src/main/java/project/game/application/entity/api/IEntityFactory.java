@@ -1,4 +1,4 @@
-package project.game.application.api.factory;
+package project.game.application.entity.api;
 
 /**
  * Base interface for all entity factories.

@@ -1,6 +1,6 @@
 package project.game.common.config.constant;
 
-import project.game.application.api.constant.IGameConstants;
+import project.game.common.config.api.IGameConstants;
 import project.game.common.config.loader.GameConfigurationLoader;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.constant.base.AbstractConfigurableConstants;

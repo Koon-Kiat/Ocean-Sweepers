@@ -19,7 +19,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.entity.api.IEntityRemovalListener;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.PlayerMovementManager;

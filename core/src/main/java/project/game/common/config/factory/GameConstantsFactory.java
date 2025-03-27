@@ -1,6 +1,6 @@
 package project.game.common.config.factory;
 
-import project.game.application.api.constant.IGameConstants;
+import project.game.common.config.api.IGameConstants;
 import project.game.common.config.constant.ConfigurableGameConstants;
 
 /**

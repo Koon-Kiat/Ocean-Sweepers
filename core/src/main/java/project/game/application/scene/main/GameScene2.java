@@ -3,21 +3,19 @@ package project.game.application.scene.main;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import project.game.application.api.constant.IGameConstants;
-import project.game.application.api.entity.IEntityRemovalListener;
-import project.game.application.api.entity.ILifeLossCallback;
+import project.game.application.entity.api.IEntityRemovalListener;
+import project.game.application.entity.api.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.factory.MovementStrategyFactory;
+import project.game.common.config.api.IGameConstants;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;

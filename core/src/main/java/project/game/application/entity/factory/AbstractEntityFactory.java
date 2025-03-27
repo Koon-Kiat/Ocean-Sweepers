@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.application.api.constant.IGameConstants;
-import project.game.application.api.factory.IEntityFactory;
+import project.game.application.entity.api.IEntityFactory;
+import project.game.common.config.api.IGameConstants;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.management.CollisionManager;

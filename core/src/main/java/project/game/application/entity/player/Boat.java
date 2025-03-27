@@ -14,7 +14,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.application.api.entity.ILifeLossCallback;
+import project.game.application.entity.api.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;

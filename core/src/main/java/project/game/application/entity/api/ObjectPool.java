@@ -1,4 +1,4 @@
-package project.game.application.api.pool;
+package project.game.application.entity.api;
 
 import java.util.LinkedList;
 import java.util.Queue;
