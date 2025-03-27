@@ -173,9 +173,6 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
             heartTexture.dispose();
         }
 
-        // Don't dispose turtleHeartTexture since it's the same as heartTexture
-        // This would cause a double-free error
-
         LOGGER.info("GameScene2 disposed");
     }
 
@@ -270,22 +267,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         }
         // removeTrashFromList(entity);
     }
-
-
-
-    // private void removeTrashFromList(Entity entity) {
-    //     List<Trash> trashes = gameScene.getTrashes();
-    //     for (Trash trash : new ArrayList<>(trashes)) {
-    //         if (trash.getEntity().equals(entity)) {
-    //             trashes.remove(trash);
-    //             LOGGER.info("Trash removed by turtle: " + entity.getID());
-    //             break;
-    //         }
-    //     }
-    // }
-
     
-
     /**
      * Check if the turtle is still alive
      */

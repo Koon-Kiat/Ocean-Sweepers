@@ -281,8 +281,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
             audioManager.playSoundEffect("success");
             audioManager.stopMusic();
         }
-
-        // LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
     @Override
@@ -634,12 +632,6 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 LOGGER.info("Already in GameScene2, ignoring key press.");
             }
         }
-
-        // Switch to game2 scene (just for testing)
-        // if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-        // sceneManager.setScene("game2");
-        // audioManager.stopMusic();
-        // }
     }
 
     public AudioManager getAudioManager() {
