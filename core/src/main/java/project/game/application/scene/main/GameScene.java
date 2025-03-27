@@ -627,10 +627,14 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         }
         // Switch to game2 scene (debugging purposes)
         if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-            audioManager.stopMusic();
-            sceneManager.setScene("game2");
-            
+            if (!"GameScene".equals(sceneManager.getPreviousScene())) { // Prevent reloading if already in GameScene2
+                audioManager.stopMusic();
+                sceneManager.setScene("game2");
+            } else {
+                LOGGER.info("Already in GameScene2, ignoring key press.");
+            }
         }
+        
         // Switch to game2 scene (just for testing)
         // if (inputManager.isKeyJustPressed(Input.Keys.N)) {
         // sceneManager.setScene("game2");
