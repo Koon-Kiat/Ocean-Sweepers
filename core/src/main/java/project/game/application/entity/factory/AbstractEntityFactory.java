@@ -16,6 +16,7 @@ import project.game.engine.entitysystem.physics.management.CollisionManager;
  * @param <T> The type of object to be created by this factory
  */
 public abstract class AbstractEntityFactory<T> implements IEntityFactory<T> {
+    
     protected final IGameConstants constants;
     protected final World world;
     protected final List<Entity> existingEntities;

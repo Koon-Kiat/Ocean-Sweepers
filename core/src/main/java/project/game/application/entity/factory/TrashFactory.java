@@ -19,6 +19,7 @@ import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class TrashFactory extends AbstractEntityFactory<Trash> {
+
     private static final GameLogger LOGGER = new GameLogger(TrashFactory.class);
     private static final float BASE_SPEED_MIN = 50f;
     private static final float BASE_SPEED_MAX = 100f;
@@ -43,6 +44,7 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
         super(constants, world, existingEntities, collisionManager);
         this.trashTextures = trashTextures;
         this.random = new Random();
+
         // Initialize the Flyweight Factory with trash textures
         for (int i = 0; i < trashTextures.length; i++) {
             TextureFlyweightFactory.addTexture("trash_" + i, trashTextures[i]);
@@ -104,9 +106,9 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
     private NPCMovementManager createTrashMovement(Entity trashEntity) {
         try {
             // Generate dominant flow direction (mostly horizontal)
-            float dominantDirection = MathUtils.randomBoolean() ? 1f : -1f; // Left or right flow
+            float dominantDirection = MathUtils.randomBoolean() ? 1f : -1f;
             float dirX = dominantDirection;
-            float dirY = MathUtils.random(-0.3f, 0.3f); // Slight vertical drift
+            float dirY = MathUtils.random(-0.3f, 0.3f);
 
             return new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(trashEntity)
@@ -122,6 +124,7 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
                     .build();
         } catch (Exception e) {
             LOGGER.error("Error creating trash movement: {0}", e.getMessage());
+
             // Fallback to basic movement if creation fails
             return new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(trashEntity)

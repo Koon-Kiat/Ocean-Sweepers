@@ -1,11 +1,12 @@
 package project.game.application.entity.flyweight;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
 public class TextureFlyweightFactory {
+    
     private static final Map<String, TextureRegion> textureCache = new HashMap<>();
     private static final Map<String, Integer> referenceCounts = new HashMap<>();
 

@@ -44,21 +44,22 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     // Collision
     private final World world;
     private final Body body;
+    private final Entity entity;
+    private final boolean rockCollisionActive = false;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
     private ILifeLossCallback lifeLossCallback;
-
     private boolean boundaryCollisionActive = false;
-    private boolean rockCollisionActive = false;
-    private long boundaryCollisionEndTime = 0;
-    private long rockCollisionEndTime = 0;
+    private int currentDirectionIndex;
+    private TextureRegion[] sprites;
+    private String texturePath;
 
     // Add a cooldown for life loss
     private boolean lifeLossCooldown = false;
     private long lifeLossCooldownEndTime = 0;
-    private static final long LIFE_LOSS_COOLDOWN_DURATION = 1000; // 1 second cooldown
+    private static final long LIFE_LOSS_COOLDOWN_DURATION = 1000;
 
     // Direction constants - used as indices in directional sprite arrays
     public static final int DIRECTION_UP = 0;
@@ -70,32 +71,10 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     public static final int DIRECTION_DOWN_LEFT = 6;
     public static final int DIRECTION_UP_LEFT = 7;
 
-    // Current direction index
-    private int currentDirectionIndex;
-
-    // Sprite rendering fields
-    private TextureRegion[] sprites;
-    private String texturePath;
-
-    // Entity reference
-    private final Entity entity;
-
     static {
         registerCollisionHandler(Rock.class, Boat::handleRockCollision);
         registerCollisionHandler(Trash.class, Boat::handleTrashCollision);
         registerCollisionHandler(SeaTurtle.class, Boat::handleSeaTurtleCollision);
-    }
-
-    /**
-     * Register a handler for a specific type of collidable entity
-     * 
-     * @param <T>     Type of collidable
-     * @param clazz   Class of collidable
-     * @param handler Function to handle collision with the collidable
-     */
-    public static <T extends ICollidableVisitor> void registerCollisionHandler(
-            Class<T> clazz, Consumer<Boat> handler) {
-        COLLISION_HANDLERS.put(clazz, handler);
     }
 
     /**
@@ -120,21 +99,28 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
     }
 
+    public void setCollisionManager(CollisionManager collisionManager) {
+        this.collisionManager = collisionManager;
+    }
+
     public PlayerMovementManager getMovementManager() {
         return this.movementManager;
     }
 
-    public void setCollisionManager(CollisionManager collisionManager) {
-        this.collisionManager = collisionManager;
+    public static boolean isEntityPermanent(String entityType) {
+        return entityType.equals("Boat") ||
+                entityType.equals("SeaTurtle") ||
+                entityType.equals("boundary");
     }
 
     public void removeFromManager(EntityManager entityManager) {
         entityManager.removeRenderableEntity(this);
     }
 
-    /**
-     * Set the collision to be active for a certain duration.
-     */
+    public void setLifeLossCallback(ILifeLossCallback callback) {
+        this.lifeLossCallback = callback;
+    }
+
     public void setCollisionActive(long durationMillis) {
         collisionActive = true;
         collisionEndTime = System.currentTimeMillis() + durationMillis;
@@ -143,15 +129,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         if (!boundaryCollisionActive) {
             syncPositions();
         }
-    }
-
-    /**
-     * Checks if this entity should be considered permanent in the game world
-     */
-    public static boolean isEntityPermanent(String entityType) {
-        return entityType.equals("Boat") ||
-                entityType.equals("SeaTurtle") ||
-                entityType.equals("boundary");
     }
 
     public String getCurrentDirectionName() {
@@ -177,29 +154,16 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    @Override
-    public Entity getEntity() {
-        return entity;
-    }
-
-    @Override
-    public World getWorld() {
-        return world;
-    }
-
-    @Override
-    public Body getBody() {
-        return body;
-    }
-
-    @Override
-    public String getTexturePath() {
-        return texturePath;
-    }
-
-    @Override
-    public boolean isRenderable() {
-        return true;
+    /**
+     * Register a handler for a specific type of collidable entity
+     * 
+     * @param <T>     Type of collidable
+     * @param clazz   Class of collidable
+     * @param handler Function to handle collision with the collidable
+     */
+    public static <T extends ICollidableVisitor> void registerCollisionHandler(
+            Class<T> clazz, Consumer<Boat> handler) {
+        COLLISION_HANDLERS.put(clazz, handler);
     }
 
     @Override
@@ -208,42 +172,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             return null;
         }
         return sprites[currentDirectionIndex];
-    }
-
-    @Override
-    public void setSprites(TextureRegion[] sprites) {
-        this.sprites = sprites;
-    }
-
-    @Override
-    public void setCurrentSpriteIndex(int index) {
-        if (hasSprites() && index >= 0 && index < sprites.length) {
-            currentDirectionIndex = index;
-        }
-    }
-
-    @Override
-    public boolean hasSprites() {
-        return sprites != null && sprites.length > 0;
-    }
-
-    @Override
-    public int getSpritesCount() {
-        return hasSprites() ? sprites.length : 0;
-    }
-
-    @Override
-    public void render(SpriteBatch batch) {
-        // Update sprite direction before rendering
-        updateSpriteIndex();
-
-        if (getCurrentSprite() != null) {
-            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
-            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
-            float width = entity.getWidth();
-            float height = entity.getHeight();
-            batch.draw(getCurrentSprite(), renderX, renderY, width, height);
-        }
     }
 
     @Override
@@ -281,9 +209,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             } else if (angle >= 292.5 && angle < 337.5) {
                 currentDirectionIndex = DIRECTION_DOWN_RIGHT;
             }
-
-            // LOGGER.debug("Boat moving at angle: {0}, direction: {1}",
-            // angle, getCurrentDirectionName());
         }
 
         // Check if we need to map our 8-directional index to a 4-directional sprite
@@ -299,6 +224,67 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
                 setCurrentSpriteIndex(currentDirectionIndex);
             }
         }
+    }
+
+    @Override
+    public void setSprites(TextureRegion[] sprites) {
+        this.sprites = sprites;
+    }
+
+    @Override
+    public void setCurrentSpriteIndex(int index) {
+        if (hasSprites() && index >= 0 && index < sprites.length) {
+            currentDirectionIndex = index;
+        }
+    }
+
+    @Override
+    public boolean hasSprites() {
+        return sprites != null && sprites.length > 0;
+    }
+
+    @Override
+    public int getSpritesCount() {
+        return hasSprites() ? sprites.length : 0;
+    }
+
+    @Override
+    public String getTexturePath() {
+        return texturePath;
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        // Update sprite direction before rendering
+        updateSpriteIndex();
+
+        if (getCurrentSprite() != null) {
+            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
+            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+            float width = entity.getWidth();
+            float height = entity.getHeight();
+            batch.draw(getCurrentSprite(), renderX, renderY, width, height);
+        }
+    }
+
+    @Override
+    public Entity getEntity() {
+        return entity;
+    }
+
+    @Override
+    public Body getBody() {
+        return body;
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
     }
 
     @Override
@@ -394,8 +380,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     public void collideWithBoundary() {
         // Handle collision with world boundaries
         boundaryCollisionActive = true;
-        boundaryCollisionEndTime = System.currentTimeMillis()
-                + GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION();
 
         // Only sync positions if no other collision is active
         if (!rockCollisionActive) {
@@ -403,39 +387,44 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    private void syncPositions() {
-        // When collision becomes active, sync positions to prevent desynchronization
-        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float physX = getBody().getPosition().x * pixelsToMeters;
-        float physY = getBody().getPosition().y * pixelsToMeters;
-
-        // Update entity position and movement manager
-        getEntity().setX(physX);
-        getEntity().setY(physY);
-        if (movementManager != null) {
-            movementManager.getMovableEntity().setX(physX);
-            movementManager.getMovableEntity().setY(physY);
+    /**
+     * Handle collision with sea turtle
+     */
+    private void handleSeaTurtleCollision() {
+        if (currentCollisionEntity == null || isInCollision()) {
+            return;
         }
+        // Only set the collision state active, but don't apply forces
+        // The sea turtle's handleBoatCollision is responsible for applying forces to
+        // both entities
+        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+
+        // Apply higher damping to quickly stop motion and let the physics handle things
+        getBody().setLinearDamping(5.0f);
+
+        LOGGER.debug("Boat collided with sea turtle - letting sea turtle handle physics");
     }
 
     /**
-     * Dispatches collision handling to the appropriate registered handler
-     * 
-     * @param other The other entity involved in the collision
+     * Handle collision with trash
      */
-    private void dispatchCollisionHandling(ICollidableVisitor other) {
-        Class<?> otherClass = other.getClass();
-        // Look for a handler for this specific class
-        for (Map.Entry<Class<?>, Consumer<Boat>> entry : COLLISION_HANDLERS.entrySet()) {
-            if (entry.getKey().isAssignableFrom(otherClass)) {
-                entry.getValue().accept(this);
-                return;
+    private void handleTrashCollision() {
+        if (currentCollisionEntity == null || !(currentCollisionEntity instanceof Trash))
+            return;
+
+        Trash trash = (Trash) currentCollisionEntity;
+
+        // Check if either entity is permanent before scheduling removal
+        String entityType = trash.getClass().getSimpleName();
+        if (!isEntityPermanent(entityType)) {
+            if (collisionManager != null) {
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), trash.getRemovalListener());
+            } else {
+                LOGGER.warn("CollisionManager not set in Boat object - cannot safely remove trash");
             }
         }
-    }
 
-    public void setLifeLossCallback(ILifeLossCallback callback) {
-        this.lifeLossCallback = callback;
+        ScoreManager.getInstance().addScore(50);
     }
 
     /**
@@ -497,44 +486,35 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         ScoreManager.getInstance().subtractScore(25);
     }
 
-    /**
-     * Handle collision with trash
-     */
-    private void handleTrashCollision() {
-        if (currentCollisionEntity == null || !(currentCollisionEntity instanceof Trash))
-            return;
+    private void syncPositions() {
+        // When collision becomes active, sync positions to prevent desynchronization
+        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+        float physX = getBody().getPosition().x * pixelsToMeters;
+        float physY = getBody().getPosition().y * pixelsToMeters;
 
-        Trash trash = (Trash) currentCollisionEntity;
-
-        // Check if either entity is permanent before scheduling removal
-        String entityType = trash.getClass().getSimpleName();
-        if (!isEntityPermanent(entityType)) {
-            if (collisionManager != null) {
-                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), trash.getRemovalListener());
-            } else {
-                LOGGER.warn("CollisionManager not set in Boat object - cannot safely remove trash");
-            }
+        // Update entity position and movement manager
+        getEntity().setX(physX);
+        getEntity().setY(physY);
+        if (movementManager != null) {
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
         }
-
-        ScoreManager.getInstance().addScore(50);
     }
 
     /**
-     * Handle collision with sea turtle
+     * Dispatches collision handling to the appropriate registered handler
+     * 
+     * @param other The other entity involved in the collision
      */
-    private void handleSeaTurtleCollision() {
-        if (currentCollisionEntity == null || isInCollision()) {
-            return;
+    private void dispatchCollisionHandling(ICollidableVisitor other) {
+        Class<?> otherClass = other.getClass();
+        // Look for a handler for this specific class
+        for (Map.Entry<Class<?>, Consumer<Boat>> entry : COLLISION_HANDLERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(otherClass)) {
+                entry.getValue().accept(this);
+                return;
+            }
         }
-        // Only set the collision state active, but don't apply forces
-        // The sea turtle's handleBoatCollision is responsible for applying forces to
-        // both entities
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
-
-        // Apply higher damping to quickly stop motion and let the physics handle things
-        getBody().setLinearDamping(5.0f);
-
-        LOGGER.debug("Boat collided with sea turtle - letting sea turtle handle physics");
     }
 
     /**
@@ -546,23 +526,23 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     private int mapTo4DirectionalIndex(int eightDirIndex) {
         switch (eightDirIndex) {
             case DIRECTION_UP:
-                return DIRECTION_UP; // UP
+                return DIRECTION_UP;
             case DIRECTION_RIGHT:
-                return DIRECTION_RIGHT; // RIGHT
+                return DIRECTION_RIGHT;
             case DIRECTION_DOWN:
-                return DIRECTION_DOWN; // DOWN
+                return DIRECTION_DOWN;
             case DIRECTION_LEFT:
-                return DIRECTION_LEFT; // LEFT
+                return DIRECTION_LEFT;
             case DIRECTION_UP_RIGHT:
-                return DIRECTION_RIGHT; // UP_RIGHT maps to RIGHT
+                return DIRECTION_RIGHT;
             case DIRECTION_DOWN_RIGHT:
-                return DIRECTION_RIGHT; // DOWN_RIGHT maps to RIGHT
+                return DIRECTION_RIGHT;
             case DIRECTION_DOWN_LEFT:
-                return DIRECTION_LEFT; // DOWN_LEFT maps to LEFT
+                return DIRECTION_LEFT;
             case DIRECTION_UP_LEFT:
-                return DIRECTION_LEFT; // UP_LEFT maps to LEFT
+                return DIRECTION_LEFT;
             default:
-                return DIRECTION_DOWN; // Default to DOWN
+                return DIRECTION_DOWN;
         }
     }
 }

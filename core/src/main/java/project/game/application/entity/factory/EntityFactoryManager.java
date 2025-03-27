@@ -47,7 +47,7 @@ public class EntityFactoryManager {
 
     public Trash createTrash() {
         float x, y;
-        int maxRetries = 50; // Maximum number of attempts to find a non-colliding position
+        int maxRetries = 50;
         int retries = 0;
         Trash trash = null;
 

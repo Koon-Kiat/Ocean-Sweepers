@@ -25,7 +25,7 @@ import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
-import project.game.engine.entitysystem.physics.management.CollisionManager;
+import project.game.engine.entitysystem.physics.management.CollisionManager;;
 
 public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
@@ -33,6 +33,9 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     private final Entity entity;
     private final World world;
     private final Body body;
+    private final Vector2 lastPosition = new Vector2();
+    private final float minimumVelocity = 1.0f;
+    private final float trashCollisionCooldown = 1.0f;
     private TextureRegion[] sprites;
     private int currentSpriteIndex;
     private boolean collisionActive = false;
@@ -41,10 +44,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     private CollisionManager collisionManager;
     private NPCMovementManager movementManager;
     private float lastMotionCheckTime = 0;
-    private final Vector2 lastPosition = new Vector2();
-    private final float minimumVelocity = 1.0f;
     private float lastTrashCollisionTime = 0;
-    private final float trashCollisionCooldown = 1.0f;
 
     // Type-based collision handler registry
     private static final Map<Class<?>, BiConsumer<Trash, ICollidableVisitor>> TRASH_COLLISION_HANDLERS = new ConcurrentHashMap<>();
@@ -60,18 +60,6 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         registerTrashCollisionHandler(Rock.class, Trash::handleRockCollision);
     }
 
-    /**
-     * Register a handler for a specific type of collidable entity for Trash
-     * 
-     * @param <T>     Type of collidable
-     * @param clazz   Class of collidable
-     * @param handler Function to handle collision with the collidable
-     */
-    public static <T extends ICollidableVisitor> void registerTrashCollisionHandler(
-            Class<T> clazz, BiConsumer<Trash, ICollidableVisitor> handler) {
-        TRASH_COLLISION_HANDLERS.put(clazz, handler);
-    }
-
     public Trash(Entity entity, World world, TextureRegion sprite) {
         this.entity = entity;
         this.world = world;
@@ -83,6 +71,33 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     public void setRemovalListener(IEntityRemovalListener removalListener) {
         this.removalListener = removalListener;
+    }
+
+    public void setCollisionManager(CollisionManager collisionManager) {
+        this.collisionManager = collisionManager;
+    }
+
+    public NPCMovementManager getMovementManager() {
+        return this.movementManager;
+    }
+
+    public void setMovementManager(NPCMovementManager movementManager) {
+        this.movementManager = movementManager;
+    }
+
+    public boolean isActive() {
+        return entity.isActive();
+    }
+
+    public IEntityRemovalListener getRemovalListener() {
+        return this.removalListener;
+    }
+
+    public void removeFromManager(EntityManager entityManager) {
+        entityManager.removeRenderableEntity(this);
+        if (removalListener != null) {
+            removalListener.onEntityRemove(getEntity());
+        }
     }
 
     public void setCollisionActive(long durationMillis) {
@@ -112,147 +127,42 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         getBody().setLinearDamping(0.1f);
     }
 
-    public void setCollisionManager(CollisionManager collisionManager) {
-        this.collisionManager = collisionManager;
-    }
-
     /**
-     * Set the movement manager for this trash object
-     * 
-     * @param movementManager The NPCMovementManager to use
+     * Updates the trash entity, ensuring it maintains movement
+     * This should be called every frame
      */
-    public void setMovementManager(NPCMovementManager movementManager) {
-        this.movementManager = movementManager;
-    }
-
-    /**
-     * Get the movement manager for this trash object
-     * 
-     * @return The NPCMovementManager used by this trash
-     */
-    public NPCMovementManager getMovementManager() {
-        return this.movementManager;
-    }
-
-    @Override
-    public String getTexturePath() {
-        return "trash1.png";
-    }
-
-    public boolean isActive() {
-        return entity.isActive();
-    }
-
-    public IEntityRemovalListener getRemovalListener() {
-        return this.removalListener;
-    }
-
-    @Override
-    public boolean isRenderable() {
-        return true;
-    }
-
-    public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeRenderableEntity(this);
-        if (removalListener != null) {
-            removalListener.onEntityRemove(getEntity());
-        }
-    }
-
-    @Override
-    public void collideWith(Object other) {
-        if (other instanceof ICollidableVisitor) {
-            onCollision((ICollidableVisitor) other);
-        }
-    }
-
-    @Override
-    public void collideWithBoundary() {
-        // Get current velocity
-        com.badlogic.gdx.math.Vector2 velocity = body.getLinearVelocity();
-
-        // Get position to determine which boundary was hit
-        float x = entity.getX();
-        float y = entity.getY();
-        float bounceMultiplier = 0.8f; // Maintain 80% of speed after bounce
-
-        // Get game boundaries
-        float gameWidth = GameConstantsFactory.getConstants().GAME_WIDTH();
-        float gameHeight = GameConstantsFactory.getConstants().GAME_HEIGHT();
-
-        // Determine which boundary was hit and reverse appropriate velocity component
-        if (x <= 0 || x >= gameWidth) {
-            velocity.x = -velocity.x * bounceMultiplier;
-        }
-        if (y <= 0 || y >= gameHeight) {
-            velocity.y = -velocity.y * bounceMultiplier;
-        }
-
-        // Ensure minimum speed after bounce
-        float minSpeed = 2.0f;
-        if (velocity.len() < minSpeed) {
-            velocity.nor().scl(minSpeed);
-        }
-
-        // Apply the new velocity
-        body.setLinearVelocity(velocity);
-
-        // Keep damping very low to maintain movement
-        body.setLinearDamping(0.01f);
-    }
-
-    @Override
-    public boolean checkCollision(Entity other) {
-        // Always return true to ensure collision is checked using Box2D
-        return true;
-    }
-
-    @Override
-    public void onCollision(ICollidableVisitor other) {
-        LOGGER.info("{0} collided with {1}",
-                new Object[] { getEntity().getClass().getSimpleName(),
-                        other == null ? "boundary" : other.getClass().getSimpleName() });
-
-        if (other != null) {
-            // Dispatch to appropriate collision handler based on entity type
-            dispatchCollisionHandling(other);
-        }
-    }
-
-    /**
-     * Dispatches collision handling to the appropriate registered handler
-     * 
-     * @param other The other entity involved in the collision
-     */
-    private void dispatchCollisionHandling(ICollidableVisitor other) {
-        // Get other entity's class and find a matching handler
-        Class<?> otherClass = other.getClass();
-
-        // Look for a handler for this specific class or its superclasses
-        for (Map.Entry<Class<?>, BiConsumer<Trash, ICollidableVisitor>> entry : TRASH_COLLISION_HANDLERS.entrySet()) {
-            if (entry.getKey().isAssignableFrom(otherClass)) {
-                entry.getValue().accept(this, other);
-                return;
-            }
-        }
-    }
-
-    @Override
-    public boolean isInCollision() {
+    public void update(float deltaTime) {
+        // Handle end of collision period
         if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
             collisionActive = false;
+            // Reset damping to ensure continued movement
+            body.setLinearDamping(0.01f);
 
-            // When collision ends, ensure we maintain movement
-            if (movementManager != null) {
-                Vector2 currentVel = getBody().getLinearVelocity();
-                movementManager.getMovableEntity().setVelocity(currentVel.x, currentVel.y);
-            }
-
-            // Keep damping low after collision ends
-            getBody().setLinearDamping(0.1f);
+            // Apply a small random impulse to ensure movement continues
             ensureMinimumMovement();
         }
-        return collisionActive;
+
+        // Check if object is moving enough every 0.5 seconds
+        float currentTime = System.currentTimeMillis() / 1000f;
+        if (currentTime - lastMotionCheckTime > 0.5f) {
+            ensureMinimumMovement();
+            lastMotionCheckTime = currentTime;
+
+            // Update last position
+            lastPosition.set(entity.getX(), entity.getY());
+        }
+    }
+
+    /**
+     * Register a handler for a specific type of collidable entity for Trash
+     * 
+     * @param <T>     Type of collidable
+     * @param clazz   Class of collidable
+     * @param handler Function to handle collision with the collidable
+     */
+    public static <T extends ICollidableVisitor> void registerTrashCollisionHandler(
+            Class<T> clazz, BiConsumer<Trash, ICollidableVisitor> handler) {
+        TRASH_COLLISION_HANDLERS.put(clazz, handler);
     }
 
     @Override
@@ -291,6 +201,16 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
+    public String getTexturePath() {
+        return "trash1.png";
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+    @Override
     public void render(SpriteBatch batch) {
         if (isActive() && getCurrentSprite() != null) {
             float renderX = entity.getX() - entity.getWidth() / 2;
@@ -323,10 +243,10 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         float centerY = (y + height / 2) / pixelsToMeters;
         bodyDef.position.set(centerX, centerY);
         bodyDef.fixedRotation = true;
-        bodyDef.bullet = true; // Enable continuous collision detection
-        bodyDef.linearDamping = 0.1f; // Consistent base damping
+        bodyDef.bullet = true;
+        bodyDef.linearDamping = 0.1f;
         bodyDef.angularDamping = 0.1f;
-        bodyDef.allowSleep = false; // Never let the body sleep
+        bodyDef.allowSleep = false;
 
         Body newBody = world.createBody(bodyDef);
         CircleShape shape = new CircleShape();
@@ -337,14 +257,14 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 0.5f; // More mass for better collision response
-        fixtureDef.friction = 0.01f; // Keep very low friction
-        fixtureDef.restitution = 0.6f; // Moderate bounce
+        fixtureDef.density = 0.5f;
+        fixtureDef.friction = 0.01f;
+        fixtureDef.restitution = 0.6f;
 
         // Set up collision filtering
         Filter filter = new Filter();
-        filter.categoryBits = 0x0004; // Trash category
-        filter.maskBits = -1; // Collide with everything
+        filter.categoryBits = 0x0004;
+        filter.maskBits = -1;
         fixtureDef.filter.categoryBits = filter.categoryBits;
         fixtureDef.filter.maskBits = filter.maskBits;
 
@@ -354,12 +274,107 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
         // Set initial random velocity to ensure movement
         float angle = (float) (Math.random() * Math.PI * 2);
-        float speed = 2.5f; // Slightly higher initial speed
+        float speed = 2.5f;
         newBody.setLinearVelocity(
                 (float) Math.cos(angle) * speed,
                 (float) Math.sin(angle) * speed);
 
         return newBody;
+    }
+
+    @Override
+    public boolean checkCollision(Entity other) {
+        // Always return true to ensure collision is checked using Box2D
+        return true;
+    }
+
+    @Override
+    public void onCollision(ICollidableVisitor other) {
+        LOGGER.info("{0} collided with {1}",
+                new Object[] { getEntity().getClass().getSimpleName(),
+                        other == null ? "boundary" : other.getClass().getSimpleName() });
+
+        if (other != null) {
+            // Dispatch to appropriate collision handler based on entity type
+            dispatchCollisionHandling(other);
+        }
+    }
+
+    @Override
+    public boolean isInCollision() {
+        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
+            collisionActive = false;
+
+            // When collision ends, ensure we maintain movement
+            if (movementManager != null) {
+                Vector2 currentVel = getBody().getLinearVelocity();
+                movementManager.getMovableEntity().setVelocity(currentVel.x, currentVel.y);
+            }
+
+            getBody().setLinearDamping(0.1f);
+            ensureMinimumMovement();
+        }
+        return collisionActive;
+    }
+
+    @Override
+    public void collideWith(Object other) {
+        if (other instanceof ICollidableVisitor) {
+            onCollision((ICollidableVisitor) other);
+        }
+    }
+
+    @Override
+    public void collideWithBoundary() {
+        // Get current velocity
+        com.badlogic.gdx.math.Vector2 velocity = body.getLinearVelocity();
+
+        // Get position to determine which boundary was hit
+        float x = entity.getX();
+        float y = entity.getY();
+        float bounceMultiplier = 0.8f;
+
+        // Get game boundaries
+        float gameWidth = GameConstantsFactory.getConstants().GAME_WIDTH();
+        float gameHeight = GameConstantsFactory.getConstants().GAME_HEIGHT();
+
+        // Determine which boundary was hit and reverse appropriate velocity component
+        if (x <= 0 || x >= gameWidth) {
+            velocity.x = -velocity.x * bounceMultiplier;
+        }
+        if (y <= 0 || y >= gameHeight) {
+            velocity.y = -velocity.y * bounceMultiplier;
+        }
+
+        // Ensure minimum speed after bounce
+        float minSpeed = 2.0f;
+        if (velocity.len() < minSpeed) {
+            velocity.nor().scl(minSpeed);
+        }
+
+        // Apply the new velocity
+        body.setLinearVelocity(velocity);
+
+        // Keep damping very low to maintain movement
+        body.setLinearDamping(0.01f);
+    }
+
+    /**
+     * Dispatches collision handling to the appropriate registered handler
+     * 
+     * @param other The other entity involved in the collision
+     */
+    private void dispatchCollisionHandling(ICollidableVisitor other) {
+        // Get other entity's class and find a matching handler
+        Class<?> otherClass = other.getClass();
+
+        // Look for a handler for this specific class or its superclasses
+        for (Map.Entry<Class<?>, BiConsumer<Trash, ICollidableVisitor>> entry : TRASH_COLLISION_HANDLERS.entrySet()) {
+            if (entry.getKey().isAssignableFrom(otherClass)) {
+                entry.getValue().accept(this, other);
+                return;
+            }
+        }
     }
 
     private void handleBoatCollision(ICollidableVisitor boat) {
@@ -390,6 +405,45 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
                     if (removalListener != null) {
                         removalListener.onEntityRemove(entity);
                     }
+                } else {
+                    // If collisionManager isn't available, just log an error
+                    // but don't try to destroy the body directly
+                    LOGGER.error("CollisionManager not set in Trash object - cannot safely remove trash");
+                    // Still notify the removal listener if available
+                    if (removalListener != null) {
+                        removalListener.onEntityRemove(entity);
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleSeaTurtleCollision(ICollidableVisitor seaTurtle) {
+        // Check if the sea turtle covers up half of the trash
+        float seaTurtleX = seaTurtle.getEntity().getX();
+        float seaTurtleY = seaTurtle.getEntity().getY();
+        float seaTurtleWidth = seaTurtle.getEntity().getWidth();
+        float seaTurtleHeight = seaTurtle.getEntity().getHeight();
+
+        float trashX = entity.getX();
+        float trashY = entity.getY();
+        float trashWidth = entity.getWidth();
+        float trashHeight = entity.getHeight();
+
+        boolean isCovered = (seaTurtleX < trashX + trashWidth / 2
+                && seaTurtleX + seaTurtleWidth > trashX + trashWidth / 2) &&
+                (seaTurtleY < trashY + trashHeight / 2 && seaTurtleY + seaTurtleHeight > trashY + trashHeight / 2);
+
+        if (isCovered) {
+            // Always mark as inactive regardless of collisionManager availability
+            // to prevent further collision processing
+            entity.setActive(false);
+
+            // Check if this entity should be removed
+            String entityType = this.getClass().getSimpleName();
+            if (!SeaTurtle.isEntityPermanent(entityType)) {
+                if (collisionManager != null) {
+                    collisionManager.scheduleBodyRemoval(getBody(), entity, removalListener);
                 } else {
                     // If collisionManager isn't available, just log an error
                     // but don't try to destroy the body directly
@@ -485,64 +539,6 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     /**
-     * Ensures a body maintains at least the minimum speed while capping maximum
-     * speed
-     */
-    private void ensureMinimumSpeed(Body body, float minSpeed) {
-        Vector2 velocity = body.getLinearVelocity();
-        float speed = velocity.len();
-
-        float maxSpeed = 5.0f; // Cap maximum speed
-
-        if (speed < minSpeed) {
-            velocity.nor().scl(minSpeed);
-            body.setLinearVelocity(velocity);
-        } else if (speed > maxSpeed) {
-            velocity.nor().scl(maxSpeed);
-            body.setLinearVelocity(velocity);
-        }
-    }
-
-    private void handleSeaTurtleCollision(ICollidableVisitor seaTurtle) {
-        // Check if the sea turtle covers up half of the trash
-        float seaTurtleX = seaTurtle.getEntity().getX();
-        float seaTurtleY = seaTurtle.getEntity().getY();
-        float seaTurtleWidth = seaTurtle.getEntity().getWidth();
-        float seaTurtleHeight = seaTurtle.getEntity().getHeight();
-
-        float trashX = entity.getX();
-        float trashY = entity.getY();
-        float trashWidth = entity.getWidth();
-        float trashHeight = entity.getHeight();
-
-        boolean isCovered = (seaTurtleX < trashX + trashWidth / 2
-                && seaTurtleX + seaTurtleWidth > trashX + trashWidth / 2) &&
-                (seaTurtleY < trashY + trashHeight / 2 && seaTurtleY + seaTurtleHeight > trashY + trashHeight / 2);
-
-        if (isCovered) {
-            // Always mark as inactive regardless of collisionManager availability
-            // to prevent further collision processing
-            entity.setActive(false);
-
-            // Check if this entity should be removed
-            String entityType = this.getClass().getSimpleName();
-            if (!SeaTurtle.isEntityPermanent(entityType)) {
-                if (collisionManager != null) {
-                    collisionManager.scheduleBodyRemoval(getBody(), entity, removalListener);
-                } else {
-                    // If collisionManager isn't available, just log an error
-                    // but don't try to destroy the body directly
-                    LOGGER.error("CollisionManager not set in Trash object - cannot safely remove trash");
-                    // Still notify the removal listener if available
-                    if (removalListener != null) {
-                        removalListener.onEntityRemove(entity);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Handle collision with a rock
      */
     private void handleRockCollision(ICollidableVisitor rock) {
@@ -602,7 +598,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
         // Ensure movement continues after rock collision
         if (distance < 1.5f) {
             // If very close to rock, add some perpendicular motion to prevent getting stuck
-            float perpX = -dy; // Perpendicular to direction vector
+            float perpX = -dy;
             float perpY = dx;
 
             float sideForce = GameConstantsFactory.getConstants().BOAT_BASE_IMPULSE() * 0.2f;
@@ -616,28 +612,21 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     /**
-     * Updates the trash entity, ensuring it maintains movement
-     * This should be called every frame
+     * Ensures a body maintains at least the minimum speed while capping maximum
+     * speed
      */
-    public void update(float deltaTime) {
-        // Handle end of collision period
-        if (collisionActive && System.currentTimeMillis() > collisionEndTime) {
-            collisionActive = false;
-            // Reset damping to ensure continued movement
-            body.setLinearDamping(0.01f);
+    private void ensureMinimumSpeed(Body body, float minSpeed) {
+        Vector2 velocity = body.getLinearVelocity();
+        float speed = velocity.len();
 
-            // Apply a small random impulse to ensure movement continues
-            ensureMinimumMovement();
-        }
+        float maxSpeed = 5.0f; // Cap maximum speed
 
-        // Check if object is moving enough every 0.5 seconds
-        float currentTime = System.currentTimeMillis() / 1000f;
-        if (currentTime - lastMotionCheckTime > 0.5f) {
-            ensureMinimumMovement();
-            lastMotionCheckTime = currentTime;
-
-            // Update last position
-            lastPosition.set(entity.getX(), entity.getY());
+        if (speed < minSpeed) {
+            velocity.nor().scl(minSpeed);
+            body.setLinearVelocity(velocity);
+        } else if (speed > maxSpeed) {
+            velocity.nor().scl(maxSpeed);
+            body.setLinearVelocity(velocity);
         }
     }
 

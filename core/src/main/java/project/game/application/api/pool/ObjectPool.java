@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class ObjectPool<T> {
+    
     private final Queue<T> pool;
     private final int maxSize;
     private final ObjectFactory<T> factory;

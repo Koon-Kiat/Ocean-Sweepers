@@ -14,7 +14,6 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import project.game.Main;
 import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
@@ -31,25 +30,25 @@ import project.game.engine.entitysystem.physics.collision.resolution.CollisionRe
 import project.game.engine.entitysystem.physics.management.CollisionManager;
 
 public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
-    private static final GameLogger LOGGER = new GameLogger(Main.class);
 
+    private static final GameLogger LOGGER = new GameLogger(SeaTurtle.class);
+    private static final long HEALTH_LOSS_COOLDOWN_DURATION = 500;
     private final NPCMovementManager movementManager;
+    private final Vector2 accumulatedImpulse = new Vector2();
+    private final Vector2 accumulatedVelocity = new Vector2();
     private TextureRegion[] sprites;
     private int currentSpriteIndex;
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
-    private IEntityRemovalListener removalListener;//additional code
+    private IEntityRemovalListener removalListener;
     private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
-    private final Vector2 accumulatedImpulse = new Vector2();
-    private final Vector2 accumulatedVelocity = new Vector2();
-
     private ILifeLossCallback healthCallback;
-
+    private String texturePath;
+    private int currentDirectionIndex;
     private boolean healthLossCooldown = false;
     private long healthLossCooldownEndTime = 0;
-    private static final long HEALTH_LOSS_COOLDOWN_DURATION = 500; 
 
     // Threshold to determine if we should consider movement on an axis
     private static final float MOVEMENT_THRESHOLD = 0.01f;
@@ -69,9 +68,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private final World world;
     private final Body body;
 
-    private String texturePath;
-    private int currentDirectionIndex;
-
     // Type-based collision handler registry
     private static final Map<Class<?>, BiConsumer<SeaTurtle, ICollidableVisitor>> SEA_TURTLE_COLLISION_HANDLERS = new ConcurrentHashMap<>();
 
@@ -80,18 +76,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         registerSeaTurtleCollisionHandler(Boat.class, SeaTurtle::handleBoatCollision);
         registerSeaTurtleCollisionHandler(Rock.class, SeaTurtle::handleRockCollision);
         registerSeaTurtleCollisionHandler(Trash.class, SeaTurtle::handleTrashCollision);
-    }
-
-    /**
-     * Register a handler for a specific type of collidable entity
-     * 
-     * @param <T>     Type of collidable
-     * @param clazz   Class of collidable
-     * @param handler Function to handle collision with the collidable
-     */
-    public static <T extends ICollidableVisitor> void registerSeaTurtleCollisionHandler(
-            Class<T> clazz, BiConsumer<SeaTurtle, ICollidableVisitor> handler) {
-        SEA_TURTLE_COLLISION_HANDLERS.put(clazz, handler);
     }
 
     public SeaTurtle(Entity entity, World world, NPCMovementManager movementManager, String texturePath) {
@@ -112,12 +96,33 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         this.body = createBody(world, entity.getX(), entity.getY(), entity.getWidth(), entity.getHeight());
     }
 
-    public NPCMovementManager getMovementManager() {
-        return this.movementManager;
+    public void setEntityRemovalListener(IEntityRemovalListener listener) {
+        this.removalListener = listener;
     }
 
     public void setCollisionManager(CollisionManager collisionManager) {
         this.collisionManager = collisionManager;
+    }
+
+    public NPCMovementManager getMovementManager() {
+        return this.movementManager;
+    }
+
+    public static boolean isEntityPermanent(String entityType) {
+        return entityType.equals("SeaTurtle") ||
+                entityType.equals("boundary");
+    }
+
+    public boolean isActive() {
+        return entity.isActive();
+    }
+
+    public void removeFromManager(EntityManager entityManager) {
+        entityManager.removeRenderableEntity(this);
+    }
+
+    public void setHealthCallback(ILifeLossCallback callback) {
+        this.healthCallback = callback;
     }
 
     /**
@@ -149,18 +154,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         getBody().setLinearDamping(5.0f);
     }
 
-    /**
-     * Checks if this entity should be considered permanent in the game world
-     */
-    public static boolean isEntityPermanent(String entityType) {
-        return entityType.equals("SeaTurtle") ||
-                entityType.equals("boundary");
-    }
-
-    public boolean isActive() {
-        return entity.isActive();
-    }
-
     public String getCurrentDirectionName() {
         switch (currentDirectionIndex) {
             case DIRECTION_UP:
@@ -184,29 +177,16 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    @Override
-    public Entity getEntity() {
-        return entity;
-    }
-
-    @Override
-    public World getWorld() {
-        return world;
-    }
-
-    @Override
-    public Body getBody() {
-        return body;
-    }
-
-    @Override
-    public String getTexturePath() {
-        return texturePath;
-    }
-
-    @Override
-    public boolean isRenderable() {
-        return true;
+    /**
+     * Register a handler for a specific type of collidable entity
+     * 
+     * @param <T>     Type of collidable
+     * @param clazz   Class of collidable
+     * @param handler Function to handle collision with the collidable
+     */
+    public static <T extends ICollidableVisitor> void registerSeaTurtleCollisionHandler(
+            Class<T> clazz, BiConsumer<SeaTurtle, ICollidableVisitor> handler) {
+        SEA_TURTLE_COLLISION_HANDLERS.put(clazz, handler);
     }
 
     @Override
@@ -215,41 +195,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             return null;
         }
         return sprites[currentSpriteIndex];
-    }
-
-    @Override
-    public void setSprites(TextureRegion[] sprites) {
-        this.sprites = sprites;
-    }
-
-    @Override
-    public void setCurrentSpriteIndex(int index) {
-        if (hasSprites() && index >= 0 && index < sprites.length) {
-            this.currentSpriteIndex = index;
-        }
-    }
-
-    @Override
-    public boolean hasSprites() {
-        return sprites != null && sprites.length > 0;
-    }
-
-    @Override
-    public int getSpritesCount() {
-        return hasSprites() ? sprites.length : 0;
-    }
-
-    @Override
-    public void render(SpriteBatch batch) {
-        updateSpriteIndex();
-
-        if (getCurrentSprite() != null) {
-            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
-            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
-            float width = entity.getWidth();
-            float height = entity.getHeight();
-            batch.draw(getCurrentSprite(), renderX, renderY, width, height);
-        }
     }
 
     /**
@@ -291,9 +236,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
             } else if (angle >= 292.5 && angle < 337.5) {
                 currentDirectionIndex = DIRECTION_DOWN_RIGHT;
             }
-
-            // LOGGER.debug("SeaTurtle moving at angle: {0}, direction: {1}",
-            // angle, getCurrentDirectionName());
         }
 
         // Check if we need to map our 8-directional index to a 4-directional sprite
@@ -310,37 +252,64 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    /**
-     * Maps an 8-directional index to a 4-directional index for sprite display
-     * 
-     * @param eightDirIndex The 8-directional index (0-7)
-     * @return The 4-directional index (0-3)
-     */
-    private int mapTo4DirectionalIndex(int eightDirIndex) {
-        switch (eightDirIndex) {
-            case DIRECTION_UP:
-                return DIRECTION_UP; // UP
-            case DIRECTION_RIGHT:
-                return DIRECTION_RIGHT; // RIGHT
-            case DIRECTION_DOWN:
-                return DIRECTION_DOWN; // DOWN
-            case DIRECTION_LEFT:
-                return DIRECTION_LEFT; // LEFT
-            case DIRECTION_UP_RIGHT:
-                return DIRECTION_RIGHT; // UP_RIGHT maps to RIGHT
-            case DIRECTION_DOWN_RIGHT:
-                return DIRECTION_RIGHT; // DOWN_RIGHT maps to RIGHT
-            case DIRECTION_DOWN_LEFT:
-                return DIRECTION_LEFT; // DOWN_LEFT maps to LEFT
-            case DIRECTION_UP_LEFT:
-                return DIRECTION_LEFT; // UP_LEFT maps to LEFT
-            default:
-                return DIRECTION_DOWN; // Default to DOWN
+    @Override
+    public void setSprites(TextureRegion[] sprites) {
+        this.sprites = sprites;
+    }
+
+    @Override
+    public void setCurrentSpriteIndex(int index) {
+        if (hasSprites() && index >= 0 && index < sprites.length) {
+            this.currentSpriteIndex = index;
         }
     }
 
-    public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeRenderableEntity(this);
+    @Override
+    public boolean hasSprites() {
+        return sprites != null && sprites.length > 0;
+    }
+
+    @Override
+    public int getSpritesCount() {
+        return hasSprites() ? sprites.length : 0;
+    }
+
+    @Override
+    public String getTexturePath() {
+        return texturePath;
+    }
+
+    @Override
+    public boolean isRenderable() {
+        return true;
+    }
+
+    @Override
+    public void render(SpriteBatch batch) {
+        updateSpriteIndex();
+
+        if (getCurrentSprite() != null) {
+            float renderX = getEntity().getX() - getEntity().getWidth() / 2;
+            float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+            float width = entity.getWidth();
+            float height = entity.getHeight();
+            batch.draw(getCurrentSprite(), renderX, renderY, width, height);
+        }
+    }
+
+    @Override
+    public Entity getEntity() {
+        return entity;
+    }
+
+    @Override
+    public Body getBody() {
+        return body;
+    }
+
+    @Override
+    public World getWorld() {
+        return world;
     }
 
     @Override
@@ -353,7 +322,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         bodyDef.position.set(centerX, centerY);
         bodyDef.fixedRotation = true;
         bodyDef.bullet = true;
-        bodyDef.linearDamping = 0.8f; // Reduced from previous value
+        bodyDef.linearDamping = 0.8f;
         bodyDef.angularDamping = 0.8f;
 
         Body newBody = world.createBody(bodyDef);
@@ -476,8 +445,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         body.setLinearDamping(10f);
     }
 
-
-
     /**
      * Dispatches collision handling to the appropriate registered handler
      * 
@@ -543,7 +510,6 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
 
         // Second component: Consider their velocities to determine their approach
         // directions
-        float dotProduct = boatVel.x * turtleVel.x + boatVel.y * turtleVel.y;
         float boatSpeed = boatVel.len();
         float turtleSpeed = turtleVel.len();
 
@@ -613,6 +579,45 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     }
 
     /**
+     * Handle collision with trash
+     */
+    private void handleTrashCollision(ICollidableVisitor trash) {
+        if (!(trash instanceof Trash))
+            return;
+
+        // Check if either entity is permenant before scheduling removal
+        String entityType = trash.getClass().getSimpleName();
+        if (!isEntityPermanent(entityType)) {
+            if (collisionManager != null) {
+                // Schedule the trash for removal
+                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
+                LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
+
+                if (removalListener != null) {
+                    removalListener.onEntityRemove(trash.getEntity()); // additional code
+                }
+
+                // Check cooldown before triggering health loss
+                long currentTime = System.currentTimeMillis();
+                if (healthCallback != null && (!healthLossCooldown || currentTime > healthLossCooldownEndTime)) {
+                    // Reset cooldown
+                    healthLossCooldown = true;
+                    healthLossCooldownEndTime = currentTime + HEALTH_LOSS_COOLDOWN_DURATION;
+
+                    // Call health loss callback
+                    healthCallback.onLifeLost();
+                    LOGGER.info("Turtle lost health from eating trash");
+                }
+
+                // Restore damping after removing trash
+                getBody().setLinearDamping(10f);
+            } else {
+                LOGGER.warn("Collision manager not set for SeaTurtle, cannot remove trash");
+            }
+        }
+    }
+
+    /**
      * Handle collision with a rock
      */
     private void handleRockCollision(ICollidableVisitor rock) {
@@ -660,51 +665,33 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
         }
     }
 
-    public void setHealthCallback(ILifeLossCallback callback) {
-        this.healthCallback = callback;
-    }
-
     /**
-     * Handle collision with trash
+     * Maps an 8-directional index to a 4-directional index for sprite display
+     * 
+     * @param eightDirIndex The 8-directional index (0-7)
+     * @return The 4-directional index (0-3)
      */
-    private void handleTrashCollision(ICollidableVisitor trash) {
-        if (!(trash instanceof Trash))
-            return;
-
-        // Check if either entity is permenant before scheduling removal
-        String entityType = trash.getClass().getSimpleName();
-        if (!isEntityPermanent(entityType)) {
-            if (collisionManager != null) {
-                // Schedule the trash for removal
-                collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
-                LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
-
-                if (removalListener != null) {
-                    removalListener.onEntityRemove(trash.getEntity()); //additional code
-                }
-
-
-                // Check cooldown before triggering health loss
-                long currentTime = System.currentTimeMillis();
-                if (healthCallback != null && (!healthLossCooldown || currentTime > healthLossCooldownEndTime)) {
-                    // Reset cooldown
-                    healthLossCooldown = true;
-                    healthLossCooldownEndTime = currentTime + HEALTH_LOSS_COOLDOWN_DURATION;
-                    
-                    // Call health loss callback
-                    healthCallback.onLifeLost();
-                    LOGGER.info("Turtle lost health from eating trash");
-                }
-
-                // Restore damping after removing trash
-                getBody().setLinearDamping(10f);
-            } else {
-                LOGGER.warn("Collision manager not set for SeaTurtle, cannot remove trash");
-            }
+    private int mapTo4DirectionalIndex(int eightDirIndex) {
+        switch (eightDirIndex) {
+            case DIRECTION_UP:
+                return DIRECTION_UP;
+            case DIRECTION_RIGHT:
+                return DIRECTION_RIGHT;
+            case DIRECTION_DOWN:
+                return DIRECTION_DOWN;
+            case DIRECTION_LEFT:
+                return DIRECTION_LEFT;
+            case DIRECTION_UP_RIGHT:
+                return DIRECTION_RIGHT;
+            case DIRECTION_DOWN_RIGHT:
+                return DIRECTION_RIGHT;
+            case DIRECTION_DOWN_LEFT:
+                return DIRECTION_LEFT;
+            case DIRECTION_UP_LEFT:
+                return DIRECTION_LEFT;
+            default:
+                return DIRECTION_DOWN;
         }
-    }
-    public void setEntityRemovalListener(IEntityRemovalListener listener) {
-        this.removalListener = listener;
     }
 
 }
