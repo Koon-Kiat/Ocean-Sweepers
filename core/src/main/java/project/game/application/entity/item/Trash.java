@@ -154,6 +154,9 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
 
     public void removeFromManager(EntityManager entityManager) {
         entityManager.removeRenderableEntity(this);
+        if (removalListener != null) {
+            removalListener.onEntityRemove(getEntity());
+        }
     }
 
     @Override

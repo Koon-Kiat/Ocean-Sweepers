@@ -64,13 +64,16 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
         Entity trashEntity = new Entity(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT(), true);
         // Select a random texture ID
         int randomTextureId = random.nextInt(trashTextures.length);
+        String textureKey = "trash_" + randomTextureId;
 
         // Retrieve the texture from the Flyweight Factory
-        TextureRegion selectedTexture = TextureFlyweightFactory.getTexture("trash_" + randomTextureId);
+        TextureRegion selectedTexture = TextureFlyweightFactory.getTexture(textureKey);
         // Create NPCMovementManager with ocean current simulation movement
         NPCMovementManager movementManager = createTrashMovement(trashEntity);
 
         Trash trash = new Trash(trashEntity, world, selectedTexture);
+
+        
 
         // Set up the trash object with required components
         if (collisionManager != null) {
@@ -78,6 +81,10 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
         }
 
         if (removalListener != null) {
+            // Add cleanup logic when the entity is removed
+            trash.setRemovalListener(entity -> {
+                TextureFlyweightFactory.releaseTexture(textureKey);
+            });
             trash.setRemovalListener(removalListener);
         }
 
