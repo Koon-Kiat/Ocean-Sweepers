@@ -36,8 +36,9 @@ public class RockFactory extends AbstractEntityFactory<Rock> {
         Entity rockEntity = new Entity(x, y, constants.ROCK_WIDTH(), constants.ROCK_HEIGHT(), true);
         // Select a random texture ID
         int randomTextureId = random.nextInt(rockRegions.length);
+        String textureKey = "rock_" + randomTextureId;
         // Retrieve the texture from the Flyweight Factory
-        TextureRegion selectedRock = TextureFlyweightFactory.getTexture("rock_" + randomTextureId);
+        TextureRegion selectedRock = TextureFlyweightFactory.getTexture(textureKey);
         Rock rock = new Rock(rockEntity, world, selectedRock);
         existingEntities.add(rockEntity);
         if (collisionManager != null) {

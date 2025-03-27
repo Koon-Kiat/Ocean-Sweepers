@@ -16,7 +16,6 @@ public class SceneManager {
     private final Stack<IScene> sceneHistory;
     private final SceneInputManager baseInputManager;
     private IScene currentScene;
-    private boolean winState = false; 
     private String previousScene = "";
 
     public SceneManager() {
@@ -82,14 +81,6 @@ public class SceneManager {
             }
         }
         scenes.clear();
-    }
-
-    public void setWinState(boolean state) {
-        this.winState = state;
-    }
-    
-    public boolean hasWon() {
-        return winState;
     }
 
     public IScene getCurrentScene() {

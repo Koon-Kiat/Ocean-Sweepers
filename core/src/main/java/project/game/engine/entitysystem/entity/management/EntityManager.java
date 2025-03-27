@@ -144,6 +144,10 @@ public class EntityManager {
 			}
 		}
 	}
+    public boolean containsEntity(Entity entity) {
+        if (entity == null) return false;
+        return entityList.contains(entity);
+    }
 
 	private void printRenderableList() {
 		LOGGER.info("Current renderable entities:");

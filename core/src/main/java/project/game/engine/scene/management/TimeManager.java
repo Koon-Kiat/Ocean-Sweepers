@@ -51,4 +51,8 @@ public class TimeManager {
     public int getSeconds() {
         return (int) (timeLeft % 60);
     }
+
+    public float getRemainingTime() {
+        return timeLeft;
+    }
 }

@@ -7,6 +7,7 @@ public class ScoreManager {
     private static ScoreManager scoreInstance;
     private int score;
     private Label scoreLabel; 
+    private boolean winState = false; 
 
     public ScoreManager() {
         score = 0;
@@ -56,5 +57,13 @@ public class ScoreManager {
         if (scoreLabel != null) {
             scoreLabel.setText("Score: " + score);
         }
+    }
+    
+    public void setWinState(boolean state) {
+        this.winState = state;
+    }
+    
+    public boolean hasWon() {
+        return winState;
     }
 }
