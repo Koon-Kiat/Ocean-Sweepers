@@ -174,14 +174,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 sceneUIManager.getStage().getHeight() - 30);
 
         // Time left in logs
-        // System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+        // System.out.println("Time Left: " + timer.getMinutes() + ":" +
+        // timer.getSeconds());
 
         // print timer
         if (showTimer) {
-            skin.getFont("default-font").setColor(1, 1, 1, 1); // Set color to white
-            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d",
-                    timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
-            skin.getFont("default-font").setColor(0, 0, 0, 1); // Reset color to black
+            upheavalFont.draw(batch, String.format("Time: %02d:%02d",
+                    timer.getMinutes(), timer.getSeconds()), 500, sceneUIManager.getStage().getHeight() - 60);
         }
 
         batch.end();
