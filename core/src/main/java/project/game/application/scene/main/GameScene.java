@@ -202,7 +202,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (timer.isTimeUp()) {
             timer.stop();
             sceneManager.setScene("gameover");
-            if (sceneManager.hasWon() == false) {
+            if (scoreManager.hasWon() == false) {
                 audioManager.playSoundEffect("loss");
             } else {
                 audioManager.playSoundEffect("success");
@@ -276,13 +276,11 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         if (trashes.isEmpty()) {
             scoreManager.multiplyScore((float) (remainingTime / 100));
             // Indicate that the player has won
-            sceneManager.setWinState(true);
+            scoreManager.setWinState(true);
             sceneManager.setScene("gameover");
             audioManager.playSoundEffect("success");
             audioManager.stopMusic();
         }
-
-        // LOGGER.info("Score: {0}", scoreManager.getScore());
     }
 
     @Override
@@ -395,7 +393,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         config = new AudioConfig();
         LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
         initPopUpMenu();
-        displayMessage();
+        // displayMessage();
 
         remainingTime = 300.0f;
 
@@ -665,14 +663,17 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         }
         // Switch to game2 scene (debugging purposes)
         if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-            sceneManager.setScene("game2");
-            audioManager.stopMusic();
+            if (!"GameScene".equals(sceneManager.getPreviousScene())) { // Prevent reloading if already in GameScene2
+                audioManager.stopMusic();
+                sceneManager.setScene("game2");
+            } else {
+                LOGGER.info("Already in GameScene2, ignoring key press.");
+            }
         }
-        // Switch to game2 scene (just for testing)
-        // if (inputManager.isKeyJustPressed(Input.Keys.N)) {
-        // sceneManager.setScene("game2");
-        // audioManager.stopMusic();
-        // }
+    }
+
+    public AudioManager getAudioManager() {
+        return audioManager;
     }
 
     /**
@@ -731,6 +732,10 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     protected EntityManager getEntityManager() {
         return entityManager;
+    }
+
+    public EntityFactoryManager getEntityFactoryManager() {
+        return entityFactoryManager;
     }
 
 }

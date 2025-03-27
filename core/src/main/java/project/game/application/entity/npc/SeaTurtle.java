@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.Main;
+import project.game.application.api.entity.IEntityRemovalListener;
 import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.obstacle.Rock;
@@ -38,6 +39,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     private boolean collisionActive = false;
     private long collisionEndTime = 0;
     private long lastCollisionTime = 0;
+    private IEntityRemovalListener removalListener;//additional code
     private ICollidableVisitor currentCollisionEntity;
     private CollisionManager collisionManager;
     private final Vector2 accumulatedImpulse = new Vector2();
@@ -677,6 +679,11 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                 collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
                 LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
 
+                if (removalListener != null) {
+                    removalListener.onEntityRemove(trash.getEntity()); //additional code
+                }
+
+
                 // Check cooldown before triggering health loss
                 long currentTime = System.currentTimeMillis();
                 if (healthCallback != null && (!healthLossCooldown || currentTime > healthLossCooldownEndTime)) {
@@ -695,6 +702,9 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                 LOGGER.warn("Collision manager not set for SeaTurtle, cannot remove trash");
             }
         }
+    }
+    public void setEntityRemovalListener(IEntityRemovalListener listener) {
+        this.removalListener = listener;
     }
 
 }

@@ -56,7 +56,7 @@ public class GameOverScene extends Scene {
         /*
          * Win condition logic
          */
-        if (sceneManager.hasWon()) {
+        if (scoreManager.hasWon()) {
         
         //if (scoreManager.getScore() >= 500) {
             batch.draw(winBackgroundTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -167,6 +167,7 @@ public class GameOverScene extends Scene {
         inputManager.addButtonClickListener(retryButton, () -> {
             // First get the game scene by name and reset it
             resetGame();
+            scoreManager.setWinState(false); // Reset win state
             // Then set the scene back to the game
             sceneManager.setScene("game");
         });
@@ -176,6 +177,7 @@ public class GameOverScene extends Scene {
         exitButton.setPosition(Gdx.graphics.getWidth() / 2f - 100, Gdx.graphics.getHeight() / 2f - 80);
         inputManager.addButtonClickListener(exitButton, () -> {
             resetGame(); // Ensure game is still reset
+            scoreManager.setWinState(false); // Reset win state
             sceneManager.setScene("menu");
         });
 
