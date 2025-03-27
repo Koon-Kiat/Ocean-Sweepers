@@ -174,14 +174,13 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 sceneUIManager.getStage().getHeight() - 30);
 
         // Time left in logs
-        // System.out.println("Time Left: " + timer.getMinutes() + ":" + timer.getSeconds());
+        // System.out.println("Time Left: " + timer.getMinutes() + ":" +
+        // timer.getSeconds());
 
         // print timer
         if (showTimer) {
-            skin.getFont("default-font").setColor(1, 1, 1, 1); // Set color to white
-            skin.getFont("default-font").draw(batch, String.format("Time: %02d:%02d",
-                    timer.getMinutes(), timer.getSeconds()), 200, sceneUIManager.getStage().getHeight() - 60);
-            skin.getFont("default-font").setColor(0, 0, 0, 1); // Reset color to black
+            upheavalFont.draw(batch, String.format("Time: %02d:%02d",
+                    timer.getMinutes(), timer.getSeconds()), 500, sceneUIManager.getStage().getHeight() - 60);
         }
 
         batch.end();
@@ -358,7 +357,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         config = new AudioConfig();
         LOGGER.info("GameScene inputManager instance: {0}", System.identityHashCode(inputManager));
         initPopUpMenu();
-        //displayMessage();
+        // displayMessage();
 
         remainingTime = 300.0f;
 
@@ -635,13 +634,14 @@ public class GameScene extends Scene implements IEntityRemovalListener {
                 LOGGER.info("Already in GameScene2, ignoring key press.");
             }
         }
-        
+
         // Switch to game2 scene (just for testing)
         // if (inputManager.isKeyJustPressed(Input.Keys.N)) {
         // sceneManager.setScene("game2");
         // audioManager.stopMusic();
         // }
     }
+
     public AudioManager getAudioManager() {
         return audioManager;
     }
@@ -703,7 +703,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     protected EntityManager getEntityManager() {
         return entityManager;
     }
-    
+
     public EntityFactoryManager getEntityFactoryManager() {
         return entityFactoryManager;
     }
