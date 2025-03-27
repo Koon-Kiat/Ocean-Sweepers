@@ -526,7 +526,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         if (currentCollisionEntity == null || isInCollision()) {
             return;
         }
-
         // Only set the collision state active, but don't apply forces
         // The sea turtle's handleBoatCollision is responsible for applying forces to
         // both entities
