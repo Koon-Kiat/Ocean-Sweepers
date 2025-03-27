@@ -679,10 +679,10 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
                 collisionManager.scheduleBodyRemoval(trash.getBody(), trash.getEntity(), null);
                 LOGGER.debug("Scheduled trash for removal", trash.getEntity().getClass().getSimpleName());
 
+
                 if (removalListener != null) {
                     removalListener.onEntityRemove(trash.getEntity()); //additional code
                 }
-
 
                 // Check cooldown before triggering health loss
                 long currentTime = System.currentTimeMillis();

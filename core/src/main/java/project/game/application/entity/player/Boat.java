@@ -50,6 +50,11 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     private CollisionManager collisionManager;
     private ILifeLossCallback lifeLossCallback;
 
+    private boolean boundaryCollisionActive = false;
+    private boolean rockCollisionActive = false;
+    private long boundaryCollisionEndTime = 0;
+    private long rockCollisionEndTime = 0;
+
     // Add a cooldown for life loss
     private boolean lifeLossCooldown = false;
     private long lifeLossCooldownEndTime = 0;
@@ -134,17 +139,9 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
         collisionActive = true;
         collisionEndTime = System.currentTimeMillis() + durationMillis;
 
-        // When collision becomes active, sync positions to prevent desynchronization
-        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
-        float physX = getBody().getPosition().x * pixelsToMeters;
-        float physY = getBody().getPosition().y * pixelsToMeters;
-
-        // Update entity position and movement manager
-        getEntity().setX(physX);
-        getEntity().setY(physY);
-        if (movementManager != null) {
-            movementManager.getMovableEntity().setX(physX);
-            movementManager.getMovableEntity().setY(physY);
+        // Only sync positions if we're not in a boundary collision
+        if (!boundaryCollisionActive) {
+            syncPositions();
         }
     }
 
@@ -285,8 +282,6 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
                 currentDirectionIndex = DIRECTION_DOWN_RIGHT;
             }
 
-            // LOGGER.debug("Boat moving at angle: {0}, direction: {1}",
-            //         angle, getCurrentDirectionName());
         }
 
         // Check if we need to map our 8-directional index to a 4-directional sprite
@@ -396,7 +391,29 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     @Override
     public void collideWithBoundary() {
         // Handle collision with world boundaries
-        setCollisionActive(GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION());
+        boundaryCollisionActive = true;
+        boundaryCollisionEndTime = System.currentTimeMillis()
+                + GameConstantsFactory.getConstants().COLLISION_ACTIVE_DURATION();
+
+        // Only sync positions if no other collision is active
+        if (!rockCollisionActive) {
+            syncPositions();
+        }
+    }
+
+    private void syncPositions() {
+        // When collision becomes active, sync positions to prevent desynchronization
+        float pixelsToMeters = GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+        float physX = getBody().getPosition().x * pixelsToMeters;
+        float physY = getBody().getPosition().y * pixelsToMeters;
+
+        // Update entity position and movement manager
+        getEntity().setX(physX);
+        getEntity().setY(physY);
+        if (movementManager != null) {
+            movementManager.getMovableEntity().setX(physX);
+            movementManager.getMovableEntity().setY(physY);
+        }
     }
 
     /**
@@ -445,6 +462,9 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
             // Higher speeds result in lower bounce multiplier to prevent excessive bouncing
             float bounceForce = GameConstantsFactory.getConstants().BOAT_BASE_IMPULSE()
                     / GameConstantsFactory.getConstants().PIXELS_TO_METERS();
+            if (boundaryCollisionActive) {
+                bounceForce *= 1.5f; // Stronger impulse when both collisions are active
+            }
 
             // Apply impulse in the direction away from rock
             getBody().applyLinearImpulse(dx * bounceForce, dy * bounceForce, boatX, boatY, true);

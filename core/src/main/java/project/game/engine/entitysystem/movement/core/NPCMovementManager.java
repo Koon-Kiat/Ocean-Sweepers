@@ -6,31 +6,19 @@ import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.movement.management.MovementManager;
 
 /**
- * NPCMovementManager is a concrete class that extends MovementManager and
+ * NPCMovementManager is a class that extends MovementManager and
  * provides movement functionality for non-player characters (NPCs) in the game.
- * 
- * It extends MovementManager and uses the NPCMovementBuilder to configure the
- * NPC's movement strategy.
  */
 public class NPCMovementManager extends MovementManager {
 
     private static final GameLogger LOGGER = new GameLogger(NPCMovementManager.class);
-    private final NPCMovementBuilder builder;
 
-    /**
-     * Constructor using the Builder pattern.
-     */
     public NPCMovementManager(NPCMovementBuilder builder) {
         super(checkBuilder(builder).getMovable(),
                 checkBuilder(builder).getSpeed(),
                 checkBuilder(builder).getInitialVelocity(),
                 checkBuilder(builder).getMovementStrategy(),
                 checkBuilder(builder).isLenientMode());
-        this.builder = builder;
-    }
-
-    public NPCMovementBuilder getBuilder() {
-        return this.builder;
     }
 
     private static NPCMovementBuilder checkBuilder(NPCMovementBuilder builder) {
