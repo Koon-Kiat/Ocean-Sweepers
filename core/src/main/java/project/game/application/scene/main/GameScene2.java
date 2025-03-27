@@ -3,6 +3,7 @@ package project.game.application.scene.main;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -16,6 +17,7 @@ import project.game.application.api.entity.ILifeLossCallback;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.movement.builder.NPCMovementBuilder;
+import project.game.application.movement.factory.MovementStrategyFactory;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
@@ -231,7 +233,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
                     true);
 
             float[] customWeights = { 0.40f, 0.60f };
-            npcMovementManager = new NPCMovementBuilder()
+            npcMovementManager = new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                     .withEntity(seaTurtleEntity)
                     .setSpeed(constants.NPC_SPEED())
                     .setInitialVelocity(1, 0)
@@ -269,24 +271,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         // removeTrashFromList(entity);
     }
 
-    public void reduceTurtleHealth() {
-        turtleHealth--;
-        LOGGER.info("Turtle health reduced to " + turtleHealth);
 
-        // Play sound effect for health loss
-        audioManager.playSoundEffect("collision");
-
-        if (turtleHealth <= 0) {
-            // Turtle has died
-            LOGGER.info("Turtle died!");
-            timer.stop();
-            audioManager.stopMusic();
-            audioManager.playSoundEffect("loss");
-            sceneManager.setScene("gameover");
-            
-            
-        }
-    }
 
     // private void removeTrashFromList(Entity entity) {
     //     List<Trash> trashes = gameScene.getTrashes();
@@ -307,4 +292,25 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     public boolean isTurtleAlive() {
         return turtleHealth > 0;
     }
+
+    public void reduceTurtleHealth() {
+        turtleHealth--;
+        LOGGER.info("Turtle health reduced to " + turtleHealth);
+
+        // Play sound effect for health loss
+        audioManager.playSoundEffect("collision");
+
+        if (turtleHealth <= 0) {
+            // Turtle has died
+            LOGGER.info("Turtle died!");
+            timer.stop();
+            sceneManager.setScene("gameover");
+            audioManager.playSoundEffect("loss");
+            audioManager.stopMusic();
+        }
+    }
+
+
+
+   
 }
