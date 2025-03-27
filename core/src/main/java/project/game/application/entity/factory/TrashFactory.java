@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.application.api.constant.IGameConstants;
 import project.game.application.api.entity.IEntityRemovalListener;
+import project.game.application.entity.flyweight.TextureFlyweightFactory;
 import project.game.application.entity.item.Trash;
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.factory.MovementStrategyFactory;
@@ -41,6 +42,10 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
         super(constants, world, existingEntities, collisionManager);
         this.trashTextures = trashTextures;
         this.random = new java.util.Random();
+        // Initialize the Flyweight Factory with trash textures
+        for (int i = 0; i < trashTextures.length; i++) {
+            TextureFlyweightFactory.addTexture("trash_" + i, trashTextures[i]);
+        }
     }
 
     public void setRemovalListener(IEntityRemovalListener removalListener) {
@@ -57,8 +62,11 @@ public class TrashFactory extends AbstractEntityFactory<Trash> {
     @Override
     public Trash createEntity(float x, float y) {
         Entity trashEntity = new Entity(x, y, constants.TRASH_WIDTH(), constants.TRASH_HEIGHT(), true);
-        TextureRegion selectedTexture = trashTextures[random.nextInt(trashTextures.length)];
+        // Select a random texture ID
+        int randomTextureId = random.nextInt(trashTextures.length);
 
+        // Retrieve the texture from the Flyweight Factory
+        TextureRegion selectedTexture = TextureFlyweightFactory.getTexture("trash_" + randomTextureId);
         // Create NPCMovementManager with ocean current simulation movement
         NPCMovementManager movementManager = createTrashMovement(trashEntity);
 

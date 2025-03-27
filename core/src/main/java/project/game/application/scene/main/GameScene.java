@@ -322,6 +322,44 @@ public class GameScene extends Scene implements IEntityRemovalListener {
 
     }
 
+    private void disposeEntities() {
+        LOGGER.info("Disposing all entities...");
+    
+        // Dispose of all Trash entities
+        for (Trash trash : trashes) {
+            if (trash.getBody() != null) {
+                world.destroyBody(trash.getBody()); // Remove the physics body
+            }
+            entityManager.removeRenderableEntity(trash); // Remove from EntityManager
+        }
+        trashes.clear();
+    
+        // Dispose of all Rock entities
+        for (Rock rock : rocks) {
+            if (rock.getBody() != null) {
+                world.destroyBody(rock.getBody()); // Remove the physics body
+            }
+            entityManager.removeRenderableEntity(rock); // Remove from EntityManager
+        }
+        rocks.clear();
+    
+        // Dispose of the Boat
+        if (boat != null) {
+            if (boat.getBody() != null) {
+                world.destroyBody(boat.getBody()); // Remove the physics body
+            }
+            entityManager.removeRenderableEntity(boat); // Remove from EntityManager
+            boat = null;
+        }
+    
+        // Dispose of any other entities in the existingEntities list
+        for (Entity entity : existingEntities) {
+            existingEntities.remove(entity); // Remove from the list
+        }
+    
+        LOGGER.info("All entities disposed.");
+    }
+
     @Override
     public void dispose() {
 
@@ -329,7 +367,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
         LOGGER.info("Final Score: " + scoreManager.getScore());
         // Log world state before disposal
         LOGGER.info("Before GameScene disposal:");
-
+        disposeEntities();
         batch.dispose();
         boatSpritesheet.dispose();
         trashImage.dispose();
