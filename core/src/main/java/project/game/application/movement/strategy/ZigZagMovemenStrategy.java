@@ -22,27 +22,18 @@ public class ZigZagMovemenStrategy extends AbstractMovementStrategy {
     private float elapsedTime;
 
     // Enhanced parameters for realistic water movement
-    private final float driftFactor = 1.5f; // Increases the overall drift distance
-    private float wavePhase = 0f; // Used for more natural wave-like motion
-    private float waveAmplitude = 0f; // Additional amplitude for secondary waves
+    private final float driftFactor = 1.5f;
+    private float wavePhase = 0f;
+    private float waveAmplitude = 0f;
 
     public ZigZagMovemenStrategy(float speed, float amplitude, float frequency, boolean lenientMode) {
         super(ZigZagMovemenStrategy.class, lenientMode);
-
-        // Validate speed
         this.speed = validateSpeed(speed, 200f);
-
-        // amplitude can be negative, it just affects phase
         this.amplitude = amplitude;
-
-        // Validate frequency
         this.frequency = validateNonNegative(frequency, "Frequency", 1.0f);
-
         this.elapsedTime = 0f;
-
-        // Initialize random wave phase offset and secondary wave amplitude
         this.wavePhase = MathUtils.random(0f, MathUtils.PI2);
-        this.waveAmplitude = amplitude * 0.3f; // Secondary wave is 30% of primary amplitude
+        this.waveAmplitude = amplitude * 0.3f;
     }
 
     @Override

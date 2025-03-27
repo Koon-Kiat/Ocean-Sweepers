@@ -15,6 +15,7 @@ import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrate
 
 /**
  * A movement strategy that targets the nearest trash entity in the game world.
+ * 
  * This strategy continuously finds the closest trash object and directs
  * movement toward it.
  */

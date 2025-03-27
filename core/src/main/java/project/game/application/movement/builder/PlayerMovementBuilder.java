@@ -114,7 +114,6 @@ public class PlayerMovementBuilder extends AbstractMovementBuilder<PlayerMovemen
         return new PlayerMovableEntity(entity, speed);
     }
 
-    // Private validation method
     @Override
     protected void validateBuildRequirements() {
         if (speed < 0) {

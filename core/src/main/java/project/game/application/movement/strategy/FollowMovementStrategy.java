@@ -20,12 +20,12 @@ import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrate
  */
 public class FollowMovementStrategy extends AbstractMovementStrategy {
 
-    private static final float PATH_RECALC_THRESHOLD = 100f; // Distance the target must move to recalculate path
-    private static final float ARRIVAL_THRESHOLD = 10f; // Distance at which to consider "arrived" at target
-    private static final int PATH_SEGMENTS = 20; // Number of segments in the smooth path
-    private static final float MIN_CONTROL_POINT_DISTANCE = 80f; // Minimum distance for control points
-    private static final float MAX_CONTROL_POINT_DISTANCE = 200f; // Maximum distance for control points
-    private static final float PATH_PROGRESS_SPEED = 1.0f; // Speed of movement along the path (1.0 = 100% per second)
+    private static final float PATH_RECALC_THRESHOLD = 100f;
+    private static final float ARRIVAL_THRESHOLD = 10f;
+    private static final int PATH_SEGMENTS = 20;
+    private static final float MIN_CONTROL_POINT_DISTANCE = 80f;
+    private static final float MAX_CONTROL_POINT_DISTANCE = 200f;
+    private static final float PATH_PROGRESS_SPEED = 1.0f;
     private final IPositionable target;
     private final float speed;
     private final List<Vector2> pathPoints;
@@ -157,7 +157,7 @@ public class FollowMovementStrategy extends AbstractMovementStrategy {
                     MAX_CONTROL_POINT_DISTANCE);
 
             // Create a slight curve by offsetting control points
-            float randomOffset = MathUtils.random(-0.3f, 0.3f); // Randomize the curve a bit
+            float randomOffset = MathUtils.random(-0.3f, 0.3f);
             Vector2 controlPoint1 = new Vector2(start)
                     .add(new Vector2(direction).scl(distance * 0.3f))
                     .add(new Vector2(perpendicular).scl(controlPointDistance * randomOffset));
@@ -184,7 +184,7 @@ public class FollowMovementStrategy extends AbstractMovementStrategy {
             }
         } catch (Exception e) {
             logger.error("Error calculating path in FollowMovementStrategy: " + e.getMessage(), e);
-            pathPoints.clear(); // Clear path to fall back to direct movement
+            pathPoints.clear();
         }
     }
 

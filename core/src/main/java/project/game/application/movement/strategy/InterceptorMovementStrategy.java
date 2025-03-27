@@ -5,9 +5,12 @@ import com.badlogic.gdx.math.Vector2;
 import project.game.application.movement.api.StrategyType;
 import project.game.engine.entitysystem.movement.api.IMovable;
 import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrategy;
+
 /**
  * Advanced movement strategy that predicts where a moving target will be and
- * attempts to intercept it. Uses vector math to calculate interception points.
+ * attempts to intercept it.
+ * 
+ * Uses vector math to calculate interception points.
  */
 public class InterceptorMovementStrategy extends AbstractMovementStrategy {
 
@@ -108,7 +111,7 @@ public class InterceptorMovementStrategy extends AbstractMovementStrategy {
             }
 
             // Gradually blend new direction with persistent direction for smoothness
-            // But guarantee forward movement by ensuring dot product with toTarget is
+            // but guarantee forward movement by ensuring dot product with toTarget is
             // positive
             persistentDirection.lerp(movementDir, directionChangeSmoothing).nor();
 

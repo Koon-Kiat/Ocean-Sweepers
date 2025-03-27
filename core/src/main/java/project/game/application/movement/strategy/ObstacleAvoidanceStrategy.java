@@ -21,17 +21,17 @@ public class ObstacleAvoidanceStrategy extends AbstractMovementStrategy {
     private final Vector2 persistentDirection = new Vector2(1, 0);
 
     // Enhanced obstacle avoidance parameters
-    private final float criticalRadius = 80f; // Increased for stronger close-range avoidance
+    private final float criticalRadius = 80f;
     private final float lookaheadDistance = 350f;
     private final Vector2 lastSafePosition = new Vector2();
-    private final float maxAvoidanceTime = 2.0f; // Increased to allow more time for path finding
-    private final float directionWeight = 1.5f; // Increased direction influence
+    private final float maxAvoidanceTime = 2.0f;
+    private final float directionWeight = 1.5f;
     private final Vector2 lastAvoidanceForce = new Vector2();
-    private final float steeringStrength = 3.0f; // New parameter for sharper turns
+    private final float steeringStrength = 3.0f;
     private List<Entity> obstacles = new ArrayList<>();
-    private float currentRotationFactor = 1.0f; // Dynamic rotation factor
+    private float currentRotationFactor = 1.0f;
     private float directionChangeSmoothing = 0.2f;
-    private float avoidanceRadius = 300f; // Keep this large for early detection
+    private float avoidanceRadius = 300f;
     private boolean isAvoiding = false;
     private float avoidanceTimer = 0;
     private float avoidanceWeight = 5.0f;

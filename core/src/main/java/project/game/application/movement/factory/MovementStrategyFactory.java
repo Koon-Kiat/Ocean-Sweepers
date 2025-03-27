@@ -29,8 +29,9 @@ import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrat
 
 /**
  * Factory class for creating movement strategies.
- * This helps avoid direct instantiation of dependencies and follows the
- * Dependency Inversion Principle.
+ * 
+ * This helps avoid direct instantiation of dependencies and allows for easier
+ * testing and maintenance.
  */
 public class MovementStrategyFactory implements IMovementStrategyFactory {
 

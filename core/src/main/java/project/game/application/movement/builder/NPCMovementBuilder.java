@@ -67,22 +67,6 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
-        try {
-            this.movementStrategy = this.movementStrategyFactory.createZigZagMovement(this.speed, amplitude, frequency,
-                    this.lenientMode);
-        } catch (MovementException e) {
-            if (this.lenientMode) {
-                LOGGER.warn("Error creating ZigZagMovementStrategy in lenient mode: " + e.getMessage()
-                        + ". Using constant movement fallback.");
-                return withConstantMovement();
-            }
-            LOGGER.fatal("Error in ZigZagMovementStrategy: " + e.getMessage(), e);
-            throw new MovementException("Error in ZigZagMovementStrategy: " + e.getMessage(), e);
-        }
-        return this;
-    }
-
     public NPCMovementBuilder withFollowMovement(IPositionable target) {
         if (target == null) {
             String errorMsg = "Target is null in withFollowMovement.";
@@ -108,66 +92,6 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    public NPCMovementBuilder withRandomisedMovement(List<IMovementStrategy> strategyPool, float minDuration,
-            float maxDuration) {
-        if (strategyPool == null || strategyPool.isEmpty()) {
-            String errorMsg = strategyPool == null ? "Strategy pool cannot be null in withRandomisedMovement."
-                    : "Strategy pool cannot be empty in withRandomisedMovement.";
-            if (this.lenientMode) {
-                LOGGER.warn(errorMsg + " Using constant movement fallback.");
-                return withConstantMovement();
-            }
-            LOGGER.fatal(errorMsg);
-            throw new MovementException(errorMsg);
-        }
-        try {
-            this.movementStrategy = this.movementStrategyFactory.createRandomisedMovement(strategyPool, minDuration,
-                    maxDuration, this.lenientMode);
-        } catch (MovementException e) {
-            if (this.lenientMode) {
-                LOGGER.warn("Error in RandomisedMovementStrategy in lenient mode: " + e.getMessage()
-                        + ". Using constant movement fallback.");
-                return withConstantMovement();
-            }
-            LOGGER.fatal("Error in RandomisedMovementStrategy: " + e.getMessage(), e);
-            throw new MovementException("Error in RandomisedMovementStrategy: " + e.getMessage(), e);
-        }
-        return this;
-    }
-
-    public NPCMovementBuilder withOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
-            float eccentricity) {
-        try {
-            this.movementStrategy = this.movementStrategyFactory.createOrbitalMovement(target, orbitRadius,
-                    rotationSpeed,
-                    eccentricity, this.lenientMode);
-        } catch (MovementException e) {
-            if (this.lenientMode) {
-                LOGGER.warn("Error creating OrbitalMovementStrategy: " + e.getMessage()
-                        + ". Using constant movement fallback.");
-                return withConstantMovement();
-            }
-            throw e;
-        }
-        return this;
-    }
-
-    public NPCMovementBuilder withSpringFollow(IPositionable target, float springConstant, float damping) {
-        try {
-            this.movementStrategy = this.movementStrategyFactory.createSpringFollowMovement(target, springConstant,
-                    damping,
-                    this.lenientMode);
-        } catch (MovementException e) {
-            if (this.lenientMode) {
-                LOGGER.warn("Error creating SpringFollowStrategy: " + e.getMessage()
-                        + ". Using constant movement fallback.");
-                return withConstantMovement();
-            }
-            throw e;
-        }
-        return this;
-    }
-
     public NPCMovementBuilder withInterceptorMovement(IMovable movable) {
         try {
             this.movementStrategy = this.movementStrategyFactory.createInterceptorMovement(movable, this.speed,
@@ -183,14 +107,13 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    public NPCMovementBuilder withSpiralApproach(IPositionable target, float spiralTightness, float approachSpeed) {
+    public NPCMovementBuilder withObstacleAvoidance() {
         try {
-            this.movementStrategy = this.movementStrategyFactory.createSpiralApproachMovement(target, this.speed,
-                    spiralTightness, approachSpeed,
+            this.movementStrategy = this.movementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, null,
                     this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating SpiralApproachStrategy: " + e.getMessage()
+                LOGGER.warn("Error creating ObstacleAvoidanceStrategy: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
@@ -236,17 +159,94 @@ public class NPCMovementBuilder extends AbstractMovementBuilder<NPCMovementBuild
         return this;
     }
 
-    public NPCMovementBuilder withObstacleAvoidance() {
+    public NPCMovementBuilder withOrbitalMovement(IPositionable target, float orbitRadius, float rotationSpeed,
+            float eccentricity) {
         try {
-            this.movementStrategy = this.movementStrategyFactory.createObstacleAvoidanceStrategy(this.speed, null,
-                    this.lenientMode);
+            this.movementStrategy = this.movementStrategyFactory.createOrbitalMovement(target, orbitRadius,
+                    rotationSpeed,
+                    eccentricity, this.lenientMode);
         } catch (MovementException e) {
             if (this.lenientMode) {
-                LOGGER.warn("Error creating ObstacleAvoidanceStrategy: " + e.getMessage()
+                LOGGER.warn("Error creating OrbitalMovementStrategy: " + e.getMessage()
                         + ". Using constant movement fallback.");
                 return withConstantMovement();
             }
             throw e;
+        }
+        return this;
+    }
+
+    public NPCMovementBuilder withRandomisedMovement(List<IMovementStrategy> strategyPool, float minDuration,
+            float maxDuration) {
+        if (strategyPool == null || strategyPool.isEmpty()) {
+            String errorMsg = strategyPool == null ? "Strategy pool cannot be null in withRandomisedMovement."
+                    : "Strategy pool cannot be empty in withRandomisedMovement.";
+            if (this.lenientMode) {
+                LOGGER.warn(errorMsg + " Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            LOGGER.fatal(errorMsg);
+            throw new MovementException(errorMsg);
+        }
+        try {
+            this.movementStrategy = this.movementStrategyFactory.createRandomisedMovement(strategyPool, minDuration,
+                    maxDuration, this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error in RandomisedMovementStrategy in lenient mode: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            LOGGER.fatal("Error in RandomisedMovementStrategy: " + e.getMessage(), e);
+            throw new MovementException("Error in RandomisedMovementStrategy: " + e.getMessage(), e);
+        }
+        return this;
+    }
+
+    public NPCMovementBuilder withSpiralApproach(IPositionable target, float spiralTightness, float approachSpeed) {
+        try {
+            this.movementStrategy = this.movementStrategyFactory.createSpiralApproachMovement(target, this.speed,
+                    spiralTightness, approachSpeed,
+                    this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating SpiralApproachStrategy: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    public NPCMovementBuilder withSpringFollow(IPositionable target, float springConstant, float damping) {
+        try {
+            this.movementStrategy = this.movementStrategyFactory.createSpringFollowMovement(target, springConstant,
+                    damping,
+                    this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating SpringFollowStrategy: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            throw e;
+        }
+        return this;
+    }
+
+    public NPCMovementBuilder withZigZagMovement(float amplitude, float frequency) {
+        try {
+            this.movementStrategy = this.movementStrategyFactory.createZigZagMovement(this.speed, amplitude, frequency,
+                    this.lenientMode);
+        } catch (MovementException e) {
+            if (this.lenientMode) {
+                LOGGER.warn("Error creating ZigZagMovementStrategy in lenient mode: " + e.getMessage()
+                        + ". Using constant movement fallback.");
+                return withConstantMovement();
+            }
+            LOGGER.fatal("Error in ZigZagMovementStrategy: " + e.getMessage(), e);
+            throw new MovementException("Error in ZigZagMovementStrategy: " + e.getMessage(), e);
         }
         return this;
     }

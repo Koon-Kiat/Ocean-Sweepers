@@ -19,6 +19,7 @@ import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrat
 
 /**
  * A specialized movement strategy for entities that collect trash.
+ * 
  * Combines trash targeting with obstacle avoidance for intelligent
  * trash collection behavior.
  */
@@ -112,41 +113,6 @@ public class TrashCollectorStrategy extends AbstractMovementStrategy {
     }
 
     /**
-     * Gets the strategy type for this movement strategy.
-     * 
-     * @return The strategy type enum value
-     */
-    @Override
-    public StrategyType getStrategyType() {
-        return StrategyType.TRASH_COLLECTOR;
-    }
-
-    /**
-     * Move the entity using the composite strategy.
-     */
-    @Override
-    public void move(IMovable movable, float deltaTime) {
-        try {
-            if (movable == null) {
-                if (lenientMode) {
-                    logger.warn("Entity is null in TrashCollectorStrategy.move; skipping movement");
-                    return;
-                } else {
-                    throw new MovementException("Entity cannot be null in TrashCollectorStrategy");
-                }
-            }
-
-            // Delegate to the composite strategy
-            compositeStrategy.move(movable, deltaTime);
-
-        } catch (MovementException e) {
-            handleMovementException(e, "Error in TrashCollectorStrategy.move");
-        } catch (Exception e) {
-            handleMovementException(e, "Unexpected error in TrashCollectorStrategy.move");
-        }
-    }
-
-    /**
      * Calculate a velocity vector based on the composite strategy components.
      * This is a utility method for getting the combined movement direction.
      * 
@@ -206,4 +172,40 @@ public class TrashCollectorStrategy extends AbstractMovementStrategy {
             }
         }
     }
+
+    /**
+     * Gets the strategy type for this movement strategy.
+     * 
+     * @return The strategy type enum value
+     */
+    @Override
+    public StrategyType getStrategyType() {
+        return StrategyType.TRASH_COLLECTOR;
+    }
+
+    /**
+     * Move the entity using the composite strategy.
+     */
+    @Override
+    public void move(IMovable movable, float deltaTime) {
+        try {
+            if (movable == null) {
+                if (lenientMode) {
+                    logger.warn("Entity is null in TrashCollectorStrategy.move; skipping movement");
+                    return;
+                } else {
+                    throw new MovementException("Entity cannot be null in TrashCollectorStrategy");
+                }
+            }
+
+            // Delegate to the composite strategy
+            compositeStrategy.move(movable, deltaTime);
+
+        } catch (MovementException e) {
+            handleMovementException(e, "Error in TrashCollectorStrategy.move");
+        } catch (Exception e) {
+            handleMovementException(e, "Unexpected error in TrashCollectorStrategy.move");
+        }
+    }
+
 }

@@ -16,8 +16,8 @@ public class SpiralApproachStrategy extends AbstractMovementStrategy {
 
     private final IPositionable target;
     private final float speed;
-    private final float spiralTightness; // Controls how tight the spiral is
-    private final float approachSpeed; // Controls how quickly entity moves toward target
+    private final float spiralTightness;
+    private final float approachSpeed;
     private float currentAngle = 0;
 
     public SpiralApproachStrategy(IPositionable target, float speed, float spiralTightness, float approachSpeed,
@@ -33,6 +33,7 @@ public class SpiralApproachStrategy extends AbstractMovementStrategy {
 
         // Validate and set spiral parameters
         this.spiralTightness = Math.max(0.1f, spiralTightness);
+        
         this.approachSpeed = Math.max(0.1f, approachSpeed);
     }
 

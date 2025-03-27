@@ -16,8 +16,7 @@ import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrate
  * Provides randomised movement for movable entities.
  * 
  * The entity moves in a random direction at a random speed for a random
- * duration.
- * The strategy pool is provided in the constructor.
+ * duration. The strategy pool is provided in the constructor.
  */
 public class RandomisedMovementStrategy extends AbstractMovementStrategy {
 

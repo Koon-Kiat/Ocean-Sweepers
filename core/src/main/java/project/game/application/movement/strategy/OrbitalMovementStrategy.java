@@ -11,6 +11,7 @@ import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrate
 
 /**
  * Makes an entity orbit around a target entity.
+ * 
  * The orbit can be circular or elliptical, and the rotation speed is
  * configurable.
  */
@@ -18,11 +19,11 @@ public class OrbitalMovementStrategy extends AbstractMovementStrategy {
 
     private final IPositionable target;
     private final float orbitRadius;
-    private final float rotationSpeed; // Radians per second
-    private final float eccentricity; // 0 = circle, >0 = ellipse
+    private final float rotationSpeed;
+    private final float eccentricity;
     private float currentAngle = 0;
     private Vector2 lastValidPosition = null;
-    private static final float MIN_SAFE_DISTANCE = 20f; // Minimum safe distance to prevent collisions
+    private static final float MIN_SAFE_DISTANCE = 20f;
 
     public OrbitalMovementStrategy(IPositionable target, float orbitRadius, float rotationSpeed, float eccentricity,
             boolean lenientMode) {
@@ -60,8 +61,6 @@ public class OrbitalMovementStrategy extends AbstractMovementStrategy {
         }
         this.rotationSpeed = safeRotationSpeed;
 
-        // Clamp eccentricity between 0 and 0.8 (high eccentricity can cause too much
-        // orbit variation)
         this.eccentricity = MathUtils.clamp(eccentricity, 0, 0.8f);
     }
 
@@ -126,6 +125,7 @@ public class OrbitalMovementStrategy extends AbstractMovementStrategy {
             float nextY = currentRadius * MathUtils.sin(nextAngle);
 
             Vector2 velocityDirection = new Vector2(nextX - orbitX, nextY - orbitY).nor();
+            
             // Scale by rotation speed and radius to get appropriate magnitude
             float velocityMagnitude = Math.abs(rotationSpeed) * currentRadius;
             Vector2 velocity = velocityDirection.scl(velocityMagnitude);

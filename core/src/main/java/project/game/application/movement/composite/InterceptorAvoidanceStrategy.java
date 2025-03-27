@@ -16,8 +16,10 @@ import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrat
 
 /**
  * A specialized composite strategy that combines interceptor movement with
- * obstacle avoidance. This is useful for NPCs that need to chase targets
- * while avoiding obstacles in their path.
+ * obstacle avoidance.
+ * 
+ * This is useful for NPCs that need to chase targets while avoiding obstacles
+ * in their path.
  */
 public class InterceptorAvoidanceStrategy extends AbstractMovementStrategy {
 

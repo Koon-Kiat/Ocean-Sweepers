@@ -9,14 +9,15 @@ import project.game.engine.entitysystem.movement.strategy.AbstractMovementStrate
 
 /**
  * Implements spring-like following strategy between entities.
+ * 
  * The follower is connected to the target by an imaginary spring,
  * creating elastic movement with oscillation and damping.
  */
 public class SpringFollowStrategy extends AbstractMovementStrategy {
 
     private final IPositionable target;
-    private final float springConstant; // Higher = stiffer spring
-    private final float damping; // Higher = more damping (less oscillation)
+    private final float springConstant;
+    private final float damping;
     private final Vector2 velocity;
 
     public SpringFollowStrategy(IPositionable target, float springConstant, float damping, boolean lenientMode) {

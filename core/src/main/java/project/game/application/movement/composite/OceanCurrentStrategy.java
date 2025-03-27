@@ -17,6 +17,7 @@ import project.game.engine.entitysystem.movement.strategy.CompositeMovementStrat
 
 /**
  * A composite movement strategy that simulates ocean currents.
+ * 
  * Combines constant directional flow with zigzag oscillation for realistic
  * water movement effects.
  */
