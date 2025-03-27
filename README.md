@@ -2,7 +2,7 @@
 
 ![Game Engine](https://img.shields.io/badge/Game_Engine-LibGDX-orange)
 ![Architecture](https://img.shields.io/badge/Architecture-Component_Based-blue)
-![Design Patterns](https://img.shields.io/badge/Design_Patterns-Strategy_Builder_Factory-green)
+![Design Patterns](https://img.shields.io/badge/Design_Patterns-Strategy_Factory_Composite-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ## Overview
@@ -14,46 +14,51 @@ A 2D game developed with LibGDX where players control a boat to clean up trash i
 - **LibGDX Framework**: Cross-platform Java game development framework
 - **Box2D Physics**: For collision detection and realistic movement physics
 - **Component-Based Architecture**: Clear separation between engine and game implementation
-- **Design Patterns**: Strategy, Builder, Factory Method, Decorator, Singleton, and more
+- **Design Patterns**: Strategy, Builder, Factory Method, Composite, Visitor, and more
 
 ## Project Structure
 
 ```plaintext
 project/
 ├── game/
-│   ├── Main.java                 # Application entry point
-│   ├── common/                   # Common utilities and exceptions
-│   │   ├── exception/            # Custom exceptions
-│   │   ├── logging/              # Logging utilities
-│   │   └── util/                 # General utilities like path handling
-│   ├── engine/                   # Core engine (abstract, reusable)
-│   │   ├── api/                  # Interfaces defining core contracts
-│   │   │   ├── collision/        # Collision detection interfaces
-│   │   │   ├── constant/         # Configuration interfaces
-│   │   │   ├── logging/          # Logging interfaces
-│   │   │   ├── movement/         # Movement strategy interfaces
-│   │   │   ├── render/           # Rendering interfaces
-│   │   │   └── scene/            # Scene management interfaces
-│   │   ├── asset/                # Asset management
-│   │   ├── audio/                # Audio system
-│   │   ├── constant/             # Abstract configuration system
-│   │   ├── entitysystem/         # Entity component system
-│   │   │   ├── collision/        # Collision handling
-│   │   │   ├── entity/           # Base entity classes
-│   │   │   └── movement/         # Movement management
-│   │   ├── io/                   # Input/output handling
-│   │   ├── logging/              # Logging implementation
-│   │   └── scene/                # Scene management
-│   └── context/                  # Game implementation (concrete)
-│       ├── api/                  # Game-specific interfaces
-│       ├── builder/              # Movement builder implementations
-│       ├── constant/             # Game constants
-│       ├── decorator/            # Strategy decorators
-│       ├── entity/               # Game entities (Boat, Monster, etc.)
-│       ├── factory/              # Factory implementations
-│       ├── movement/             # Concrete movement strategies
-│       ├── scene/                # Game scenes (Menu, Game, etc.)
-│       └── ui/                   # User interface components
+│   ├── Main.java                     # Application entry point
+│   ├── application/                  # Game-specific implementations
+│   │   ├── entity/                   # Game entities (Boat, Rock, Trash, etc.)
+│   │   │   ├── api/                  # Entity-related interfaces
+│   │   │   ├── factory/              # Entity factory implementations
+│   │   │   ├── flyweight/            # Texture flyweight implementations
+│   │   │   ├── item/                 # Collectible item implementations
+│   │   │   ├── npc/                  # Non-player character implementations
+│   │   │   ├── obstacle/             # Obstacle implementations
+│   │   │   └── player/               # Player entity implementations
+│   │   ├── movement/                 # Movement system implementations
+│   │   │   ├── api/                  # Movement interfaces
+│   │   │   ├── builder/              # Movement builder implementations
+│   │   │   ├── composite/            # Composite movement strategies
+│   │   │   ├── decorator/            # Strategy decorators
+│   │   │   ├── factory/              # Movement factory implementations
+│   │   │   └── strategy/             # Concrete movement strategies
+│   │   └── scene/                    # Game scenes (Menu, Game, etc.)
+│   │       ├── factory/              # Scene factory implementations
+│   │       ├── main/                 # Main gameplay scenes
+│   │       ├── overlay/              # Overlay and transition scenes
+│   │       └── ui/                   # User interface components
+│   ├── common/                       # Common utilities and exceptions
+│   │   ├── config/                   # Configuration management
+│   │   ├── exception/                # Custom exceptions
+│   │   ├── logging/                  # Logging utilities
+│   │   └── util/                     # General utilities
+│   └── engine/                       # Core engine (abstract, reusable)
+│       ├── asset/                    # Asset management
+│       ├── audio/                    # Audio system
+│       ├── constant/                 # Configuration system
+│       ├── entitysystem/             # Entity component system
+│       │   ├── entity/               # Base entity framework
+│       │   ├── movement/             # Movement management
+│       │   └── physics/              # Physics and collision system
+│       ├── io/                       # Input/output handling
+│       ├── logging/                  # Logging implementation
+│       └── scene/                    # Scene management
 ```
 
 ### Engine Layer (Abstract, Reusable)
@@ -68,7 +73,7 @@ The engine provides a framework of abstract components that can be reused across
 - **Logging**: Extensible logging system
 - **Configuration**: Profile-based configurable constants system
 
-### Context Layer (Game Implementation)
+### Application Layer (Game Implementation)
 
 Game-specific implementations built on top of the engine:
 
@@ -115,148 +120,115 @@ The codebase demonstrates exemplary use of OOP principles and design patterns ac
   - Components depend on abstractions (interfaces) rather than concrete implementations
   - Factory patterns further decouple component creation from usage
 
-### Design Pattern Highlights
+### Design Pattern Implementations
 
-#### Movement System Patterns
+#### Creational Patterns
 
-- **Strategy Pattern**:
-  - Multiple movement strategies implement the `IMovementStrategy` interface
-  - Strategies like `ObstacleAvoidanceStrategy`, `FollowMovementStrategy`, and `ZigZagMovementStrategy`
-  - Movement strategies can be swapped at runtime
-
-- **Builder Pattern**:
-  - `AbstractMovementBuilder` provides a base for fluent builders
-  - `PlayerMovementBuilder` and `NPCMovementBuilder` extend it with specific configurations
-  - Method chaining with type-safe generics (e.g., `withObstacleAvoidance().withConstantMovement()`)
-
-- **Composite Pattern**:
-  - `CompositeMovementStrategy` combines multiple strategies with weighted influences
-  - Allows complex behaviors through composition of simple strategies
-
-- **Decorator Pattern**:
-  - `MovementStrategyDecorator` allows for dynamic enhancement of strategies
-  - Strategies can be combined and enhanced without changing their base implementation
-
-#### Entity System Patterns
-
-- **Composition over Inheritance**:
-
-- **Object Pool Pattern**:
-  - `ObjectPool` interface with implementation for game object recycling
-  - `RockFactory` and `TrashFactory` work with object pools for efficient memory usage
-  - Reduces garbage collection overhead during gameplay
-
-- **Prototype Pattern**:
-  - Entities can be cloned to create new instances with similar properties
-  - Template entities serve as prototypes for creating variations
-  - Efficient creation of multiple similar objects
-
-#### Collision System Patterns
-
-- **Visitor Pattern**:
-  - `ICollidableVisitor` interface for type-safe collision handling
-  - Double dispatch with `visit` and `accept` methods to handle collisions between different entity types
-  - Eliminates the need for type checking and casting
-
-- **Command Pattern**:
-  - `ICollisionOperation` encapsulates collision responses
-  - Collision callbacks execute appropriate commands based on collision type
-  - Decouples collision detection from collision response logic
-
-- **Chain of Responsibility**:
-  - Collision handlers form a chain for processing different collision types
-  - Each handler decides whether to process the collision or pass it to the next handler
-  - Allows for flexible handling of various collision scenarios
-
-- **Mediator Pattern**:
-  - `CollisionManager` acts as a mediator between collidable objects
-  - Centralizes collision logic instead of distributing it across entities
-  - Reduces dependencies between individual entities
-
-#### Audio System Patterns
-
-- **Singleton Pattern**:
+- **Singleton (1)**:
   - `AudioManager`, `MusicManager`, and `SoundManager` use singleton pattern
-  - Provides global access to audio functionality
-  - Ensures only one instance manages audio resources
+  - `MovementStrategyFactory` implements singleton for centralized strategy creation
+  - Provides global access while ensuring single instance management
 
-- **Facade Pattern**:
-  - `AudioManager` provides a simplified interface to the complex audio subsystems
-  - Clients interact with a single class rather than multiple audio components
-  - Encapsulates the complexities of audio resource management
-
-- **Observer Pattern**:
-  - Audio volume changes notify registered listeners
-  - UI components observe and respond to audio state changes
-  - Decouples audio system from UI components
-
-- **Proxy Pattern**:
-  - Lazy loading of audio resources through proxy objects
-  - Audio files are only loaded when needed
-  - Reduces initial loading time and memory usage
-
-#### Factory Patterns
-
-- **Factory Method Pattern**:
+- **Factory Method (2)**:
   - `MovementStrategyFactory` creates various movement strategies
   - `SceneFactory` handles scene creation and registration
   - `RockFactory` and `TrashFactory` create game objects
 
-- **Abstract Factory Pattern**:
+- **Abstract Factory (3)**:
   - `IMovementStrategyFactory` defines an interface for creating movement strategies
   - Different factory implementations can produce different families of related objects
   - Allows for swapping out entire families of strategies
 
-- **Builder Factory Pattern**:
-  - Combines Builder and Factory patterns
-  - Factory creates appropriate builder instances
-  - Enables complex object creation with fluent interfaces
+- **Builder (4)**:
+  - `AbstractMovementBuilder` provides a base for fluent builders
+  - `PlayerMovementBuilder` and `NPCMovementBuilder` extend it with specific configurations
+  - Method chaining with type-safe generics (e.g., `withObstacleAvoidance().withConstantMovement()`)
 
-#### Scene Management Patterns
+- **Prototype (5)**:
+  - Entities can be cloned to create new instances with similar properties
+  - `ObjectPool` implementation leverages prototype-like behavior
+  - Efficient creation of multiple similar objects
 
-- **State Pattern**:
-  - Scene transitions represent different game states
-  - Each scene encapsulates state-specific behavior
-  - `SceneManager` handles state transitions
+#### Structural Patterns
 
-- **Context-Strategy Pattern Combination**:
-  - `SceneManager` acts as context for scene-specific strategies
-  - Scenes implement strategy interfaces for behavior
-  - Clean separation between scene management and scene-specific logic
-
-#### Configuration and Logging Patterns
-
-- **Template Method Pattern**:
-  - `AbstractLogger` defines the logging algorithm structure
-  - `AbstractConfigurationLoader` provides template methods for configuration operations
-  - Subclasses implement the specific loading/saving behavior
-
-- **Registry Pattern**:
-  - Central registries maintain collections of game elements
-  - Registration and lookup mechanisms for accessing components
-  - Streamlines component access without direct dependencies
-
-- **Service Locator Pattern**:
-  - Used for accessing common services like logging and configuration
-  - Components can locate required services without direct dependencies
-  - Enhances testability by allowing service mocking
-
-#### Miscellaneous Patterns
-
-- **Adapter Pattern**:
+- **Adapter (6)**:
   - Adapts external libraries (like Box2D) to the game's interfaces
   - Shields game code from third-party API changes
   - `CollidableEntityHandler` adapts collision interfaces
 
-- **Flyweight Pattern**:
-  - Shared resources like textures and sounds minimize memory usage
-  - `CustomAssetManager` ensures assets are loaded only once
-  - Reference counting for efficient resource management
+- **Composite (7)**:
+  - `CompositeMovementStrategy` combines multiple strategies with weighted influences
+  - Allows complex behaviors through composition of simple strategies
+  - `InterceptorAvoidanceStrategy` and `OceanCurrentStrategy` demonstrate practical usage
 
-- **Null Object Pattern**:
-  - Default implementations prevent null checking
-  - Empty strategies and handlers provide safe defaults
-  - Reduces null pointer exceptions and improves code readability
+- **Proxy (8)**:
+  - Lazy loading of audio resources through proxy objects
+  - Audio files are only loaded when needed
+  - Reduces initial loading time and memory usage
+
+- **Flyweight (9)**:
+  - `TextureFlyweightFactory` shares texture resources
+  - Shared assets minimize memory usage
+  - Ensures assets are loaded only once with efficient reference management
+
+- **Facade (10)**:
+  - `AudioManager` provides a simplified interface to the complex audio subsystems
+  - Clients interact with a single class rather than multiple audio components
+  - Encapsulates the complexities of audio resource management
+
+- **Bridge (11)**:
+  - Separation between entity abstraction and implementation
+  - Movement behaviors can be changed independently of entity types
+  - Decouples abstraction hierarchies from implementation hierarchies
+
+- **Decorator (12)**:
+  - `MovementStrategyDecorator` allows for dynamic enhancement of strategies
+  - Strategies can be combined and enhanced without changing their base implementation
+  - Additional behaviors can be added at runtime
+
+#### Behavioral Patterns
+
+- **Template Method (13)**:
+  - `AbstractLogger` defines the logging algorithm structure
+  - `AbstractConfigurationLoader` provides template methods for configuration operations
+  - `AbstractMovementStrategy` provides template for common movement behavior
+  - Subclasses implement the specific behaviors
+
+- **Mediator (14)**:
+  - `CollisionManager` acts as a mediator between collidable objects
+  - Centralizes collision logic instead of distributing it across entities
+  - Reduces dependencies between individual entities
+
+- **Chain of Responsibility (15)**:
+  - Collision handlers form a chain for processing different collision types
+  - Each handler decides whether to process the collision or pass it to the next handler
+  - Allows for flexible handling of various collision scenarios
+
+- **Observer (16)**:
+  - Audio volume changes notify registered listeners
+  - UI components observe and respond to audio state changes
+  - Entity removal listeners observe when entities are destroyed
+  - Decouples event sources from event handlers
+
+- **Strategy (17)**:
+  - Multiple movement strategies implement the `IMovementStrategy` interface
+  - Strategies like `ObstacleAvoidanceStrategy`, `FollowMovementStrategy`, and `ZigZagMovementStrategy`
+  - Movement strategies can be swapped at runtime
+
+- **Command (18)**:
+  - `ICollisionOperation` encapsulates collision responses
+  - Collision callbacks execute appropriate commands based on collision type
+  - Decouples collision detection from collision response logic
+
+- **State (19)**:
+  - Scene transitions represent different game states
+  - Each scene encapsulates state-specific behavior
+  - `SceneManager` handles state transitions
+
+- **Visitor (20)**:
+  - `ICollidableVisitor` interface for type-safe collision handling
+  - Double dispatch with `visit` and `accept` methods to handle different entity types
+  - Eliminates the need for type checking and casting
 
 ## Movement Strategies
 
@@ -271,7 +243,7 @@ The game includes multiple AI movement strategies including:
 - **Randomized Movement**: Randomly selects from a pool of strategies
 - **Composite Movement**: Combines multiple strategies with weighted influence
 
-All strategies are composable through the Strategy and Decorator patterns, enabling complex behaviors from simpler components.
+All strategies are composable through the Strategy and Composite patterns, enabling complex behaviors from simpler components.
 
 ## Installation
 
@@ -284,7 +256,7 @@ To set up the project:
 
 ```bash
 git clone [repository-url]
-cd OOPProject
+cd Ocean-Sweepers
 ```
 
 ## Usage
@@ -329,7 +301,7 @@ For example, `core:clean` removes `build` folder only from the `core` project.
 The architecture follows a layered approach:
 
 1. **Engine Layer**: Provides abstractions and reusable components
-2. **Context Layer**: Implements game-specific logic on top of the engine
+2. **Application Layer**: Implements game-specific logic on top of the engine
 3. **API Layer**: Interfaces that define contracts between components
 4. **Implementation Layer**: Concrete implementations of those interfaces
 
