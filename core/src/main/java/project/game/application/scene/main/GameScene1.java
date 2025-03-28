@@ -277,10 +277,6 @@ public class GameScene1 extends AbstractGameScene {
 
         draw();
 
-        // Render debug matrix
-        debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
-        debugRenderer.render(world, debugMatrix);
-
         // Only step the physics if we have active bodies
         int activeBodyCount = 0;
         Array<Body> bodies = new Array<>();
