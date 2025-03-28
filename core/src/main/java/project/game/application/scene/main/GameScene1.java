@@ -36,7 +36,6 @@ public class GameScene1 extends AbstractGameScene {
 
     // Constant
 
-
     public GameScene1(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager, 50);
     }
@@ -149,7 +148,7 @@ public class GameScene1 extends AbstractGameScene {
     @Override
     protected void createRocks() {
         // Create a standard number of rocks for the first scene
-        int numRocks = constants.NUM_ROCKS(); 
+        int numRocks = constants.NUM_ROCKS();
         for (int i = 0; i < numRocks; i++) {
             Rock rock = entityFactoryManager.createRock();
             rocks.add(rock);

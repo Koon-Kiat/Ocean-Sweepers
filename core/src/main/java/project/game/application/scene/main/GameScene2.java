@@ -258,7 +258,6 @@ public class GameScene2 extends AbstractGameScene {
 
     @Override
     protected void createRocks() {
-        // In this scene, we want fewer rocks but make them more challenging
         int numRocks = constants.NUM_ROCKS();
         for (int i = 0; i < numRocks; i++) {
             Rock rock = entityFactoryManager.createRock();

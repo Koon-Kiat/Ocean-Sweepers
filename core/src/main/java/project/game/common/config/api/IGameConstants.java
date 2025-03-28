@@ -1,5 +1,7 @@
 package project.game.common.config.api;
 
+import project.game.engine.constant.api.IDynamicConstants;
+
 /**
  * Top-level interface for game constants.
  * 
@@ -7,8 +9,9 @@ package project.game.common.config.api;
  */
 public interface IGameConstants extends
 
-        IPhysicsConstants,
-        IScreenConstants,
-        IEntityConstants,
-        IMovementConstants {
+                IDynamicConstants,
+                IPhysicsConstants,
+                IScreenConstants,
+                IEntityConstants,
+                IMovementConstants {
 }
