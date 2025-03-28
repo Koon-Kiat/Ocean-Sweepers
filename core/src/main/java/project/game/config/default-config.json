@@ -17,7 +17,7 @@
         "NUM_TRASHES": 20.0,
         "ROCK_WIDTH": 100.0,
         "ROCK_HEIGHT": 100.0,
-        "NUM_ROCKS": 15.0,
+        "NUM_ROCKS": 5.0,
         "SEA_TURTLE_START_X": 100.0,
         "SEA_TURTLE_START_Y": 100.0,
         "SEA_TURTLE_WIDTH": 70.0,
