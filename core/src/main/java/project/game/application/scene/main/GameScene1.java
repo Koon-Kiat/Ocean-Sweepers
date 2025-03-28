@@ -34,6 +34,9 @@ public class GameScene1 extends AbstractGameScene {
     private TextureRegion[] boatTextureRegions;
     private TextureRegion[] boatDirectionalSprites;
 
+    // Constant
+
+
     public GameScene1(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager, 50);
     }
@@ -146,7 +149,7 @@ public class GameScene1 extends AbstractGameScene {
     @Override
     protected void createRocks() {
         // Create a standard number of rocks for the first scene
-        int numRocks = 1; // Custom number for this scene
+        int numRocks = constants.NUM_ROCKS(); 
         for (int i = 0; i < numRocks; i++) {
             Rock rock = entityFactoryManager.createRock();
             rocks.add(rock);
@@ -160,7 +163,7 @@ public class GameScene1 extends AbstractGameScene {
     @Override
     protected void createTrash() {
         // Create a standard number of trash objects for the first scene
-        int numTrash = 1; // Custom number for this scene
+        int numTrash = constants.NUM_TRASHES();
         for (int i = 0; i < numTrash; i++) {
             Trash trash = entityFactoryManager.createTrash();
             if (trash != null) {

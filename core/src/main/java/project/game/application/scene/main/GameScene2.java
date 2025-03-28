@@ -259,7 +259,7 @@ public class GameScene2 extends AbstractGameScene {
     @Override
     protected void createRocks() {
         // In this scene, we want fewer rocks but make them more challenging
-        int numRocks = 2; // Fewer rocks than GameScene1
+        int numRocks = constants.NUM_ROCKS();
         for (int i = 0; i < numRocks; i++) {
             Rock rock = entityFactoryManager.createRock();
             rocks.add(rock);
@@ -273,7 +273,7 @@ public class GameScene2 extends AbstractGameScene {
     @Override
     protected void createTrash() {
         // Create more trash for the turtle to collect in this scene
-        int numTrash = 2; // More trash than GameScene1
+        int numTrash = constants.NUM_TRASHES();
         for (int i = 0; i < numTrash; i++) {
             Trash trash = entityFactoryManager.createTrash();
             if (trash != null) {
