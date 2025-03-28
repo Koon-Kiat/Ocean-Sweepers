@@ -7,20 +7,31 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import project.game.application.scene.factory.SceneFactory;
 import project.game.common.config.factory.GameConstantsFactory;
 import project.game.common.logging.core.GameLogger;
+import project.game.common.logging.core.LoggerConfig;
 import project.game.common.logging.util.LogPaths;
 import project.game.common.util.file.ProjectPaths;
 import project.game.engine.io.management.SceneInputManager;
+import project.game.engine.logging.api.LogLevel;
 import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.SceneRenderer;
 
 public class Main extends ApplicationAdapter {
 
-    private static final GameLogger LOGGER = new GameLogger(Main.class);
+    private static GameLogger LOGGER;
     private SceneManager sceneManager;
     private SceneRenderer sceneRenderer;
 
     @Override
     public void create() {
+        LoggerConfig loggerConfig = new LoggerConfig.Builder()
+                .withLogDirectory(LogPaths.getGlobalLogDirectory())
+                .withMaxLogFiles(10)
+                .withDefaultLogLevel(LogLevel.DEBUG)
+                .build();
+        GameLogger.configure(loggerConfig);
+
+        LOGGER = new GameLogger(Main.class);
+
         LOGGER.info("Application starting up");
         LOGGER.debug("Java version: {0}", System.getProperty("java.version"));
         LOGGER.debug("Using log directory: {0}", LogPaths.getGlobalLogDirectory());
