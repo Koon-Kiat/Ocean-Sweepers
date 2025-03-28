@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
  * Interface for entities that can render different sprites based on state.
- * Extends IRenderable to include basic rendering capabilities while adding
- * sprite-specific functionality.
  */
 public interface ISpriteRenderable {
 
