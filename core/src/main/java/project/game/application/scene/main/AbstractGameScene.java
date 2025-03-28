@@ -50,9 +50,9 @@ import project.game.engine.scene.management.TimeManager;
 /**
  * Base game scene class that contains common functionality for game scenes.
  */
-public abstract class BaseGameScene extends Scene implements IEntityRemovalListener {
+public abstract class AbstractGameScene extends Scene implements IEntityRemovalListener {
 
-    protected static final GameLogger LOGGER = new GameLogger(BaseGameScene.class);
+    protected static final GameLogger LOGGER = new GameLogger(AbstractGameScene.class);
 
     // Menu
     protected final HealthManager healthManager;
@@ -118,7 +118,7 @@ public abstract class BaseGameScene extends Scene implements IEntityRemovalListe
      * @param inputManager  The input manager
      * @param timerDuration The duration of the timer in seconds
      */
-    public BaseGameScene(SceneManager sceneManager, SceneInputManager inputManager, int timerDuration) {
+    public AbstractGameScene(SceneManager sceneManager, SceneInputManager inputManager, int timerDuration) {
         super(sceneManager, inputManager);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, timerDuration);
@@ -491,11 +491,6 @@ public abstract class BaseGameScene extends Scene implements IEntityRemovalListe
     }
 
     /**
-     * Method to be implemented by child classes to draw scene-specific UI.
-     */
-    protected abstract void draw();
-
-    /**
      * Dispose of all entities in the scene.
      */
     protected void disposeEntities() {
@@ -526,4 +521,9 @@ public abstract class BaseGameScene extends Scene implements IEntityRemovalListe
 
         LOGGER.info("All entities disposed.");
     }
+
+    /**
+     * Method to be implemented by child classes to draw scene-specific UI.
+     */
+    protected abstract void draw();
 }

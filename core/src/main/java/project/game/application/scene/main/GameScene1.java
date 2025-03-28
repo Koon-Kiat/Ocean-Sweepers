@@ -19,7 +19,7 @@ import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.SceneManager;
 
-public class GameScene1 extends BaseGameScene {
+public class GameScene1 extends AbstractGameScene {
 
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";

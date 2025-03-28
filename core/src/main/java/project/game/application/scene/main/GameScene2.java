@@ -24,7 +24,7 @@ import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.SceneManager;
 
-public class GameScene2 extends BaseGameScene {
+public class GameScene2 extends AbstractGameScene {
 
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";
@@ -222,7 +222,7 @@ public class GameScene2 extends BaseGameScene {
                 true);
 
         float[] customWeights = { 0.40f, 0.60f };
-        
+
         List<Entity> rockEntities = new ArrayList<>();
         for (Rock rock : rocks) {
             rockEntities.add(rock.getEntity());
