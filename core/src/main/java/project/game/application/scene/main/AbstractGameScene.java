@@ -501,7 +501,7 @@ public abstract class AbstractGameScene extends Scene implements IEntityRemovalL
             if (trash.getBody() != null) {
                 world.destroyBody(trash.getBody());
             }
-            entityManager.removeRenderableEntity(trash);
+            entityManager.removeSpriteEntity(trash);
         }
         trashes.clear();
 
@@ -510,7 +510,7 @@ public abstract class AbstractGameScene extends Scene implements IEntityRemovalL
             if (rock.getBody() != null) {
                 world.destroyBody(rock.getBody());
             }
-            entityManager.removeRenderableEntity(rock);
+            entityManager.removeSpriteEntity(rock);
         }
         rocks.clear();
 

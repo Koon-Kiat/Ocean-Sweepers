@@ -1,5 +1,6 @@
 package project.game.engine.entitysystem.entity.api;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
@@ -7,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  * Extends IRenderable to include basic rendering capabilities while adding
  * sprite-specific functionality.
  */
-public interface ISpriteRenderable extends IRenderable {
+public interface ISpriteRenderable {
 
     /**
      * Gets the current sprite to display
@@ -46,4 +47,25 @@ public interface ISpriteRenderable extends IRenderable {
      * @return The number of sprites, or 0 if no sprites available
      */
     int getSpritesCount();
+
+    /**
+     * Gets the path to the texture file for this entity
+     * 
+     * @return The path to the texture file
+     */
+    String getTexturePath();
+
+    /**
+     * Checks if the entity is currently renderable
+     * 
+     * @return true if the entity can be rendered
+     */
+    boolean isSpriteRenderable();
+
+    /**
+     * Renders the current sprite using the provided SpriteBatch
+     * 
+     * @param batch The SpriteBatch to use for rendering
+     */
+    void render(SpriteBatch batch);
 }

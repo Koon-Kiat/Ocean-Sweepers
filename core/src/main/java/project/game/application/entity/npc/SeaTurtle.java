@@ -116,7 +116,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     }
 
     public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeRenderableEntity(this);
+        entityManager.removeSpriteEntity(this);
     }
 
     public void setHealthCallback(ILifeLossCallback callback) {
@@ -277,7 +277,7 @@ public class SeaTurtle implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
-    public boolean isRenderable() {
+    public boolean isSpriteRenderable() {
         return true;
     }
 

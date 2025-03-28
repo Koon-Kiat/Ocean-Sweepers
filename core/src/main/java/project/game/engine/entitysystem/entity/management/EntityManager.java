@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.entitysystem.entity.api.IRenderable;
+import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.physics.api.ICollidableVisitor;
 
@@ -22,6 +23,7 @@ public class EntityManager {
 
 	private static final GameLogger LOGGER = new GameLogger(EntityManager.class);
 	private final List<IRenderable> renderables;
+	private final List<ISpriteRenderable> spriteRenderables;
 	private final List<Entity> entityList;
 	private final Set<String> entityIDs;
 
@@ -37,6 +39,7 @@ public class EntityManager {
 
 	public EntityManager() {
 		this.renderables = new ArrayList<>();
+		this.spriteRenderables = new ArrayList<>();
 		this.entityList = new ArrayList<>();
 		this.entityIDs = new HashSet<>();
 	}
@@ -97,6 +100,37 @@ public class EntityManager {
 		printRenderableList();
 	}
 
+	public boolean addSpriteEntity(ISpriteRenderable spriteRenderable) {
+		spriteRenderables.add(spriteRenderable);
+
+		Entity entity = extractEntity(spriteRenderable);
+
+		if (entity != null) {
+			if (entityIDs.contains(entity.getID())) {
+				LOGGER.warn("Duplicate ID: {0}", entity.getID());
+				return false;
+			}
+			entityIDs.add(entity.getID());
+			entityList.add(entity);
+		}
+		return true;
+	}
+
+	public void removeSpriteEntity(ISpriteRenderable spriteRenderable) {
+		if (spriteRenderable == null) {
+			LOGGER.error("Sprite renderable is null");
+			return;
+		}
+		spriteRenderables.remove(spriteRenderable);
+		Entity entity = extractEntity(spriteRenderable);
+		if (entity != null) {
+			entityIDs.remove(entity.getID());
+			entityList.remove(entity);
+			LOGGER.info("Sprite entity removed: {0}", entity.getID());
+		}
+		printRenderableList();
+	}
+
 	public boolean addEntity(Entity entity) {
 		if (entityIDs.contains(entity.getID())) {
 			LOGGER.warn("Duplicate ID: {0}", entity.getID());
@@ -124,6 +158,10 @@ public class EntityManager {
 		for (IRenderable renderable : renderables) {
 			renderable.render(batch);
 		}
+
+		for (ISpriteRenderable spriteRenderable : spriteRenderables) {
+			spriteRenderable.render(batch);
+		}
 	}
 
 	public void checkCollision() {
@@ -144,10 +182,12 @@ public class EntityManager {
 			}
 		}
 	}
-    public boolean containsEntity(Entity entity) {
-        if (entity == null) return false;
-        return entityList.contains(entity);
-    }
+
+	public boolean containsEntity(Entity entity) {
+		if (entity == null)
+			return false;
+		return entityList.contains(entity);
+	}
 
 	private void printRenderableList() {
 		LOGGER.info("Current renderable entities:");

@@ -65,7 +65,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 		if (entityManager == null) {
 			throw new IllegalArgumentException("EntityManager cannot be null");
 		}
-		entityManager.removeRenderableEntity(this);
+		entityManager.removeSpriteEntity(this);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class Rock implements ISpriteRenderable, ICollidableVisitor {
 	}
 
 	@Override
-	public boolean isRenderable() {
+	public boolean isSpriteRenderable() {
 		return true;
 	}
 

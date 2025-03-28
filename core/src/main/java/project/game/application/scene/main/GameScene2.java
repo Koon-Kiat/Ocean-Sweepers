@@ -171,7 +171,7 @@ public class GameScene2 extends AbstractGameScene {
         boat.setCollisionManager(collisionManager);
 
         // Add boat to managers
-        entityManager.addRenderableEntity(boat);
+        entityManager.addSpriteEntity(boat);
         collisionManager.addEntity(boat, playerMovementManager);
         existingEntities.add(boatEntity);
 
@@ -251,7 +251,7 @@ public class GameScene2 extends AbstractGameScene {
             reduceTurtleHealth();
         });
 
-        entityManager.addRenderableEntity(seaTurtle);
+        entityManager.addSpriteEntity(seaTurtle);
         collisionManager.addEntity(seaTurtle, npcMovementManager);
         existingEntities.add(seaTurtleEntity);
     }
@@ -262,7 +262,7 @@ public class GameScene2 extends AbstractGameScene {
         for (int i = 0; i < numRocks; i++) {
             Rock rock = entityFactoryManager.createRock();
             rocks.add(rock);
-            entityManager.addRenderableEntity(rock);
+            entityManager.addSpriteEntity(rock);
             collisionManager.addEntity(rock, null);
             existingEntities.add(rock.getEntity());
         }
@@ -277,7 +277,7 @@ public class GameScene2 extends AbstractGameScene {
             Trash trash = entityFactoryManager.createTrash();
             if (trash != null) {
                 trashes.add(trash);
-                entityManager.addRenderableEntity(trash);
+                entityManager.addSpriteEntity(trash);
 
                 // Get and store the movement manager
                 NPCMovementManager trashMovementManager = trash.getMovementManager();
@@ -449,7 +449,7 @@ public class GameScene2 extends AbstractGameScene {
             if (boat.getBody() != null) {
                 world.destroyBody(boat.getBody());
             }
-            entityManager.removeRenderableEntity(boat);
+            entityManager.removeSpriteEntity(boat);
             boat = null;
         }
 
@@ -457,7 +457,7 @@ public class GameScene2 extends AbstractGameScene {
             if (seaTurtle.getBody() != null) {
                 world.destroyBody(seaTurtle.getBody());
             }
-            entityManager.removeRenderableEntity(seaTurtle);
+            entityManager.removeSpriteEntity(seaTurtle);
             seaTurtle = null;
         }
     }

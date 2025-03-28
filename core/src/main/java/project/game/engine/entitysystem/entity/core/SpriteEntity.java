@@ -3,19 +3,19 @@ package project.game.engine.entitysystem.entity.core;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.physics.box2d.World;
 
 import project.game.engine.asset.management.CustomAssetManager;
 import project.game.engine.entitysystem.entity.api.ISpriteRenderable;
 import project.game.engine.entitysystem.entity.base.Entity;
 
 /**
- * SpriteEntity extends CollidableEntity to provide support for sprite-based
- * rendering instead of single textures. This allows for directional sprites and
- * animations while maintaining collision capabilities.
+ * SpriteEntity provides support for sprite-based rendering instead of single
+ * textures. This allows for directional sprites and animations while
+ * maintaining collision capabilities.
  */
-public abstract class SpriteEntity extends CollidableEntity implements ISpriteRenderable {
+public abstract class SpriteEntity extends Entity implements ISpriteRenderable {
 
+    private final Entity entity;
     private final String texturePath;
     private TextureRegion[] sprites;
     private int currentSpriteIndex;
@@ -24,15 +24,22 @@ public abstract class SpriteEntity extends CollidableEntity implements ISpriteRe
      * Constructor for SpriteEntity
      * 
      * @param entity      The underlying entity
-     * @param world       The Box2D world for physics
      * @param texturePath Fallback texture path in case sprites aren't available
      * @param sprites     Array of TextureRegion sprites
      */
-    public SpriteEntity(Entity entity, World world, String texturePath, TextureRegion[] sprites) {
-        super(entity, world);
+    public SpriteEntity(Entity entity, String texturePath, TextureRegion[] sprites) {
+        this.entity = entity;
         this.texturePath = texturePath;
         this.sprites = sprites;
         this.currentSpriteIndex = 0;
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public void loadTexture() {
+        CustomAssetManager.getInstance().loadTextureAssets(texturePath);
     }
 
     /**
@@ -109,13 +116,13 @@ public abstract class SpriteEntity extends CollidableEntity implements ISpriteRe
      */
     @Override
     public void render(SpriteBatch batch) {
-        if (!getEntity().isActive()) {
+        if (!this.isActive()) {
             return;
         }
 
         // Calculate render coordinates (centered on Box2D body)
-        float renderX = getEntity().getX() - getEntity().getWidth() / 2;
-        float renderY = getEntity().getY() - getEntity().getHeight() / 2;
+        float renderX = this.getX() - this.getWidth() / 2;
+        float renderY = this.getY() - this.getHeight() / 2;
 
         // Update the sprite index based on current state
         updateSpriteIndex();
@@ -125,14 +132,16 @@ public abstract class SpriteEntity extends CollidableEntity implements ISpriteRe
             TextureRegion currentSprite = getCurrentSprite();
             if (currentSprite != null) {
                 batch.draw(currentSprite, renderX, renderY,
-                        getEntity().getWidth(), getEntity().getHeight());
+                        this.getWidth(), this.getHeight());
             }
         } else if (texturePath != null && CustomAssetManager.getInstance().isLoaded()) {
             // Fall back to texture-based rendering using CustomAssetManager
             batch.draw(
                     CustomAssetManager.getInstance().getAsset(texturePath, Texture.class),
                     renderX, renderY,
-                    getEntity().getWidth(), getEntity().getHeight());
+                    this.getWidth(), this.getHeight());
         }
     }
+
+    public abstract void update();
 }

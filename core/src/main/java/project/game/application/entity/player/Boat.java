@@ -114,7 +114,7 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     }
 
     public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeRenderableEntity(this);
+        entityManager.addSpriteEntity(this);
     }
 
     public void setLifeLossCallback(ILifeLossCallback callback) {
@@ -254,7 +254,7 @@ public class Boat implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
-    public boolean isRenderable() {
+    public boolean isSpriteRenderable() {
         return true;
     }
 

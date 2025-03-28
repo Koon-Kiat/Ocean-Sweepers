@@ -94,7 +94,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     public void removeFromManager(EntityManager entityManager) {
-        entityManager.removeRenderableEntity(this);
+        entityManager.removeSpriteEntity(this);
         if (removalListener != null) {
             removalListener.onEntityRemove(getEntity());
         }
@@ -206,7 +206,7 @@ public class Trash implements ISpriteRenderable, ICollidableVisitor {
     }
 
     @Override
-    public boolean isRenderable() {
+    public boolean isSpriteRenderable() {
         return true;
     }
 
