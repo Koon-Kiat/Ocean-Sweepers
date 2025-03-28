@@ -13,7 +13,5 @@ public interface IPhysicsConstants {
 
     float ROCK_BASE_IMPULSE();
 
-    float TRASH_BASE_IMPULSE();
-
     float BOAT_BASE_IMPULSE();
 }

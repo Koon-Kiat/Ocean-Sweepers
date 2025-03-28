@@ -10,13 +10,13 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.Array;
 
+import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
 import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.application.movement.builder.NPCMovementBuilder;
 import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.application.movement.factory.MovementStrategyFactory;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
@@ -25,8 +25,6 @@ import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.SceneManager;
 
 public class GameScene2 extends BaseGameScene {
-
-    private static final GameLogger LOGGER = new GameLogger(GameScene2.class);
 
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";
@@ -224,16 +222,23 @@ public class GameScene2 extends BaseGameScene {
                 true);
 
         float[] customWeights = { 0.40f, 0.60f };
+        
         List<Entity> rockEntities = new ArrayList<>();
         for (Rock rock : rocks) {
             rockEntities.add(rock.getEntity());
+        }
+        List<Trash> trashEntities = new ArrayList<>();
+        for (Trash trash : trashes) {
+            trashEntities.add(trash);
         }
         npcMovementManager = new NPCMovementBuilder(MovementStrategyFactory.getInstance())
                 .withEntity(seaTurtleEntity)
                 .setSpeed(constants.NPC_SPEED())
                 .setInitialVelocity(1, 0)
-                .withTrashCollector(trashes,
-                        rockEntities, customWeights)
+                .withTrashCollector(
+                        trashEntities,
+                        rockEntities,
+                        customWeights)
                 .setLenientMode(true)
                 .build();
 
@@ -249,6 +254,44 @@ public class GameScene2 extends BaseGameScene {
         entityManager.addRenderableEntity(seaTurtle);
         collisionManager.addEntity(seaTurtle, npcMovementManager);
         existingEntities.add(seaTurtleEntity);
+    }
+
+    @Override
+    protected void createRocks() {
+        // In this scene, we want fewer rocks but make them more challenging
+        int numRocks = 2; // Fewer rocks than GameScene1
+        for (int i = 0; i < numRocks; i++) {
+            Rock rock = entityFactoryManager.createRock();
+            rocks.add(rock);
+            entityManager.addRenderableEntity(rock);
+            collisionManager.addEntity(rock, null);
+            existingEntities.add(rock.getEntity());
+        }
+        LOGGER.info("Created " + numRocks + " rocks for GameScene2");
+    }
+
+    @Override
+    protected void createTrash() {
+        // Create more trash for the turtle to collect in this scene
+        int numTrash = 2; // More trash than GameScene1
+        for (int i = 0; i < numTrash; i++) {
+            Trash trash = entityFactoryManager.createTrash();
+            if (trash != null) {
+                trashes.add(trash);
+                entityManager.addRenderableEntity(trash);
+
+                // Get and store the movement manager
+                NPCMovementManager trashMovementManager = trash.getMovementManager();
+                if (trashMovementManager != null) {
+                    trashMovementManagers.add(trashMovementManager);
+                    collisionManager.addEntity(trash, trashMovementManager);
+                }
+
+                existingEntities.add(trash.getEntity());
+                LOGGER.info("Created and registered trash entity " + i + " with movement manager");
+            }
+        }
+        LOGGER.info("Created " + numTrash + " trash objects for GameScene2");
     }
 
     @Override

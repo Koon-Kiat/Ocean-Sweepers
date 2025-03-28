@@ -7,11 +7,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.Array;
 
-import project.game.application.entity.api.IEntityRemovalListener;
+import project.game.application.entity.item.Trash;
+import project.game.application.entity.obstacle.Rock;
 import project.game.application.entity.player.Boat;
 import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.application.movement.factory.MovementStrategyFactory;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
 import project.game.engine.entitysystem.entity.base.Entity;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
@@ -20,8 +20,6 @@ import project.game.engine.io.management.SceneInputManager;
 import project.game.engine.scene.management.SceneManager;
 
 public class GameScene1 extends BaseGameScene {
-
-    private static final GameLogger LOGGER = new GameLogger(GameScene1.class);
 
     // Sprite sheet identifiers
     private static final String BOAT_SPRITESHEET = "boat_sprites";
@@ -146,6 +144,43 @@ public class GameScene1 extends BaseGameScene {
     }
 
     @Override
+    protected void createRocks() {
+        // Create a standard number of rocks for the first scene
+        int numRocks = 1; // Custom number for this scene
+        for (int i = 0; i < numRocks; i++) {
+            Rock rock = entityFactoryManager.createRock();
+            rocks.add(rock);
+            entityManager.addRenderableEntity(rock);
+            collisionManager.addEntity(rock, null);
+            existingEntities.add(rock.getEntity());
+        }
+        LOGGER.info("Created " + numRocks + " rocks for GameScene1");
+    }
+
+    @Override
+    protected void createTrash() {
+        // Create a standard number of trash objects for the first scene
+        int numTrash = 1; // Custom number for this scene
+        for (int i = 0; i < numTrash; i++) {
+            Trash trash = entityFactoryManager.createTrash();
+            if (trash != null) {
+                trashes.add(trash);
+                entityManager.addRenderableEntity(trash);
+
+                // Get and store the movement manager
+                NPCMovementManager trashMovementManager = trash.getMovementManager();
+                if (trashMovementManager != null) {
+                    trashMovementManagers.add(trashMovementManager);
+                    collisionManager.addEntity(trash, trashMovementManager);
+                }
+
+                existingEntities.add(trash.getEntity());
+            }
+        }
+        LOGGER.info("Created " + numTrash + " trash objects for GameScene1");
+    }
+
+    @Override
     protected void draw() {
         // Regular rendering code
         batch.begin();
@@ -235,7 +270,7 @@ public class GameScene1 extends BaseGameScene {
                         constants.PIXELS_TO_METERS());
             }
         } catch (Exception e) {
-            LOGGER.error("Exception during game update: {0}", e.getMessage());
+            LOGGER.error("Exception during game update: " + e.getMessage());
         }
 
         draw();

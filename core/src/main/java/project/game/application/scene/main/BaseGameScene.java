@@ -372,37 +372,10 @@ public abstract class BaseGameScene extends Scene implements IEntityRemovalListe
                     trashRegions);
             entityFactoryManager.setTrashRemovalListener(this);
 
-            // Create rocks and trash
-            for (int i = 0; i < constants.NUM_ROCKS(); i++) {
-                Rock rock = entityFactoryManager.createRock();
-                rocks.add(rock);
-                entityManager.addRenderableEntity(rock);
-                collisionManager.addEntity(rock, null);
-                existingEntities.add(rock.getEntity());
-            }
-
-            // Create all trash entities
-            for (int i = 0; i < constants.NUM_TRASHES(); i++) {
-                Trash trash = entityFactoryManager.createTrash();
-                if (trash != null) {
-                    trashes.add(trash);
-                    entityManager.addRenderableEntity(trash);
-
-                    // Get and store the movement manager
-                    NPCMovementManager trashMovementManager = trash.getMovementManager();
-                    if (trashMovementManager != null) {
-                        trashMovementManagers.add(trashMovementManager);
-                        collisionManager.addEntity(trash, trashMovementManager);
-                    }
-
-                    existingEntities.add(trash.getEntity());
-                    LOGGER.info("Created and registered trash entity {0} with movement manager", i);
-                }
-            }
-
-            // Create main player character (to be implemented by child classes)
+            // Create scene-specific entities
+            createRocks();
+            createTrash();
             createMainCharacter();
-
             createSeaTurtle();
 
             // Create world boundaries last
@@ -434,6 +407,10 @@ public abstract class BaseGameScene extends Scene implements IEntityRemovalListe
     protected abstract void createMainCharacter();
 
     protected abstract void createSeaTurtle();
+
+    protected abstract void createRocks();
+
+    protected abstract void createTrash();
 
     protected abstract void initializeGameAssets();
 

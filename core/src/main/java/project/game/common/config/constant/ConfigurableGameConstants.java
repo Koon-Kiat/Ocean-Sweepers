@@ -49,11 +49,6 @@ public class ConfigurableGameConstants extends AbstractConfigurableConstants imp
     }
 
     @Override
-    public float TRASH_BASE_IMPULSE() {
-        return getFloatValue("TRASH_BASE_IMPULSE");
-    }
-
-    @Override
     public float BOAT_BASE_IMPULSE() {
         return getFloatValue("BOAT_BASE_IMPULSE");
     }
