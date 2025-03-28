@@ -1,81 +1,61 @@
 package project.game.application.scene.main;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.utils.Array;
 
-import project.game.application.entity.api.IEntityRemovalListener;
 import project.game.application.entity.item.Trash;
 import project.game.application.entity.npc.SeaTurtle;
+import project.game.application.entity.obstacle.Rock;
+import project.game.application.entity.player.Boat;
 import project.game.application.movement.builder.NPCMovementBuilder;
+import project.game.application.movement.builder.PlayerMovementBuilder;
 import project.game.application.movement.factory.MovementStrategyFactory;
-import project.game.common.config.api.IGameConstants;
-import project.game.common.config.factory.GameConstantsFactory;
-import project.game.common.logging.core.GameLogger;
 import project.game.engine.asset.management.CustomAssetManager;
-import project.game.engine.audio.management.AudioManager;
 import project.game.engine.entitysystem.entity.base.Entity;
-import project.game.engine.entitysystem.entity.management.EntityManager;
 import project.game.engine.entitysystem.movement.core.NPCMovementManager;
-import project.game.engine.entitysystem.physics.management.CollisionManager;
+import project.game.engine.entitysystem.movement.core.PlayerMovementManager;
 import project.game.engine.io.management.SceneInputManager;
-import project.game.engine.scene.management.HealthManager;
-import project.game.engine.scene.management.Scene;
 import project.game.engine.scene.management.SceneManager;
-import project.game.engine.scene.management.ScoreManager;
-import project.game.engine.scene.management.TimeManager;
 
-public class GameScene2 extends Scene implements IEntityRemovalListener {
+public class GameScene2 extends AbstractGameScene {
 
-    private static final GameLogger LOGGER = new GameLogger(GameScene2.class);
+    // Sprite sheet identifiers
+    private static final String BOAT_SPRITESHEET = "boat_sprites";
 
-    // Constants
-    private IGameConstants constants;
+    // Entity type identifiers for directional sprites
+    private static final String BOAT_ENTITY = "boat";
 
-    // Managers
-    private HealthManager healthManager;
-    private final AudioManager audioManager;
-    private final ScoreManager scoreManager;
-    private NPCMovementManager npcMovementManager;
-    private CollisionManager collisionManager;
-    private EntityManager entityManager;
-    private CustomAssetManager assetManager;
-    private final TimeManager timer;
+    // Sprite sheet identifiers
+    private static final String SEA_TURTLE_SPRITESHEET = "sea_turtle_sprites";
 
-    // Scene
-    private final GameScene1 gameScene;
-    private Texture heartTexture;
-    private SpriteBatch batch;
-    @SuppressWarnings("unused")
-    private Skin skin;
+    // Entity type identifiers for directional sprites
+    private static final String SEA_TURTLE_ENTITY = "sea_turtle";
 
-    // Time
-    @SuppressWarnings("unused")
-    private float remainingTime;
+    // Boat-specific variables
+    private Boat boat;
+    private PlayerMovementManager playerMovementManager;
+    private Texture boatSpritesheet;
+    private TextureRegion[] boatTextureRegions;
+    private TextureRegion[] boatDirectionalSprites;
 
-    // Textures
+    // Turtle-specific variables
     private SeaTurtle seaTurtle;
     private TextureRegion[] seaTurtleRegion;
-    private static final String SEA_TURTLE_SPRITESHEET = "sea_turtle_sprites";
-    private static final String SEA_TURTLE_ENTITY = "sea_turtle";
-    private BitmapFont upheavalFont;
 
     // Health
     private int turtleHealth = 3;
     private static final int MAX_TURTLE_HEALTH = 3;
 
     public GameScene2(SceneManager sceneManager, SceneInputManager inputManager) {
-        super(sceneManager, inputManager);
-        this.gameScene = new GameScene1(sceneManager, inputManager);
-        this.scoreManager = ScoreManager.getInstance();
-        this.timer = new TimeManager(0, 50);
-        this.audioManager = gameScene.getAudioManager();
-        LOGGER.info("GameScene2 created with composition of GameScene");
+        // Call base class constructor with a timer duration of 50 seconds
+        super(sceneManager, inputManager, 50);
     }
 
     /**
@@ -102,183 +82,384 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
         }
     }
 
-    @Override
-    public void onEntityRemove(Entity entity) {
-        if (gameScene != null) {
-            gameScene.onEntityRemove(entity);
-        }
+    public void loseLife() {
+        healthManager.loseLife();
     }
 
     @Override
-    public void render(float deltaTime) {
-        gameScene.timer.stop();
-        timer.update(deltaTime);
+    public void show() {
+        turtleHealth = MAX_TURTLE_HEALTH;
+        super.show();
+        LOGGER.info("GameScene2 shown");
+    }
 
-        if (timer.isTimeUp()) {
-            timer.stop();
-            sceneManager.setScene("gameover");
-            if (scoreManager.getScore() < 100000) {
+    @Override
+    protected void initializeGameAssets() {
+        CustomAssetManager assetManager = CustomAssetManager.getInstance();
+
+        // Load all texture assets first
+        assetManager.loadTextureAssets("trash1.png");
+        assetManager.loadTextureAssets("trash2.png");
+        assetManager.loadTextureAssets("trash3.png");
+        assetManager.loadTextureAssets("steamboat.png");
+        assetManager.loadTextureAssets("Rocks.png");
+        assetManager.loadTextureAssets("ocean_background.jpg");
+        assetManager.update();
+        assetManager.loadAndFinish();
+
+        // Get background texture directly
+        backgroundTexture = assetManager.getAsset("ocean_background.jpg", Texture.class);
+
+        // Create and store boat sprite sheet (7x7)
+        boatSpritesheet = assetManager.getAsset("steamboat.png", Texture.class);
+        boatTextureRegions = assetManager.createSpriteSheet(BOAT_SPRITESHEET, "steamboat.png", 7, 7);
+
+        // Create boat directional sprites for all 8 directions
+        TextureRegion[] eightDirectionalSprites = new TextureRegion[8];
+        eightDirectionalSprites[Boat.DIRECTION_UP] = boatTextureRegions[0];
+        eightDirectionalSprites[Boat.DIRECTION_RIGHT] = boatTextureRegions[11];
+        eightDirectionalSprites[Boat.DIRECTION_DOWN] = boatTextureRegions[23];
+        eightDirectionalSprites[Boat.DIRECTION_LEFT] = boatTextureRegions[35];
+        eightDirectionalSprites[Boat.DIRECTION_UP_RIGHT] = boatTextureRegions[7];
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_RIGHT] = boatTextureRegions[14];
+        eightDirectionalSprites[Boat.DIRECTION_DOWN_LEFT] = boatTextureRegions[28];
+        eightDirectionalSprites[Boat.DIRECTION_UP_LEFT] = boatTextureRegions[42];
+
+        // Register the directional sprites with the asset manager
+        assetManager.registerDirectionalSprites(BOAT_ENTITY, eightDirectionalSprites);
+        boatDirectionalSprites = eightDirectionalSprites;
+
+        // Create rock sprite sheet (3x3)
+        rockImage = assetManager.getAsset("Rocks.png", Texture.class);
+        rockRegions = assetManager.createSpriteSheet(ROCK_SPRITESHEET, "Rocks.png", 3, 3);
+
+        // Load trash textures and create TextureRegions
+        trashTextures = new Texture[3];
+        trashRegions = new TextureRegion[3];
+        String[] trashPaths = { "trash1.png", "trash2.png", "trash3.png" };
+
+        for (int i = 0; i < trashPaths.length; i++) {
+            trashTextures[i] = assetManager.getAsset(trashPaths[i], Texture.class);
+            trashRegions[i] = new TextureRegion(trashTextures[i]);
+        }
+
+        // Store first trash texture for reference
+        trashImage = trashTextures[0];
+
+        LOGGER.info("Game assets initialized successfully");
+    }
+
+    @Override
+    protected void createMainCharacter() {
+        // Create boat (player) entity
+        Entity boatEntity = new Entity(
+                constants.PLAYER_START_X(),
+                constants.PLAYER_START_Y(),
+                constants.PLAYER_WIDTH(),
+                constants.PLAYER_HEIGHT(),
+                true);
+
+        playerMovementManager = new PlayerMovementBuilder(MovementStrategyFactory.getInstance())
+                .withEntity(boatEntity)
+                .setSpeed(constants.PLAYER_SPEED())
+                .setInitialVelocity(0, 0)
+                .setLenientMode(true)
+                .withConstantMovement()
+                .build();
+
+        boat = new Boat(boatEntity, world, playerMovementManager, boatDirectionalSprites);
+        boat.setCollisionManager(collisionManager);
+
+        // Add boat to managers
+        entityManager.addRenderableEntity(boat);
+        collisionManager.addEntity(boat, playerMovementManager);
+        existingEntities.add(boatEntity);
+
+        // Set life loss callback for boat
+        boat.setLifeLossCallback(() -> {
+            loseLife();
+            audioManager.playSoundEffect("collision");
+            if (healthManager.getLives() == 0) {
+                sceneManager.setScene("gameover");
                 audioManager.playSoundEffect("loss");
-            } else {
-                // sceneManager.setWinState(true);
-                audioManager.playSoundEffect("success");
                 audioManager.stopMusic();
+                audioManager.hideVolumeControls();
+                options.getRebindMenu().setVisible(false);
             }
-            audioManager.stopMusic();
-            return;
-        }
+        });
+    }
 
-        List<Trash> trashes = gameScene.getTrashes();
-        if (trashes.isEmpty()) {
-            float currentRemainingTime = timer.getRemainingTime();
-            timer.stop();
-            scoreManager.multiplyScore(currentRemainingTime / 100f);
-            audioManager.stopMusic();
-            audioManager.playSoundEffect("success");
-            sceneManager.setScene("gameover");
-            return;
-        }
+    @Override
+    protected void createSeaTurtle() {
+        // Create sea turtle entity
+        CustomAssetManager assetManager = CustomAssetManager.getInstance();
 
-        gameScene.render(deltaTime);
+        assetManager.loadTextureAssets("seaturtle.png");
+        assetManager.update();
+        assetManager.loadAndFinish();
+
+        seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
+        TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
+
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7];
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2];
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0];
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1];
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_RIGHT] = seaTurtleRegion[5];
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_RIGHT] = seaTurtleRegion[3];
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_LEFT] = seaTurtleRegion[4];
+        turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_LEFT] = seaTurtleRegion[6];
+
+        // Register the directional sprites with the asset manager
+        assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
+        seaTurtleRegion = turtleDirectionalSprites;
+
+        Entity seaTurtleEntity = new Entity(
+                constants.SEA_TURTLE_START_X(),
+                constants.SEA_TURTLE_START_Y(),
+                constants.SEA_TURTLE_WIDTH(),
+                constants.SEA_TURTLE_HEIGHT(),
+                true);
+
+        float[] customWeights = { 0.40f, 0.60f };
+
+        List<Entity> rockEntities = new ArrayList<>();
+        for (Rock rock : rocks) {
+            rockEntities.add(rock.getEntity());
+        }
+        List<Trash> trashEntities = new ArrayList<>();
+        for (Trash trash : trashes) {
+            trashEntities.add(trash);
+        }
+        npcMovementManager = new NPCMovementBuilder(MovementStrategyFactory.getInstance())
+                .withEntity(seaTurtleEntity)
+                .setSpeed(constants.NPC_SPEED())
+                .setInitialVelocity(1, 0)
+                .withTrashCollector(
+                        trashEntities,
+                        rockEntities,
+                        customWeights)
+                .setLenientMode(true)
+                .build();
+
+        seaTurtle = new SeaTurtle(seaTurtleEntity, world, npcMovementManager, seaTurtleRegion);
+        seaTurtle.setEntityRemovalListener(this);
+        seaTurtle.setCollisionManager(collisionManager);
+
+        // Set health callback for the turtle
+        seaTurtle.setHealthCallback(() -> {
+            reduceTurtleHealth();
+        });
+
+        entityManager.addRenderableEntity(seaTurtle);
+        collisionManager.addEntity(seaTurtle, npcMovementManager);
+        existingEntities.add(seaTurtleEntity);
+    }
+
+    @Override
+    protected void createRocks() {
+        // In this scene, we want fewer rocks but make them more challenging
+        int numRocks = constants.NUM_ROCKS();
+        for (int i = 0; i < numRocks; i++) {
+            Rock rock = entityFactoryManager.createRock();
+            rocks.add(rock);
+            entityManager.addRenderableEntity(rock);
+            collisionManager.addEntity(rock, null);
+            existingEntities.add(rock.getEntity());
+        }
+        LOGGER.info("Created " + numRocks + " rocks for GameScene2");
+    }
+
+    @Override
+    protected void createTrash() {
+        // Create more trash for the turtle to collect in this scene
+        int numTrash = constants.NUM_TRASHES();
+        for (int i = 0; i < numTrash; i++) {
+            Trash trash = entityFactoryManager.createTrash();
+            if (trash != null) {
+                trashes.add(trash);
+                entityManager.addRenderableEntity(trash);
+
+                // Get and store the movement manager
+                NPCMovementManager trashMovementManager = trash.getMovementManager();
+                if (trashMovementManager != null) {
+                    trashMovementManagers.add(trashMovementManager);
+                    collisionManager.addEntity(trash, trashMovementManager);
+                }
+
+                existingEntities.add(trash.getEntity());
+                LOGGER.info("Created and registered trash entity " + i + " with movement manager");
+            }
+        }
+        LOGGER.info("Created " + numTrash + " trash objects for GameScene2");
+    }
+
+    @Override
+    protected void draw() {
+        // Regular rendering code
         batch.begin();
+        batch.draw(backgroundTexture, 0, 0, constants.GAME_WIDTH(), constants.GAME_HEIGHT());
+        batch.end();
+
+        // Draw entities
+        batch.begin();
+        entityManager.draw(batch);
+
+        // Adding a label for player health
+        upheavalFont.draw(batch, "Player Health:", 50,
+                sceneUIManager.getStage().getHeight() - 30);
+        // Draw health and score
+        healthManager.draw(batch, 300, sceneUIManager.getStage().getHeight() - 60, healthManager.getLives());
+
+        // print score
+        upheavalFont.draw(batch, "Score: " + scoreManager.getScore(), 500,
+                sceneUIManager.getStage().getHeight() - 30);
+
+        // Print timer
         upheavalFont.draw(batch, String.format("Time: %02d:%02d",
                 timer.getMinutes(), timer.getSeconds()), 500, sceneUIManager.getStage().getHeight() - 60);
 
         // Adding a label for turtle health
         upheavalFont.draw(batch, "Turtle Health:", 50,
                 sceneUIManager.getStage().getHeight() - 60);
-
+        // Draw turtle health
         healthManager.draw(batch, 300, sceneUIManager.getStage().getHeight() - 100, turtleHealth);
+
+        // Print timer
+        if (showTimer) {
+            upheavalFont.draw(batch, String.format("Time: %02d:%02d",
+                    timer.getMinutes(), timer.getSeconds()), 500, sceneUIManager.getStage().getHeight() - 60);
+        }
 
         batch.end();
 
+        // Draw stage
+        sceneUIManager.getStage().act(Gdx.graphics.getDeltaTime());
+        sceneUIManager.getStage().draw();
     }
 
     @Override
-    public void show() {
+    protected void input() {
+        // First call the base class input method to handle common inputs
+        super.input();
 
-        super.show();
-        turtleHealth = MAX_TURTLE_HEALTH;
-        timer.resetTime();
-        timer.start();
-        gameScene.setShowTimer(false);
-
-        if (gameScene != null) {
-            gameScene.show();
-            gameScene.getEntityFactoryManager().setTrashRemovalListener(GameScene2.this); // addition
-
-            // Reset input state to prevent constant movement
-            inputManager.resetInputState();
-
-            entityManager = gameScene.getEntityManager();
-            collisionManager = gameScene.getCollisionManager();
-            assetManager = CustomAssetManager.getInstance();
-
-            assetManager.loadTextureAssets("seaturtle.png");
-            assetManager.update();
-            assetManager.loadAndFinish();
-
-            seaTurtleRegion = assetManager.createSpriteSheet(SEA_TURTLE_SPRITESHEET, "seaturtle.png", 4, 2);
-            TextureRegion[] turtleDirectionalSprites = new TextureRegion[8];
-
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_UP] = seaTurtleRegion[7];
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_RIGHT] = seaTurtleRegion[2];
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN] = seaTurtleRegion[0];
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_LEFT] = seaTurtleRegion[1];
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_RIGHT] = seaTurtleRegion[5];
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_RIGHT] = seaTurtleRegion[3];
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_DOWN_LEFT] = seaTurtleRegion[4];
-            turtleDirectionalSprites[SeaTurtle.DIRECTION_UP_LEFT] = seaTurtleRegion[6];
-
-            // Register the directional sprites with the asset manager
-            assetManager.registerDirectionalSprites(SEA_TURTLE_ENTITY, turtleDirectionalSprites);
-            seaTurtleRegion = turtleDirectionalSprites;
-
-            constants = GameConstantsFactory.getConstants();
-
-            Entity seaTurtleEntity = new Entity(
-                    constants.SEA_TURTLE_START_X(),
-                    constants.SEA_TURTLE_START_Y(),
-                    constants.SEA_TURTLE_WIDTH(),
-                    constants.SEA_TURTLE_HEIGHT(),
-                    true);
-
-            float[] customWeights = { 0.40f, 0.60f };
-            npcMovementManager = new NPCMovementBuilder(MovementStrategyFactory.getInstance())
-                    .withEntity(seaTurtleEntity)
-                    .setSpeed(constants.NPC_SPEED())
-                    .setInitialVelocity(1, 0)
-                    .withTrashCollector(gameScene.getTrashes(), gameScene.getRockEntities(), customWeights)
-                    .setLenientMode(true)
-                    .build();
-
-            seaTurtle = new SeaTurtle(seaTurtleEntity, gameScene.getWorld(), npcMovementManager, seaTurtleRegion);
-            seaTurtle.setEntityRemovalListener(this); // <-- Add this!
-            seaTurtle.setCollisionManager(gameScene.getCollisionManager());
-
-            // Set health callback for the turtle
-            seaTurtle.setHealthCallback(() -> {
-                reduceTurtleHealth();
-            });
-
-            entityManager.addRenderableEntity(seaTurtle);
-            collisionManager.addEntity(seaTurtle, npcMovementManager);
-
-            LOGGER.info("GameScene2 shown (delegated to GameScene)");
-        } else {
-            LOGGER.error("Failed to load seaturtle.png asset");
-
+        // Switch to game2 scene (turtle scene)
+        if (inputManager.isKeyJustPressed(Input.Keys.N)) {
+            if (!"GameScene".equals(sceneManager.getPreviousScene())) {
+                audioManager.stopMusic();
+                sceneManager.setScene("game2");
+            } else {
+                LOGGER.info("Already in GameScene2, ignoring key press.");
+            }
         }
     }
 
     @Override
-    public void hide() {
-        if (gameScene != null) {
-            gameScene.hide();
+    public void render(float deltaTime) {
+        input();
+        timer.update(deltaTime);
+
+        if (timer.isTimeUp()) {
+            timer.stop();
+            sceneManager.setScene("gameover");
+            if (scoreManager.hasWon() == false) {
+                audioManager.playSoundEffect("loss");
+            } else {
+                audioManager.playSoundEffect("success");
+            }
+            audioManager.stopMusic();
+            return;
+        }
+
+        try {
+            if (playerMovementManager != null) {
+                playerMovementManager.updateMovement();
+            }
+
+            if (npcMovementManager != null) {
+                npcMovementManager.updateMovement();
+            }
+
+            if (trashMovementManagers != null) {
+                for (NPCMovementManager trashManager : trashMovementManagers) {
+                    if (trashManager != null) {
+                        trashManager.updateMovement();
+                    }
+                }
+            }
+
+            // Make sure collision handling catches up with new positions
+            if (collisionManager != null) {
+                collisionManager.updateGame(constants.GAME_WIDTH(), constants.GAME_HEIGHT(),
+                        constants.PIXELS_TO_METERS());
+            }
+        } catch (Exception e) {
+            LOGGER.error("Exception during game update: {0}", e.getMessage());
+        }
+
+        draw();
+
+        // Render debug matrix
+        debugMatrix = camera.combined.cpy().scl(constants.PIXELS_TO_METERS());
+        debugRenderer.render(world, debugMatrix);
+
+        // Only step the physics if we have active bodies
+        int activeBodyCount = 0;
+        Array<Body> bodies = new Array<>();
+        world.getBodies(bodies);
+        for (Body body : bodies) {
+            if (body.isActive()) {
+                activeBodyCount++;
+            }
+        }
+
+        // Ensure we have enough bodies for physics to work
+        if (activeBodyCount > 1) {
+            float timeStep = 1.0f / 60.0f;
+            int velocityIterations = 6;
+            int positionIterations = 2;
+            world.step(timeStep, velocityIterations, positionIterations);
+
+            collisionManager.processRemovalQueue();
+            collisionManager.processCollisions();
+            collisionManager.syncEntityPositions(constants.PIXELS_TO_METERS());
+        } else {
+            LOGGER.warn("Not enough active bodies for physics simulation");
+        }
+
+        if (trashes.isEmpty()) {
+            float remainingTime = timer.getRemainingTime();
+            scoreManager.multiplyScore((float) (remainingTime / 100));
+            scoreManager.setWinState(true);
+            sceneManager.setScene("gameover");
+            audioManager.playSoundEffect("success");
+            audioManager.stopMusic();
         }
     }
 
     @Override
     public void dispose() {
-        if (gameScene != null) {
-            gameScene.dispose();
+        super.dispose();
+
+        if (boatSpritesheet != null) {
+            boatSpritesheet.dispose();
         }
 
-        if (heartTexture != null) {
-            heartTexture.dispose();
+        // Dispose of the Boat if it wasn't already handled by disposeEntities
+        if (boat != null) {
+            if (boat.getBody() != null) {
+                world.destroyBody(boat.getBody());
+            }
+            entityManager.removeRenderableEntity(boat);
+            boat = null;
         }
 
-        LOGGER.info("GameScene2 disposed");
-    }
-
-    @Override
-    public void pause() {
-        if (gameScene != null) {
-            gameScene.pause();
-        }
-    }
-
-    @Override
-    public void resume() {
-        if (gameScene != null) {
-            gameScene.resume();
-        }
-    }
-
-    @Override
-    public void create() {
-        batch = new SpriteBatch();
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
-        upheavalFont = new BitmapFont(Gdx.files.internal("upheaval.fnt"));
-
-        // Load heart texture once and use it for both boat and turtle
-        heartTexture = new Texture("heart.png");
-
-        // Initialize HealthManager with the loaded texture
-        this.healthManager = HealthManager.getInstance(heartTexture);
-
-        if (gameScene != null) {
-            gameScene.create();
+        if (seaTurtle != null) {
+            if (seaTurtle.getBody() != null) {
+                world.destroyBody(seaTurtle.getBody());
+            }
+            entityManager.removeRenderableEntity(seaTurtle);
+            seaTurtle = null;
         }
     }
 }
