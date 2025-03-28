@@ -48,7 +48,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
     private final TimeManager timer;
 
     // Scene
-    private final GameScene gameScene;
+    private final GameScene1 gameScene;
     private Texture heartTexture;
     private SpriteBatch batch;
     @SuppressWarnings("unused")
@@ -71,7 +71,7 @@ public class GameScene2 extends Scene implements IEntityRemovalListener {
 
     public GameScene2(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
-        this.gameScene = new GameScene(sceneManager, inputManager);
+        this.gameScene = new GameScene1(sceneManager, inputManager);
         this.scoreManager = ScoreManager.getInstance();
         this.timer = new TimeManager(0, 50);
         this.audioManager = gameScene.getAudioManager();

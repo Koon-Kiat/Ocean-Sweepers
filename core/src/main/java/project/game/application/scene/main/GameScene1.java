@@ -52,9 +52,9 @@ import project.game.engine.scene.management.SceneManager;
 import project.game.engine.scene.management.ScoreManager;
 import project.game.engine.scene.management.TimeManager;
 
-public class GameScene extends Scene implements IEntityRemovalListener {
+public class GameScene1 extends Scene implements IEntityRemovalListener {
 
-    private static final GameLogger LOGGER = new GameLogger(GameScene.class);
+    private static final GameLogger LOGGER = new GameLogger(GameScene1.class);
 
     // Menu
     private final HealthManager healthManager;
@@ -123,7 +123,7 @@ public class GameScene extends Scene implements IEntityRemovalListener {
     private boolean showTimer = true;
     private float remainingTime;
 
-    public GameScene(SceneManager sceneManager, SceneInputManager inputManager) {
+    public GameScene1(SceneManager sceneManager, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.healthManager = HealthManager.getInstance(heartTexture);
         this.scoreManager = ScoreManager.getInstance();

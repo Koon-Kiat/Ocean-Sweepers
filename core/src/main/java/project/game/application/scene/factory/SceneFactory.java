@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import project.game.application.scene.main.GameScene;
+import project.game.application.scene.main.GameScene1;
 import project.game.application.scene.main.GameScene2;
 import project.game.application.scene.main.MainMenuScene;
 import project.game.application.scene.overlay.GameOverScene;
@@ -36,7 +36,7 @@ public class SceneFactory {
          */
         sceneCreators = new HashMap<>();
         sceneCreators.put("menu", () -> new MainMenuScene(sceneManager, inputManager));
-        sceneCreators.put("game", () -> new GameScene(sceneManager, inputManager));
+        sceneCreators.put("game", () -> new GameScene1(sceneManager, inputManager));
         sceneCreators.put("gameover", () -> new GameOverScene(sceneManager, inputManager));
         sceneCreators.put("game2", () -> new GameScene2(sceneManager, inputManager));
     }

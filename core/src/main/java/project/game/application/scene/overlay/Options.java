@@ -14,7 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
-import project.game.application.scene.main.GameScene;
+import project.game.application.scene.main.GameScene1;
 import project.game.application.scene.ui.AudioUI;
 import project.game.common.logging.core.GameLogger;
 import project.game.engine.audio.config.AudioConfig;
@@ -29,7 +29,7 @@ import project.game.engine.scene.management.SceneManager;
 public class Options extends Scene {
 
     private static final GameLogger LOGGER = new GameLogger(Options.class);
-    private final GameScene gameScene;
+    private final GameScene1 gameScene;
     private Skin skin;
     private Window popupMenu;
     private Window rebindMenu;
@@ -39,7 +39,7 @@ public class Options extends Scene {
     private AudioConfig config;
     private TextButton mainMenuButton;
 
-    public Options(SceneManager sceneManager, GameScene gameScene, SceneInputManager inputManager) {
+    public Options(SceneManager sceneManager, GameScene1 gameScene, SceneInputManager inputManager) {
         super(sceneManager, inputManager);
         this.gameScene = gameScene;
     }
