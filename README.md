@@ -7,7 +7,7 @@
 
 ## Overview
 
-A 2D game developed with LibGDX where players control a boat to clean up trash in the ocean while avoiding obstacles and monsters. The project demonstrates advanced software engineering principles with a clean separation between engine architecture and game-specific implementations.
+A 2D game developed with LibGDX where players navigate a boat through ocean waters to collect floating trash before the sea turtle does, while avoiding hazardous rocks. Players must strategically maneuver to collect debris while managing collisions with environmental obstacles. The sea turtle actively competes with the player for trash, using sophisticated AI movement strategies to seek out and collect debris, making it a race against time and clever navigation to clean the ocean first.
 
 ## Key Technologies and Architecture
 
