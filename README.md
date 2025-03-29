@@ -1,9 +1,11 @@
 # Ocean Sweepers
 
+![GitHub repo size](https://img.shields.io/github/repo-size/Koon-Kiat/Ocean-Sweepers)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/Koon-Kiat/Ocean-Sweepers?style=flat)
+![GitHub issues](https://img.shields.io/github/issues/Koon-Kiat/Ocean-Sweepers)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/Koon-Kiat/Ocean-Sweepers)
+![GitHub Repo stars](https://img.shields.io/github/stars/Koon-Kiat/Ocean-Sweepers?style=flat)
 ![Game Engine](https://img.shields.io/badge/Game_Engine-LibGDX-orange)
-![Architecture](https://img.shields.io/badge/Architecture-Component_Based-blue)
-![Design Patterns](https://img.shields.io/badge/Design_Patterns-Strategy_Factory_Composite-green)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ## Overview
 
@@ -124,27 +126,27 @@ The codebase demonstrates exemplary use of OOP principles and design patterns ac
 
 #### Creational Patterns
 
-- **Singleton (1)**:
+- **Singleton**:
   - `AudioManager`, `MusicManager`, and `SoundManager` use singleton pattern
   - `MovementStrategyFactory` implements singleton for centralized strategy creation
   - Provides global access while ensuring single instance management
 
-- **Factory Method (2)**:
+- **Factory Method**:
   - `MovementStrategyFactory` creates various movement strategies
   - `SceneFactory` handles scene creation and registration
   - `RockFactory` and `TrashFactory` create game objects
 
-- **Abstract Factory (3)**:
+- **Abstract Factory**:
   - `IMovementStrategyFactory` defines an interface for creating movement strategies
   - Different factory implementations can produce different families of related objects
   - Allows for swapping out entire families of strategies
 
-- **Builder (4)**:
+- **Builder**:
   - `AbstractMovementBuilder` provides a base for fluent builders
   - `PlayerMovementBuilder` and `NPCMovementBuilder` extend it with specific configurations
   - Method chaining with type-safe generics (e.g., `withObstacleAvoidance().withConstantMovement()`)
 
-- **Prototype (5)**:
+- **Prototype**:
   - Entities can be cloned to create new instances with similar properties
   - `ObjectPool` implementation leverages prototype-like behavior
   - Efficient creation of multiple similar objects
@@ -156,76 +158,76 @@ The codebase demonstrates exemplary use of OOP principles and design patterns ac
   - Shields game code from third-party API changes
   - `CollidableEntityHandler` adapts collision interfaces
 
-- **Composite (7)**:
+- **Composite**:
   - `CompositeMovementStrategy` combines multiple strategies with weighted influences
   - Allows complex behaviors through composition of simple strategies
   - `InterceptorAvoidanceStrategy` and `OceanCurrentStrategy` demonstrate practical usage
 
-- **Proxy (8)**:
+- **Proxy**:
   - Lazy loading of audio resources through proxy objects
   - Audio files are only loaded when needed
   - Reduces initial loading time and memory usage
 
-- **Flyweight (9)**:
+- **Flyweight**:
   - `TextureFlyweightFactory` shares texture resources
   - Shared assets minimize memory usage
   - Ensures assets are loaded only once with efficient reference management
 
-- **Facade (10)**:
+- **Facade**:
   - `AudioManager` provides a simplified interface to the complex audio subsystems
   - Clients interact with a single class rather than multiple audio components
   - Encapsulates the complexities of audio resource management
 
-- **Bridge (11)**:
+- **Bridge**:
   - Separation between entity abstraction and implementation
   - Movement behaviors can be changed independently of entity types
   - Decouples abstraction hierarchies from implementation hierarchies
 
-- **Decorator (12)**:
+- **Decorator**:
   - `MovementStrategyDecorator` allows for dynamic enhancement of strategies
   - Strategies can be combined and enhanced without changing their base implementation
   - Additional behaviors can be added at runtime
 
 #### Behavioral Patterns
 
-- **Template Method (13)**:
+- **Template Method**:
   - `AbstractLogger` defines the logging algorithm structure
   - `AbstractConfigurationLoader` provides template methods for configuration operations
   - `AbstractMovementStrategy` provides template for common movement behavior
   - Subclasses implement the specific behaviors
 
-- **Mediator (14)**:
+- **Mediator**:
   - `CollisionManager` acts as a mediator between collidable objects
   - Centralizes collision logic instead of distributing it across entities
   - Reduces dependencies between individual entities
 
-- **Chain of Responsibility (15)**:
+- **Chain of Responsibility**:
   - Collision handlers form a chain for processing different collision types
   - Each handler decides whether to process the collision or pass it to the next handler
   - Allows for flexible handling of various collision scenarios
 
-- **Observer (16)**:
+- **Observer**:
   - Audio volume changes notify registered listeners
   - UI components observe and respond to audio state changes
   - Entity removal listeners observe when entities are destroyed
   - Decouples event sources from event handlers
 
-- **Strategy (17)**:
+- **Strategy**:
   - Multiple movement strategies implement the `IMovementStrategy` interface
   - Strategies like `ObstacleAvoidanceStrategy`, `FollowMovementStrategy`, and `ZigZagMovementStrategy`
   - Movement strategies can be swapped at runtime
 
-- **Command (18)**:
+- **Command**:
   - `ICollisionOperation` encapsulates collision responses
   - Collision callbacks execute appropriate commands based on collision type
   - Decouples collision detection from collision response logic
 
-- **State (19)**:
+- **State**:
   - Scene transitions represent different game states
   - Each scene encapsulates state-specific behavior
   - `SceneManager` handles state transitions
 
-- **Visitor (20)**:
+- **Visitor**:
   - `ICollidableVisitor` interface for type-safe collision handling
   - Double dispatch with `visit` and `accept` methods to handle different entity types
   - Eliminates the need for type checking and casting
